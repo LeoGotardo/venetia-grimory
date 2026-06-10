@@ -71,6 +71,8 @@ interface FichaStore {
   toggleEscudo: () => void
   setArmadura: (armaduraId: string | null) => void
   atualizarMagia: (parcial: Partial<Pick<Ficha['magia'], 'truques_conhecidos' | 'magias_preparadas'>>) => void
+  addXP: (amount: number) => void
+  levelUp: (novoNivel: number, asi?: Partial<Record<AtributoId, number>>) => void
 
   // Persistência
   calcularTudo: () => void
@@ -469,6 +471,48 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
     set(s => ({
       ficha: recalcular({ ...s.ficha, magia: { ...s.ficha.magia, ...parcial } }),
     })),
+
+  addXP: amount =>
+    set(s => ({
+      ficha: { ...s.ficha, identidade: { ...s.ficha.identidade, xp: s.ficha.identidade.xp + amount } },
+    })),
+
+  levelUp: (novoNivel, asi) =>
+    set(s => {
+      const classe = dados.classes.find(c => c.id === s.ficha.identidade.classe_id)
+      const progEntry = classe?.progressao.find((p: { nivel: number }) => p.nivel === novoNivel) as
+        | (Record<string, unknown> & { nivel: number })
+        | undefined
+
+      let atributos = s.ficha.atributos
+      if (asi) {
+        Object.entries(asi).forEach(([attr, bonus]) => {
+          const a = attr as AtributoId
+          const atual = atributos[a].valor ?? 10
+          atributos = { ...atributos, [a]: { ...atributos[a], valor: Math.min(20, atual + (bonus ?? 0)) } }
+        })
+      }
+
+      let ficha = recalcular({
+        ...s.ficha,
+        identidade: { ...s.ficha.identidade, nivel: novoNivel },
+        atributos,
+      })
+
+      if (ficha.magia.conjurador && progEntry?.espacos) {
+        const espacosData = progEntry.espacos as Record<string, number>
+        const CIRCULOS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const
+        const espacos = { ...ficha.magia.espacos_de_magia }
+        CIRCULOS.forEach(k => {
+          if (espacosData[k] !== undefined) {
+            espacos[k] = { maximo: espacosData[k], gastos: Math.min(espacos[k].gastos, espacosData[k]) }
+          }
+        })
+        ficha = recalcular({ ...ficha, magia: { ...ficha.magia, espacos_de_magia: espacos } })
+      }
+
+      return { ficha }
+    }),
 
   calcularTudo: () => set(s => ({ ficha: recalcular(s.ficha) })),
 

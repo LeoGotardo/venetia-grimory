@@ -6,10 +6,11 @@ const PASSOS = [
   { id: 5, titulo: 'Antecedente' },
   { id: 6, titulo: 'Atributos' },
   { id: 7, titulo: 'Perícias' },
-  { id: 8, titulo: 'Idiomas' },
-  { id: 9, titulo: 'Equipamento' },
-  { id: 10, titulo: 'Personalidade' },
-  { id: 11, titulo: 'Revisar' },
+  { id: 8, titulo: 'Magias' },
+  { id: 9, titulo: 'Idiomas' },
+  { id: 10, titulo: 'Equipamento' },
+  { id: 11, titulo: 'Personalidade' },
+  { id: 12, titulo: 'Revisar' },
 ]
 
 interface Props {

@@ -9,14 +9,15 @@ import { Step04Especie } from '../components/wizard/Step04Especie'
 import { Step05Antecedente } from '../components/wizard/Step05Antecedente'
 import { Step06Atributos } from '../components/wizard/Step06Atributos'
 import { Step07Pericias } from '../components/wizard/Step07Pericias'
-import { Step08Idiomas } from '../components/wizard/Step08Idiomas'
-import { Step09Equipamento } from '../components/wizard/Step09Equipamento'
-import { Step10Personalidade } from '../components/wizard/Step10Personalidade'
-import { Step11Revisar } from '../components/wizard/Step11Revisar'
+import { Step08Spells } from '../components/wizard/Step08Spells'
+import { Step09Idiomas } from '../components/wizard/Step09Idiomas'
+import { Step10Equipamento } from '../components/wizard/Step10Equipamento'
+import { Step11Personalidade } from '../components/wizard/Step11Personalidade'
+import { Step12Revisar } from '../components/wizard/Step12Revisar'
 
 const COMPONENTES = [
   Step01Nivel, Step02Classe, Step03Subclasse, Step04Especie, Step05Antecedente,
-  Step06Atributos, Step07Pericias, Step08Idiomas, Step09Equipamento, Step10Personalidade, Step11Revisar,
+  Step06Atributos, Step07Pericias, Step08Spells, Step09Idiomas, Step10Equipamento, Step11Personalidade, Step12Revisar,
 ]
 
 export function Wizard() {

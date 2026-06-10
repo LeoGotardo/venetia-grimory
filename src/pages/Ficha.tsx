@@ -10,6 +10,8 @@ import { PainelMagia } from '../components/ficha/PainelMagia'
 import { PainelInventario } from '../components/ficha/PainelInventario'
 import { PainelAnotacoes } from '../components/ficha/PainelAnotacoes'
 import { PainelEditar } from '../components/ficha/PainelEditar'
+import { ConfigModal } from '../components/ui/ConfigModal'
+import { LevelUpModal } from '../components/ficha/LevelUpModal'
 import { Input } from '../components/ui/Input'
 import Button from '../components/ui/Button'
 import dadosJson from '../data/dnd_dados.json'
@@ -34,10 +36,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function Ficha() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { ficha, fichaId, carregarFicha, setIdentidade } = useFichaStore()
+  const { ficha, fichaId, carregarFicha, setIdentidade, addXP } = useFichaStore()
   const { exportar } = useFichaExport()
   const [aba, setAba] = useState<Aba>('ficha')
   const [editandoNome, setEditandoNome] = useState(false)
+  const [configAberta, setConfigAberta] = useState(false)
+  const [levelUpAberto, setLevelUpAberto] = useState(false)
+  const [xpInput, setXpInput] = useState('')
 
   useEffect(() => {
     if (id && id !== fichaId) carregarFicha(id)
@@ -74,6 +79,13 @@ export function Ficha() {
         onChangeNome={nome => setIdentidade({ nome_personagem: nome })}
         onHome={() => navigate('/')}
         onExportar={() => exportar(identity.nome_personagem)}
+        onConfig={() => setConfigAberta(true)}
+      />
+      <ConfigModal open={configAberta} onClose={() => setConfigAberta(false)} />
+      <LevelUpModal
+        open={levelUpAberto}
+        onClose={() => setLevelUpAberto(false)}
+        novoNivel={identity.nivel + 1}
       />
 
       <div className="max-w-6xl mx-auto px-4 py-6">
@@ -86,6 +98,14 @@ export function Ficha() {
           xpAtual={xpAtual}
           xpProximo={xpProximo}
           xpPct={xpPct}
+          xpInput={xpInput}
+          onXpInputChange={setXpInput}
+          onGanharXP={() => {
+            const v = parseInt(xpInput)
+            if (!isNaN(v) && v > 0) { addXP(v); setXpInput('') }
+          }}
+          podeSubirNivel={xpProximo !== undefined && xpAtual >= xpProximo && identity.nivel < 20}
+          onLevelUp={() => setLevelUpAberto(true)}
         />
 
         <nav
@@ -162,6 +182,7 @@ interface FichaTopbarProps {
   onChangeNome: (nome: string) => void
   onHome: () => void
   onExportar: () => void
+  onConfig: () => void
 }
 
 function FichaTopbar({
@@ -172,6 +193,7 @@ function FichaTopbar({
   onChangeNome,
   onHome,
   onExportar,
+  onConfig,
 }: FichaTopbarProps) {
   return (
     <div className="no-print bg-[#2D2520] border-b border-[#B8860B]/20 px-4 py-3 sticky top-0 z-40">
@@ -203,6 +225,14 @@ function FichaTopbar({
           )}
         </div>
         <div className="flex gap-2">
+          <button
+            onClick={onConfig}
+            aria-label="Configurações"
+            title="Configurações"
+            className="w-8 h-8 flex items-center justify-center rounded text-[#A8A09B] hover:text-[#F5F0E8] hover:bg-[#3D332D] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+          >
+            ⚙
+          </button>
           <Button size="sm" variant="secondary" onClick={onExportar}>📤 Exportar</Button>
           <Button size="sm" variant="ghost" onClick={() => window.print()}>🖨 Imprimir</Button>
         </div>
@@ -220,9 +250,14 @@ interface FichaHeaderProps {
   xpAtual: number
   xpProximo: number | undefined
   xpPct: number
+  xpInput: string
+  onXpInputChange: (v: string) => void
+  onGanharXP: () => void
+  podeSubirNivel: boolean
+  onLevelUp: () => void
 }
 
-function FichaHeader({ identity, classe, subclasse, especie, ante, xpAtual, xpProximo, xpPct }: FichaHeaderProps) {
+function FichaHeader({ identity, classe, subclasse, especie, ante, xpAtual, xpProximo, xpPct, xpInput, onXpInputChange, onGanharXP, podeSubirNivel, onLevelUp }: FichaHeaderProps) {
   return (
     <div className="mb-6">
       <h1 className="font-cinzel text-3xl font-bold text-[#F5F0E8]">
@@ -235,17 +270,56 @@ function FichaHeader({ identity, classe, subclasse, especie, ante, xpAtual, xpPr
         {ante ? ` · ${ante.nome}` : ''}
         {identity.alinhamento.etico ? ` · ${identity.alinhamento.etico} ${identity.alinhamento.moral}` : ''}
       </p>
-      {xpProximo && (
-        <div className="mt-2 max-w-sm">
+
+      <div className="mt-3 max-w-sm space-y-2">
+        {/* Barra de XP */}
+        <div>
           <div className="flex justify-between text-xs text-[#A8A09B] mb-1">
             <span>XP: {xpAtual.toLocaleString('pt-BR')}</span>
-            <span>Próximo nível: {xpProximo.toLocaleString('pt-BR')}</span>
+            {xpProximo !== undefined
+              ? <span>Próximo: {xpProximo.toLocaleString('pt-BR')}</span>
+              : <span className="text-[#B8860B]">Nível máximo</span>
+            }
           </div>
           <div className="h-1.5 bg-[#3D332D] rounded-full overflow-hidden">
-            <div className="h-full bg-[#B8860B] rounded-full transition-all" style={{ width: `${xpPct}%` }} />
+            <div
+              className={`h-full rounded-full transition-all ${podeSubirNivel ? 'bg-green-500' : 'bg-[#B8860B]'}`}
+              style={{ width: `${xpPct}%` }}
+            />
           </div>
         </div>
-      )}
+
+        {/* Controles de XP */}
+        <div className="flex gap-2">
+          <input
+            type="number"
+            min={1}
+            value={xpInput}
+            onChange={e => onXpInputChange(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && onGanharXP()}
+            placeholder="+ XP"
+            aria-label="XP a ganhar"
+            className="w-24 bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B]/50 focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
+          />
+          <button
+            type="button"
+            onClick={onGanharXP}
+            disabled={!xpInput || parseInt(xpInput) <= 0}
+            className="px-3 py-1 text-sm rounded bg-[#3D332D] border border-[#B8860B]/30 text-[#B8860B] hover:bg-[#B8860B]/15 hover:border-[#B8860B] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+          >
+            Ganhar XP
+          </button>
+          {podeSubirNivel && (
+            <button
+              type="button"
+              onClick={onLevelUp}
+              className="px-3 py-1 text-sm rounded bg-green-700 border border-green-500/50 text-green-100 hover:bg-green-600 transition-colors cursor-pointer font-semibold animate-pulse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+            >
+              Subir de Nível!
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

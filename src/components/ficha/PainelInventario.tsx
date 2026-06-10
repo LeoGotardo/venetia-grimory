@@ -1,36 +1,23 @@
 import { useState } from 'react'
 import { useFichaStore } from '../../store/fichaStore'
+import { useConfigStore } from '../../store/configStore'
 import { calcCargaMaxima, calcTotalPO } from '../../lib/calculos'
-import Button from '../ui/Button'
-import type { ItemInventario } from '../../types'
+import { MochilaBusca } from '../ui/MochilaBusca'
 
-const MOEDAS = ['PC', 'PP', 'PE', 'PO', 'PL'] as const
+const MOEDAS_TODAS = ['PC', 'PP', 'PE', 'PO', 'PL'] as const
+const MOEDAS_SIMPLES = ['PO'] as const
 
 export function PainelInventario() {
-  const { ficha, updateMoedas, addItem, removeItem, updateItem } = useFichaStore()
+  const { ficha, updateMoedas, removeItem, updateItem } = useFichaStore()
+  const { config } = useConfigStore()
+  const [modoCompra, setModoCompra] = useState(false)
   const { moedas, itens } = ficha.inventario
-  const [novoNome, setNovoNome] = useState('')
+  const MOEDAS = config.moedas_simples ? MOEDAS_SIMPLES : MOEDAS_TODAS
   const forVal = ficha.atributos.FOR.valor ?? 10
   const cargaMax = calcCargaMaxima(forVal)
   const pesoAtual = itens.reduce((a, it) => a + (it.peso_kg ?? 0) * it.quantidade, 0)
   const porcentCarga = Math.min(100, (pesoAtual / cargaMax) * 100)
   const totalPO = calcTotalPO(moedas)
-
-  function addItemSimples() {
-    if (!novoNome.trim()) return
-    const item: ItemInventario = {
-      id_item: null,
-      nome: novoNome,
-      categoria: 'Misc',
-      quantidade: 1,
-      equipado: false,
-      custo_po: null,
-      peso_kg: null,
-      notas: null,
-    }
-    addItem(item)
-    setNovoNome('')
-  }
 
   return (
     <div className="space-y-4">
@@ -58,26 +45,28 @@ export function PainelInventario() {
       </section>
 
       {/* Carga */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-[#A8A09B]">Carga: {pesoAtual.toFixed(1)} / {cargaMax} kg</span>
-          <span className={`text-xs ${porcentCarga > 80 ? 'text-red-400' : 'text-[#A8A09B]'}`}>
-            {porcentCarga.toFixed(0)}%
-          </span>
-        </div>
-        <div
-          className="h-2 bg-[#2D2520] rounded-full overflow-hidden"
-          role="progressbar"
-          aria-valuenow={pesoAtual}
-          aria-valuemax={cargaMax}
-          aria-label="Capacidade de carga"
-        >
+      {config.rastrear_peso && (
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-[#A8A09B]">Carga: {pesoAtual.toFixed(1)} / {cargaMax} kg</span>
+            <span className={`text-xs ${porcentCarga > 80 ? 'text-red-400' : 'text-[#A8A09B]'}`}>
+              {porcentCarga.toFixed(0)}%
+            </span>
+          </div>
           <div
-            className={`h-full rounded-full transition-all ${porcentCarga > 80 ? 'bg-red-500' : porcentCarga > 50 ? 'bg-yellow-500' : 'bg-green-600'}`}
-            style={{ width: `${porcentCarga}%` }}
-          />
+            className="h-2 bg-[#2D2520] rounded-full overflow-hidden"
+            role="progressbar"
+            aria-valuenow={pesoAtual}
+            aria-valuemax={cargaMax}
+            aria-label="Capacidade de carga"
+          >
+            <div
+              className={`h-full rounded-full transition-all ${porcentCarga > 80 ? 'bg-red-500' : porcentCarga > 50 ? 'bg-yellow-500' : 'bg-green-600'}`}
+              style={{ width: `${porcentCarga}%` }}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Itens */}
       <section aria-label="Itens do inventário">
@@ -110,10 +99,24 @@ export function PainelInventario() {
                 aria-label={`Quantidade de ${it.nome}`}
                 className="w-12 text-center bg-transparent border-b border-[#B8860B]/20 text-[#F5F0E8] text-sm focus:outline-none focus:border-[#B8860B]"
               />
-              {it.peso_kg && <span className="text-xs text-[#A8A09B]">{it.peso_kg}kg</span>}
+              {config.rastrear_peso && it.peso_kg && <span className="text-xs text-[#A8A09B]">{it.peso_kg}kg</span>}
+              {config.reembolso_venda && it.custo_po !== null && (
+                <button
+                  onClick={() => {
+                    updateMoedas({ PO: +(moedas.PO + it.custo_po! * it.quantidade).toFixed(4) })
+                    removeItem(idx)
+                  }}
+                  title={`Vender por ${(it.custo_po * it.quantidade).toFixed(1)} PO`}
+                  aria-label={`Vender ${it.nome} por ${(it.custo_po * it.quantidade).toFixed(1)} PO`}
+                  className="text-[#B8860B]/50 hover:text-[#B8860B] transition-colors text-[9px] font-bold cursor-pointer w-5 h-5 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded border border-[#B8860B]/20 hover:border-[#B8860B]/50"
+                >
+                  PO
+                </button>
+              )}
               <button
                 onClick={() => removeItem(idx)}
-                aria-label={`Remover ${it.nome} do inventário`}
+                aria-label={`Gastar/descartar ${it.nome}`}
+                title="Gastar (sem reembolso)"
                 className="text-[#A8A09B] hover:text-red-400 transition-colors text-sm cursor-pointer w-5 h-5 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded"
               >
                 ×
@@ -122,19 +125,35 @@ export function PainelInventario() {
           ))}
         </div>
 
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={novoNome}
-            onChange={e => setNovoNome(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addItemSimples()}
-            placeholder="Nome do item..."
-            aria-label="Nome do novo item"
-            className="flex-1 bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1.5 text-[#F5F0E8] text-sm focus:outline-none focus:ring-1 focus:ring-[#B8860B] placeholder:text-[#A8A09B]"
-          />
-          <Button size="sm" onClick={addItemSimples} disabled={!novoNome.trim()} aria-label="Adicionar item">
-            + Adicionar
-          </Button>
+        <div className="border-t border-[#B8860B]/10 pt-3 mt-1">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs text-[#A8A09B]">Adicionar item:</span>
+            <div className="flex rounded overflow-hidden border border-[#B8860B]/20">
+              <button
+                type="button"
+                onClick={() => setModoCompra(false)}
+                aria-pressed={!modoCompra}
+                className={[
+                  'px-3 py-1 text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#B8860B]',
+                  !modoCompra ? 'bg-[#B8860B] text-[#1A1612]' : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
+                ].join(' ')}
+              >
+                Livre
+              </button>
+              <button
+                type="button"
+                onClick={() => setModoCompra(true)}
+                aria-pressed={modoCompra}
+                className={[
+                  'px-3 py-1 text-xs font-medium transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#B8860B]',
+                  modoCompra ? 'bg-[#B8860B] text-[#1A1612]' : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
+                ].join(' ')}
+              >
+                Comprar
+              </button>
+            </div>
+          </div>
+          <MochilaBusca semLista cobrarItem={modoCompra} />
         </div>
       </section>
     </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useFichaStore } from '../../store/fichaStore'
 import { calcModificador, formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
 import { Input } from '../ui/Input'
@@ -7,6 +7,12 @@ import { Badge } from '../ui/Badge'
 import dadosJson from '../../data/dnd_dados.json'
 import type { DadosJogo, AtributoId } from '../../types'
 import { NIVEL_MINIMO, NIVEL_MAXIMO } from '../../constants'
+import { getTruquesPorClasse, getMagiasPorClasseECirculo } from '../../data/magias'
+import type { Magia } from '../../data/magias'
+import { SpellCard } from '../ui/SpellCard'
+import { ItemCard } from '../ui/ItemCard'
+import type { ItemDetalhe } from '../ui/ItemCard'
+import { MochilaBusca } from '../ui/MochilaBusca'
 
 const dados = dadosJson as unknown as DadosJogo
 
@@ -30,6 +36,7 @@ export function PainelEditar() {
       <SecaoArmadura />
       <SecaoPericias />
       <SecaoMagia />
+      <SecaoMochila />
     </div>
   )
 }
@@ -285,6 +292,7 @@ function SecaoAtributos() {
 
 function SecaoArmadura() {
   const { ficha, setArmadura } = useFichaStore()
+  const [itemInfo, setItemInfo] = useState<ItemDetalhe | null>(null)
   const armaduraId = ficha.combate.classe_de_armadura.armadura_equipada_id
   const armaduraAtual = dados.armaduras?.find(a => a.id === armaduraId)
 
@@ -293,19 +301,31 @@ function SecaoArmadura() {
       <h3 className={SECTION_TITLE}>Armadura</h3>
       <div className="flex flex-col gap-2">
         <label className="text-sm text-[#B8860B] font-medium">Armadura Equipada</label>
-        <select
-          value={armaduraId ?? ''}
-          onChange={e => setArmadura(e.target.value || null)}
-          className={SELECT_BASE}
-          aria-label="Selecionar armadura"
-        >
-          <option value="">Sem armadura (CA = 10 + mod DES)</option>
-          {dados.armaduras?.map(a => (
-            <option key={a.id} value={a.id}>
-              {a.nome} ({a.categoria} · CA {a.ca})
-            </option>
-          ))}
-        </select>
+        <div className="flex gap-2 items-center">
+          <select
+            value={armaduraId ?? ''}
+            onChange={e => setArmadura(e.target.value || null)}
+            className={SELECT_BASE}
+            aria-label="Selecionar armadura"
+          >
+            <option value="">Sem armadura (CA = 10 + mod DES)</option>
+            {dados.armaduras?.map(a => (
+              <option key={a.id} value={a.id}>
+                {a.nome} ({a.categoria} · CA {a.ca})
+              </option>
+            ))}
+          </select>
+          {armaduraAtual && (
+            <button
+              type="button"
+              onClick={() => setItemInfo({ ...armaduraAtual, _tipo: 'armadura' })}
+              aria-label={`Ver detalhes de ${armaduraAtual.nome}`}
+              className="w-8 h-8 shrink-0 flex items-center justify-center text-xs text-[#A8A09B] hover:text-[#F5F0E8] border border-[#B8860B]/20 hover:border-[#B8860B]/50 rounded-full transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+            >
+              ℹ
+            </button>
+          )}
+        </div>
         {armaduraAtual && (
           <p className="text-xs text-[#A8A09B]">
             {armaduraAtual.custo_po ? `${armaduraAtual.custo_po} PO · ` : ''}
@@ -316,6 +336,29 @@ function SecaoArmadura() {
           </p>
         )}
       </div>
+
+      {/* Lista de todas as armaduras */}
+      <div className="space-y-1 pt-2">
+        <p className="text-xs text-[#A8A09B] font-medium uppercase tracking-wide">Referência</p>
+        {dados.armaduras?.map(a => (
+          <div key={a.id} className="flex items-center justify-between py-1 border-b border-[#B8860B]/10 last:border-0">
+            <div>
+              <span className="text-sm text-[#F5F0E8]">{a.nome}</span>
+              <span className="text-xs text-[#A8A09B] ml-2">CA {a.ca} · {a.categoria}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setItemInfo({ ...a, _tipo: 'armadura' })}
+              aria-label={`Ver detalhes de ${a.nome}`}
+              className="w-6 h-6 shrink-0 flex items-center justify-center text-[10px] text-[#A8A09B] hover:text-[#F5F0E8] border border-[#B8860B]/20 hover:border-[#B8860B]/50 rounded-full transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+            >
+              ℹ
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <ItemCard item={itemInfo} onClose={() => setItemInfo(null)} />
     </section>
   )
 }
@@ -400,29 +443,67 @@ function SecaoPericias() {
 function SecaoMagia() {
   const { ficha, atualizarMagia } = useFichaStore()
   const { magia } = ficha
-  const [novoTruque, setNovoTruque] = useState('')
-  const [novaMagia, setNovaMagia] = useState('')
+  const [circuloAtivo, setCirculoAtivo] = useState(1)
+  const [busca, setBusca] = useState('')
+  const [spellInfo, setSpellInfo] = useState<Magia | null>(null)
 
-  function addTruque() {
-    const nome = novoTruque.trim()
-    if (!nome) return
-    atualizarMagia({ truques_conhecidos: [...magia.truques_conhecidos, nome] })
-    setNovoTruque('')
+  const classeId = ficha.identidade.classe_id ?? ''
+  const nivel = ficha.identidade.nivel
+
+  const classe = dados.classes.find(c => c.id === classeId)
+  const prog = useMemo(() => {
+    if (!classe?.progressao) return null
+    return classe.progressao[nivel - 1] ?? classe.progressao[0]
+  }, [classe, nivel])
+
+  const maxCirculo = useMemo(() => {
+    const espacos = (prog as Record<string, unknown> | null)?.espacos as Record<string, number> | undefined
+    if (!espacos) return 9
+    const max = Object.entries(espacos)
+      .filter(([, v]) => v > 0)
+      .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
+    return max > 0 ? max : 9
+  }, [prog])
+
+  const truquesDisponiveis = useMemo(() => getTruquesPorClasse(classeId), [classeId])
+  const magiasDisponiveis = useMemo(
+    () => getMagiasPorClasseECirculo(classeId, maxCirculo),
+    [classeId, maxCirculo],
+  )
+
+  const circulosDisponiveis = useMemo(() => {
+    const circs = new Set(magiasDisponiveis.map(m => m.circulo))
+    return Array.from(circs).sort((a, b) => a - b) as number[]
+  }, [magiasDisponiveis])
+
+  const truquesFiltrados = useMemo(
+    () => truquesDisponiveis.filter(t => !busca || t.nome.toLowerCase().includes(busca.toLowerCase())),
+    [truquesDisponiveis, busca],
+  )
+
+  const magiasDoCirculo = useMemo(
+    () => magiasDisponiveis
+      .filter(m => m.circulo === circuloAtivo)
+      .filter(m => !busca || m.nome.toLowerCase().includes(busca.toLowerCase())),
+    [magiasDisponiveis, circuloAtivo, busca],
+  )
+
+  function toggleTruque(nome: string) {
+    const atual = magia.truques_conhecidos
+    atualizarMagia({
+      truques_conhecidos: atual.includes(nome)
+        ? atual.filter(t => t !== nome)
+        : [...atual, nome],
+    })
   }
 
-  function removeTruque(nome: string) {
-    atualizarMagia({ truques_conhecidos: magia.truques_conhecidos.filter(t => t !== nome) })
-  }
-
-  function addMagia() {
-    const nome = novaMagia.trim()
-    if (!nome) return
-    atualizarMagia({ magias_preparadas: [...magia.magias_preparadas, nome] })
-    setNovaMagia('')
-  }
-
-  function removeMagia(nome: string) {
-    atualizarMagia({ magias_preparadas: magia.magias_preparadas.filter(m => m !== nome) })
+  function toggleMagia(nome: string) {
+    const atual = magia.magias_preparadas
+    atualizarMagia({
+      magias_preparadas: atual.includes(nome)
+        ? atual.filter(m => m !== nome)
+        : [...atual, nome],
+    })
   }
 
   if (!magia.conjurador) {
@@ -434,73 +515,158 @@ function SecaoMagia() {
     )
   }
 
+  const progRaw = prog as Record<string, unknown> | null
+  const maxTruques = (progRaw?.truques as number | undefined) ?? 0
+  const maxMagias = (progRaw?.magias_preparadas as number | undefined) ?? 0
+
   return (
     <section aria-label="Magia" className={SECTION_CARD}>
       <h3 className={SECTION_TITLE}>Magia</h3>
 
-      {/* Truques */}
-      <div className="space-y-2">
-        <label className="text-sm text-[#B8860B] font-medium">Truques Conhecidos</label>
-        <div className="flex flex-wrap gap-1 min-h-[32px]">
-          {magia.truques_conhecidos.length === 0 && (
-            <span className="text-xs text-[#A8A09B]">Nenhum truque adicionado.</span>
-          )}
-          {magia.truques_conhecidos.map(t => (
-            <span key={t} className="inline-flex items-center gap-1 text-xs bg-[#2D2520] border border-[#B8860B]/20 rounded-full px-2 py-0.5 text-[#F5F0E8]">
-              {t}
-              <button
-                onClick={() => removeTruque(t)}
-                aria-label={`Remover truque ${t}`}
-                className="text-[#A8A09B] hover:text-red-400 transition-colors cursor-pointer leading-none"
-              >×</button>
-            </span>
-          ))}
-        </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={novoTruque}
-            onChange={e => setNovoTruque(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addTruque()}
-            placeholder="Nome do truque..."
-            aria-label="Nome do truque a adicionar"
-            className="flex-1 bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1.5 text-[#F5F0E8] text-sm focus:outline-none focus:ring-1 focus:ring-[#B8860B] placeholder:text-[#A8A09B]"
-          />
-          <Button size="sm" onClick={addTruque} disabled={!novoTruque.trim()}>+ Adicionar</Button>
-        </div>
-      </div>
+      <input
+        type="text"
+        value={busca}
+        onChange={e => setBusca(e.target.value)}
+        placeholder="Buscar magia ou truque..."
+        className="w-full bg-[#2D2520] border border-[#B8860B]/30 rounded-lg px-3 py-2 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B] focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
+        aria-label="Buscar magia ou truque"
+      />
 
-      {/* Magias preparadas */}
-      <div className="space-y-2">
-        <label className="text-sm text-[#B8860B] font-medium">Magias Preparadas</label>
-        <div className="flex flex-wrap gap-1 min-h-[32px]">
-          {magia.magias_preparadas.length === 0 && (
-            <span className="text-xs text-[#A8A09B]">Nenhuma magia preparada.</span>
-          )}
-          {magia.magias_preparadas.map(m => (
-            <span key={m} className="inline-flex items-center gap-1 text-xs bg-[#2D2520] border border-[#7B1D1D]/20 rounded-full px-2 py-0.5 text-[#F5F0E8]">
-              {m}
+      {/* Truques */}
+      {truquesDisponiveis.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#B8860B] font-medium">Truques</span>
+            {maxTruques > 0 && (
+              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${magia.truques_conhecidos.length >= maxTruques ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
+                {magia.truques_conhecidos.length}/{maxTruques}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {truquesFiltrados.map(t => {
+              const sel = magia.truques_conhecidos.includes(t.nome)
+              return (
+                <div key={t.id} className="inline-flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => toggleTruque(t.nome)}
+                    aria-pressed={sel}
+                    className={[
+                      'pl-3 pr-2 py-1.5 rounded-l-full border-y border-l text-xs font-medium transition-colors cursor-pointer',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                      sel
+                        ? 'bg-[#B8860B]/20 border-[#B8860B] text-[#D4A017]'
+                        : 'border-[#B8860B]/30 text-[#A8A09B] hover:border-[#B8860B]/60 hover:text-[#F5F0E8]',
+                    ].join(' ')}
+                  >
+                    {t.nome}
+                    {t.concentracao && <span className="ml-1 opacity-60">C</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSpellInfo(t)}
+                    aria-label={`Ver detalhes de ${t.nome}`}
+                    className={[
+                      'inline-flex items-center justify-center w-6 py-1.5 rounded-r-full border-y border-r text-[10px] transition-colors cursor-pointer',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                      sel
+                        ? 'bg-[#B8860B]/20 border-[#B8860B] text-[#D4A017] hover:bg-[#B8860B]/30'
+                        : 'border-[#B8860B]/30 text-[#A8A09B] hover:border-[#B8860B]/60 hover:text-[#F5F0E8]',
+                    ].join(' ')}
+                  >
+                    ℹ
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Magias por círculo */}
+      {circulosDisponiveis.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#B8860B] font-medium">Magias Preparadas</span>
+            {maxMagias > 0 && (
+              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${magia.magias_preparadas.length >= maxMagias ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
+                {magia.magias_preparadas.length}/{maxMagias}
+              </span>
+            )}
+          </div>
+          <div className="flex gap-1 overflow-x-auto pb-1" role="tablist">
+            {circulosDisponiveis.map(c => (
               <button
-                onClick={() => removeMagia(m)}
-                aria-label={`Remover magia ${m}`}
-                className="text-[#A8A09B] hover:text-red-400 transition-colors cursor-pointer leading-none"
-              >×</button>
-            </span>
-          ))}
+                key={c}
+                role="tab"
+                aria-selected={circuloAtivo === c}
+                onClick={() => setCirculoAtivo(c)}
+                className={[
+                  'px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap cursor-pointer',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                  circuloAtivo === c ? 'bg-[#B8860B] text-[#1A1612]' : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
+                ].join(' ')}
+              >
+                {c}º
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2" role="tabpanel">
+            {magiasDoCirculo.length === 0
+              ? <p className="text-xs text-[#A8A09B]">{busca ? 'Nenhuma magia encontrada.' : 'Nenhuma magia disponível.'}</p>
+              : magiasDoCirculo.map(m => {
+                  const sel = magia.magias_preparadas.includes(m.nome)
+                  return (
+                    <div key={m.id} className="inline-flex items-center">
+                      <button
+                        type="button"
+                        onClick={() => toggleMagia(m.nome)}
+                        aria-pressed={sel}
+                        className={[
+                          'pl-3 pr-2 py-1.5 rounded-l-full border-y border-l text-xs font-medium transition-colors cursor-pointer',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                          sel
+                            ? 'bg-[#7B1D1D]/30 border-[#7B1D1D] text-[#F5F0E8]'
+                            : 'border-[#B8860B]/20 text-[#A8A09B] hover:border-[#B8860B]/40 hover:text-[#F5F0E8]',
+                        ].join(' ')}
+                      >
+                        {m.nome}
+                        {m.concentracao && <span className="ml-1 opacity-60">C</span>}
+                        {m.ritual && <span className="ml-1 opacity-60">R</span>}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSpellInfo(m)}
+                        aria-label={`Ver detalhes de ${m.nome}`}
+                        className={[
+                          'inline-flex items-center justify-center w-6 py-1.5 rounded-r-full border-y border-r text-[10px] transition-colors cursor-pointer',
+                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                          sel
+                            ? 'bg-[#7B1D1D]/30 border-[#7B1D1D] text-[#F5F0E8] hover:bg-[#7B1D1D]/50'
+                            : 'border-[#B8860B]/20 text-[#A8A09B] hover:border-[#B8860B]/40 hover:text-[#F5F0E8]',
+                        ].join(' ')}
+                      >
+                        ℹ
+                      </button>
+                    </div>
+                  )
+                })
+            }
+          </div>
         </div>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={novaMagia}
-            onChange={e => setNovaMagia(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && addMagia()}
-            placeholder="Nome da magia..."
-            aria-label="Nome da magia a adicionar"
-            className="flex-1 bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1.5 text-[#F5F0E8] text-sm focus:outline-none focus:ring-1 focus:ring-[#B8860B] placeholder:text-[#A8A09B]"
-          />
-          <Button size="sm" onClick={addMagia} disabled={!novaMagia.trim()}>+ Adicionar</Button>
-        </div>
-      </div>
+      )}
+
+      <SpellCard magia={spellInfo} onClose={() => setSpellInfo(null)} />
+    </section>
+  )
+}
+
+function SecaoMochila() {
+  return (
+    <section aria-label="Mochila" className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>Mochila</h3>
+      <MochilaBusca />
     </section>
   )
 }
