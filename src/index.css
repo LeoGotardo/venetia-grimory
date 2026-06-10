@@ -1,0 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-dnd-crimson: #7B1D1D;
+  --color-dnd-crimson-light: #9B2C2C;
+  --color-dnd-gold: #B8860B;
+  --color-dnd-gold-light: #D4A017;
+  --color-dnd-parchment: #F5F0E8;
+  --color-dnd-parchment-dark: #EAE3D2;
+  --color-dnd-ink: #1A1612;
+  /* #6B6560 kept for borders/decorative only — fails WCAG AA as text */
+  --color-dnd-stone: #6B6560;
+  /* #A8A09B passes WCAG AA (6.59:1) against #2D2520 and (4.83:1) against #3D332D */
+  --color-dnd-muted: #A8A09B;
+  --color-dnd-shadow: #2D2520;
+  --color-dnd-shadow-light: #3D332D;
+  --font-cinzel: 'Cinzel', serif;
+  --font-inter: 'Inter', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #2D2520;
+  color: #F5F0E8;
+  min-height: 100vh;
+  margin: 0;
+}
+
+#root { min-height: 100vh; }
+
+.font-cinzel { font-family: 'Cinzel', serif; }
+
+/* Focus visible — global accessible outline for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #B8860B;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #2D2520; }
+::-webkit-scrollbar-thumb { background: #6B6560; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B8860B; }
+
+@media print {
+  body { background: white; color: black; }
+  .no-print { display: none !important; }
+}

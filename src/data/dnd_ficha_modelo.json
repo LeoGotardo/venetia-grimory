@@ -1,0 +1,573 @@
+{
+  "_schema_versao": "1.0",
+  "_descricao": "Estrutura completa de uma ficha de personagem D&D 5.5 (2024). Campos com valor None são preenchidos pelo usuário ou calculados automaticamente. Campos com prefixo '_calc' são derivados — nunca editados diretamente.",
+  "identidade": {
+    "nome_personagem": null,
+    "nome_jogador": null,
+    "campanha": null,
+    "classe_id": null,
+    "subclasse_id": null,
+    "nivel": 1,
+    "especie_id": null,
+    "linhagem_id": null,
+    "antecedente_id": null,
+    "alinhamento": {
+      "etico": null,
+      "moral": null,
+      "_opcoes_etico": [
+        "Ordeiro",
+        "Neutro",
+        "Caótico"
+      ],
+      "_opcoes_moral": [
+        "Bondoso",
+        "Neutro",
+        "Mau"
+      ]
+    },
+    "idade": null,
+    "altura": null,
+    "peso": null,
+    "olhos": null,
+    "pele": null,
+    "cabelo": null,
+    "xp": 0,
+    "_xp_proximo_nivel": {
+      "2": 300,
+      "3": 900,
+      "4": 2700,
+      "5": 6500,
+      "6": 14000,
+      "7": 23000,
+      "8": 34000,
+      "9": 48000,
+      "10": 64000,
+      "11": 85000,
+      "12": 100000,
+      "13": 120000,
+      "14": 140000,
+      "15": 165000,
+      "16": 195000,
+      "17": 225000,
+      "18": 260000,
+      "19": 300000,
+      "20": 355000
+    }
+  },
+  "atributos": {
+    "_descricao": "valor é o score bruto (8–20 na criação). modificador é calculado: floor((valor - 10) / 2).",
+    "FOR": {
+      "valor": null,
+      "_modificador": null
+    },
+    "DES": {
+      "valor": null,
+      "_modificador": null
+    },
+    "CON": {
+      "valor": null,
+      "_modificador": null
+    },
+    "INT": {
+      "valor": null,
+      "_modificador": null
+    },
+    "SAB": {
+      "valor": null,
+      "_modificador": null
+    },
+    "CAR": {
+      "valor": null,
+      "_modificador": null
+    },
+    "metodo_geracao": null,
+    "_opcoes_metodo": [
+      "Conjunto Padrão (15,14,13,12,10,8)",
+      "Geração Aleatória (4d6 descarta menor)",
+      "Compra de Pontos"
+    ],
+    "_conjunto_padrao": [
+      15,
+      14,
+      13,
+      12,
+      10,
+      8
+    ]
+  },
+  "combate": {
+    "_bonus_proficiencia": null,
+    "pontos_de_vida": {
+      "maximo": null,
+      "atual": null,
+      "temporario": 0,
+      "_dado_vida": null,
+      "_formula_nivel1": "dado_vida_max + mod_CON",
+      "_formula_nivel_n": "floor(dado_vida/2 + 1) + mod_CON  (ou rola o dado)"
+    },
+    "dados_de_vida": {
+      "tipo": null,
+      "total": null,
+      "gastos": 0
+    },
+    "classe_de_armadura": {
+      "valor": null,
+      "origem": null,
+      "_origem_opcoes": [
+        "Armadura Leve (11 + mod_DES)",
+        "Armadura Média (13..15 + mod_DES máx +2)",
+        "Armadura Pesada (14..18, fixo)",
+        "Sem Armadura padrão (10 + mod_DES)",
+        "Sem Armadura Bárbaro (10 + mod_DES + mod_CON)",
+        "Sem Armadura Monge (10 + mod_DES + mod_SAB)"
+      ],
+      "escudo_equipado": false,
+      "_bonus_escudo": 2,
+      "armadura_equipada_id": null
+    },
+    "iniciativa": {
+      "_valor": null,
+      "_formula": "mod_DES (+ bônus de talento Alerta se aplicável)"
+    },
+    "deslocamento": {
+      "base_metros": null,
+      "bonus_metros": 0,
+      "_total_metros": null
+    },
+    "ataques": [],
+    "salvaguardas": {
+      "FOR": {
+        "proficiente": null,
+        "_valor": null
+      },
+      "DES": {
+        "proficiente": null,
+        "_valor": null
+      },
+      "CON": {
+        "proficiente": null,
+        "_valor": null
+      },
+      "INT": {
+        "proficiente": null,
+        "_valor": null
+      },
+      "SAB": {
+        "proficiente": null,
+        "_valor": null
+      },
+      "CAR": {
+        "proficiente": null,
+        "_valor": null
+      },
+      "_formula_prof": "mod_atributo + bonus_proficiencia",
+      "_formula_sem_prof": "mod_atributo"
+    }
+  },
+  "pericias": {
+    "_descricao": "proficiente: true = adiciona bonus_prof. expertise: true = dobra bonus_prof.",
+    "_formula_prof": "mod_atributo + bonus_prof",
+    "_formula_expertise": "mod_atributo + (bonus_prof * 2)",
+    "_formula_sem_prof": "mod_atributo",
+    "acrobacia": {
+      "atributo": "DES",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "arcanismo": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "atletismo": {
+      "atributo": "FOR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "atuacao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "enganacao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "furtividade": {
+      "atributo": "DES",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "historia": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "intimidacao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "intuicao": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "investigacao": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "lidar_com_animais": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "medicina": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "natureza": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "percepcao": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "persuasao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "prestidigitacao": {
+      "atributo": "DES",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "religiao": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "sobrevivencia": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": null
+    },
+    "_percepcao_passiva": null,
+    "_formula_percepcao_passiva": "10 + valor_percepcao"
+  },
+  "proficiencias": {
+    "armaduras": [],
+    "armas": [],
+    "ferramentas": [],
+    "idiomas": []
+  },
+  "tracos_de_especie": {
+    "_descricao": "Preenchido automaticamente ao escolher a espécie e linhagem.",
+    "visao_no_escuro_metros": null,
+    "tracos_ativos": [],
+    "escolhas_feitas": {}
+  },
+  "caracteristicas_de_classe": {
+    "_descricao": "Lista de características ativas conforme nível. Cada entrada referencia a característica da progressão da classe.",
+    "ativas": [],
+    "escolhas_feitas": {},
+    "recursos_de_classe": {
+      "_descricao": "Recursos exclusivos de cada classe que precisam ser rastreados.",
+      "furias": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "barbaro"
+        ]
+      },
+      "inspiracao_de_bardo": {
+        "dado": null,
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "bardo"
+        ]
+      },
+      "invocacoes_misticas": {
+        "lista": [],
+        "_classes": [
+          "bruxo"
+        ]
+      },
+      "canalizar_divindade": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "clerigo",
+          "paladino"
+        ]
+      },
+      "formas_selvagens": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "druida"
+        ]
+      },
+      "pontos_de_feiticaria": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "feiticeiro"
+        ]
+      },
+      "metamagia": {
+        "opcoes_escolhidas": [],
+        "_classes": [
+          "feiticeiro"
+        ]
+      },
+      "imposicao_de_maos": {
+        "pool_pv": null,
+        "atual": null,
+        "_classes": [
+          "paladino"
+        ]
+      },
+      "pontos_de_foco": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "monge"
+        ]
+      },
+      "surto_de_acao": {
+        "usos": null,
+        "atual": null,
+        "_classes": [
+          "guerreiro"
+        ]
+      },
+      "recuperar_folego": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "guerreiro"
+        ]
+      },
+      "ataque_furtivo": {
+        "dado": null,
+        "_classes": [
+          "ladino"
+        ]
+      },
+      "recuperacao_arcana": {
+        "circulos_recuperaveis": null,
+        "_classes": [
+          "mago"
+        ]
+      }
+    },
+    "ordem_divina": null,
+    "ordem_primal": null,
+    "estilo_de_luta": null,
+    "juramento": null,
+    "pacto_bruxo": null
+  },
+  "magia": {
+    "conjurador": false,
+    "atributo_conjuracao": null,
+    "_cd_magia": null,
+    "_formula_cd": "8 + bonus_prof + mod_atributo_conjuracao",
+    "_bonus_ataque_magia": null,
+    "_formula_bonus_ataque": "bonus_prof + mod_atributo_conjuracao",
+    "truques_conhecidos": [],
+    "magias_preparadas": [],
+    "magias_sempre_preparadas": [],
+    "livro_de_magias": [],
+    "espacos_de_magia": {
+      "c1": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c2": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c3": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c4": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c5": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c6": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c7": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c8": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c9": {
+        "maximo": 0,
+        "gastos": 0
+      }
+    },
+    "espacos_pacto_bruxo": {
+      "_apenas_bruxo": true,
+      "circulo": null,
+      "maximo": 0,
+      "gastos": 0
+    }
+  },
+  "_ataques_modelo": {
+    "_descricao": "Cada item do array combate.ataques segue este modelo.",
+    "nome": null,
+    "arma_id": null,
+    "tipo": null,
+    "_tipo_opcoes": [
+      "Corpo a Corpo",
+      "À Distância",
+      "Magia"
+    ],
+    "atributo_usado": null,
+    "_bonus_ataque": null,
+    "_formula_bonus_ataque": "bonus_prof + mod_atributo (se proficiente, senão só mod_atributo)",
+    "_dano": null,
+    "_formula_dano": "dado_dano + mod_atributo",
+    "tipo_dano": null,
+    "propriedades": [],
+    "notas": null
+  },
+  "inventario": {
+    "moedas": {
+      "PC": 0,
+      "PP": 0,
+      "PE": 0,
+      "PO": 0,
+      "PL": 0,
+      "_total_em_PO": null
+    },
+    "itens": [],
+    "_item_modelo": {
+      "_descricao": "Cada item do array itens segue este modelo.",
+      "id_item": null,
+      "nome": null,
+      "categoria": null,
+      "quantidade": 1,
+      "equipado": false,
+      "custo_po": null,
+      "peso_kg": null,
+      "notas": null
+    },
+    "_carga": {
+      "capacidade_kg": null,
+      "_formula": "FOR * 7.5 (capacidade de carga padrão)",
+      "peso_total_kg": null
+    }
+  },
+  "talentos": {
+    "_descricao": "Talentos adquiridos. O talento de origem vem do antecedente no nível 1. Talentos gerais são adquiridos em AVA nos níveis de classe.",
+    "lista": [],
+    "_talento_modelo": {
+      "talento_id": null,
+      "nome": null,
+      "categoria": null,
+      "origem": null,
+      "_origem_opcoes": [
+        "Antecedente",
+        "AVA (nível N)",
+        "Classe (nível N)"
+      ],
+      "escolhas": {}
+    }
+  },
+  "personalidade": {
+    "tracos": [],
+    "ideais": [],
+    "vinculos": [],
+    "fraquezas": [],
+    "historia": null,
+    "aparencia_descricao": null,
+    "aliados_e_organizacoes": null,
+    "simbolo_ou_tesouro": null
+  },
+  "condicoes_ativas": [],
+  "_condicoes_disponiveis": [
+    "Amedrontado",
+    "Cego",
+    "Caído",
+    "Contido",
+    "Enfeitiçado",
+    "Ensurdecido",
+    "Envenenado",
+    "Exausto",
+    "Imobilizado",
+    "Incapacitado",
+    "Inconsciente",
+    "Invisível",
+    "Paralisado",
+    "Petrificado",
+    "Surpreendido"
+  ],
+  "niveis_de_exaustao": 0,
+  "descansos": {
+    "_descricao": "Estado dos recursos após o último descanso.",
+    "ultimo_descanso_curto": null,
+    "ultimo_descanso_longo": null,
+    "recursos_recarga_curto": [
+      "Usos de Fúria (1 uso)",
+      "Surto de Ação (Guerreiro)",
+      "Recuperar Fôlego (Guerreiro)",
+      "Pontos de Ki / Foco (Monge) — parcial via Metabolismo Incomum",
+      "Espaços de Magia (Bruxo)",
+      "Pico de Adrenalina (Orc)"
+    ],
+    "recursos_recarga_longo": [
+      "PV máximos restaurados",
+      "Todos os Dados de Vida (metade do máximo, mínimo 1)",
+      "Todos os Espaços de Magia",
+      "Todos os usos de Fúria",
+      "Forma Selvagem (Druida)",
+      "Imposição de Mãos (Paladino)",
+      "Pontos de Feitiçaria (Feiticeiro)",
+      "Pontos de Foco completos (Monge)",
+      "Recuperação Arcana (Mago)",
+      "Canalizar Divindade",
+      "Inspiração Heroica (Humano)",
+      "Inspiração de Bardo (recarrega no Longo)"
+    ]
+  },
+  "notas": null,
+  "extras": {}
+}

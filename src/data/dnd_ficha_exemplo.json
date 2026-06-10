@@ -1,0 +1,647 @@
+{
+  "_schema_versao": "1.0",
+  "_tipo": "ficha_exemplo",
+  "_nota": "Exemplo preenchido: Bárbaro Orc nível 1. Demonstra todos os campos calculados.",
+  "identidade": {
+    "nome_personagem": "Grukk Pedra-Cinza",
+    "nome_jogador": "Exemplo",
+    "campanha": null,
+    "classe_id": "barbaro",
+    "subclasse_id": null,
+    "nivel": 1,
+    "especie_id": "orc",
+    "linhagem_id": null,
+    "antecedente_id": "soldado",
+    "alinhamento": {
+      "etico": "Caótico",
+      "moral": "Neutro",
+      "_opcoes_etico": [
+        "Ordeiro",
+        "Neutro",
+        "Caótico"
+      ],
+      "_opcoes_moral": [
+        "Bondoso",
+        "Neutro",
+        "Mau"
+      ]
+    },
+    "idade": 22,
+    "altura": "1,90m",
+    "peso": "110kg",
+    "olhos": "Verdes",
+    "pele": "Cinza esverdeada",
+    "cabelo": "Preto",
+    "xp": 0,
+    "_xp_proximo_nivel": {
+      "2": 300,
+      "3": 900,
+      "4": 2700,
+      "5": 6500,
+      "6": 14000,
+      "7": 23000,
+      "8": 34000,
+      "9": 48000,
+      "10": 64000,
+      "11": 85000,
+      "12": 100000,
+      "13": 120000,
+      "14": 140000,
+      "15": 165000,
+      "16": 195000,
+      "17": 225000,
+      "18": 260000,
+      "19": 300000,
+      "20": 355000
+    }
+  },
+  "atributos": {
+    "_descricao": "valor = score bruto. _modificador = floor((valor - 10) / 2).",
+    "FOR": {
+      "valor": 15,
+      "_modificador": 2
+    },
+    "DES": {
+      "valor": 13,
+      "_modificador": 1
+    },
+    "CON": {
+      "valor": 14,
+      "_modificador": 2
+    },
+    "INT": {
+      "valor": 10,
+      "_modificador": 0
+    },
+    "SAB": {
+      "valor": 12,
+      "_modificador": 1
+    },
+    "CAR": {
+      "valor": 8,
+      "_modificador": -1
+    },
+    "metodo_geracao": "Conjunto Padrão (15,14,13,12,10,8)",
+    "_conjunto_padrao": [
+      15,
+      14,
+      13,
+      12,
+      10,
+      8
+    ],
+    "_nota_antecedente": "Soldado: +2 FOR, +1 DES (já incluídos nos valores acima)"
+  },
+  "combate": {
+    "_bonus_proficiencia": 2,
+    "pontos_de_vida": {
+      "maximo": 14,
+      "atual": 14,
+      "temporario": 0,
+      "_dado_vida": "d12",
+      "_formula_nivel1": "12 + mod_CON = 12 + 2 = 14",
+      "_formula_nivel_n": "floor(12/2 + 1) + mod_CON = 7 + mod_CON por nível"
+    },
+    "dados_de_vida": {
+      "tipo": "d12",
+      "total": 1,
+      "gastos": 0
+    },
+    "classe_de_armadura": {
+      "valor": 13,
+      "origem": "Sem Armadura — Defesa sem Armadura do Bárbaro (10 + mod_DES + mod_CON)",
+      "_calculo": "10 + 1 (DES) + 2 (CON) = 13",
+      "escudo_equipado": false,
+      "_bonus_escudo": 2,
+      "armadura_equipada_id": null
+    },
+    "iniciativa": {
+      "_valor": 1,
+      "_formula": "mod_DES = 1"
+    },
+    "deslocamento": {
+      "base_metros": 9,
+      "bonus_metros": 0,
+      "_total_metros": 9,
+      "_nota": "Orc base 9m. Movimento Rápido (nível 5) adicionará +3m sem armadura pesada."
+    },
+    "ataques": [
+      {
+        "nome": "Machado Grande",
+        "arma_id": "machado_grande",
+        "tipo": "Corpo a Corpo",
+        "atributo_usado": "FOR",
+        "_bonus_ataque": 4,
+        "_formula_bonus_ataque": "mod_FOR + prof = 2 + 2 = 4",
+        "_dano": "1d12 + 2",
+        "_formula_dano": "1d12 + mod_FOR (2)",
+        "tipo_dano": "Cortante",
+        "propriedades": [
+          "Duas Mãos",
+          "Pesada"
+        ],
+        "maestria": "Trespassar",
+        "notas": "Com Fúria ativa: +2 dano adicional (nível 1)"
+      },
+      {
+        "nome": "Machadinha",
+        "arma_id": "machadinha",
+        "tipo": "Corpo a Corpo / Arremesso",
+        "atributo_usado": "FOR",
+        "_bonus_ataque": 4,
+        "_formula_bonus_ataque": "mod_FOR + prof = 2 + 2 = 4",
+        "_dano": "1d6 + 2",
+        "_formula_dano": "1d6 + mod_FOR (2)",
+        "tipo_dano": "Cortante",
+        "propriedades": [
+          "Arremesso (6/18)",
+          "Leve"
+        ],
+        "maestria": "Afligir",
+        "notas": "Alcance de arremesso: 6m (normal) / 18m (longo)"
+      }
+    ],
+    "salvaguardas": {
+      "FOR": {
+        "proficiente": true,
+        "_valor": 4
+      },
+      "DES": {
+        "proficiente": false,
+        "_valor": 1
+      },
+      "CON": {
+        "proficiente": true,
+        "_valor": 4
+      },
+      "INT": {
+        "proficiente": false,
+        "_valor": 0
+      },
+      "SAB": {
+        "proficiente": false,
+        "_valor": 1
+      },
+      "CAR": {
+        "proficiente": false,
+        "_valor": -1
+      },
+      "_formula_prof": "mod_atributo + bonus_proficiencia",
+      "_formula_sem_prof": "mod_atributo"
+    }
+  },
+  "pericias": {
+    "_descricao": "proficiente: true = adiciona bonus_prof. expertise: true = dobra bonus_prof.",
+    "_formula_prof": "mod_atributo + bonus_prof",
+    "_formula_expertise": "mod_atributo + (bonus_prof * 2)",
+    "_formula_sem_prof": "mod_atributo",
+    "acrobacia": {
+      "atributo": "DES",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 1
+    },
+    "arcanismo": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 0
+    },
+    "atletismo": {
+      "atributo": "FOR",
+      "proficiente": true,
+      "expertise": false,
+      "_valor": 4
+    },
+    "atuacao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": -1
+    },
+    "enganacao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": -1
+    },
+    "furtividade": {
+      "atributo": "DES",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 1
+    },
+    "historia": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 0
+    },
+    "intimidacao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": -1
+    },
+    "intuicao": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 1
+    },
+    "investigacao": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 0
+    },
+    "lidar_com_animais": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 1
+    },
+    "medicina": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 1
+    },
+    "natureza": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 0
+    },
+    "percepcao": {
+      "atributo": "SAB",
+      "proficiente": true,
+      "expertise": false,
+      "_valor": 3
+    },
+    "persuasao": {
+      "atributo": "CAR",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": -1
+    },
+    "prestidigitacao": {
+      "atributo": "DES",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 1
+    },
+    "religiao": {
+      "atributo": "INT",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 0
+    },
+    "sobrevivencia": {
+      "atributo": "SAB",
+      "proficiente": false,
+      "expertise": false,
+      "_valor": 1
+    },
+    "_percepcao_passiva": 13,
+    "_formula_percepcao_passiva": "10 + valor_percepcao = 10 + 3 = 13"
+  },
+  "proficiencias": {
+    "armaduras": [
+      "Leve",
+      "Média",
+      "Escudo"
+    ],
+    "armas": [
+      "Simples",
+      "Marciais"
+    ],
+    "ferramentas": [
+      "Kit de Jogos (Dados)"
+    ],
+    "idiomas": [
+      "Comum",
+      "Orc"
+    ]
+  },
+  "tracos_de_especie": {
+    "_descricao": "Traços da espécie Orc (nível 1).",
+    "visao_no_escuro_metros": 36,
+    "tracos_ativos": [
+      {
+        "nome": "Pico de Adrenalina",
+        "descricao": "Ação Bônus: executa Correr + ganha PV Temp = Bônus de Prof (2). Usos = Bônus de Prof; recarrega em Descanso Curto ou Longo.",
+        "usos_maximos": 2,
+        "usos_atuais": 2
+      },
+      {
+        "nome": "Visão no Escuro",
+        "descricao": "Enxerga no escuro até 36 metros."
+      },
+      {
+        "nome": "Vigor Implacável",
+        "descricao": "Ao ser reduzido a 0 PV (sem morrer imediatamente), fica com 1 PV. 1×/Descanso Longo.",
+        "usos_maximos": 1,
+        "usos_atuais": 1
+      }
+    ],
+    "escolhas_feitas": {}
+  },
+  "caracteristicas_de_classe": {
+    "_descricao": "Características do Bárbaro nível 1.",
+    "ativas": [
+      {
+        "nome": "Fúria",
+        "descricao": "Ação Bônus: entra em Fúria. Resistência a Contundente/Cortante/Perfurante, +2 dano com ataques FOR, Vantagem em testes/salv de FOR. Sem Concentração ou Magias. Dura até fim do próximo turno (extensível).",
+        "nivel_adquirido": 1
+      },
+      {
+        "nome": "Defesa sem Armadura",
+        "descricao": "Sem armadura: CA = 10 + mod_DES + mod_CON.",
+        "nivel_adquirido": 1
+      },
+      {
+        "nome": "Maestria em Arma",
+        "descricao": "Usa propriedades de maestria em 2 tipos de armas Simples/Marciais corpo a corpo. Troca após Descanso Longo.",
+        "nivel_adquirido": 1,
+        "armas_maestria_escolhidas": [
+          "machado_grande",
+          "machadinha"
+        ]
+      }
+    ],
+    "escolhas_feitas": {
+      "maestria_arma": [
+        "machado_grande",
+        "machadinha"
+      ]
+    },
+    "recursos_de_classe": {
+      "furias": {
+        "maximo": 2,
+        "atual": 2,
+        "dano_furia": 2,
+        "_recupera": "Descanso Curto (1 uso) ou Longo (todos)",
+        "_classes": [
+          "barbaro"
+        ]
+      },
+      "inspiracao_de_bardo": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "bardo"
+        ]
+      },
+      "invocacoes_misticas": {
+        "lista": [],
+        "_classes": [
+          "bruxo"
+        ]
+      },
+      "canalizar_divindade": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "clerigo",
+          "paladino"
+        ]
+      },
+      "formas_selvagens": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "druida"
+        ]
+      },
+      "pontos_de_feiticaria": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "feiticeiro"
+        ]
+      },
+      "metamagia": {
+        "opcoes_escolhidas": [],
+        "_classes": [
+          "feiticeiro"
+        ]
+      },
+      "imposicao_de_maos": {
+        "pool_pv": null,
+        "atual": null,
+        "_classes": [
+          "paladino"
+        ]
+      },
+      "pontos_de_foco": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "monge"
+        ]
+      },
+      "surto_de_acao": {
+        "usos": null,
+        "atual": null,
+        "_classes": [
+          "guerreiro"
+        ]
+      },
+      "recuperar_folego": {
+        "maximo": null,
+        "atual": null,
+        "_classes": [
+          "guerreiro"
+        ]
+      },
+      "ataque_furtivo": {
+        "dado": null,
+        "_classes": [
+          "ladino"
+        ]
+      },
+      "recuperacao_arcana": {
+        "circulos_recuperaveis": null,
+        "_classes": [
+          "mago"
+        ]
+      }
+    },
+    "ordem_divina": null,
+    "ordem_primal": null,
+    "estilo_de_luta": null,
+    "juramento": null,
+    "pacto_bruxo": null
+  },
+  "magia": {
+    "conjurador": false,
+    "atributo_conjuracao": null,
+    "_cd_magia": null,
+    "_formula_cd": "8 + bonus_prof + mod_atributo_conjuracao",
+    "_bonus_ataque_magia": null,
+    "_formula_bonus_ataque": "bonus_prof + mod_atributo_conjuracao",
+    "truques_conhecidos": [],
+    "magias_preparadas": [],
+    "magias_sempre_preparadas": [],
+    "livro_de_magias": [],
+    "espacos_de_magia": {
+      "c1": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c2": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c3": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c4": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c5": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c6": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c7": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c8": {
+        "maximo": 0,
+        "gastos": 0
+      },
+      "c9": {
+        "maximo": 0,
+        "gastos": 0
+      }
+    },
+    "espacos_pacto_bruxo": {
+      "_apenas_bruxo": true,
+      "circulo": null,
+      "maximo": 0,
+      "gastos": 0
+    }
+  },
+  "inventario": {
+    "moedas": {
+      "PC": 0,
+      "PP": 0,
+      "PE": 0,
+      "PO": 15,
+      "PL": 0,
+      "_total_em_PO": 15
+    },
+    "itens": [
+      {
+        "id_item": "machado_grande",
+        "nome": "Machado Grande",
+        "categoria": "Arma Marcial CaC",
+        "quantidade": 1,
+        "equipado": true,
+        "custo_po": 30,
+        "peso_kg": 3.5,
+        "notas": "Dano: 2d6 Cortante"
+      },
+      {
+        "id_item": "machadinha",
+        "nome": "Machadinha (×4)",
+        "categoria": "Arma Simples CaC",
+        "quantidade": 4,
+        "equipado": true,
+        "custo_po": 5,
+        "peso_kg": 4,
+        "notas": "Dano: 1d6 Cortante; Arremesso"
+      },
+      {
+        "id_item": "kit_aventureiro",
+        "nome": "Kit de Aventureiro",
+        "categoria": "Kit",
+        "quantidade": 1,
+        "equipado": false,
+        "custo_po": 10,
+        "peso_kg": 27.5,
+        "notas": "Contém: Caixa para Fogo, Cantil, Corda, Mochila, 2×Óleo, 10×Rações, Saco de Dormir, 10×Tocha"
+      }
+    ],
+    "_carga": {
+      "capacidade_kg": 112.5,
+      "_formula": "FOR (15) × 7,5 = 112.5 kg",
+      "peso_total_kg": 35.0
+    }
+  },
+  "talentos": {
+    "_descricao": "Talentos adquiridos.",
+    "lista": [
+      {
+        "talento_id": "atacante_selvagem",
+        "nome": "Atacante Selvagem",
+        "categoria": "Origem",
+        "origem": "Antecedente (Soldado)",
+        "escolhas": {},
+        "descricao": "1×/turno ao acertar com arma, pode jogar dados de dano 2× e usar qualquer resultado."
+      }
+    ]
+  },
+  "personalidade": {
+    "tracos": [
+      "Encaro os problemas de frente.",
+      "Falo pouco, mas quando falo, todo mundo escuta."
+    ],
+    "ideais": [
+      "Liberdade: ninguém me diz o que fazer."
+    ],
+    "vinculos": [
+      "Devo minha vida ao guerreiro que me treinou."
+    ],
+    "fraquezas": [
+      "Quando perco o controle da raiva, não penso nas consequências."
+    ],
+    "historia": "Fui treinado como soldado mercenário desde jovem. Aprendi que a força resolve a maioria dos problemas — e que os que não resolve não merecem ser resolvidos de outra forma.",
+    "aparencia_descricao": "Imponente, com cicatrizes no rosto e olhos verdes afiados. Carrega o Machado Grande nas costas.",
+    "aliados_e_organizacoes": null,
+    "simbolo_ou_tesouro": "Uma moeda de ouro amassada, único presente do pai."
+  },
+  "condicoes_ativas": [],
+  "_condicoes_disponiveis": [
+    "Amedrontado",
+    "Cego",
+    "Caído",
+    "Contido",
+    "Enfeitiçado",
+    "Ensurdecido",
+    "Envenenado",
+    "Exausto",
+    "Imobilizado",
+    "Incapacitado",
+    "Inconsciente",
+    "Invisível",
+    "Paralisado",
+    "Petrificado",
+    "Surpreendido"
+  ],
+  "niveis_de_exaustao": 0,
+  "descansos": {
+    "ultimo_descanso_curto": null,
+    "ultimo_descanso_longo": null,
+    "recursos_recarga_curto": [
+      "Fúria: recupera 1 uso",
+      "Pico de Adrenalina (Orc): recupera todos os usos"
+    ],
+    "recursos_recarga_longo": [
+      "PV máximos restaurados",
+      "Dados de Vida: recupera metade (mínimo 1)",
+      "Todos os usos de Fúria",
+      "Vigor Implacável (Orc): recupera o uso"
+    ]
+  },
+  "notas": null,
+  "extras": {}
+}
