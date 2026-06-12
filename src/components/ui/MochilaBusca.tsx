@@ -30,7 +30,7 @@ function parsePreco(preco: string): number | null {
 }
 
 function parsePeso(item: Item): number | null {
-  const raw = (item as Record<string, unknown>).peso
+  const raw = (item as unknown as Record<string, unknown>).peso
   if (typeof raw !== 'string') return null
   const m = raw.match(/([\d.,]+)/)
   return m ? parseFloat(m[1].replace(',', '.')) : null
