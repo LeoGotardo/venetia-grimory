@@ -1,30 +1,39 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cinzel:wght@400;600;700;900&display=swap');
 @import "tailwindcss";
 
 @theme {
+  --color-vg-base: #131110;
+  --color-vg-navbar: #161311;
+  --color-vg-sidebar: #17130f;
+  --color-vg-surface: #1A1714;
+  --color-vg-deep: #221d18;
+  --color-vg-gold: #D4A017;
+  --color-vg-gold-dark: #B8860B;
+  --color-vg-gold-light: #E8C25A;
+  --color-vg-text: #F5F0E8;
+  --color-vg-text-dim: #E8DFD0;
+  --color-vg-muted: #A8A09B;
+  --color-vg-muted2: #8a8278;
+  --color-vg-stone: #6B6560;
+  /* legacy compat */
   --color-dnd-crimson: #7B1D1D;
-  --color-dnd-crimson-light: #9B2C2C;
   --color-dnd-gold: #B8860B;
   --color-dnd-gold-light: #D4A017;
   --color-dnd-parchment: #F5F0E8;
-  --color-dnd-parchment-dark: #EAE3D2;
-  --color-dnd-ink: #1A1612;
-  /* #6B6560 kept for borders/decorative only — fails WCAG AA as text */
-  --color-dnd-stone: #6B6560;
-  /* #A8A09B passes WCAG AA (6.59:1) against #2D2520 and (4.83:1) against #3D332D */
   --color-dnd-muted: #A8A09B;
-  --color-dnd-shadow: #2D2520;
-  --color-dnd-shadow-light: #3D332D;
+  --color-dnd-shadow: #131110;
+  --color-dnd-shadow-light: #1A1714;
+  --font-manrope: 'Manrope', system-ui, sans-serif;
   --font-cinzel: 'Cinzel', serif;
-  --font-inter: 'Inter', sans-serif;
 }
 
 * { box-sizing: border-box; }
 
 body {
-  font-family: 'Inter', sans-serif;
-  background-color: #2D2520;
+  font-family: 'Manrope', system-ui, sans-serif;
+  background-color: #131110;
   color: #F5F0E8;
+  font-feature-settings: 'tnum' 1;
   min-height: 100vh;
   margin: 0;
 }
@@ -33,17 +42,33 @@ body {
 
 .font-cinzel { font-family: 'Cinzel', serif; }
 
-/* Focus visible — global accessible outline for keyboard navigation */
+/* Double-border card utility */
+.vg-card {
+  background: #1A1714;
+  border: 1px solid rgba(212,160,23,0.2);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16);
+}
+
+@keyframes vg-shimmer {
+  0%   { background-position: -180% 0; }
+  100% { background-position: 180% 0; }
+}
+
 :focus-visible {
-  outline: 2px solid #B8860B;
+  outline: 2px solid #D4A017;
   outline-offset: 2px;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #2D2520; }
-::-webkit-scrollbar-thumb { background: #6B6560; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #B8860B; }
+/* Remove number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #131110; }
+::-webkit-scrollbar-thumb { background: #3a332b; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #D4A017; }
 
 @media print {
   body { background: white; color: black; }

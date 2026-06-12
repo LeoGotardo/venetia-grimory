@@ -21,14 +21,14 @@ function SettingRow({ label, description, value, onChange }: SettingRowProps) {
         aria-checked={value}
         onClick={() => onChange(!value)}
         className={[
-          'relative shrink-0 w-10 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] cursor-pointer',
+          'relative shrink-0 w-10 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] cursor-pointer overflow-hidden',
           value ? 'bg-[#B8860B]' : 'bg-[#2D2520] border border-[#A8A09B]/30',
         ].join(' ')}
       >
         <span
           className={[
-            'absolute top-1 w-4 h-4 rounded-full bg-[#F5F0E8] shadow transition-transform duration-200',
-            value ? 'translate-x-5' : 'translate-x-1',
+            'absolute top-1 w-4 h-4 rounded-full bg-[#F5F0E8] shadow transition-all duration-200',
+            value ? 'left-[22px]' : 'left-[2px]',
           ].join(' ')}
         />
       </button>

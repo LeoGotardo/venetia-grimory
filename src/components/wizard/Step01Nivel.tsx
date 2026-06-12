@@ -9,46 +9,45 @@ export function Step01Nivel() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Nível Inicial</h2>
-        <p className="text-[#A8A09B] text-sm">Escolha o nível em que o personagem começa sua aventura.</p>
+        <h2 className="font-extrabold text-2xl text-[#F5F0E8] mb-1">Nível Inicial</h2>
+        <p className="text-[#8a8278] text-sm">Escolha o nível em que o personagem começa sua aventura.</p>
       </div>
 
-      <div className="flex items-center gap-6">
-        <div className="flex flex-col items-center gap-3">
-          <label htmlFor="nivel-input" className="text-[#B8860B] font-medium">Nível</label>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setNivel(Math.max(1, nivel - 1))}
-              className="w-10 h-10 rounded-full bg-[#3D332D] border border-[#B8860B]/30 text-[#F5F0E8] text-xl font-bold hover:bg-[#4D4037] transition-colors cursor-pointer"
-              aria-label="Diminuir nível"
-            >−</button>
-            <input
-              id="nivel-input"
-              type="number" min={1} max={20} value={nivel}
-              onChange={e => setNivel(Math.max(1, Math.min(20, Number(e.target.value))))}
-              className="w-20 h-16 text-center font-cinzel text-4xl font-bold bg-[#2D2520] border border-[#B8860B]/50 rounded-lg text-[#F5F0E8] focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
-              aria-live="polite"
-            />
-            <button
-              onClick={() => setNivel(Math.min(20, nivel + 1))}
-              className="w-10 h-10 rounded-full bg-[#3D332D] border border-[#B8860B]/30 text-[#F5F0E8] text-xl font-bold hover:bg-[#4D4037] transition-colors cursor-pointer"
-              aria-label="Aumentar nível"
-            >+</button>
-          </div>
-          {nivel < 3 && (
-            <p className="text-xs text-[#A8A09B] text-center max-w-xs">
-              Subclasse desbloqueada no nível 3
-            </p>
-          )}
+      {/* Level picker card */}
+      <div className="vg-card flex items-center gap-5 px-8 py-7">
+        <button
+          onClick={() => setNivel(Math.max(1, nivel - 1))}
+          aria-label="Diminuir nível"
+          className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center shrink-0"
+        >−</button>
+
+        <div className="text-center min-w-[90px]">
+          <div className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{nivel}</div>
+          <div className="text-xs tracking-[0.1em] uppercase text-[#6B6560] mt-1">Nível</div>
         </div>
 
-        <div className="flex-1 max-h-80 overflow-y-auto">
+        <button
+          onClick={() => setNivel(Math.min(20, nivel + 1))}
+          aria-label="Aumentar nível"
+          className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center shrink-0"
+        >+</button>
+
+        <p className="flex-1 pl-2 text-sm text-[#8a8278] leading-relaxed">
+          A maioria das campanhas começa no{' '}
+          <strong className="text-[#E8DFD0]">nível 1</strong>. Níveis mais altos concedem mais
+          pontos de vida, magias e habilidades de classe.
+        </p>
+      </div>
+
+      {/* XP / Bônus de proficiência table */}
+      <div className="vg-card overflow-hidden">
+        <div className="overflow-y-auto max-h-[320px]">
           <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-[#B8860B]/30">
-                <th className="py-1.5 px-3 text-left font-cinzel text-[#B8860B]">Nível</th>
-                <th className="py-1.5 px-3 text-right font-cinzel text-[#B8860B]">XP necessário</th>
-                <th className="py-1.5 px-3 text-right font-cinzel text-[#B8860B]">Bônus Prof.</th>
+            <thead className="sticky top-0 bg-[#1A1714]">
+              <tr className="border-b border-[rgba(212,160,23,0.2)]">
+                <th className="py-2.5 px-4 text-left font-bold text-[#D4A017] text-xs tracking-wider uppercase">Nível</th>
+                <th className="py-2.5 px-4 text-right font-bold text-[#D4A017] text-xs tracking-wider uppercase">XP necessário</th>
+                <th className="py-2.5 px-4 text-right font-bold text-[#D4A017] text-xs tracking-wider uppercase">Prof.</th>
               </tr>
             </thead>
             <tbody>
@@ -56,14 +55,20 @@ export function Step01Nivel() {
                 <tr
                   key={n}
                   onClick={() => setNivel(n)}
-                  className={`cursor-pointer border-b border-[#3D332D] hover:bg-[#3D332D] transition-colors
-                    ${n === nivel ? 'bg-[#4D2020] border-[#7B1D1D]' : ''}`}
+                  className={[
+                    'cursor-pointer border-b border-white/[0.04] transition-colors',
+                    n === nivel
+                      ? 'bg-[rgba(212,160,23,0.12)]'
+                      : 'hover:bg-white/[0.03]',
+                  ].join(' ')}
                 >
-                  <td className={`py-1.5 px-3 font-semibold ${n === nivel ? 'text-[#F5F0E8]' : 'text-[#B8860B]'}`}>{n}</td>
-                  <td className="py-1.5 px-3 text-right text-[#A8A09B]">
+                  <td className={`py-2 px-4 font-semibold ${n === nivel ? 'text-[#D4A017]' : 'text-[#F5F0E8]'}`}>{n}</td>
+                  <td className="py-2 px-4 text-right text-[#8a8278]">
                     {n === 1 ? '—' : (XP_POR_NIVEL[n] ?? '—').toLocaleString('pt-BR')}
                   </td>
-                  <td className="py-1.5 px-3 text-right text-[#F5F0E8]">+{Math.ceil(n / 4) + 1}</td>
+                  <td className={`py-2 px-4 text-right font-bold ${n === nivel ? 'text-[#D4A017]' : 'text-[#A8A09B]'}`}>
+                    +{Math.ceil(n / 4) + 1}
+                  </td>
                 </tr>
               ))}
             </tbody>

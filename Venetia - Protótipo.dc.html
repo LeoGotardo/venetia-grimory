@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  @keyframes vg-shimmer { 0% { background-position: -180% 0; } 100% { background-position: 180% 0; } }
+  @keyframes vg-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .vg-scroll::-webkit-scrollbar { width: 8px; }
+  .vg-scroll::-webkit-scrollbar-thumb { background: #3a332b; border-radius: 4px; }
+  input::placeholder, textarea::placeholder { color: #5c564e; }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #131110; font-family: 'Manrope', system-ui, sans-serif; color: #F5F0E8; font-feature-settings: 'tnum' 1;">
+
+  <!-- ============================ HOME ============================ -->
+  <sc-if value="{{ rHome }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height: 100vh;">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 28px; background: #161311; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 10;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#B8860B"><path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/></svg>
+          <span style="font-weight: 800; letter-spacing: 0.04em; font-size: 14px; color: #E8DFD0;">Venetia</span>
+        </div>
+        <button onClick="{{ openSettings }}" style="width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #A8A09B; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" style-hover="color: #E8DFD0; border-color: rgba(212,160,23,0.4);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+
+      <div style="max-width: 920px; margin: 0 auto; padding: 64px 32px 80px;">
+        <div style="text-align: center; margin-bottom: 40px;">
+          <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 20px; display: block;"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-6-6"/><path d="M8 16l-4 4"/></svg>
+          <h1 style="font-weight: 800; font-size: 40px; margin: 0 0 8px; letter-spacing: -0.02em;">Grimório de Venetia</h1>
+          <p style="margin: 0; font-size: 16px; font-weight: 600; color: #D4A017;">Criador de Personagens D&amp;D 5.5 (2024)</p>
+          <p style="margin: 6px 0 0; font-size: 13px; color: #6B6560;">Livro do Jogador (2024) · Tradução PT-BR</p>
+        </div>
+
+        <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 52px;">
+          <button onClick="{{ startWizard }}" style="display: inline-flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 11px; padding: 14px 24px; cursor: pointer;" style-hover="background: #E8C25A;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Criar Personagem
+          </button>
+          <button onClick="{{ openImport }}" style="display: inline-flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 600; color: #E8DFD0; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,160,23,0.25); border-radius: 11px; padding: 14px 24px; cursor: pointer;" style-hover="border-color: rgba(212,160,23,0.5);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            Importar JSON
+          </button>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 11px;">
+            <span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span>
+            <h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Personagens Salvos</h3>
+          </div>
+          <span style="font-size: 12px; color: #6B6560;">{{ fichasCount }}</span>
+        </div>
+
+        <sc-if value="{{ temFichas }}" hint-placeholder-val="{{ true }}">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+            <sc-for list="{{ homeCards }}" as="f" hint-placeholder-count="4">
+              <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 18px 20px;">
+                <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+                  <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 48px; height: 48px; border-radius: 13px; flex-shrink: 0; background: #221d18; border: 1px solid rgba(212,160,23,0.3); display: flex; align-items: center; justify-content: center;">
+                      <span style="font-weight: 800; font-size: 21px; color: {{ f.cor }};">{{ f.inicial }}</span>
+                    </div>
+                    <div>
+                      <div style="font-weight: 700; font-size: 17px; color: #F5F0E8;">{{ f.nome }}</div>
+                      <div style="font-size: 13px; color: #8a8278; margin-top: 3px;">{{ f.resumo }}</div>
+                    </div>
+                  </div>
+                  <span style="font-size: 12px; color: #6B6560; white-space: nowrap;">{{ f.data }}</span>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 16px;">
+                  <button onClick="{{ f.onContinuar }}" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 7px; font-size: 13px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 9px; padding: 9px; cursor: pointer;" style-hover="background: #E8C25A;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    Continuar
+                  </button>
+                  <button style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #A8A09B; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 9px; padding: 9px 13px; cursor: pointer;" style-hover="color: #E8DFD0;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M7 9l5-5 5 5"/><path d="M12 4v12"/></svg>
+                    Exportar
+                  </button>
+                  <button onClick="{{ f.onDeletar }}" style="display: inline-flex; align-items: center; justify-content: center; color: #b56a6a; background: rgba(181,57,47,0.1); border: 1px solid rgba(181,57,47,0.28); border-radius: 9px; padding: 9px 11px; cursor: pointer;" style-hover="background: rgba(181,57,47,0.2);">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ semFichas }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align: center; padding: 56px 20px; border: 1px dashed rgba(212,160,23,0.25); border-radius: 16px;">
+            <p style="color: #A8A09B; margin: 0 0 4px; font-weight: 600;">Nenhum personagem salvo ainda.</p>
+            <p style="color: #6B6560; margin: 0; font-size: 14px;">Crie seu primeiro aventureiro acima!</p>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============================ WIZARD ============================ -->
+  <sc-if value="{{ rWizard }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh;">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 28px; background: #161311; border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#B8860B"><path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/></svg>
+          <span style="font-weight: 800; letter-spacing: 0.04em; font-size: 14px; color: #E8DFD0;">Venetia</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <span style="font-size: 13px; font-weight: 600; color: #8a8278;">Passo <span style="color: #D4A017;">{{ passo }}</span> de 12</span>
+          <button onClick="{{ goHome }}" style="width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #A8A09B; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" style-hover="color: #E8DFD0;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 296px 1fr; min-height: calc(100vh - 60px);">
+        <aside style="background: #17130f; border-right: 1px solid rgba(255,255,255,0.06); padding: 28px 20px;">
+          <h3 style="font-weight: 800; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: #8a8278; margin: 0 0 18px; padding-left: 4px;">Criação de personagem</h3>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <sc-for list="{{ wizardSteps }}" as="s" hint-placeholder-count="12">
+              <div onClick="{{ s.onClick }}" style="display: flex; align-items: center; gap: 13px; padding: 9px 12px; border-radius: 10px; background: {{ s.rowBg }}; cursor: {{ s.cursor }};">
+                <span style="width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: {{ s.numBg }}; color: {{ s.numColor }}; border: {{ s.numBorder }};">
+                  <sc-if value="{{ s.isDone }}" hint-placeholder-val="{{ false }}">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                  </sc-if>
+                  <sc-if value="{{ s.isNum }}" hint-placeholder-val="{{ true }}">{{ s.n }}</sc-if>
+                </span>
+                <span style="font-size: 14px; color: {{ s.labelColor }}; font-weight: {{ s.labelWeight }};">{{ s.nome }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </aside>
+
+        <div style="padding: 32px 40px 28px; max-width: 760px;">
+          <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 6px;">
+            <span style="width: 4px; height: 22px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span>
+            <h2 style="font-weight: 800; font-size: 24px; color: #F5F0E8; margin: 0; letter-spacing: -0.01em;">{{ stepTitulo }}</h2>
+          </div>
+          <p style="margin: 0 0 24px; padding-left: 15px; font-size: 14px; color: #8a8278;">{{ stepSub }}</p>
+
+          <!-- STEP 1: Nível -->
+          <sc-if value="{{ is1 }}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; align-items: center; gap: 20px; background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 28px 32px;">
+              <button onClick="{{ nivelMinus }}" style="width: 44px; height: 44px; border-radius: 11px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,160,23,0.25); color: #D4A017; font-size: 22px; font-weight: 700; cursor: pointer; line-height: 1;">−</button>
+              <div style="text-align: center; min-width: 90px;">
+                <div style="font-weight: 800; font-size: 56px; line-height: 1; color: #F5F0E8;">{{ wNivel }}</div>
+                <div style="font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560; margin-top: 4px;">Nível</div>
+              </div>
+              <button onClick="{{ nivelPlus }}" style="width: 44px; height: 44px; border-radius: 11px; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,160,23,0.25); color: #D4A017; font-size: 22px; font-weight: 700; cursor: pointer; line-height: 1;">+</button>
+              <div style="flex: 1; padding-left: 8px; font-size: 14px; color: #8a8278; line-height: 1.5;">A maioria das campanhas começa no <strong style="color:#E8DFD0;">nível 1</strong>. Níveis mais altos concedem mais pontos de vida, magias e habilidades de classe.</div>
+            </div>
+          </sc-if>
+
+          <!-- STEP 2: Classe -->
+          <sc-if value="{{ is2 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <sc-for list="{{ classes }}" as="c" hint-placeholder-count="6">
+                <div onClick="{{ c.onClick }}" style="background: {{ c.cardBg }}; border: {{ c.cardBorder }}; border-radius: 15px; padding: 17px 18px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer;">
+                  <div style="width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; background: rgba(212,160,23,0.1); border: 1px solid rgba(212,160,23,0.25); display: flex; align-items: center; justify-content: center;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l8 4.5v9L12 22l-8-6.5v-9z"/><path d="M12 7v10M7.5 9.5l9 5M16.5 9.5l-9 5"/></svg>
+                  </div>
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                      <span style="font-weight: 700; font-size: 16px; color: #F5F0E8;">{{ c.nome }}</span>
+                      <sc-if value="{{ c.sel }}" hint-placeholder-val="{{ false }}">
+                        <span style="width: 20px; height: 20px; border-radius: 50%; background: #D4A017; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+                      </sc-if>
+                    </div>
+                    <div style="display: flex; gap: 6px; margin-top: 7px;">
+                      <span style="font-size: 11px; font-weight: 700; color: #D4A017; background: rgba(212,160,23,0.12); padding: 2px 8px; border-radius: 6px;">{{ c.dado }}</span>
+                      <span style="font-size: 11px; font-weight: 600; color: #8a8278; background: rgba(255,255,255,0.04); padding: 2px 8px; border-radius: 6px;">{{ c.attr }}</span>
+                    </div>
+                    <div style="font-size: 13px; color: #8a8278; margin-top: 9px; line-height: 1.45;">{{ c.desc }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 3: Subclasse -->
+          <sc-if value="{{ is3 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <sc-for list="{{ subclasses }}" as="sc" hint-placeholder-count="4">
+                <div onClick="{{ sc.onClick }}" style="background: {{ sc.cardBg }}; border: {{ sc.cardBorder }}; border-radius: 14px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer;">
+                  <span style="font-weight: 700; font-size: 16px; color: #F5F0E8;">{{ sc.nome }}</span>
+                  <sc-if value="{{ sc.sel }}" hint-placeholder-val="{{ false }}">
+                    <span style="width: 20px; height: 20px; border-radius: 50%; background: #D4A017; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 4: Espécie -->
+          <sc-if value="{{ is4 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <sc-for list="{{ especies }}" as="e" hint-placeholder-count="6">
+                <div onClick="{{ e.onClick }}" style="background: {{ e.cardBg }}; border: {{ e.cardBorder }}; border-radius: 15px; padding: 16px 18px; cursor: pointer;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <span style="font-weight: 700; font-size: 16px; color: #F5F0E8;">{{ e.nome }}</span>
+                    <sc-if value="{{ e.sel }}" hint-placeholder-val="{{ false }}">
+                      <span style="width: 20px; height: 20px; border-radius: 50%; background: #D4A017; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+                    </sc-if>
+                  </div>
+                  <div style="font-size: 13px; color: #8a8278; margin-top: 7px; line-height: 1.45;">{{ e.desc }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 5: Antecedente -->
+          <sc-if value="{{ is5 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <sc-for list="{{ antecedentes }}" as="a" hint-placeholder-count="6">
+                <div onClick="{{ a.onClick }}" style="background: {{ a.cardBg }}; border: {{ a.cardBorder }}; border-radius: 15px; padding: 16px 18px; cursor: pointer;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <span style="font-weight: 700; font-size: 16px; color: #F5F0E8;">{{ a.nome }}</span>
+                    <sc-if value="{{ a.sel }}" hint-placeholder-val="{{ false }}">
+                      <span style="width: 20px; height: 20px; border-radius: 50%; background: #D4A017; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+                    </sc-if>
+                  </div>
+                  <div style="font-size: 12px; color: #8a8278; margin-top: 6px;">{{ a.desc }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 6: Atributos (point-buy) -->
+          <sc-if value="{{ is6 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 12px 16px; border-radius: 12px; background: #1A1714; border: 1px solid rgba(212,160,23,0.18);">
+              <span style="font-size: 14px; color: #8a8278; font-weight: 500;">Pontos restantes (compra de pontos)</span>
+              <span style="font-weight: 800; font-size: 22px; color: {{ pontosColor }};">{{ pontosRestantes }}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <sc-for list="{{ attrRows }}" as="a" hint-placeholder-count="6">
+                <div style="display: flex; align-items: center; gap: 16px; background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 13px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 13px 18px;">
+                  <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 15px; color: #F5F0E8;">{{ a.nome }}</div>
+                    <div style="font-size: 12px; color: #6B6560; font-weight: 600;">{{ a.sigla }}</div>
+                  </div>
+                  <span style="font-weight: 700; font-size: 15px; color: #D4A017; min-width: 36px; text-align: center;">{{ a.mod }}</span>
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <button onClick="{{ a.onMinus }}" style="width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #A8A09B; font-size: 18px; font-weight: 700; cursor: pointer; line-height: 1;">−</button>
+                    <span style="font-weight: 800; font-size: 20px; color: #F5F0E8; min-width: 26px; text-align: center;">{{ a.valor }}</span>
+                    <button onClick="{{ a.onPlus }}" style="width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #A8A09B; font-size: 18px; font-weight: 700; cursor: pointer; line-height: 1;">+</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 7: Perícias -->
+          <sc-if value="{{ is7 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <sc-for list="{{ periciasOpts }}" as="p" hint-placeholder-count="6">
+                <div onClick="{{ p.onClick }}" style="display: flex; align-items: center; gap: 12px; background: {{ p.bg }}; border: {{ p.border }}; border-radius: 12px; padding: 13px 16px; cursor: pointer;">
+                  <span style="width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; background: {{ p.boxBg }}; border: {{ p.boxBorder }}; display: inline-flex; align-items: center; justify-content: center;">
+                    <sc-if value="{{ p.sel }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></sc-if>
+                  </span>
+                  <span style="font-size: 14px; color: #F5F0E8; font-weight: 500;">{{ p.nome }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 8: Magias -->
+          <sc-if value="{{ is8 }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ wCaster }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ magiasOpts }}" as="m" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; justify-content: space-between; background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 12px; padding: 13px 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9b8cf0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.5 5.7 21l2.3-7.1-6-4.5h7.6z"/></svg>
+                      <span style="font-weight: 600; font-size: 15px; color: #F5F0E8;">{{ m.nome }}</span>
+                    </div>
+                    <span style="font-size: 12px; color: #8a8278;">{{ m.nivel }} · {{ m.escola }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ wNaoCaster }}" hint-placeholder-val="{{ true }}">
+              <div style="text-align: center; padding: 48px 20px; border: 1px dashed rgba(212,160,23,0.22); border-radius: 16px;">
+                <p style="color: #A8A09B; margin: 0 0 4px; font-weight: 600;">{{ wClasseNome }} não conjura magias.</p>
+                <p style="color: #6B6560; margin: 0; font-size: 14px;">Avance para a próxima etapa.</p>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <!-- STEP 9: Idiomas -->
+          <sc-if value="{{ is9 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <sc-for list="{{ idiomasOpts }}" as="i" hint-placeholder-count="8">
+                <button onClick="{{ i.onClick }}" style="font-size: 14px; font-weight: 600; color: {{ i.color }}; background: {{ i.bg }}; border: {{ i.border }}; border-radius: 20px; padding: 9px 18px; cursor: pointer;">{{ i.nome }}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 10: Equipamento -->
+          <sc-if value="{{ is10 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <sc-for list="{{ equipOpts }}" as="eq" hint-placeholder-count="2">
+                <div onClick="{{ eq.onClick }}" style="background: {{ eq.cardBg }}; border: {{ eq.cardBorder }}; border-radius: 15px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer;">
+                  <span style="width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; background: {{ eq.dotBg }}; border: {{ eq.dotBorder }};"></span>
+                  <div>
+                    <div style="font-weight: 700; font-size: 16px; color: #F5F0E8;">{{ eq.titulo }}</div>
+                    <div style="font-size: 13px; color: #8a8278; margin-top: 5px; line-height: 1.45;">{{ eq.desc }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- STEP 11: Personalidade (expandido) -->
+          <sc-if value="{{ is11 }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 26px;" class="vg-scroll">
+              <!-- Identidade -->
+              <div>
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #D4A017; margin-bottom: 12px;">Identidade</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Nome do Personagem</label><input value="{{ wNome }}" onInput="{{ onNome }}" placeholder="Ex.: Grukk Pedra-Cinza" style="width: 100%; font-family: inherit; font-size: 15px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.25); border-radius: 11px; padding: 12px 15px; outline: none;" /></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Nome do Jogador</label><input value="{{ wNomeJogador }}" onInput="{{ onNomeJogador }}" placeholder="Seu nome" style="width: 100%; font-family: inherit; font-size: 15px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.25); border-radius: 11px; padding: 12px 15px; outline: none;" /></div>
+                </div>
+              </div>
+              <!-- Alinhamento -->
+              <div>
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #D4A017; margin-bottom: 12px;">Alinhamento</div>
+                <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 7px;">
+                  <sc-for list="{{ wAlinhGrid }}" as="al" hint-placeholder-count="9">
+                    <button onClick="{{ al.onClick }}" style="padding: 10px 6px; border-radius: 10px; font-size: 12.5px; font-weight: {{ al.weight }}; color: {{ al.color }}; background: {{ al.bg }}; border: {{ al.border }}; cursor: pointer; text-align: center;">{{ al.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <!-- Personalidade -->
+              <div>
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #D4A017; margin-bottom: 12px;">Personalidade</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.07em;">Traço 1</label><textarea value="{{ wTraco }}" onInput="{{ onTraco }}" placeholder="Como age, fala e enxerga o mundo..." style="width: 100%; min-height: 80px; resize: vertical; font-family: inherit; font-size: 13.5px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none; line-height: 1.5;"></textarea></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.07em;">Traço 2</label><textarea value="{{ wTraco2 }}" onInput="{{ onTraco2 }}" placeholder="Um segundo traço marcante..." style="width: 100%; min-height: 80px; resize: vertical; font-family: inherit; font-size: 13.5px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none; line-height: 1.5;"></textarea></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.07em;">Ideais</label><textarea value="{{ wIdeais }}" onInput="{{ onIdeais }}" placeholder="O que guia suas decisões morais..." style="width: 100%; min-height: 72px; resize: vertical; font-family: inherit; font-size: 13.5px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none; line-height: 1.5;"></textarea></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.07em;">Vínculos</label><textarea value="{{ wVinculos }}" onInput="{{ onVinculos }}" placeholder="Pessoas, lugares ou coisas que importam..." style="width: 100%; min-height: 72px; resize: vertical; font-family: inherit; font-size: 13.5px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none; line-height: 1.5;"></textarea></div>
+                  <div style="grid-column: 1 / -1;"><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.07em;">Fraquezas</label><textarea value="{{ wFraquezas }}" onInput="{{ onFraquezas }}" placeholder="Falhas de caráter, vícios ou medos..." style="width: 100%; min-height: 68px; resize: vertical; font-family: inherit; font-size: 13.5px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none; line-height: 1.5;"></textarea></div>
+                </div>
+              </div>
+              <!-- Aparência Física -->
+              <div>
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #D4A017; margin-bottom: 12px;">Aparência Física</div>
+                <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;">
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Idade</label><input value="{{ wIdade }}" onInput="{{ onIdade }}" placeholder="Ex.: 25 anos" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Altura</label><input value="{{ wAltura }}" onInput="{{ onAltura }}" placeholder="Ex.: 1,82 m" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Peso</label><input value="{{ wPeso }}" onInput="{{ onPeso }}" placeholder="Ex.: 90 kg" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Olhos</label><input value="{{ wOlhos }}" onInput="{{ onOlhos }}" placeholder="Ex.: âmbar" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Pele</label><input value="{{ wPele }}" onInput="{{ onPele }}" placeholder="Ex.: oliva escuro" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                  <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Cabelo</label><input value="{{ wCabelo }}" onInput="{{ onCabelo }}" placeholder="Ex.: preto e raspado" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                </div>
+              </div>
+              <!-- História -->
+              <div>
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #D4A017; margin-bottom: 12px;">História</div>
+                <textarea value="{{ wHistoria }}" onInput="{{ onHistoria }}" placeholder="O passado que forjou este aventureiro — motivações, perdas, o que o moveu até aqui..." style="width: 100%; min-height: 110px; resize: vertical; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.25); border-radius: 11px; padding: 13px 16px; outline: none; line-height: 1.6;"></textarea>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- STEP 12: Revisar -->
+          <sc-if value="{{ is12 }}" hint-placeholder-val="{{ false }}">
+            <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 24px 26px;">
+              <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.07);">
+                <div style="width: 56px; height: 56px; border-radius: 14px; background: #221d18; border: 1px solid rgba(212,160,23,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                  <span style="font-weight: 800; font-size: 24px; color: #D4A017;">{{ revInicial }}</span>
+                </div>
+                <div>
+                  <div style="font-weight: 800; font-size: 22px; color: #F5F0E8;">{{ revNome }}</div>
+                  <div style="font-size: 14px; color: #8a8278; margin-top: 3px;">{{ revResumo }}</div>
+                </div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
+                <sc-for list="{{ attrRows }}" as="a" hint-placeholder-count="6">
+                  <div style="text-align: center; padding: 10px 4px; border-radius: 11px; background: #221d18; border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="font-size: 11px; font-weight: 700; color: #8a8278;">{{ a.sigla }}</div>
+                    <div style="font-weight: 800; font-size: 22px; color: #F5F0E8; margin-top: 3px;">{{ a.mod }}</div>
+                    <div style="font-size: 11px; color: #6B6560;">{{ a.valor }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- nav -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 28px; padding-top: 22px; border-top: 1px solid rgba(212,160,23,0.16);">
+            <button onClick="{{ wBack }}" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: {{ voltarColor }}; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); border-radius: 10px; padding: 11px 18px; cursor: pointer;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+              Voltar
+            </button>
+            <button onClick="{{ wNext }}" style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 10px; padding: 11px 22px; cursor: pointer;" style-hover="background: #E8C25A;">
+              {{ continuarLabel }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============================ FICHA ============================ -->
+  <sc-if value="{{ rFicha }}" hint-placeholder-val="{{ false }}">
+    <div style="min-height: 100vh;">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 28px; background: #161311; border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 10;">
+        <div style="display: flex; align-items: center; gap: 18px;">
+          <button onClick="{{ goHome }}" style="display: inline-flex; align-items: center; gap: 8px; background: transparent; border: none; color: #A8A09B; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; padding: 0;" style-hover="color: #E8DFD0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            Fichas
+          </button>
+          <div style="width: 1px; height: 22px; background: rgba(255,255,255,0.1);"></div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#B8860B"><path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/></svg>
+            <span style="font-weight: 800; letter-spacing: 0.04em; font-size: 14px; color: #E8DFD0;">Venetia</span>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <button onClick="{{ ganharXp }}" style="font-size: 13px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 9px; padding: 9px 14px; cursor: pointer;" style-hover="background: #E8C25A;">+150 XP</button>
+          <span style="display: inline-flex; align-items: center; gap: 7px; color: #7c9b6e; font-size: 13px; font-weight: 500;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #7c9b6e;"></span>Salvo</span>
+          <div style="width: 1px; height: 22px; background: rgba(255,255,255,0.1);"></div>
+          <button onClick="{{ openSettings }}" style="width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #A8A09B; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" style-hover="color: #E8DFD0; border-color: rgba(212,160,23,0.4);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div style="max-width: 1180px; margin: 0 auto; padding: 32px 32px 56px;">
+        <!-- header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 28px; margin-bottom: 28px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 18px;">
+            <div style="width: 64px; height: 64px; border-radius: 16px; flex-shrink: 0; background: #221d18; border: 1px solid rgba(212,160,23,0.35); display: flex; align-items: center; justify-content: center;">
+              <span style="font-weight: 800; font-size: 26px; color: {{ f.cor }};">{{ f.inicial }}</span>
+            </div>
+            <div>
+              <h2 style="font-weight: 800; font-size: 26px; line-height: 1.1; margin: 0 0 8px; letter-spacing: -0.02em;">{{ f.nome }}</h2>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 13px; font-weight: 700; color: #131110; background: #D4A017; padding: 3px 10px; border-radius: 7px;">{{ f.classeNivel }}</span>
+                <span style="font-size: 13px; font-weight: 500; color: #A8A09B; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 3px 10px; border-radius: 7px;">{{ f.especie }}</span>
+                <span style="font-size: 13px; font-weight: 500; color: #A8A09B; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); padding: 3px 10px; border-radius: 7px;">{{ f.antecedente }}</span>
+              </div>
+            </div>
+          </div>
+          <div style="min-width: 300px; flex: 1; max-width: 360px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560;">Nível</span>
+                <span style="font-weight: 800; font-size: 22px; color: #D4A017; line-height: 1;">{{ liveNivel }}</span>
+              </div>
+              <span style="font-size: 13px; font-weight: 600; color: #A8A09B; white-space: nowrap;">{{ xpAtual }} / {{ xpProx }} XP</span>
+            </div>
+            <div style="height: 8px; border-radius: 5px; background: #221d18; overflow: hidden; position: relative;">
+              <div style="height: 100%; width: {{ xpPct }}; border-radius: 5px; background: linear-gradient(90deg, #B8860B, #D4A017); transition: width 700ms cubic-bezier(.2,.8,.2,1);"></div>
+              <div style="position: absolute; inset: 0; width: {{ xpPct }}; background-image: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent); background-size: 200% 100%; animation: vg-shimmer 2.6s linear infinite; transition: width 700ms cubic-bezier(.2,.8,.2,1);"></div>
+            </div>
+            <div style="margin-top: 8px; display: flex; align-items: center; justify-content: flex-end; gap: 10px; min-height: 22px;">
+              <sc-if value="{{ podeSubir }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ subirNivel }}" style="font-size: 12px; font-weight: 700; color: #131110; background: linear-gradient(180deg,#E8C25A,#D4A017); border: none; border-radius: 7px; padding: 5px 12px; cursor: pointer;">⬆ Subir de Nível</button>
+              </sc-if>
+              <sc-if value="{{ naoPodeSubir }}" hint-placeholder-val="{{ true }}">
+                <span style="font-size: 12px; color: #6B6560;">{{ xpFalta }} para o próximo nível</span>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI row -->
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 16px; margin-bottom: 14px;">
+          <div style="background: rgba(181,57,47,0.08); border: 1px solid rgba(181,57,47,0.42); border-radius: 16px; box-shadow: inset 0 0 0 5px #1c1512, inset 0 0 0 6px rgba(212,160,23,0.18); padding: 18px 20px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #e0a3a3;"><svg width="15" height="15" viewBox="0 0 24 24" fill="#d4564a"><path d="M12 21s-7-4.35-9.5-8.5C.5 9 2 5 5.5 5 7.5 5 9 6.2 12 9c3-2.8 4.5-4 6.5-4C22 5 23.5 9 21.5 12.5 19 16.65 12 21 12 21z"/></svg>Vida</span>
+              <div style="display: flex; gap: 6px;">
+                <button onClick="{{ hpDano }}" style="width: 26px; height: 26px; border-radius: 7px; background: rgba(181,57,47,0.18); border: 1px solid rgba(181,57,47,0.5); color: #e0a3a3; font-size: 15px; font-weight: 700; cursor: pointer; line-height: 1;">−</button>
+                <button onClick="{{ hpCura }}" style="width: 26px; height: 26px; border-radius: 7px; background: rgba(124,155,110,0.18); border: 1px solid rgba(124,155,110,0.5); color: #9cc090; font-size: 15px; font-weight: 700; cursor: pointer; line-height: 1;">+</button>
+              </div>
+            </div>
+            <div style="display: flex; align-items: baseline; gap: 7px; white-space: nowrap;">
+              <span style="font-weight: 800; font-size: 42px; line-height: 1; color: #F5F0E8; letter-spacing: -0.03em;">{{ hpAtual }}</span>
+              <span style="font-size: 19px; font-weight: 600; color: #c98c8c;">/ {{ hpMax }}</span>
+            </div>
+            <div style="height: 7px; border-radius: 4px; background: rgba(0,0,0,0.35); margin-top: 14px; overflow: hidden;">
+              <div style="height: 100%; width: {{ hpPct }}; background: {{ hpColor }}; border-radius: 4px; transition: width 350ms ease, background 350ms ease;"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 11px; font-size: 12px; color: #c98c8c; font-weight: 500;"><span>Dado de Vida {{ f.dadoVida }}</span><span>{{ hpEstado }}</span></div>
+          </div>
+          <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8278;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5"><path d="M12 2l7 3v6c0 4.5-3 8.5-7 9.5C8 19.5 5 15.5 5 11V5z"/></svg>Armadura</span>
+            <div style="font-weight: 800; font-size: 38px; line-height: 1; color: #F5F0E8; letter-spacing: -0.03em; margin-top: 16px;">{{ f.ca }}</div>
+          </div>
+          <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8278;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5" stroke-linejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>Iniciativa</span>
+            <div style="font-weight: 800; font-size: 38px; line-height: 1; color: #F5F0E8; letter-spacing: -0.03em; margin-top: 16px;">{{ f.initStr }}</div>
+          </div>
+          <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 18px 20px; display: flex; flex-direction: column; justify-content: space-between;">
+            <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #8a8278;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 4v7l5 3M4 7l3 2-2 4 4 1 1 5"/></svg>Deslocamento</span>
+            <div style="font-weight: 800; font-size: 38px; line-height: 1; color: #F5F0E8; letter-spacing: -0.03em; margin-top: 16px;">{{ f.desloc }}<span style="font-size: 17px; color: #6B6560; font-weight: 600;"> m</span></div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 12px; border-radius: 12px; background: #1A1714; border: 1px solid rgba(212,160,23,0.18);"><span style="font-size: 13px; color: #8a8278; font-weight: 500;">Proficiência</span><span style="font-weight: 800; font-size: 16px; color: #D4A017;">{{ f.profStr }}</span></div>
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 12px; border-radius: 12px; background: #1A1714; border: 1px solid rgba(212,160,23,0.18);"><span style="font-size: 13px; color: #8a8278; font-weight: 500;">Percepção passiva</span><span style="font-weight: 800; font-size: 16px; color: #F5F0E8;">{{ f.percPassiva }}</span></div>
+          <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 12px; border-radius: 12px; background: #1A1714; border: 1px solid rgba(212,160,23,0.18);"><span style="font-size: 13px; color: #8a8278; font-weight: 500;">Visão no escuro</span><span style="font-weight: 800; font-size: 16px; color: #F5F0E8;">{{ f.visaoStr }}</span></div>
+        </div>
+
+        <!-- tabs -->
+        <div style="display: flex; gap: 4px; border-bottom: 1px solid rgba(212,160,23,0.22); margin-bottom: 28px; overflow-x: auto;">
+          <sc-for list="{{ fichaTabs }}" as="t" hint-placeholder-count="6">
+            <div onClick="{{ t.onClick }}" style="font-size: 14px; font-weight: {{ t.weight }}; color: {{ t.color }}; padding: 0 4px 13px; border-bottom: 2px solid {{ t.border }}; margin-bottom: -1px; margin-right: 22px; cursor: pointer; white-space: nowrap;">{{ t.nome }}</div>
+          </sc-for>
+        </div>
+
+        <!-- TAB: Visão geral -->
+        <sc-if value="{{ tabGeral }}" hint-placeholder-val="{{ true }}">
+          <div style="margin-bottom: 30px;">
+            <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Atributos</h3></div>
+            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px;">
+              <sc-for list="{{ atributos }}" as="a" hint-placeholder-count="6">
+                <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 18px 14px 14px; text-align: center;">
+                  <div style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: #8a8278;">{{ a.sigla }}</div>
+                  <div style="font-weight: 800; font-size: 34px; line-height: 1.1; margin: 8px 0 2px; color: #F5F0E8; letter-spacing: -0.02em;">{{ a.modStr }}</div>
+                  <div style="font-size: 13px; color: #6B6560; font-weight: 600;">{{ a.valor }}</div>
+                  <div style="margin-top: 12px; padding-top: 11px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; gap: 6px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{ a.saveDot }};"></span><span style="font-size: 11px; color: #8a8278; font-weight: 500;">Salv.</span><span style="font-size: 13px; font-weight: 700; color: {{ a.saveColor }};">{{ a.saveStr }}</span></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Ataques</h3></div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <sc-for list="{{ ataques }}" as="atk" hint-placeholder-count="2">
+                  <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 16px 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+                      <div style="display: flex; align-items: center; gap: 13px;">
+                        <div style="width: 40px; height: 40px; border-radius: 11px; background: rgba(181,57,47,0.12); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d4564a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/></svg></div>
+                        <div><div style="font-weight: 700; font-size: 16px; color: #F5F0E8;">{{ atk.nome }}</div><div style="font-size: 12px; color: #6B6560; margin-top: 3px;">{{ atk.tipo }}</div></div>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 18px;">
+                        <div style="text-align: right;"><div style="font-weight: 800; font-size: 18px; color: #D4A017; line-height: 1;">{{ atk.bonus }}</div><div style="font-size: 10px; color: #6B6560; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;">Acerto</div></div>
+                        <div style="text-align: right;"><div style="font-weight: 800; font-size: 18px; color: #F5F0E8; line-height: 1;">{{ atk.dano }}</div><div style="font-size: 10px; color: #6B6560; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;">{{ atk.tipoDano }}</div></div>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Traços</h3></div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ tracos }}" as="tr" hint-placeholder-count="4">
+                  <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 14px; padding: 14px 18px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;"><span style="font-weight: 700; font-size: 15px; color: #F5F0E8;">{{ tr.nome }}</span><sc-if value="{{ tr.temUsos }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #D4A017; background: rgba(212,160,23,0.12); padding: 3px 9px; border-radius: 7px; white-space: nowrap;">{{ tr.usos }}</span></sc-if></div>
+                    <div style="font-size: 13px; color: #8a8278; margin-top: 7px; line-height: 1.5;">{{ tr.desc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- TAB: Perícias -->
+        <sc-if value="{{ tabPericias }}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px 28px;">
+            <sc-for list="{{ skills }}" as="p" hint-placeholder-count="18">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 14px; border-radius: 9px; background: {{ p.rowBg }};">
+                <span style="display: inline-flex; align-items: center; gap: 11px;"><span style="width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid {{ p.dotBorder }}; background: {{ p.dotFill }}; flex-shrink: 0;"></span><span style="font-size: 14px; color: {{ p.nameColor }};">{{ p.nome }}</span><span style="font-size: 11px; color: #6B6560; font-weight: 600;">{{ p.attr }}</span></span>
+                <span style="font-weight: 700; font-size: 15px; color: {{ p.valColor }};">{{ p.valStr }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- TAB: Combate -->
+        <sc-if value="{{ tabCombate }}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Ataques & Ações</h3></div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <sc-for list="{{ ataques }}" as="atk" hint-placeholder-count="2">
+                  <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 16px 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+                      <div><div style="font-weight: 700; font-size: 16px; color: #F5F0E8;">{{ atk.nome }}</div><div style="font-size: 12px; color: #6B6560; margin-top: 3px;">{{ atk.tipo }} · {{ atk.tipoDano }}</div></div>
+                      <div style="display: flex; align-items: center; gap: 18px;"><div style="text-align: right;"><div style="font-weight: 800; font-size: 18px; color: #D4A017; line-height: 1;">{{ atk.bonus }}</div><div style="font-size: 10px; color: #6B6560; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;">Acerto</div></div><div style="text-align: right;"><div style="font-weight: 800; font-size: 18px; color: #F5F0E8; line-height: 1;">{{ atk.dano }}</div><div style="font-size: 10px; color: #6B6560; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px;">Dano</div></div></div>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ temRecursos }}" hint-placeholder-val="{{ true }}">
+                  <sc-for list="{{ recursos }}" as="rc" hint-placeholder-count="1">
+                    <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 16px 20px;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px;">
+                        <div style="flex: 1;"><div style="font-weight: 700; font-size: 15px; color: #F5F0E8;">{{ rc.label }}</div><div style="font-size: 12px; color: #8a8278; margin-top: 3px; line-height: 1.4;">{{ rc.desc }}</div></div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                          <span style="font-size: 13px; font-weight: 700; color: #D4A017; min-width: 44px; text-align: right;">{{ rc.contador }}</span>
+                          <sc-if value="{{ rc.isPips }}" hint-placeholder-val="{{ true }}">
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                              <sc-for list="{{ rc.pips }}" as="p" hint-placeholder-count="2"><span onClick="{{ p.onClick }}" style="width: 18px; height: 18px; border-radius: 50%; background: {{ p.bg }}; border: {{ p.border }}; cursor: pointer; display: inline-block;"></span></sc-for>
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ rc.isPool }}" hint-placeholder-val="{{ false }}">
+                            <div style="display: flex; align-items: center; gap: 7px;">
+                              <button onClick="{{ rc.onMinus }}" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #A8A09B; font-size: 18px; font-weight: 700; cursor: pointer; line-height: 1;">−</button>
+                              <div style="height: 8px; width: 100px; border-radius: 5px; background: #221d18; overflow: hidden;"><div style="height: 100%; width: {{ rc.poolPct }}; background: {{ rc.poolBg }}; border-radius: 4px; transition: width 280ms ease;"></div></div>
+                              <button onClick="{{ rc.onPlus }}" style="width: 30px; height: 30px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #A8A09B; font-size: 18px; font-weight: 700; cursor: pointer; line-height: 1;">+</button>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </sc-if>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Salvaguardas</h3></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 9px;">
+                <sc-for list="{{ atributos }}" as="a" hint-placeholder-count="6">
+                  <div style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 10px; background: #1A1714; border: 1px solid rgba(212,160,23,0.16);"><span style="display: inline-flex; align-items: center; gap: 9px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{ a.saveDot }};"></span><span style="font-size: 14px; color: #A8A09B; font-weight: 500;">{{ a.sigla }}</span></span><span style="font-weight: 700; font-size: 15px; color: #F5F0E8;">{{ a.saveStr }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- TAB: Magia -->
+        <sc-if value="{{ tabMagia }}" hint-placeholder-val="{{ false }}">
+          <sc-if value="{{ fIsCaster }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;">
+                <sc-for list="{{ magiaSlots }}" as="sl" hint-placeholder-count="2">
+                  <div style="background: #1A1714; border: 1px solid rgba(155,124,240,0.3); border-radius: 13px; padding: 14px 20px; text-align: center; min-width: 110px;"><div style="font-size: 12px; color: #8a8278; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;">{{ sl.label }}</div><div style="font-weight: 800; font-size: 26px; color: #b3a4f5; margin-top: 4px;">{{ sl.disp }}</div></div>
+                </sc-for>
+                <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 13px; padding: 14px 20px; text-align: center; min-width: 110px;"><div style="font-size: 12px; color: #8a8278; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;">CD / Ataque</div><div style="font-weight: 800; font-size: 26px; color: #D4A017; margin-top: 4px;">{{ magiaCd }}</div></div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Magias Conhecidas</h3></div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <sc-for list="{{ magias }}" as="m" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; justify-content: space-between; background: #1A1714; border: 1px solid rgba(212,160,23,0.16); border-radius: 12px; padding: 13px 18px;"><div style="display: flex; align-items: center; gap: 12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9b8cf0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.5 5.7 21l2.3-7.1-6-4.5h7.6z"/></svg><span style="font-weight: 600; font-size: 15px; color: #F5F0E8;">{{ m.nome }}</span></div><span style="font-size: 12px; color: #8a8278;">{{ m.nivel }} · {{ m.escola }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ fNaoCaster }}" hint-placeholder-val="{{ true }}">
+            <div style="text-align: center; padding: 56px 20px; border: 1px dashed rgba(212,160,23,0.22); border-radius: 16px;"><p style="color: #A8A09B; margin: 0 0 4px; font-weight: 600;">{{ f.classeNome }} não conjura magias.</p><p style="color: #6B6560; margin: 0; font-size: 14px;">Suas habilidades vêm de proezas marciais e traços de classe.</p></div>
+          </sc-if>
+        </sc-if>
+
+        <!-- TAB: Inventário -->
+        <sc-if value="{{ tabInventario }}" hint-placeholder-val="{{ false }}">
+          <div style="display: grid; grid-template-columns: 1fr 320px; gap: 28px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Mochila</h3></div>
+              <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 8px 6px;">
+                <sc-for list="{{ inventario }}" as="it" hint-placeholder-count="4">
+                  <div style="display: flex; align-items: center; justify-content: space-between; padding: 11px 14px;"><span style="display: inline-flex; align-items: center; gap: 11px;"><sc-if value="{{ it.equipado }}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 700; color: #D4A017; background: rgba(212,160,23,0.12); padding: 2px 7px; border-radius: 5px;">EQUIP.</span></sc-if><span style="font-size: 14px; color: #F5F0E8;">{{ it.nome }}</span></span><span style="font-size: 13px; color: #6B6560;">{{ it.peso }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg, #E8C25A, #B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Carga & Moedas</h3></div>
+              <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 18px 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;"><span style="font-size: 13px; color: #8a8278;">Peso</span><span style="font-weight: 700; font-size: 14px; color: #F5F0E8;">{{ cargaTxt }}</span></div>
+                <div style="height: 8px; border-radius: 5px; background: #221d18; overflow: hidden;"><div style="height: 100%; width: {{ cargaPct }}; background: linear-gradient(90deg,#6B6560,#A8A09B); border-radius: 4px;"></div></div>
+                <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.07);">
+                  <sc-if value="{{ moedasSimples }}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; color: #8a8278;">Moedas de Ouro</span><span style="font-weight: 800; font-size: 18px; color: #D4A017;">{{ moedaPoSimples }} PO</span></div>
+                  </sc-if>
+                  <sc-if value="{{ moedasMulti }}" hint-placeholder-val="{{ true }}">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560; margin-bottom: 10px;">Moedas</div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                      <sc-for list="{{ moedaCampos }}" as="mc" hint-placeholder-count="5">
+                        <div style="flex: 1; text-align: center;">
+                          <div style="font-size: 10px; font-weight: 800; color: {{ mc.cor }}; letter-spacing: 0.08em; margin-bottom: 5px;">{{ mc.sig }}</div>
+                          <input type="number" value="{{ mc.valor }}" onInput="{{ mc.onInput }}" min="0" style="width: 100%; text-align: center; font-family: inherit; font-size: 15px; font-weight: 800; color: #F5F0E8; background: #221d18; border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; padding: 8px 4px; outline: none;" />
+                        </div>
+                      </sc-for>
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);"><span style="font-size: 12px; color: #6B6560; font-weight: 500;">Total em PO</span><span style="font-weight: 800; font-size: 16px; color: #D4A017;">{{ moedaTotalPO }} PO</span></div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- TAB: Anotações -->
+        <sc-if value="{{ tabAnotacoes }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 28px;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Personalidade</h3></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 13px;">
+                <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.18); border-radius: 15px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 16px 18px;"><div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560; margin-bottom: 10px;">Traços de Personalidade</div><p style="font-size: 13.5px; color: #cdc5ba; line-height: 1.6; margin: 0 0 8px; text-wrap: pretty;">{{ anotTraco1 }}</p><p style="font-size: 13.5px; color: #8a8278; line-height: 1.6; margin: 0; text-wrap: pretty;">{{ anotTraco2 }}</p></div>
+                <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.18); border-radius: 15px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 16px 18px;"><div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560; margin-bottom: 10px;">Ideais</div><p style="font-size: 13.5px; color: #cdc5ba; line-height: 1.6; margin: 0; text-wrap: pretty;">{{ anotIdeais }}</p></div>
+                <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.18); border-radius: 15px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 16px 18px;"><div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560; margin-bottom: 10px;">Vínculos</div><p style="font-size: 13.5px; color: #cdc5ba; line-height: 1.6; margin: 0; text-wrap: pretty;">{{ anotVinculos }}</p></div>
+                <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.18); border-radius: 15px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 16px 18px;"><div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560; margin-bottom: 10px;">Fraquezas</div><p style="font-size: 13.5px; color: #cdc5ba; line-height: 1.6; margin: 0; text-wrap: pretty;">{{ anotFraquezas }}</p></div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">História</h3></div>
+              <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.18); border-radius: 16px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 22px 26px;"><p style="font-size: 15px; color: #cdc5ba; line-height: 1.75; margin: 0; text-wrap: pretty;">{{ anotHistoria }}</p></div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Condições Ativas</h3></div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <sc-for list="{{ condBadges }}" as="c" hint-placeholder-count="6">
+                  <button onClick="{{ c.onClick }}" style="font-size: 13px; font-weight: 600; color: {{ c.color }}; background: {{ c.bg }}; border: {{ c.border }}; border-radius: 20px; padding: 7px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" style-hover="opacity: 0.85;"><sc-if value="{{ c.on }}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px;">×</span></sc-if>{{ c.nome }}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Nível de Exaustão</h3></div>
+              <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.18); border-radius: 16px; padding: 20px 22px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13);">
+                <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+                  <sc-for list="{{ exaustBotoes }}" as="e" hint-placeholder-count="6">
+                    <button onClick="{{ e.onClick }}" style="flex: 1; height: 44px; border-radius: 11px; font-weight: 800; font-size: 16px; color: {{ e.color }}; background: {{ e.bg }}; border: {{ e.border }}; cursor: pointer;">{{ e.n }}</button>
+                  </sc-for>
+                </div>
+                <div style="font-size: 13.5px; color: #cdc5ba; line-height: 1.5; text-wrap: pretty;">{{ exaustEfeito }}</div>
+              </div>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Notas Livres</h3></div>
+              <textarea value="{{ notasVal }}" onInput="{{ onNotas }}" placeholder="Anotações, detalhes de missão, contatos, segredos..." class="vg-scroll" style="width: 100%; min-height: 160px; resize: vertical; font-family: inherit; font-size: 14px; color: #cdc5ba; background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 14px; padding: 16px 18px; outline: none; line-height: 1.65;"></textarea>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- TAB: Editar (placeholder — full content below) -->
+        <sc-if value="{{ tabEditar }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 28px;">
+            <!-- Informações Básicas -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Informações Básicas</h3></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Nome do Personagem</label><input value="{{ edNome }}" onInput="{{ onEdNome }}" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Nome do Jogador</label><input value="{{ edJogador }}" onInput="{{ onEdJogador }}" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+                <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Campanha</label><input value="{{ edCampanha }}" onInput="{{ onEdCampanha }}" style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none;" /></div>
+              </div>
+              <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;">Alinhamento</label>
+                <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; max-width: 480px;">
+                  <sc-for list="{{ alinhamentoGrid }}" as="al" hint-placeholder-count="9">
+                    <button onClick="{{ al.onClick }}" style="padding: 9px 4px; border-radius: 10px; font-size: 12.5px; font-weight: {{ al.weight }}; color: {{ al.color }}; background: {{ al.bg }}; border: {{ al.border }}; cursor: pointer; text-align: center;">{{ al.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <!-- Progressão -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Progressão</h3></div>
+              <div style="display: flex; gap: 12px;">
+                <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Nível</label><input type="number" value="{{ edNivel }}" onInput="{{ onEdNivel }}" min="1" max="20" style="width: 100px; font-family: inherit; font-size: 22px; font-weight: 800; color: #D4A017; background: #1A1714; border: 1px solid rgba(212,160,23,0.25); border-radius: 10px; padding: 10px 14px; outline: none; text-align: center;" /></div>
+                <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Pontos de Experiência</label><input type="number" value="{{ edXp }}" onInput="{{ onEdXp }}" style="width: 200px; font-family: inherit; font-size: 22px; font-weight: 800; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 10px 14px; outline: none; text-align: center;" /></div>
+              </div>
+            </div>
+            <!-- Atributos -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Atributos</h3></div>
+              <div style="display: grid; grid-template-columns: repeat(6,1fr); gap: 11px;">
+                <sc-for list="{{ edAttrs }}" as="a" hint-placeholder-count="6">
+                  <div style="background: #1A1714; border: 1px solid rgba(212,160,23,0.2); border-radius: 15px; box-shadow: inset 0 0 0 5px #1A1714, inset 0 0 0 6px rgba(212,160,23,0.13); padding: 14px 10px; text-align: center;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: #8a8278; margin-bottom: 8px;">{{ a.sigla }}</div>
+                    <button onClick="{{ a.onMinus }}" style="width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #A8A09B; cursor: pointer; font-size: 16px; font-weight: 700; line-height: 1;">−</button>
+                    <div style="font-weight: 800; font-size: 26px; color: #F5F0E8; margin: 6px 0 2px; line-height: 1;">{{ a.valor }}</div>
+                    <div style="font-size: 12px; font-weight: 700; color: #D4A017; margin-bottom: 8px;">{{ a.mod }}</div>
+                    <button onClick="{{ a.onPlus }}" style="width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #A8A09B; cursor: pointer; font-size: 16px; font-weight: 700; line-height: 1;">+</button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <!-- Armadura -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Armadura</h3></div>
+              <div style="display: flex; gap: 14px; align-items: flex-end;">
+                <div style="flex: 1;"><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">Tipo de Armadura</label><select style="width: 100%; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 11px 14px; outline: none; cursor: pointer;"><sc-for list="{{ armaduraOpts }}" as="opt" hint-placeholder-count="3"><option style="background: #1A1714;">{{ opt }}</option></sc-for></select></div>
+                <div><label style="display: block; font-size: 12px; font-weight: 700; color: #6B6560; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px;">CA</label><input type="number" value="{{ edCA }}" onInput="{{ onEdCA }}" style="width: 90px; font-family: inherit; font-size: 22px; font-weight: 800; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.25); border-radius: 10px; padding: 10px 14px; outline: none; text-align: center;" /></div>
+              </div>
+            </div>
+            <!-- Perícias -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Proficiências em Perícias</h3></div>
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <sc-for list="{{ edSkillGroups }}" as="g" hint-placeholder-count="5">
+                  <div><div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #6B6560; margin-bottom: 8px;">{{ g.attr }}</div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+                      <sc-for list="{{ g.skills }}" as="sk" hint-placeholder-count="3">
+                        <div onClick="{{ sk.onClick }}" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 22px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.09); cursor: pointer;" style-hover="border-color: rgba(212,160,23,0.4);">
+                          <span style="width: 16px; height: 16px; border-radius: 5px; flex-shrink: 0; background: {{ sk.boxBg }}; border: {{ sk.boxBorder }}; display: inline-flex; align-items: center; justify-content: center;"><sc-if value="{{ sk.on }}" hint-placeholder-val="{{ false }}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></sc-if></span>
+                          <span style="font-size: 13.5px; font-weight: 500; color: {{ sk.color }};">{{ sk.nome }}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <!-- Magia -->
+            <sc-if value="{{ edIsCaster }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#c79bf0,#9b8cf0);"></span><h3 style="font-weight: 800; font-size: 17px; color: #d8cdf2; margin: 0;">Magias Conhecidas</h3></div>
+                <div style="display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px;">
+                  <sc-for list="{{ edMagiasConhecidas }}" as="m" hint-placeholder-count="4">
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: #1A1714; border: 1px solid rgba(155,124,240,0.2); border-radius: 12px; padding: 11px 14px;">
+                      <div style="display: flex; align-items: center; gap: 10px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9b8cf0" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.5 5.7 21l2.3-7.1-6-4.5h7.6z"/></svg><span style="font-size: 14px; color: #F5F0E8; font-weight: 600;">{{ m.nome }}</span></div>
+                      <div style="display: flex; align-items: center; gap: 12px;"><span style="font-size: 12px; color: #8a8278;">{{ m.info }}</span><button onClick="{{ m.onRemove }}" style="width: 26px; height: 26px; border-radius: 7px; background: rgba(181,57,47,0.12); border: 1px solid rgba(181,57,47,0.3); color: #b56a6a; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" style-hover="background: rgba(181,57,47,0.22);"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; gap: 9px; margin-bottom: 10px;"><input value="{{ edMagiaBusca }}" onInput="{{ onEdMagiaBusca }}" placeholder="Buscar magia por nome..." style="flex: 1; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 10px 14px; outline: none;" /></div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <sc-for list="{{ edMagiaResultados }}" as="mr" hint-placeholder-count="3">
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(155,124,240,0.05); border: 1px solid rgba(155,124,240,0.18); border-radius: 11px; padding: 10px 14px;">
+                      <div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 14px; color: #E8DFD0; font-weight: 500;">{{ mr.nome }}</span><span style="font-size: 12px; color: #8a8278;">{{ mr.info }}</span></div>
+                      <button onClick="{{ mr.onAdd }}" style="font-size: 12px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer;" style-hover="background:#E8C25A;">+ Adicionar</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <!-- Mochila -->
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 16px;"><span style="width: 4px; height: 19px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 17px; color: #EAD9B0; margin: 0;">Mochila</h3></div>
+              <div style="display: flex; gap: 9px; margin-bottom: 12px; flex-wrap: wrap;">
+                <input value="{{ edItemBusca }}" onInput="{{ onEdItemBusca }}" placeholder="Buscar item por nome..." style="flex: 1; min-width: 200px; font-family: inherit; font-size: 14px; color: #F5F0E8; background: #1A1714; border: 1px solid rgba(212,160,23,0.22); border-radius: 10px; padding: 10px 14px; outline: none;" />
+                <sc-for list="{{ itemFiltros }}" as="ft" hint-placeholder-count="5">
+                  <button onClick="{{ ft.onClick }}" style="font-size: 12.5px; font-weight: 600; color: {{ ft.color }}; background: {{ ft.bg }}; border: {{ ft.border }}; border-radius: 20px; padding: 8px 14px; cursor: pointer;" style-hover="opacity:0.85;">{{ ft.nome }}</button>
+                </sc-for>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 7px;">
+                <sc-for list="{{ edItemResultados }}" as="it" hint-placeholder-count="5">
+                  <div style="display: flex; align-items: center; justify-content: space-between; background: #1A1714; border: 1px solid rgba(212,160,23,0.16); border-radius: 12px; padding: 11px 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px;"><span style="font-size: 10px; font-weight: 700; color: #D4A017; background: rgba(212,160,23,0.1); padding: 2px 7px; border-radius: 5px;">{{ it.tipo }}</span><span style="font-size: 14px; font-weight: 600; color: #F5F0E8;">{{ it.nome }}</span></div>
+                    <div style="display: flex; align-items: center; gap: 16px;"><span style="font-size: 12px; color: #6B6560;">{{ it.peso }}</span><span style="font-size: 12px; color: #D4A017; font-weight: 600;">{{ it.custo }}</span><button onClick="{{ it.onAdd }}" style="font-size: 12px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer;" style-hover="background:#E8C25A;">+ Adicionar</button></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- SETTINGS MODAL -->
+  <sc-if value="{{ settingsOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSettings }}" style="position: fixed; inset: 0; z-index: 100; background: rgba(8,7,6,0.74); display: flex; align-items: center; justify-content: center; padding: 24px;">
+      <div onClick="{{ stopProp }}" style="width: 100%; max-width: 460px; background: #1A1714; border: 1px solid rgba(212,160,23,0.25); border-radius: 20px; box-shadow: inset 0 0 0 6px #1A1714, inset 0 0 0 7px rgba(212,160,23,0.16), 0 30px 70px rgba(0,0,0,0.6); padding: 24px 26px 22px; animation: vg-fade 220ms ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+          <div style="display: flex; align-items: center; gap: 11px;"><span style="width: 4px; height: 20px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 19px; color: #F5F0E8; margin: 0;">Configurações</h3></div>
+          <button onClick="{{ closeSettings }}" style="width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #A8A09B; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" style-hover="color: #E8DFD0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <sc-for list="{{ settingRows }}" as="r" hint-placeholder-count="4">
+            <div onClick="{{ r.onToggle }}" style="display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 13px 12px; border-radius: 13px; cursor: pointer;" style-hover="background: rgba(255,255,255,0.03);">
+              <div style="flex: 1;"><div style="font-weight: 700; font-size: 15px; color: #F5F0E8;">{{ r.nome }}</div><div style="font-size: 12.5px; color: #8a8278; margin-top: 3px; line-height: 1.45;">{{ r.desc }}</div></div>
+              <span style="position: relative; width: 44px; height: 24px; border-radius: 13px; flex-shrink: 0; background: {{ r.trackBg }}; transition: background 200ms ease;"><span style="position: absolute; top: 3px; left: {{ r.knobLeft }}; width: 18px; height: 18px; border-radius: 50%; background: {{ r.knobBg }}; transition: left 200ms cubic-bezier(.2,.8,.2,1);"></span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- IMPORT MODAL -->
+  <sc-if value="{{ importOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeImport }}" style="position: fixed; inset: 0; z-index: 100; background: rgba(8,7,6,0.74); display: flex; align-items: center; justify-content: center; padding: 24px;">
+      <div onClick="{{ stopProp }}" style="width: 100%; max-width: 520px; background: #1A1714; border: 1px solid rgba(212,160,23,0.25); border-radius: 20px; box-shadow: inset 0 0 0 6px #1A1714, inset 0 0 0 7px rgba(212,160,23,0.16), 0 30px 70px rgba(0,0,0,0.6); padding: 24px 26px; animation: vg-fade 220ms ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+          <div style="display: flex; align-items: center; gap: 11px;"><span style="width: 4px; height: 20px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h3 style="font-weight: 800; font-size: 19px; color: #F5F0E8; margin: 0;">Importar Personagem</h3></div>
+          <button onClick="{{ closeImport }}" style="width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #A8A09B; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" style-hover="color: #E8DFD0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <sc-if value="{{ importIdle }}" hint-placeholder-val="{{ true }}">
+          <div onClick="{{ importToPreview }}" style="border: 1.5px dashed rgba(212,160,23,0.4); border-radius: 14px; padding: 28px 20px; text-align: center; cursor: pointer;" style-hover="border-color: rgba(212,160,23,0.7); background: rgba(212,160,23,0.04);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin: 0 auto 10px; display: block;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            <div style="font-weight: 700; font-size: 15px; color: #E8DFD0;">Arraste um arquivo <span style="color:#D4A017;">.json</span> aqui</div>
+            <div style="font-size: 13px; color: #6B6560; margin-top: 4px;">ou clique para selecionar do dispositivo</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;"><span style="flex: 1; height: 1px; background: rgba(255,255,255,0.08);"></span><span style="font-size: 12px; color: #6B6560; font-weight: 600;">ou cole o conteúdo</span><span style="flex: 1; height: 1px; background: rgba(255,255,255,0.08);"></span></div>
+          <textarea placeholder='{"nome":"Aurélia Cordavoz","classe":"bardo","nivel":5,...}' class="vg-scroll" style="width: 100%; min-height: 88px; resize: vertical; font-family: ui-monospace,'SF Mono',Menlo,monospace; font-size: 12.5px; color: #cdc5ba; background: #131110; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 13px 15px; outline: none; line-height: 1.5;"></textarea>
+          <div style="margin-top: 14px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button onClick="{{ closeImport }}" style="font-size: 14px; font-weight: 600; color: #A8A09B; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 11px 18px; cursor: pointer;" style-hover="color:#E8DFD0;">Cancelar</button>
+            <button onClick="{{ importToPreview }}" style="font-size: 14px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 10px; padding: 11px 22px; cursor: pointer;" style-hover="background:#E8C25A;">Pré-visualizar</button>
+          </div>
+          <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.06);">
+            <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6560; margin-bottom: 9px;">Detectados nesta sessão</div>
+            <div onClick="{{ importToPreview }}" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 11px; background: rgba(255,255,255,0.03); cursor: pointer; margin-bottom: 6px;" style-hover="background: rgba(124,155,110,0.08);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c9b6e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span style="flex: 1; font-size: 13.5px; color: #E8DFD0;">aurelia-bardo-nv5.json</span><span style="font-size: 12px; color: #7c9b6e; font-weight: 600;">válido</span></div>
+            <div onClick="{{ importToError }}" style="display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 11px; background: rgba(255,255,255,0.03); cursor: pointer;" style-hover="background: rgba(181,57,47,0.06);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b56a6a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg><span style="flex: 1; font-size: 13.5px; color: #A8A09B;">ficha_antiga_v1.json</span><span style="font-size: 12px; color: #b56a6a; font-weight: 600;">incompatível</span></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ importPreview }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 9px; color: #7c9b6e; font-size: 13px; font-weight: 600; margin-bottom: 14px;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>JSON válido · Livro do Jogador 2024</div>
+          <div style="background: #221d18; border: 1px solid rgba(212,160,23,0.2); border-radius: 16px; box-shadow: inset 0 0 0 5px #221d18, inset 0 0 0 6px rgba(212,160,23,0.16); padding: 20px 22px;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 16px;"><div style="width: 50px; height: 50px; border-radius: 13px; background: rgba(199,155,240,0.12); border: 1px solid rgba(199,155,240,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><span style="font-weight: 800; font-size: 22px; color: #c79bf0;">A</span></div><div><div style="font-weight: 800; font-size: 19px; color: #F5F0E8;">Aurélia Cordavoz</div><div style="font-size: 13px; color: #8a8278; margin-top: 3px;">Nível 5 Bardo · Meio-elfo · Artista</div></div></div>
+            <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 10px;">
+              <div style="text-align: center; padding: 10px 4px; border-radius: 11px; background: rgba(255,255,255,0.03);"><div style="font-size: 11px; color: #6B6560; font-weight: 600;">PV</div><div style="font-weight: 800; font-size: 20px; color: #F5F0E8; margin-top: 2px;">33</div></div>
+              <div style="text-align: center; padding: 10px 4px; border-radius: 11px; background: rgba(255,255,255,0.03);"><div style="font-size: 11px; color: #6B6560; font-weight: 600;">CA</div><div style="font-weight: 800; font-size: 20px; color: #F5F0E8; margin-top: 2px;">15</div></div>
+              <div style="text-align: center; padding: 10px 4px; border-radius: 11px; background: rgba(255,255,255,0.03);"><div style="font-size: 11px; color: #6B6560; font-weight: 600;">Magias</div><div style="font-weight: 800; font-size: 20px; color: #F5F0E8; margin-top: 2px;">9</div></div>
+            </div>
+          </div>
+          <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: space-between;">
+            <button onClick="{{ importToIdle }}" style="font-size: 14px; font-weight: 600; color: #A8A09B; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 11px 18px; cursor: pointer;" style-hover="color:#E8DFD0;">Voltar</button>
+            <button onClick="{{ importConfirm }}" style="font-size: 14px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 10px; padding: 11px 22px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;" style-hover="background:#E8C25A;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Importar Personagem</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ importError }}" hint-placeholder-val="{{ false }}">
+          <div style="background: rgba(181,57,47,0.08); border: 1px solid rgba(181,57,47,0.35); border-radius: 16px; padding: 22px 24px; text-align: center;">
+            <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(181,57,47,0.16); border: 1px solid rgba(181,57,47,0.45); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d4564a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+            <div style="font-weight: 800; font-size: 17px; color: #F5F0E8;">Arquivo incompatível</div>
+            <p style="font-size: 13.5px; color: #c98c8c; margin: 8px 0 0; line-height: 1.55;">Este JSON foi exportado de uma versão anterior (esquema v1). Faltam os campos <strong style="color:#e7a3a3;">atributos</strong> e <strong style="color:#e7a3a3;">classe</strong> exigidos pela edição 2024.</p>
+          </div>
+          <div style="margin-top: 16px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button onClick="{{ closeImport }}" style="font-size: 14px; font-weight: 600; color: #A8A09B; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 11px 18px; cursor: pointer;" style-hover="color:#E8DFD0;">Fechar</button>
+            <button onClick="{{ importToIdle }}" style="font-size: 14px; font-weight: 700; color: #131110; background: #D4A017; border: none; border-radius: 10px; padding: 11px 22px; cursor: pointer;" style-hover="background:#E8C25A;">Tentar outro arquivo</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- LEVEL UP MODAL -->
+  <sc-if value="{{ luOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeLevelUp }}" style="position: fixed; inset: 0; z-index: 100; background: rgba(8,7,6,0.78); display: flex; align-items: center; justify-content: center; padding: 24px;">
+      <div onClick="{{ stopProp }}" class="vg-scroll" style="width: 100%; max-width: 660px; max-height: 88vh; overflow-y: auto; background: #1A1714; border: 1px solid rgba(212,160,23,0.3); border-radius: 22px; box-shadow: inset 0 0 0 6px #1A1714, inset 0 0 0 7px rgba(212,160,23,0.2), 0 36px 80px rgba(0,0,0,0.65); animation: vg-fade 220ms ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 24px 28px 18px; position: sticky; top: 0; background: #1A1714; border-radius: 22px 22px 0 0; z-index: 2;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 13px; background: linear-gradient(180deg,#E8C25A,#B8860B); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#131110" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+            <div><h3 style="font-weight: 800; font-size: 21px; color: #F5F0E8; margin: 0;">Subir de Nível</h3><div style="display: inline-flex; align-items: center; gap: 7px; margin-top: 4px;"><span style="font-size: 14px; font-weight: 700; color: #8a8278;">{{ f.classeNome }} · Nível {{ luNivelDe }}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span style="font-size: 15px; font-weight: 800; color: #D4A017;">{{ luNivelPara }}</span></div></div>
+          </div>
+          <button onClick="{{ closeLevelUp }}" style="width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09); color: #A8A09B; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" style-hover="color: #E8DFD0;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+        </div>
+        <div style="padding: 4px 28px 100px;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+            <div style="background: rgba(181,57,47,0.08); border: 1px solid rgba(181,57,47,0.4); border-radius: 15px; padding: 16px 18px;">
+              <div style="display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #e0a3a3; margin-bottom: 12px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="#d4564a"><path d="M12 21s-7-4.35-9.5-8.5C.5 9 2 5 5.5 5 7.5 5 9 6.2 12 9c3-2.8 4.5-4 6.5-4C22 5 23.5 9 21.5 12.5 19 16.65 12 21 12 21z"/></svg>Pontos de Vida</div>
+              <div style="display: flex; align-items: baseline; gap: 9px;"><span style="font-size: 16px; color: #6B6560; font-weight: 600; text-decoration: line-through;">{{ luHpDe }}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B6560" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span style="font-weight: 800; font-size: 34px; line-height: 1; color: #F5F0E8;">{{ luHpPara }}</span><span style="font-size: 14px; font-weight: 800; color: #7c9b6e;">{{ luHpGanho }}</span></div>
+            </div>
+            <div style="background: #221d18; border: 1px solid rgba(212,160,23,0.22); border-radius: 15px; padding: 16px 18px;">
+              <div style="display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #8a8278; margin-bottom: 12px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B8860B" stroke-width="1.6"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.5 5.7 21l2.3-7.1-6-4.5h7.6z"/></svg>Proficiência</div>
+              <sc-if value="{{ luProfMuda }}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: baseline; gap: 9px;"><span style="font-size: 16px; color: #6B6560; font-weight: 600; text-decoration: line-through;">{{ luProfDe }}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B6560" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span style="font-weight: 800; font-size: 34px; line-height: 1; color: #D4A017;">{{ luProfPara }}</span></div></sc-if>
+              <sc-if value="{{ luProfNaoMuda }}" hint-placeholder-val="{{ true }}"><div style="font-weight: 800; font-size: 34px; line-height: 1; color: #F5F0E8; margin-top: 0;">{{ luProfPara }}<span style="font-size: 13px; color: #6B6560; font-weight: 600; margin-left: 8px;">sem alteração</span></div></sc-if>
+            </div>
+          </div>
+          <sc-if value="{{ luIsAsi }}" hint-placeholder-val="{{ false }}">
+            <div style="background: rgba(212,160,23,0.05); border: 1px solid rgba(212,160,23,0.25); border-radius: 16px; padding: 18px 20px; margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 14px;"><span style="width: 4px; height: 18px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h4 style="font-weight: 800; font-size: 15px; color: #EAD9B0; margin: 0;">Aumento de Valor de Atributo</h4></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 16px;">
+                <button onClick="{{ setAsi2 }}" style="text-align: left; padding: 13px 16px; border-radius: 12px; cursor: pointer; background: {{ luMode2Bg }}; border: {{ luMode2Border }};"><div style="font-weight: 700; font-size: 14px; color: {{ luMode2Color }};">+2 em um atributo</div><div style="font-size: 12px; color: #6B6560; margin-top: 2px;">Concentre o aumento</div></button>
+                <button onClick="{{ setAsi11 }}" style="text-align: left; padding: 13px 16px; border-radius: 12px; cursor: pointer; background: {{ luMode11Bg }}; border: {{ luMode11Border }};"><div style="font-weight: 700; font-size: 14px; color: {{ luMode11Color }};">+1 em dois atributos</div><div style="font-size: 12px; color: #6B6560; margin-top: 2px;">Distribua o aumento</div></button>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 9px;">
+                <sc-for list="{{ luAttrGrid }}" as="a" hint-placeholder-count="6">
+                  <div onClick="{{ a.onClick }}" style="text-align: center; padding: 13px 8px; border-radius: 13px; cursor: pointer; background: {{ a.bg }}; border: {{ a.border }};">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #8a8278;">{{ a.sigla }}</div>
+                    <div style="display: flex; align-items: baseline; justify-content: center; gap: 5px; margin-top: 5px;"><span style="font-weight: 800; font-size: 24px; color: #F5F0E8;">{{ a.valorAtual }}</span><sc-if value="{{ a.temDelta }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 800; color: #7c9b6e;">{{ a.deltaLabel }}</span></sc-if></div>
+                    <div style="font-size: 12px; color: #D4A017; font-weight: 700; margin-top: 3px;">{{ a.novoMod }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 14px;"><span style="width: 4px; height: 18px; border-radius: 2px; background: linear-gradient(180deg,#E8C25A,#B8860B);"></span><h4 style="font-weight: 800; font-size: 15px; color: #EAD9B0; margin: 0;">Destaques no nível {{ luNivelPara }}</h4></div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <sc-for list="{{ luHighlights }}" as="h" hint-placeholder-count="2">
+                <div style="display: flex; align-items: center; gap: 12px; background: #221d18; border: 1px solid rgba(212,160,23,0.18); border-radius: 12px; padding: 12px 16px;"><span style="width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0; background: rgba(212,160,23,0.1); border: 1px solid rgba(212,160,23,0.25); display: inline-flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4A017" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6 4.5 2.3 7.1L12 16.5 5.7 21l2.3-7.1-6-4.5h7.6z"/></svg></span><span style="font-size: 14.5px; font-weight: 600; color: #F5F0E8;">{{ h }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{ luTemSlots }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 14px;"><span style="width: 4px; height: 18px; border-radius: 2px; background: linear-gradient(180deg,#c79bf0,#9b8cf0);"></span><h4 style="font-weight: 800; font-size: 15px; color: #d8cdf2; margin: 0;">Espaços de Magia no nível {{ luNivelPara }}</h4></div>
+              <div style="display: flex; flex-wrap: wrap; gap: 9px;">
+                <sc-for list="{{ luSlots }}" as="s" hint-placeholder-count="3">
+                  <div style="background: #221d18; border: 1px solid rgba(155,124,240,0.3); border-radius: 12px; padding: 11px 20px; text-align: center;"><div style="font-size: 11px; color: #8a8278; font-weight: 600;">{{ s.circulo }} círculo</div><div style="font-weight: 800; font-size: 24px; color: #b3a4f5; margin-top: 3px;">{{ s.qtd }}</div></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+        <div style="position: sticky; bottom: 0; background: #1A1714; border-top: 1px solid rgba(255,255,255,0.08); padding: 16px 28px 22px; border-radius: 0 0 22px 22px; display: flex; justify-content: flex-end;">
+          <button onClick="{{ confirmLevelUp }}" style="display: inline-flex; align-items: center; gap: 9px; font-size: 15px; font-weight: 800; color: {{ luConfirmColor }}; background: {{ luConfirmBg }}; border: none; border-radius: 12px; padding: 13px 28px; cursor: {{ luConfirmCursor }};"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Confirmar Level Up</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    route: 'home', activeId: null, tab: 'geral', live: null,
+    passo: 1, maxPasso: 1,
+    w: null, fichas: null,
+    settingsOpen: false,
+    settings: { rastrearPeso: true, gerenciarOuro: true, reembolso: false, moedasSimples: false },
+    levelUpOpen: false,
+    lu: { asiMode: '+2', asiAttrs: [] },
+    itemBusca: '', itemFiltro: 'Todos', magiaBusca: '',
+    importOpen: false, importState: 'idle',
+  };
+  asiLevels = [4, 8, 12, 16, 19];
+
+  componentDidMount() {
+    if (!this.state.fichas) this.setState({ fichas: this.seed(), w: this.freshW() });
+  }
+
+  mod(s) { return Math.floor((s - 10) / 2); }
+  fmt(n) { return n >= 0 ? '+' + n : '' + n; }
+  xpTable(l) { return ({ 1: 300, 2: 900, 3: 2700, 4: 6500, 5: 14000, 6: 23000, 7: 34000, 8: 48000 })[l] || 999999; }
+  freshW() {
+    return { nivel: 1, classe: 'barbaro', subclasse: 'Caminho do Berserker', especie: 'orc', antecedente: 'soldado',
+      atributos: { FOR: 15, DES: 13, CON: 14, INT: 10, SAB: 12, CAR: 8 },
+      pericias: ['Atletismo', 'Percepção'], idiomas: ['Comum', 'Orc'], equipamento: 'A', nome: '', traco: '',
+      nomeJogador: '', alinhamento: 'Caótico e Neutro', traco2: '', ideais: '', vinculos: '', fraquezas: '', historia: '',
+      idade: '', altura: '', peso: '', olhos: '', pele: '', cabelo: '' };
+  }
+
+  seed() {
+    return [
+      { id: 'grukk', inicial: 'G', cor: '#D4A017', nome: 'Grukk Pedra-Cinza', classe: 'barbaro', classeNome: 'Bárbaro',
+        especie: 'Orc', antecedente: 'Soldado', alinhamento: 'Caótico e Neutro', nivel: 1, data: 'hoje',
+        atributos: { FOR: 15, DES: 13, CON: 14, INT: 10, SAB: 12, CAR: 8 }, saves: ['FOR', 'CON'],
+        pericias: ['Atletismo', 'Percepção'], hpMax: 14, ca: 13, desloc: '9', dadoVida: 'd12', visaoEscuro: 36,
+        furiaMax: 2, recursoNome: 'Fúria', recursoDesc: '+2 de dano e resistência física', xpAtual: 0, xpProx: 300, po: 15,
+        ataques: [{ nome: 'Machado Grande', tipo: 'Corpo a corpo', tipoDano: 'Cortante', bonus: '+4', dano: '1d12+2' }, { nome: 'Machadinha', tipo: 'CaC / arremesso', tipoDano: 'Cortante', bonus: '+4', dano: '1d6+2' }],
+        tracos: [{ nome: 'Pico de Adrenalina', desc: 'Ação bônus: Correr e ganhar PV temporários igual ao bônus de proficiência.', usos: '2 / 2' }, { nome: 'Vigor Implacável', desc: 'Ao chegar a 0 PV, permanece com 1. Uma vez por descanso longo.', usos: '1 / 1' }, { nome: 'Defesa sem Armadura', desc: 'Sem armadura, a CA é 10 + Destreza + Constituição.' }, { nome: 'Maestria em Arma', desc: 'Usa propriedades de maestria em duas armas corpo a corpo.' }],
+        inventario: [{ nome: 'Machado Grande', peso: '3,5 kg', equipado: true }, { nome: 'Machadinha ×4', peso: '4 kg', equipado: true }, { nome: 'Kit de Aventureiro', peso: '27,5 kg', equipado: false }, { nome: 'Corda de cânhamo (15 m)', peso: '2,5 kg', equipado: false }],
+        cargaKg: 37.5, cargaMax: 112.5, magia: null,
+        historia: 'Forjado nas pedreiras de Cinza-Funda, Grukk trocou a picareta pelo machado quando os saqueadores vieram. Hoje carrega a fúria das montanhas e a culpa de quem sobreviveu — busca redenção na linha de frente, protegendo os fracos com o próprio corpo.', idiomas: 'Comum, Orc' },
+
+      { id: 'liriel', inicial: 'L', cor: '#9b8cf0', nome: 'Líriel Auravento', classe: 'mago', classeNome: 'Maga',
+        especie: 'Alto-Elfo', antecedente: 'Sábia', alinhamento: 'Leal e Bom', nivel: 3, data: 'ontem',
+        atributos: { FOR: 8, DES: 14, CON: 12, INT: 16, SAB: 11, CAR: 13 }, saves: ['INT', 'SAB'],
+        pericias: ['Arcanismo', 'História', 'Investigação'], hpMax: 20, ca: 12, desloc: '9', dadoVida: 'd6', visaoEscuro: 18,
+        furiaMax: 0, xpAtual: 1200, xpProx: 2700, po: 48,
+        ataques: [{ nome: 'Adaga', tipo: 'CaC / arremesso', tipoDano: 'Perfurante', bonus: '+5', dano: '1d4+2' }, { nome: 'Raio de Fogo (truque)', tipo: 'À distância', tipoDano: 'Ígneo', bonus: '+5', dano: '1d10' }],
+        tracos: [{ nome: 'Recuperação Arcana', desc: 'Recupera espaços de magia em um descanso curto.', usos: '1 / 1' }, { nome: 'Tradição: Evocação', desc: 'Esculpe magias para poupar aliados da área de efeito.' }, { nome: 'Visão no Escuro', desc: 'Enxerga 18 m no escuro como se fosse penumbra.' }],
+        inventario: [{ nome: 'Grimório', peso: '1,5 kg', equipado: true }, { nome: 'Adaga', peso: '0,5 kg', equipado: true }, { nome: 'Bolsa de Componentes', peso: '1 kg', equipado: true }, { nome: 'Vestes de Viajante', peso: '2 kg', equipado: true }],
+        cargaKg: 8, cargaMax: 40, magia: { cd: 13, ataque: '+5', slots: [{ nivel: '1º', total: 4, usados: 1 }, { nivel: '2º', total: 2, usados: 0 }], magias: [{ nome: 'Mísseis Mágicos', nivel: '1º', escola: 'Evocação' }, { nome: 'Escudo Arcano', nivel: '1º', escola: 'Abjuração' }, { nome: 'Imagem Espelhada', nivel: '2º', escola: 'Ilusão' }, { nome: 'Raio de Fogo', nivel: 'Truque', escola: 'Evocação' }, { nome: 'Prestidigitação', nivel: 'Truque', escola: 'Transmutação' }] },
+        historia: 'Filha das torres de cristal de Aurévia, Líriel abandonou a academia em busca de magias proibidas que poderiam curar a praga arcana que consome sua linhagem.', idiomas: 'Comum, Élfico, Dracônico' },
+
+      { id: 'bram', inicial: 'B', cor: '#e0a050', nome: 'Bram Ferrabraço', classe: 'clerigo', classeNome: 'Clérigo',
+        especie: 'Anão da Montanha', antecedente: 'Acólito', alinhamento: 'Leal e Neutro', nivel: 2, data: 'há 3 dias',
+        atributos: { FOR: 14, DES: 10, CON: 15, INT: 11, SAB: 16, CAR: 12 }, saves: ['SAB', 'CAR'],
+        pericias: ['Religião', 'Medicina', 'Intuição'], hpMax: 18, ca: 18, desloc: '7,5', dadoVida: 'd8', visaoEscuro: 18,
+        furiaMax: 0, xpAtual: 450, xpProx: 900, po: 22,
+        ataques: [{ nome: 'Maça', tipo: 'Corpo a corpo', tipoDano: 'Concussão', bonus: '+4', dano: '1d6+2' }, { nome: 'Chama Sagrada (truque)', tipo: 'À distância', tipoDano: 'Radiante', bonus: 'CD 14', dano: '1d8' }],
+        tracos: [{ nome: 'Canalizar Divindade', desc: 'Expulsar Mortos-Vivos ou Preservar a Vida.', usos: '1 / 1' }, { nome: 'Domínio da Vida', desc: 'Magias de cura restauram pontos de vida adicionais.' }, { nome: 'Resistência Anã', desc: 'Vantagem contra veneno e resistência a dano de veneno.' }],
+        inventario: [{ nome: 'Maça', peso: '2 kg', equipado: true }, { nome: 'Escudo', peso: '3 kg', equipado: true }, { nome: 'Cota de Malha', peso: '27,5 kg', equipado: true }, { nome: 'Símbolo Sagrado', peso: '0,5 kg', equipado: true }],
+        cargaKg: 33, cargaMax: 105, magia: { cd: 14, ataque: '+6', slots: [{ nivel: '1º', total: 3, usados: 1 }], magias: [{ nome: 'Curar Ferimentos', nivel: '1º', escola: 'Evocação' }, { nome: 'Bênção', nivel: '1º', escola: 'Encantamento' }, { nome: 'Palavra Curativa', nivel: '1º', escola: 'Evocação' }, { nome: 'Chama Sagrada', nivel: 'Truque', escola: 'Evocação' }, { nome: 'Orientação', nivel: 'Truque', escola: 'Adivinhação' }] },
+        historia: 'Guardião do santuário de Moradin sob a Montanha Quebrada, Bram ouviu o chamado para levar a luz da forja às terras de superfície tomadas pela sombra.', idiomas: 'Comum, Anão' },
+
+      { id: 'nyx', inicial: 'N', cor: '#6fbf9a', nome: 'Nyx Sussurro', classe: 'ladino', classeNome: 'Ladina',
+        especie: 'Halfling Pés-Leves', antecedente: 'Criminosa', alinhamento: 'Caótico e Bom', nivel: 4, data: 'há 1 semana',
+        atributos: { FOR: 9, DES: 17, CON: 13, INT: 12, SAB: 14, CAR: 11 }, saves: ['DES', 'INT'],
+        pericias: ['Furtividade', 'Acrobacia', 'Prestidigitação', 'Investigação', 'Percepção'], hpMax: 27, ca: 15, desloc: '7,5', dadoVida: 'd8', visaoEscuro: 0,
+        furiaMax: 0, xpAtual: 4000, xpProx: 6500, po: 90,
+        ataques: [{ nome: 'Adaga', tipo: 'CaC / arremesso', tipoDano: 'Perfurante', bonus: '+6', dano: '1d4+3' }, { nome: 'Besta de Mão', tipo: 'À distância', tipoDano: 'Perfurante', bonus: '+6', dano: '1d6+3' }],
+        tracos: [{ nome: 'Ataque Furtivo', desc: 'Causa 2d6 de dano extra ao atacar com vantagem.', usos: '2d6' }, { nome: 'Ação Ardilosa', desc: 'Correr, Desengajar ou Esconder como ação bônus.' }, { nome: 'Sorte (Halfling)', desc: 'Rerrola um 1 natural em testes, ataques e salvaguardas.' }, { nome: 'Perícia', desc: 'Dobra o bônus de proficiência em quatro perícias.' }],
+        inventario: [{ nome: 'Adaga ×2', peso: '1 kg', equipado: true }, { nome: 'Besta de Mão', peso: '1,5 kg', equipado: true }, { nome: 'Ferramentas de Ladrão', peso: '0,5 kg', equipado: true }, { nome: 'Armadura de Couro', peso: '5 kg', equipado: true }],
+        cargaKg: 8, cargaMax: 27, magia: null,
+        historia: 'Crescida nos becos de Portoescuro, Nyx aprendeu cedo que sombras guardam segredos — e segredos valem mais que ouro. Agora vende seus talentos a quem paga, mas nunca trai quem chama de amigo.', idiomas: 'Comum, Halfling, Ladrão (gíria)' },
+    ];
+  }
+
+  // ---------- navigation ----------
+  go(route) { this.setState({ route }); window.scrollTo(0, 0); }
+  openFicha(id) {
+    const f = this.state.fichas.find(x => x.id === id); if (!f) return;
+    const defs = this.resourceDefs(f.classe, f.nivel);
+    const recursos = {}; defs.forEach(r => { recursos[r.key] = r.max; });
+    const moedas = f.moedas || { pc: 0, pp: 0, pe: 0, po: f.po, pl: 0 };
+    // backfill editable / narrative fields on the sheet so they persist across tabs
+    this.setState(s => ({ route: 'ficha', activeId: id, tab: 'geral',
+      fichas: s.fichas.map(x => x.id !== id ? x : ({
+        ...x,
+        nomeJogador: x.nomeJogador || this.defaultJogador(x.id),
+        campanha: x.campanha || 'A Maldição de Strahd',
+        pers: x.pers || this.defaultPers(x),
+      })),
+      live: { nivel: f.nivel, hpMax: f.hpMax, hp: f.hpMax, xp: f.xpAtual, xpProx: f.xpProx,
+        furiaMax: f.furiaMax || 0, furia: f.furiaMax || 0, cond: [], exaustao: 0, notas: '',
+        moedas, recursos } }));
+    window.scrollTo(0, 0);
+  }
+  defaultJogador(id) { return ({ grukk: 'Marcos', liriel: 'Bia', bram: 'Téo', nyx: 'Lara' })[id] || 'Jogador'; }
+  defaultPers(f) {
+    const M = {
+      grukk: { tracos: ['Falo pouco; minhas ações falam mais alto.', 'Carrego um amuleto de pedra que esfrego antes da batalha.'], ideais: 'Os fracos merecem um escudo. Eu serei esse escudo.', vinculos: 'Falhei em proteger meu clã uma vez. Nunca mais.', fraquezas: 'Minha fúria às vezes me cega para o perigo real.' },
+      liriel: { tracos: ['Sempre tenho uma teoria — geralmente longa demais.', 'Anoto tudo que vejo num caderno gasto.'], ideais: 'O conhecimento é a única magia que ninguém pode roubar.', vinculos: 'Minha linhagem carrega uma praga arcana que jurei curar.', fraquezas: 'Sacrifico o bom senso por um segredo proibido.' },
+      bram: { tracos: ['Vejo presságios em tudo.', 'Cito as escrituras de Moradin em qualquer ocasião.'], ideais: 'A forja molda o metal; a fé molda a alma.', vinculos: 'O santuário sob a Montanha Quebrada é meu lar e dever.', fraquezas: 'Confio cedo demais em quem invoca os deuses.' },
+      nyx: { tracos: ['Um sorriso fácil esconde mil cálculos.', 'Nunca me sento de costas para a porta.'], ideais: 'Liberdade. Correntes são feitas para serem abertas.', vinculos: 'Quem me chama de amiga tem minha lâmina para sempre.', fraquezas: 'Não resisto a um cofre trancado — nem ao risco.' },
+    };
+    return M[f.id] || { tracos: [(f.historia || '').slice(0, 80) || 'A definir.', ''], ideais: 'A definir.', vinculos: 'A definir.', fraquezas: 'A definir.' };
+  }
+  resourceDefs(classe, nivel) {
+    const furias = nivel < 3 ? 2 : nivel < 6 ? 3 : nivel < 12 ? 4 : nivel < 17 ? 5 : 6;
+    const map = {
+      barbaro: [{ key: 'furia', label: 'Fúrias', type: 'pips', max: furias, desc: '+2 de dano e resistência física', accent: '#d4564a' }],
+      bardo: [{ key: 'inspiracao', label: 'Inspiração de Bardo', type: 'pips', max: 3, desc: 'Dado de inspiração a um aliado', accent: '#c79bf0' }],
+      clerigo: [{ key: 'canalizar', label: 'Canalizar Divindade', type: 'pips', max: nivel < 6 ? 1 : 2, desc: 'Expulsar mortos-vivos ou poder de domínio', accent: '#e0c060' }],
+      paladino: [{ key: 'canalizar', label: 'Canalizar Divindade', type: 'pips', max: 1, desc: 'Poder sagrado do juramento', accent: '#e0c060' }, { key: 'imposicao', label: 'Imposição de Mãos', type: 'pool', max: nivel * 5, step: 5, desc: 'Reserva de cura (pontos de vida)', accent: '#7c9b6e' }],
+      druida: [{ key: 'formas', label: 'Formas Selvagens', type: 'pips', max: 2, desc: 'Transforme-se em uma fera', accent: '#7c9b6e' }],
+      feiticeiro: [{ key: 'feiticaria', label: 'Pontos de Feitiçaria', type: 'pool', max: nivel, desc: 'Metamagia e conversão de espaços', accent: '#c79bf0' }],
+      monge: [{ key: 'foco', label: 'Pontos de Foco', type: 'pool', max: nivel, desc: 'Rajada de golpes, defesa paciente, passos do vento', accent: '#6fbf9a' }],
+      guerreiro: [{ key: 'surto', label: 'Surto de Ação', type: 'pips', max: nivel < 17 ? 1 : 2, desc: 'Uma ação adicional no seu turno', accent: '#d4a017' }, { key: 'folego', label: 'Recuperar Fôlego', type: 'pips', max: 1, desc: 'Recupera 1d10 + nível de PV', accent: '#7c9b6e' }],
+    };
+    return map[classe] || [];
+  }
+  deleteFicha(id) { this.setState(s => ({ fichas: s.fichas.filter(f => f.id !== id) })); }
+  startWizard() { this.setState({ route: 'wizard', passo: 1, maxPasso: 1, w: this.freshW() }); window.scrollTo(0, 0); }
+  setTab(tab) { this.setState({ tab }); }
+
+  // ---------- wizard ----------
+  jumpStep(n) { if (n <= this.state.maxPasso) { this.setState({ passo: n }); window.scrollTo(0, 0); } }
+  wNext() { const p = this.state.passo; if (p < 12) { const np = p + 1; this.setState(s => ({ passo: np, maxPasso: Math.max(s.maxPasso, np) })); window.scrollTo(0, 0); } else { this.createFicha(); } }
+  wBack() { const p = this.state.passo; if (p > 1) { this.setState({ passo: p - 1 }); window.scrollTo(0, 0); } }
+  setW(k, v) { this.setState(s => ({ w: { ...s.w, [k]: v } })); }
+  nivelAdj(d) { this.setState(s => ({ w: { ...s.w, nivel: Math.max(1, Math.min(20, s.w.nivel + d)) } })); }
+  toggleArr(k, name) { this.setState(s => { const arr = s.w[k]; const has = arr.includes(name); return { w: { ...s.w, [k]: has ? arr.filter(x => x !== name) : [...arr, name] } }; }); }
+  cost(v) { return (v - 8) + Math.max(0, v - 13); }
+  pontosUsados() { const a = this.state.w.atributos; return Object.keys(a).reduce((t, k) => t + this.cost(a[k]), 0); }
+  adjAttr(k, d) {
+    this.setState(s => {
+      const cur = s.w.atributos[k]; const nv = cur + d;
+      if (nv < 8 || nv > 15) return null;
+      if (d > 0) { const usados = Object.keys(s.w.atributos).reduce((t, kk) => t + this.cost(kk === k ? nv : s.w.atributos[kk]), 0); if (usados > 27) return null; }
+      return { w: { ...s.w, atributos: { ...s.w.atributos, [k]: nv } } };
+    });
+  }
+
+  classeMeta() {
+    return {
+      barbaro: { nome: 'Bárbaro', dado: 'd12', dadoN: 12, attr: 'FOR', desc: 'Fúria implacável e resistência sobre-humana.', caster: false, subs: ['Caminho do Berserker', 'Caminho do Coração Selvagem', 'Caminho do Guerreiro Arbóreo', 'Caminho do Zelote'] },
+      guerreiro: { nome: 'Guerreiro', dado: 'd10', dadoN: 10, attr: 'FOR / DES', desc: 'Mestre absoluto de armas e táticas.', caster: false, subs: ['Campeão', 'Mestre de Batalha', 'Cavaleiro Élder', 'Soldado Psíquico'] },
+      ladino: { nome: 'Ladino', dado: 'd8', dadoN: 8, attr: 'DES', desc: 'Ataque furtivo devastador e perícia incomparável.', caster: false, subs: ['Ladrão', 'Assassino', 'Trapaceiro Arcano', 'Alma da Lâmina'] },
+      mago: { nome: 'Mago', dado: 'd6', dadoN: 6, attr: 'INT', desc: 'O maior arsenal de magias do jogo.', caster: true, subs: ['Evocação', 'Abjuração', 'Ilusão', 'Adivinhação'] },
+      clerigo: { nome: 'Clérigo', dado: 'd8', dadoN: 8, attr: 'SAB', desc: 'Canaliza o poder divino para curar e punir.', caster: true, subs: ['Domínio da Vida', 'Domínio da Guerra', 'Domínio da Luz', 'Domínio da Trapaça'] },
+      patrulheiro: { nome: 'Patrulheiro', dado: 'd10', dadoN: 10, attr: 'DES / SAB', desc: 'Caçador das ermas, metade conjurador.', caster: true, subs: ['Caçador', 'Senhor das Feras', 'Andarilho Sombrio', 'Enxameador'] },
+    };
+  }
+  especieMeta() {
+    return { orc: { nome: 'Orc', desc: 'Ímpeto Implacável e Resistência Marcial.' }, humano: { nome: 'Humano', desc: 'Versátil: perícia e talento extras.' }, elfo: { nome: 'Alto-Elfo', desc: 'Visão no escuro e truque arcano.' }, anao: { nome: 'Anão', desc: 'Resistência a veneno e deslocamento firme.' }, halfling: { nome: 'Halfling', desc: 'Sorte e Bravura contra o medo.' }, draconato: { nome: 'Draconato', desc: 'Sopro elemental e resistência a dano.' } };
+  }
+
+  createFicha() {
+    const w = this.state.w; const cm = this.classeMeta()[w.classe]; const em = this.especieMeta()[w.especie];
+    const conMod = this.mod(w.atributos.CON); const dexMod = this.mod(w.atributos.DES); const forMod = this.mod(w.atributos.FOR);
+    const prof = w.nivel < 5 ? 2 : (w.nivel < 9 ? 3 : 4);
+    const hpMax = cm.dadoN + conMod + (w.nivel - 1) * (Math.floor(cm.dadoN / 2) + 1 + conMod);
+    const ataqueBonus = this.fmt(prof + (cm.attr.includes('FOR') ? forMod : dexMod));
+    const danoMod = cm.attr.includes('FOR') ? forMod : dexMod;
+    const armaNome = { barbaro: 'Machado Grande', guerreiro: 'Espada Longa', ladino: 'Adaga', mago: 'Adaga', clerigo: 'Maça', patrulheiro: 'Arco Longo' }[w.classe];
+    const armaDado = { barbaro: '1d12', guerreiro: '1d8', ladino: '1d4', mago: '1d4', clerigo: '1d6', patrulheiro: '1d8' }[w.classe];
+    const antNome = { soldado: 'Soldado', sabio: 'Sábio', criminoso: 'Criminoso', artesao: 'Artesão', acolito: 'Acólito', forasteiro: 'Forasteiro' }[w.antecedente];
+    const id = 'f' + Date.now();
+    const nome = (w.nome || '').trim() || 'Novo Aventureiro';
+    const conjAttr = cm.attr.includes('INT') ? 'INT' : (cm.attr.includes('SAB') ? 'SAB' : 'INT');
+    const ficha = {
+      id, inicial: nome[0].toUpperCase(), cor: '#D4A017', nome, classe: w.classe, classeNome: cm.nome,
+      especie: em.nome, antecedente: antNome, alinhamento: 'Neutro', nivel: w.nivel, data: 'agora',
+      atributos: { ...w.atributos }, saves: [cm.attr.includes('FOR') ? 'FOR' : 'DES', cm.attr.includes('SAB') ? 'SAB' : 'CON'],
+      pericias: [...w.pericias], hpMax, ca: 10 + dexMod + (w.classe === 'barbaro' ? conMod : 2), desloc: (w.especie === 'anao' || w.especie === 'halfling') ? '7,5' : '9',
+      dadoVida: cm.dado, visaoEscuro: (w.especie === 'orc' || w.especie === 'elfo' || w.especie === 'anao') ? 18 : 0,
+      furiaMax: w.classe === 'barbaro' ? 2 : 0, recursoNome: 'Fúria', recursoDesc: '+2 de dano e resistência física',
+      xpAtual: 0, xpProx: this.xpTable(w.nivel), po: 15,
+      ataques: [{ nome: armaNome, tipo: 'Corpo a corpo', tipoDano: 'Cortante', bonus: ataqueBonus, dano: armaDado + this.fmt(danoMod).replace('+', '+') }],
+      tracos: [{ nome: cm.subs ? w.subclasse : 'Traço de Classe', desc: 'Especialização escolhida na criação.' }, { nome: em.nome, desc: em.desc }],
+      inventario: w.equipamento === 'A' ? [{ nome: armaNome, peso: '3 kg', equipado: true }, { nome: 'Kit de Explorador', peso: '20 kg', equipado: false }] : [{ nome: 'Bolsa com 75 PO', peso: '1 kg', equipado: false }],
+      cargaKg: w.equipamento === 'A' ? 23 : 1, cargaMax: 7.5 * w.atributos.FOR,
+      magia: cm.caster ? { cd: 8 + prof + this.mod(w.atributos[conjAttr]), ataque: this.fmt(prof + this.mod(w.atributos[conjAttr])), slots: [{ nivel: '1º', total: 2, usados: 0 }], magias: [{ nome: 'Truque de Classe', nivel: 'Truque', escola: '—' }, { nome: 'Magia de 1º Nível', nivel: '1º', escola: '—' }] } : null,
+      historia: (w.traco || '').trim() || 'Uma nova lenda começa a ser escrita. A história deste aventureiro ainda está por vir.',
+      idiomas: w.idiomas.join(', '),
+    };
+    this.setState(s => ({ fichas: [ficha, ...s.fichas] }), () => this.openFicha(id));
+  }
+
+  // ---------- ficha live ----------
+  ganharXp() { this.setState(s => ({ live: { ...s.live, xp: Math.min(s.live.xpProx, s.live.xp + 150) } })); }
+  subirNivel() {
+    this.setState(s => {
+      const f = s.fichas.find(x => x.id === s.activeId);
+      const conMod = this.mod(f.atributos.CON); const dadoN = { d12: 12, d10: 10, d8: 8, d6: 6 }[f.dadoVida] || 8;
+      const nivel = s.live.nivel + 1; const carry = s.live.xp - s.live.xpProx;
+      const hpMax = s.live.hpMax + Math.floor(dadoN / 2) + 1 + conMod;
+      return { live: { ...s.live, nivel, hpMax, hp: hpMax, xp: Math.max(0, carry), xpProx: this.xpTable(nivel) } };
+    });
+  }
+  hpDelta(d) { this.setState(s => ({ live: { ...s.live, hp: Math.max(0, Math.min(s.live.hpMax, s.live.hp + d)) } })); }
+  setFuria(n) { this.setState(s => ({ live: { ...s.live, furia: s.live.furia === n ? n - 1 : n } })); }
+
+  // ---------- settings ----------
+  openSettings() { this.setState({ settingsOpen: true }); }
+  closeSettings() { this.setState({ settingsOpen: false }); }
+  toggleSetting(k) { this.setState(s => ({ settings: { ...s.settings, [k]: !s.settings[k] } })); }
+
+  // ---------- import ----------
+  openImport() { this.setState({ importOpen: true, importState: 'idle' }); }
+  closeImport() { this.setState({ importOpen: false }); }
+  setImportState(v) { this.setState({ importState: v }); }
+
+  // ---------- anotações ----------
+  toggleCond(name) { this.setState(s => { const has = s.live.cond.includes(name); return { live: { ...s.live, cond: has ? s.live.cond.filter(c => c !== name) : [...s.live.cond, name] } }; }); }
+  setExaustao(n) { this.setState(s => ({ live: { ...s.live, exaustao: s.live.exaustao === n ? n - 1 : n } })); }
+  onNotas(e) { const v = e.target.value; this.setState(s => ({ live: { ...s.live, notas: v } })); }
+
+  // ---------- resources & currency ----------
+  adjRecurso(key, d, max) { this.setState(s => { const cur = s.live.recursos[key] || 0; const nv = Math.max(0, Math.min(max, cur + d)); return { live: { ...s.live, recursos: { ...s.live.recursos, [key]: nv } } }; }); }
+  setRecursoPip(key, n) { this.setState(s => { const cur = s.live.recursos[key] || 0; return { live: { ...s.live, recursos: { ...s.live.recursos, [key]: cur === n ? n - 1 : n } } }; }); }
+  setMoeda(k, v) { const n = Math.max(0, parseInt(('' + v).replace(/[^0-9]/g, ''), 10) || 0); this.setState(s => ({ live: { ...s.live, moedas: { ...s.live.moedas, [k]: n } } })); }
+
+  // ---------- level up ----------
+  openLevelUp() { this.setState({ levelUpOpen: true, lu: { asiMode: '+2', asiAttrs: [] } }); }
+  closeLevelUp() { this.setState({ levelUpOpen: false }); }
+  setAsiMode(m) { this.setState({ lu: { asiMode: m, asiAttrs: [] } }); }
+  toggleAsiAttr(k) {
+    this.setState(s => {
+      const af = s.fichas.find(x => x.id === s.activeId); const cur = af.atributos[k];
+      const arr = s.lu.asiAttrs;
+      if (s.lu.asiMode === '+2') { if (arr[0] === k) return { lu: { ...s.lu, asiAttrs: [] } }; if (cur >= 19) return null; return { lu: { ...s.lu, asiAttrs: [k] } }; }
+      if (arr.includes(k)) return { lu: { ...s.lu, asiAttrs: arr.filter(x => x !== k) } };
+      if (arr.length >= 2 || cur >= 20) return null;
+      return { lu: { ...s.lu, asiAttrs: [...arr, k] } };
+    });
+  }
+  confirmLevelUp() {
+    this.setState(s => {
+      const novoNivel = s.live.nivel + 1; const isAsi = this.asiLevels.includes(novoNivel);
+      let fichas = s.fichas;
+      if (isAsi) {
+        const inc = {};
+        if (s.lu.asiMode === '+2') { (s.lu.asiAttrs[0] != null) && (inc[s.lu.asiAttrs[0]] = 2); }
+        else { s.lu.asiAttrs.forEach(k => { inc[k] = (inc[k] || 0) + 1; }); }
+        fichas = s.fichas.map(x => x.id !== s.activeId ? x : ({ ...x, atributos: Object.keys(x.atributos).reduce((o, k) => { o[k] = x.atributos[k] + (inc[k] || 0); return o; }, {}) }));
+      }
+      const f2 = fichas.find(x => x.id === s.activeId);
+      const conMod = this.mod(f2.atributos.CON); const dadoN = { d12: 12, d10: 10, d8: 8, d6: 6 }[f2.dadoVida] || 8;
+      const carry = s.live.xp - s.live.xpProx; const hpMax = s.live.hpMax + Math.floor(dadoN / 2) + 1 + conMod;
+      const defs = this.resourceDefs(f2.classe, novoNivel); const recursos = { ...s.live.recursos }; defs.forEach(r => { recursos[r.key] = r.max; });
+      return { fichas, levelUpOpen: false, live: { ...s.live, nivel: novoNivel, hpMax, hp: hpMax, xp: Math.max(0, carry), xpProx: this.xpTable(novoNivel), recursos } };
+    });
+  }
+  levelHighlights(classe, nivel) {
+    const T = {
+      barbaro: { 2: ['Ataque Imprudente', 'Sentido de Perigo'], 3: ['Caminho Primal (subclasse)', 'Saber Primal'], 4: ['Aumento de Atributo'], 5: ['Ataque Extra', 'Movimento Rápido'], 6: ['Traço do Caminho Primal'], 7: ['Instinto Selvagem'], 8: ['Aumento de Atributo'] },
+      mago: { 2: ['Tradição Arcana (subclasse)'], 3: ['Magias de 2º Círculo'], 4: ['Aumento de Atributo', 'Truque adicional'], 5: ['Magias de 3º Círculo'], 6: ['Traço de Tradição Arcana'], 7: ['Magias de 4º Círculo'], 8: ['Aumento de Atributo'] },
+      clerigo: { 2: ['Canalizar Divindade (1×)'], 3: ['Magias de 2º Círculo'], 4: ['Aumento de Atributo'], 5: ['Destruir Mortos-Vivos'], 6: ['Canalizar Divindade (2×)', 'Traço de Domínio'], 7: ['Magias de 4º Círculo'], 8: ['Aumento de Atributo'] },
+      ladino: { 2: ['Ação Ardilosa'], 3: ['Arquétipo Ladino (subclasse)', 'Ataque Furtivo 2d6'], 4: ['Aumento de Atributo'], 5: ['Esquiva Sobrenatural', 'Ataque Furtivo 3d6'], 6: ['Expertise'], 7: ['Evasão', 'Ataque Furtivo 4d6'], 8: ['Aumento de Atributo'] },
+    };
+    return (T[classe] || {})[nivel] || ['Novos pontos de vida máximos', 'Avanço de classe'];
+  }
+  spellSlotsAt(classe, nivel) {
+    const full = { 1: [2], 2: [3], 3: [4, 2], 4: [4, 3], 5: [4, 3, 2], 6: [4, 3, 3], 7: [4, 3, 3, 1], 8: [4, 3, 3, 2], 9: [4, 3, 3, 3, 1], 10: [4, 3, 3, 3, 2] };
+    if (classe === 'mago' || classe === 'clerigo') return full[Math.min(20, nivel)] || full[10];
+    return [];
+  }
+
+  // ---------- editar (mutates the active sheet) ----------
+  patchFichaFn(updater) { this.setState(s => ({ fichas: s.fichas.map(f => f.id === s.activeId ? updater(f) : f) })); }
+  setFichaField(k, v) { this.patchFichaFn(f => ({ ...f, [k]: v })); }
+  setFichaPers(k, v) { this.patchFichaFn(f => ({ ...f, pers: { ...f.pers, [k]: v } })); }
+  editAttr(k, d) { this.patchFichaFn(f => { const nv = Math.max(1, Math.min(30, f.atributos[k] + d)); return { ...f, atributos: { ...f.atributos, [k]: nv } }; }); }
+  toggleFichaPericia(name) { this.patchFichaFn(f => ({ ...f, pericias: f.pericias.includes(name) ? f.pericias.filter(p => p !== name) : [...f.pericias, name] })); }
+  setEditNivel(v) { const n = Math.max(1, Math.min(20, parseInt(('' + v).replace(/[^0-9]/g, ''), 10) || 1)); this.setState(s => ({ live: { ...s.live, nivel: n, xpProx: this.xpTable(n) } })); }
+  setEditXp(v) { const n = Math.max(0, parseInt(('' + v).replace(/[^0-9]/g, ''), 10) || 0); this.setState(s => ({ live: { ...s.live, xp: n } })); }
+  setEditCA(v) { const n = Math.max(1, parseInt(('' + v).replace(/[^0-9]/g, ''), 10) || 10); this.patchFichaFn(f => ({ ...f, ca: n })); }
+  setItemBusca(e) { this.setState({ itemBusca: e.target.value }); }
+  setItemFiltro(v) { this.setState({ itemFiltro: v }); }
+  setMagiaBusca(e) { this.setState({ magiaBusca: e.target.value }); }
+  addItem(it) { this.patchFichaFn(f => ({ ...f, inventario: [...f.inventario, { nome: it.nome, peso: it.peso, equipado: false }] })); }
+  removeItem(nome) { this.patchFichaFn(f => ({ ...f, inventario: f.inventario.filter(i => i.nome !== nome) })); }
+  removeMagia(nome) { this.patchFichaFn(f => f.magia ? ({ ...f, magia: { ...f.magia, magias: f.magia.magias.filter(m => m.nome !== nome) } }) : f); }
+  addMagia(m) { this.patchFichaFn(f => f.magia && !f.magia.magias.some(x => x.nome === m.nome) ? ({ ...f, magia: { ...f.magia, magias: [...f.magia.magias, { nome: m.nome, nivel: m.nivel, escola: m.escola } ] } }) : f); }
+  itemCatalogo() {
+    return [
+      { nome: 'Espada Longa', tipo: 'Arma', peso: '1,5 kg', custo: '15 PO' }, { nome: 'Arco Curto', tipo: 'Arma', peso: '1 kg', custo: '25 PO' },
+      { nome: 'Adaga', tipo: 'Arma', peso: '0,5 kg', custo: '2 PO' }, { nome: 'Maça', tipo: 'Arma', peso: '2 kg', custo: '5 PO' },
+      { nome: 'Cota de Malha', tipo: 'Armadura', peso: '27,5 kg', custo: '75 PO' }, { nome: 'Armadura de Couro', tipo: 'Armadura', peso: '5 kg', custo: '10 PO' },
+      { nome: 'Escudo', tipo: 'Armadura', peso: '3 kg', custo: '10 PO' }, { nome: 'Kit de Cura', tipo: 'Kit', peso: '1,5 kg', custo: '5 PO' },
+      { nome: 'Kit de Explorador', tipo: 'Kit', peso: '20 kg', custo: '10 PO' }, { nome: 'Ferramentas de Ladrão', tipo: 'Ferramenta', peso: '0,5 kg', custo: '25 PO' },
+      { nome: 'Instrumentos de Artesão', tipo: 'Ferramenta', peso: '2,5 kg', custo: '15 PO' }, { nome: 'Cavalo de Montaria', tipo: 'Transporte', peso: '—', custo: '75 PO' },
+      { nome: 'Poção de Cura', tipo: 'Mágico', peso: '0,25 kg', custo: '50 PO' }, { nome: 'Tocha (×10)', tipo: 'Kit', peso: '5 kg', custo: '1 PC' },
+    ];
+  }
+  magiaCatalogo() {
+    return [
+      { nome: 'Bola de Fogo', nivel: '3º', escola: 'Evocação' }, { nome: 'Contramágica', nivel: '3º', escola: 'Abjuração' },
+      { nome: 'Voo', nivel: '3º', escola: 'Transmutação' }, { nome: 'Relâmpago', nivel: '3º', escola: 'Evocação' },
+      { nome: 'Invisibilidade', nivel: '2º', escola: 'Ilusão' }, { nome: 'Enregelar', nivel: '1º', escola: 'Evocação' },
+      { nome: 'Sono', nivel: '1º', escola: 'Encantamento' }, { nome: 'Detectar Magia', nivel: '1º', escola: 'Adivinhação' },
+      { nome: 'Mãos Mágicas', nivel: 'Truque', escola: 'Conjuração' }, { nome: 'Luz', nivel: 'Truque', escola: 'Evocação' },
+    ];
+  }
+
+  renderVals() {
+    const st = this.state;
+    const rHome = st.route === 'home', rWizard = st.route === 'wizard', rFicha = st.route === 'ficha';
+    const out = { rHome, rWizard, rFicha, goHome: () => this.go('home'), startWizard: () => this.startWizard() };
+
+    out.stopProp = (e) => e.stopPropagation();
+
+    // ---------- SETTINGS MODAL ----------
+    out.settingsOpen = st.settingsOpen;
+    out.openSettings = () => this.openSettings();
+    out.closeSettings = () => this.closeSettings();
+    const settingDefs = [
+      ['rastrearPeso', 'Rastrear Peso', 'Exibe barras de carga e peso dos itens no inventário.'],
+      ['gerenciarOuro', 'Gerenciar Ouro', 'Deduz automaticamente o custo ao adicionar itens à mochila.'],
+      ['reembolso', 'Reembolso ao Vender', 'Devolve o valor do item em PO ao vendê-lo no inventário.'],
+      ['moedasSimples', 'Moedas Simplificadas', 'Exibe apenas PO no inventário (oculta PC, PP, PE e PL).'],
+    ];
+    out.settingRows = settingDefs.map(([k, nome, desc]) => {
+      const on = st.settings[k];
+      return { nome, desc, on, knobLeft: on ? '23px' : '3px', trackBg: on ? '#D4A017' : 'rgba(255,255,255,0.12)', knobBg: on ? '#131110' : '#8a8278', onToggle: () => this.toggleSetting(k) };
+    });
+
+    // ---------- IMPORT MODAL ----------
+    out.importOpen = st.importOpen;
+    out.openImport = () => this.openImport();
+    out.closeImport = () => this.closeImport();
+    out.importIdle = st.importState === 'idle';
+    out.importPreview = st.importState === 'preview';
+    out.importError = st.importState === 'error';
+    out.importToPreview = () => this.setImportState('preview');
+    out.importToError = () => this.setImportState('error');
+    out.importToIdle = () => this.setImportState('idle');
+    out.importConfirm = () => { this.setState({ importOpen: false }); };
+
+    // ---------- HOME ----------
+    const fichas = st.fichas || [];
+    out.temFichas = fichas.length > 0;
+    out.semFichas = fichas.length === 0;
+    out.fichasCount = fichas.length + (fichas.length === 1 ? ' personagem' : ' personagens');
+    out.homeCards = fichas.map(f => ({
+      inicial: f.inicial, cor: f.cor, nome: f.nome, data: f.data,
+      resumo: 'Nível ' + f.nivel + ' ' + f.classeNome + ' · ' + f.especie,
+      onContinuar: () => this.openFicha(f.id), onDeletar: () => this.deleteFicha(f.id),
+    }));
+
+    // ---------- WIZARD ----------
+    if (st.w) {
+      const w = st.w; const cm = this.classeMeta(); const cmeta = cm[w.classe];
+      const passo = st.passo;
+      out.passo = passo;
+      const stepNomes = ['Nível', 'Classe', 'Subclasse', 'Espécie', 'Antecedente', 'Atributos', 'Perícias', 'Magias', 'Idiomas', 'Equipamento', 'Personalidade', 'Revisar'];
+      const stepSubs = ['Em que nível seu personagem começa?', 'Define seu dado de vida, proficiências e poderes.', 'Sua especialização dentro da classe.', 'A herança que molda corpo e dons.', 'O que seu personagem fazia antes de aventurar.', 'Distribua os valores pela compra de pontos.', 'No que seu personagem é treinado.', 'As magias que você prepara.', 'Os idiomas que você fala.', 'Como você começa equipado.', 'Quem é seu personagem.', 'Confira tudo antes de criar.'];
+      out.stepTitulo = stepNomes[passo - 1];
+      out.stepSub = stepSubs[passo - 1];
+      for (let i = 1; i <= 12; i++) out['is' + i] = passo === i;
+
+      out.wizardSteps = stepNomes.map((nome, i) => {
+        const n = i + 1; const done = n < passo; const cur = n === passo; const reach = n <= st.maxPasso;
+        return { n, nome, isDone: done, isNum: !done,
+          rowBg: cur ? 'rgba(212,160,23,0.07)' : 'transparent', cursor: reach ? 'pointer' : 'default',
+          numBg: done ? '#D4A017' : (cur ? 'rgba(212,160,23,0.12)' : '#1A1714'),
+          numColor: done ? '#131110' : (cur ? '#D4A017' : '#6B6560'),
+          numBorder: (done || cur) ? '1px solid #D4A017' : '1px solid rgba(255,255,255,0.1)',
+          labelColor: cur ? '#F5F0E8' : (done ? '#A8A09B' : '#6B6560'), labelWeight: cur ? 700 : 600,
+          onClick: () => this.jumpStep(n) };
+      });
+
+      out.wNivel = w.nivel;
+      out.nivelMinus = () => this.nivelAdj(-1);
+      out.nivelPlus = () => this.nivelAdj(1);
+
+      const selStyle = (sel) => ({ cardBg: sel ? 'rgba(212,160,23,0.06)' : '#1A1714', cardBorder: sel ? '1px solid rgba(212,160,23,0.6)' : '1px solid rgba(212,160,23,0.16)', sel });
+      out.classes = Object.keys(cm).map(id => ({ nome: cm[id].nome, dado: cm[id].dado, attr: cm[id].attr, desc: cm[id].desc, ...selStyle(w.classe === id), onClick: () => this.setW('classe', id) }));
+      out.subclasses = (cmeta.subs || []).map(nm => ({ nome: nm, ...selStyle(w.subclasse === nm), onClick: () => this.setW('subclasse', nm) }));
+      const em = this.especieMeta();
+      out.especies = Object.keys(em).map(id => ({ nome: em[id].nome, desc: em[id].desc, ...selStyle(w.especie === id), onClick: () => this.setW('especie', id) }));
+      const ants = { soldado: 'Treinamento militar e atletismo.', sabio: 'Conhecimento arcano e histórico.', criminoso: 'Furtividade e contatos no submundo.', artesao: 'Domínio de um ofício e ferramentas.', acolito: 'Serviço a um templo e religião.', forasteiro: 'Sobrevivência nas ermas selvagens.' };
+      out.antecedentes = Object.keys(ants).map(id => ({ nome: id.charAt(0).toUpperCase() + id.slice(1), desc: ants[id], ...selStyle(w.antecedente === id), onClick: () => this.setW('antecedente', id) }));
+
+      const nomesAttr = { FOR: 'Força', DES: 'Destreza', CON: 'Constituição', INT: 'Inteligência', SAB: 'Sabedoria', CAR: 'Carisma' };
+      out.attrRows = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'].map(k => { const v = w.atributos[k]; return { sigla: k, nome: nomesAttr[k], valor: v, mod: this.fmt(this.mod(v)), onMinus: () => this.adjAttr(k, -1), onPlus: () => this.adjAttr(k, 1) }; });
+      const rest = 27 - this.pontosUsados();
+      out.pontosRestantes = rest;
+      out.pontosColor = rest < 0 ? '#d4564a' : (rest === 0 ? '#7c9b6e' : '#D4A017');
+
+      const periciasClasse = ['Atletismo', 'Intimidação', 'Natureza', 'Percepção', 'Sobrevivência', 'Adestrar Animais', 'Acrobacia', 'Arcanismo', 'História', 'Investigação', 'Furtividade', 'Persuasão'];
+      out.periciasOpts = periciasClasse.map(nm => { const sel = w.pericias.includes(nm); return { nome: nm, sel, bg: sel ? 'rgba(212,160,23,0.06)' : '#1A1714', border: sel ? '1px solid rgba(212,160,23,0.5)' : '1px solid rgba(255,255,255,0.08)', boxBg: sel ? '#D4A017' : 'transparent', boxBorder: sel ? '1px solid #D4A017' : '1px solid rgba(255,255,255,0.2)', onClick: () => this.toggleArr('pericias', nm) }; });
+
+      out.wCaster = cmeta.caster; out.wNaoCaster = !cmeta.caster; out.wClasseNome = cmeta.nome;
+      out.magiasOpts = [{ nome: 'Truque elemental', nivel: 'Truque', escola: '—' }, { nome: 'Magia de 1º nível', nivel: '1º', escola: '—' }, { nome: 'Magia de 1º nível', nivel: '1º', escola: '—' }];
+
+      const idiomasTodos = ['Comum', 'Orc', 'Anão', 'Élfico', 'Dracônico', 'Gigante', 'Infernal', 'Silvestre'];
+      out.idiomasOpts = idiomasTodos.map(nm => { const sel = w.idiomas.includes(nm); return { nome: nm, color: sel ? '#131110' : '#A8A09B', bg: sel ? '#D4A017' : 'rgba(255,255,255,0.04)', border: sel ? '1px solid #D4A017' : '1px solid rgba(255,255,255,0.1)', onClick: () => this.toggleArr('idiomas', nm) }; });
+
+      const eqDefs = [{ id: 'A', titulo: 'Pacote do Aventureiro', desc: 'Arma inicial, kit de explorador, tochas e mantimentos. Pronto para partir.' }, { id: 'B', titulo: 'Riqueza Inicial', desc: 'Comece com 75 PO e compre seu próprio equipamento na cidade.' }];
+      out.equipOpts = eqDefs.map(e => { const sel = w.equipamento === e.id; return { titulo: e.titulo, desc: e.desc, cardBg: sel ? 'rgba(212,160,23,0.06)' : '#1A1714', cardBorder: sel ? '1px solid rgba(212,160,23,0.6)' : '1px solid rgba(212,160,23,0.16)', dotBg: sel ? '#D4A017' : 'transparent', dotBorder: sel ? '4px solid #D4A017' : '2px solid rgba(255,255,255,0.2)', onClick: () => this.setW('equipamento', e.id) }; });
+
+      out.wNome = w.nome; out.onNome = (e) => this.setW('nome', e.target.value);
+      out.wNomeJogador = w.nomeJogador; out.onNomeJogador = (e) => this.setW('nomeJogador', e.target.value);
+      out.wTraco = w.traco; out.onTraco = (e) => this.setW('traco', e.target.value);
+      out.wTraco2 = w.traco2; out.onTraco2 = (e) => this.setW('traco2', e.target.value);
+      out.wIdeais = w.ideais; out.onIdeais = (e) => this.setW('ideais', e.target.value);
+      out.wVinculos = w.vinculos; out.onVinculos = (e) => this.setW('vinculos', e.target.value);
+      out.wFraquezas = w.fraquezas; out.onFraquezas = (e) => this.setW('fraquezas', e.target.value);
+      out.wHistoria = w.historia; out.onHistoria = (e) => this.setW('historia', e.target.value);
+      out.wIdade = w.idade; out.onIdade = (e) => this.setW('idade', e.target.value);
+      out.wAltura = w.altura; out.onAltura = (e) => this.setW('altura', e.target.value);
+      out.wPeso = w.peso; out.onPeso = (e) => this.setW('peso', e.target.value);
+      out.wOlhos = w.olhos; out.onOlhos = (e) => this.setW('olhos', e.target.value);
+      out.wPele = w.pele; out.onPele = (e) => this.setW('pele', e.target.value);
+      out.wCabelo = w.cabelo; out.onCabelo = (e) => this.setW('cabelo', e.target.value);
+      const wAlinFlat = ['Leal e Bom', 'Neutro e Bom', 'Caótico e Bom', 'Leal e Neutro', 'Neutro', 'Caótico e Neutro', 'Leal e Mau', 'Neutro e Mau', 'Caótico e Mau'];
+      out.wAlinhGrid = wAlinFlat.map(label => { const sel = w.alinhamento === label; return { label, sel, bg: sel ? 'rgba(212,160,23,0.14)' : '#1A1714', border: sel ? '1px solid rgba(212,160,23,0.7)' : '1px solid rgba(255,255,255,0.08)', color: sel ? '#F5F0E8' : '#8a8278', weight: sel ? 700 : 500, onClick: () => this.setW('alinhamento', label) }; });
+
+      out.revInicial = (w.nome.trim() || 'A')[0].toUpperCase();
+      out.revNome = w.nome.trim() || 'Novo Aventureiro';
+      out.revResumo = 'Nível ' + w.nivel + ' ' + cmeta.nome + ' · ' + em[w.especie].nome + ' · ' + (w.antecedente.charAt(0).toUpperCase() + w.antecedente.slice(1));
+
+      out.wNext = () => this.wNext(); out.wBack = () => this.wBack();
+      out.voltarColor = passo > 1 ? '#A8A09B' : '#4a443c';
+      out.continuarLabel = passo === 12 ? 'Criar Personagem' : 'Continuar';
+    }
+
+    // ---------- FICHA ----------
+    const af = (st.fichas || []).find(x => x.id === st.activeId);
+    if (af && st.live) {
+      const live = st.live; const prof = live.nivel < 5 ? 2 : (live.nivel < 9 ? 3 : 4);
+      const at = af.atributos;
+      const profPerc = af.pericias.includes('Percepção');
+      const initMod = this.mod(at.DES);
+      const percPassiva = 10 + this.mod(at.SAB) + (profPerc ? prof : 0);
+      out.f = {
+        cor: af.cor, inicial: af.inicial, nome: af.nome, classeNome: af.classeNome,
+        classeNivel: af.classeNome + ' ' + live.nivel, especie: af.especie, antecedente: af.antecedente,
+        ca: af.ca, initStr: this.fmt(initMod), desloc: af.desloc, profStr: '+' + prof, percPassiva,
+        visaoStr: af.visaoEscuro > 0 ? af.visaoEscuro + ' m' : '—', dadoVida: af.dadoVida, po: af.po,
+        historia: af.historia, alinhamento: af.alinhamento, idiomas: af.idiomas, classe: af.classe,
+      };
+      out.liveNivel = live.nivel;
+      out.hpAtual = live.hp; out.hpMax = live.hpMax;
+      const hpRatio = live.hpMax ? live.hp / live.hpMax : 0;
+      out.hpPct = Math.round(hpRatio * 100) + '%';
+      out.hpColor = hpRatio > 0.5 ? 'linear-gradient(90deg,#9B2C2C,#d4564a)' : (hpRatio > 0.25 ? 'linear-gradient(90deg,#9a6a1a,#d4a017)' : 'linear-gradient(90deg,#7a1f1f,#b53a2f)');
+      out.hpEstado = live.hp === 0 ? 'Inconsciente' : (hpRatio <= 0.25 ? 'Crítico' : (hpRatio < 1 ? 'Ferido' : 'Saudável'));
+      out.xpAtual = live.xp; out.xpProx = live.xpProx;
+      out.xpPct = Math.max(0, Math.min(100, (live.xp / live.xpProx) * 100)) + '%';
+      const podeSubir = live.xp >= live.xpProx;
+      out.podeSubir = podeSubir; out.naoPodeSubir = !podeSubir;
+      out.xpFalta = Math.max(0, live.xpProx - live.xp) + ' XP';
+      out.ganharXp = () => this.ganharXp(); out.subirNivel = () => this.subirNivel();
+      out.hpDano = () => this.hpDelta(-3); out.hpCura = () => this.hpDelta(3);
+
+      // tabs
+      const tabsDef = [['geral', 'Visão geral'], ['pericias', 'Perícias'], ['combate', 'Combate'], ['magia', 'Magia'], ['inventario', 'Inventário'], ['anotacoes', 'Anotações'], ['editar', '✎ Editar']];
+      out.fichaTabs = tabsDef.map(([id, nome]) => { const a = st.tab === id; return { nome, weight: a ? 700 : 600, color: a ? '#F5F0E8' : '#8a8278', border: a ? '#D4A017' : 'transparent', onClick: () => this.setTab(id) }; });
+      out.tabGeral = st.tab === 'geral'; out.tabPericias = st.tab === 'pericias'; out.tabCombate = st.tab === 'combate';
+      out.tabMagia = st.tab === 'magia'; out.tabInventario = st.tab === 'inventario'; out.tabAnotacoes = st.tab === 'anotacoes'; out.tabEditar = st.tab === 'editar';
+      out.openSettings = () => this.openSettings();
+
+      out.atributos = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'].map(k => { const v = at[k]; const m = this.mod(k === 'CON' ? v : v); const sp = af.saves.includes(k); const save = this.mod(v) + (sp ? prof : 0); return { sigla: k, valor: v, modStr: this.fmt(this.mod(v)), saveStr: this.fmt(save), saveDot: sp ? '#D4A017' : '#4a443c', saveColor: sp ? '#D4A017' : '#8a8278' }; });
+
+      out.ataques = af.ataques; out.tracos = af.tracos.map(t => ({ nome: t.nome, desc: t.desc, temUsos: !!t.usos, usos: t.usos || '' }));
+      out.inventario = af.inventario;
+      out.cargaTxt = af.cargaKg + ' / ' + af.cargaMax + ' kg';
+      out.cargaPct = Math.min(100, Math.round((af.cargaKg / af.cargaMax) * 100)) + '%';
+
+      // perícias (full list)
+      const skillDefs = [['Acrobacia', 'DES'], ['Arcanismo', 'INT'], ['Atletismo', 'FOR'], ['Atuação', 'CAR'], ['Enganação', 'CAR'], ['Furtividade', 'DES'], ['História', 'INT'], ['Intimidação', 'CAR'], ['Intuição', 'SAB'], ['Investigação', 'INT'], ['Lidar c/ Animais', 'SAB'], ['Medicina', 'SAB'], ['Natureza', 'INT'], ['Percepção', 'SAB'], ['Persuasão', 'CAR'], ['Prestidigitação', 'DES'], ['Religião', 'INT'], ['Sobrevivência', 'SAB']];
+      out.skills = skillDefs.map(([nome, attr]) => { const p = af.pericias.includes(nome); const val = this.mod(at[attr]) + (p ? prof : 0); return { nome, attr, valStr: this.fmt(val), dotBorder: p ? '#D4A017' : '#4a443c', dotFill: p ? '#D4A017' : 'transparent', nameColor: p ? '#F5F0E8' : '#A8A09B', valColor: p ? '#D4A017' : '#8a8278', rowBg: p ? 'rgba(212,160,23,0.05)' : 'transparent' }; });
+
+      // combate recurso / fúria
+      out.recursoNome = af.recursoNome || 'Recurso'; out.recursoDesc = af.recursoDesc || '';
+      const fmax = live.furiaMax || 0;
+      out.furiaPips = Array.from({ length: Math.max(fmax, 0) }, (_, i) => { const on = i < live.furia; return { bg: on ? '#d4564a' : 'transparent', border: on ? '1px solid #e88' : '1px solid rgba(255,255,255,0.2)', onClick: () => this.setFuria(i + 1) }; });
+
+      // magia
+      out.fIsCaster = !!af.magia; out.fNaoCaster = !af.magia;
+      if (af.magia) {
+        out.magiaCd = 'CD ' + af.magia.cd + ' · ' + af.magia.ataque;
+        out.magiaSlots = af.magia.slots.map(s => ({ label: s.nivel + ' nível', disp: (s.total - s.usados) + ' / ' + s.total }));
+        out.magias = af.magia.magias;
+      } else { out.magiaCd = ''; out.magiaSlots = []; out.magias = []; }
+
+      const nomesAttr2 = { FOR: 'Força', DES: 'Destreza', CON: 'Constituição', INT: 'Inteligência', SAB: 'Sabedoria', CAR: 'Carisma' };
+
+      // ---- class resources (Combate) ----
+      const rdefs = this.resourceDefs(af.classe, live.nivel);
+      out.temRecursos = rdefs.length > 0;
+      out.recursos = rdefs.map(r => {
+        const cur = live.recursos[r.key] != null ? live.recursos[r.key] : r.max;
+        const base = { label: r.label, desc: r.desc, accent: r.accent, isPips: r.type === 'pips', isPool: r.type === 'pool', contador: cur + ' / ' + r.max,
+          onMinus: () => this.adjRecurso(r.key, -(r.step || 1), r.max), onPlus: () => this.adjRecurso(r.key, (r.step || 1), r.max) };
+        if (r.type === 'pips') { base.pips = Array.from({ length: r.max }, (_, i) => { const on = i < cur; return { bg: on ? r.accent : 'transparent', border: on ? ('1px solid ' + r.accent) : '1px solid rgba(255,255,255,0.22)', onClick: () => this.setRecursoPip(r.key, i + 1) }; }); }
+        else { base.poolPct = Math.round((cur / r.max) * 100) + '%'; base.poolBg = r.accent; }
+        return base;
+      });
+
+      // ---- currencies (Inventário) ----
+      const md = live.moedas || { pc: 0, pp: 0, pe: 0, po: af.po, pl: 0 };
+      out.moedasSimples = st.settings.moedasSimples; out.moedasMulti = !st.settings.moedasSimples;
+      out.mostrarPeso = st.settings.rastrearPeso;
+      const moedaDefs = [['pc', 'PC', 'Cobre', '#b08d57'], ['pp', 'PP', 'Prata', '#c9cdd4'], ['pe', 'PE', 'Electro', '#cdbb6b'], ['po', 'PO', 'Ouro', '#D4A017'], ['pl', 'PL', 'Platina', '#9fd6e8']];
+      out.moedaCampos = moedaDefs.map(([k, sig, nome, cor]) => ({ sig, nome, cor, valor: md[k], onInput: (e) => this.setMoeda(k, e.target.value) }));
+      const totalPO = md.pc / 100 + md.pp / 10 + md.pe / 2 + md.po + md.pl * 10;
+      out.moedaTotalPO = (Math.round(totalPO * 100) / 100).toLocaleString('pt-BR'); out.moedaPoSimples = md.po;
+
+      // ---- anotações ----
+      const pers = af.pers || { tracos: ['—', '—'], ideais: '—', vinculos: '—', fraquezas: '—' };
+      out.anotTraco1 = pers.tracos[0] || '—'; out.anotTraco2 = pers.tracos[1] || '—';
+      out.anotIdeais = pers.ideais || '—'; out.anotVinculos = pers.vinculos || '—'; out.anotFraquezas = pers.fraquezas || '—';
+      out.anotHistoria = af.historia;
+      const condList = ['Enfeitiçado', 'Assustado', 'Incapacitado', 'Paralisado', 'Petrificado', 'Envenenado', 'Inconsciente', 'Surdo', 'Cego', 'Caído', 'Invisível', 'Contido', 'Fascinado', 'Exausto', 'Amaldiçoado'];
+      out.condBadges = condList.map(nm => { const on = live.cond.includes(nm); return { nome: nm, on, bg: on ? 'rgba(181,57,47,0.18)' : 'rgba(255,255,255,0.04)', border: on ? '1px solid rgba(212,84,74,0.6)' : '1px solid rgba(255,255,255,0.1)', color: on ? '#e7a3a3' : '#A8A09B', onClick: () => this.toggleCond(nm) }; });
+      const exEf = ['Nenhuma exaustão acumulada.', 'Nível 1 — Desvantagem em testes de característica.', 'Nível 2 — Deslocamento reduzido pela metade.', 'Nível 3 — Desvantagem em ataques e salvaguardas.', 'Nível 4 — Pontos de vida máximos reduzidos pela metade.', 'Nível 5 — Deslocamento reduzido a 0.', 'Nível 6 — Morte.'];
+      out.exaustNivel = live.exaustao;
+      out.exaustBotoes = Array.from({ length: 6 }, (_, i) => { const n = i + 1; const on = n <= live.exaustao; return { n, bg: on ? '#b53a2f' : 'rgba(255,255,255,0.04)', border: on ? '1px solid #d4564a' : '1px solid rgba(255,255,255,0.12)', color: on ? '#F5F0E8' : '#8a8278', onClick: () => this.setExaustao(n) }; });
+      out.exaustEfeito = exEf[live.exaustao];
+      out.notasVal = live.notas; out.onNotas = (e) => this.onNotas(e);
+
+      // ---- editar ----
+      out.edNome = af.nome; out.edJogador = af.nomeJogador || ''; out.edCampanha = af.campanha || '';
+      out.onEdNome = (e) => this.setFichaField('nome', e.target.value);
+      out.onEdJogador = (e) => this.setFichaField('nomeJogador', e.target.value);
+      out.onEdCampanha = (e) => this.setFichaField('campanha', e.target.value);
+      const alinFlat = ['Leal e Bom', 'Neutro e Bom', 'Caótico e Bom', 'Leal e Neutro', 'Neutro', 'Caótico e Neutro', 'Leal e Mau', 'Neutro e Mau', 'Caótico e Mau'];
+      out.alinhamentoGrid = alinFlat.map(label => { const sel = af.alinhamento === label; return { label, sel, bg: sel ? 'rgba(212,160,23,0.14)' : '#221d18', border: sel ? '1px solid rgba(212,160,23,0.7)' : '1px solid rgba(255,255,255,0.08)', color: sel ? '#F5F0E8' : '#8a8278', weight: sel ? 700 : 500, onClick: () => this.setFichaField('alinhamento', label) }; });
+      out.edNivel = live.nivel; out.onEdNivel = (e) => this.setEditNivel(e.target.value);
+      out.edXp = live.xp; out.onEdXp = (e) => this.setEditXp(e.target.value);
+      out.edAttrs = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'].map(k => { const v = at[k]; return { sigla: k, nome: nomesAttr2[k], valor: v, mod: this.fmt(this.mod(v)), onMinus: () => this.editAttr(k, -1), onPlus: () => this.editAttr(k, 1) }; });
+      out.edCA = af.ca; out.onEdCA = (e) => this.setEditCA(e.target.value);
+      out.armaduraOpts = ['Sem armadura', 'Acolchoada', 'Couro', 'Couro batido', 'Gibão de peles', 'Cota de malha', 'Cota de escamas', 'Peitoral', 'Meia-armadura', 'Anelar', 'Placa'];
+      const skillByAttr = { FOR: ['Atletismo'], DES: ['Acrobacia', 'Furtividade', 'Prestidigitação'], INT: ['Arcanismo', 'História', 'Investigação', 'Natureza', 'Religião'], SAB: ['Intuição', 'Lidar c/ Animais', 'Medicina', 'Percepção', 'Sobrevivência'], CAR: ['Atuação', 'Enganação', 'Intimidação', 'Persuasão'] };
+      out.edSkillGroups = ['FOR', 'DES', 'INT', 'SAB', 'CAR'].map(k => ({ attr: nomesAttr2[k], skills: skillByAttr[k].map(nm => { const p = af.pericias.includes(nm); return { nome: nm, on: p, boxBg: p ? '#D4A017' : 'transparent', boxBorder: p ? '1px solid #D4A017' : '1px solid rgba(255,255,255,0.22)', color: p ? '#F5F0E8' : '#A8A09B', onClick: () => this.toggleFichaPericia(nm) }; }) }));
+      out.edIsCaster = !!af.magia;
+      out.edMagiasConhecidas = af.magia ? af.magia.magias.map(m => ({ nome: m.nome, info: m.nivel + ' · ' + m.escola, onRemove: () => this.removeMagia(m.nome) })) : [];
+      out.edMagiaBusca = st.magiaBusca; out.onEdMagiaBusca = (e) => this.setMagiaBusca(e);
+      const mq = (st.magiaBusca || '').toLowerCase();
+      out.edMagiaResultados = af.magia ? this.magiaCatalogo().filter(m => !af.magia.magias.some(x => x.nome === m.nome) && (mq === '' || m.nome.toLowerCase().includes(mq))).slice(0, 5).map(m => ({ nome: m.nome, info: m.nivel + ' · ' + m.escola, onAdd: () => this.addMagia(m) })) : [];
+      out.edItemBusca = st.itemBusca; out.onEdItemBusca = (e) => this.setItemBusca(e);
+      out.itemFiltros = ['Todos', 'Arma', 'Armadura', 'Kit', 'Ferramenta', 'Transporte', 'Mágico'].map(ft => { const a = st.itemFiltro === ft; return { nome: ft, color: a ? '#131110' : '#A8A09B', bg: a ? '#D4A017' : 'rgba(255,255,255,0.04)', border: a ? '1px solid #D4A017' : '1px solid rgba(255,255,255,0.1)', onClick: () => this.setItemFiltro(ft) }; });
+      const iq = (st.itemBusca || '').toLowerCase();
+      out.edItemResultados = this.itemCatalogo().filter(it => (st.itemFiltro === 'Todos' || it.tipo === st.itemFiltro) && (iq === '' || it.nome.toLowerCase().includes(iq))).map(it => ({ nome: it.nome, tipo: it.tipo, peso: it.peso, custo: it.custo, onAdd: () => this.addItem(it) }));
+
+      // ---- level up modal ----
+      out.luOpen = st.levelUpOpen;
+      out.openLevelUp = () => this.openLevelUp(); out.subirNivel = () => this.openLevelUp();
+      out.closeLevelUp = () => this.closeLevelUp(); out.confirmLevelUp = () => this.confirmLevelUp();
+      const novoNivel = live.nivel + 1; const isAsi = this.asiLevels.includes(novoNivel);
+      out.luIsAsi = isAsi; out.luNaoAsi = !isAsi; out.luNivelDe = live.nivel; out.luNivelPara = novoNivel;
+      const luConMod = this.mod(af.atributos.CON); const luDadoN = { d12: 12, d10: 10, d8: 8, d6: 6 }[af.dadoVida] || 8;
+      const novoHp = live.hpMax + Math.floor(luDadoN / 2) + 1 + luConMod;
+      out.luHpDe = live.hpMax; out.luHpPara = novoHp; out.luHpGanho = '+' + (novoHp - live.hpMax);
+      const luProfDe = live.nivel < 5 ? 2 : live.nivel < 9 ? 3 : 4; const luProfPara = novoNivel < 5 ? 2 : novoNivel < 9 ? 3 : 4;
+      out.luProfMuda = luProfPara !== luProfDe; out.luProfNaoMuda = luProfPara === luProfDe; out.luProfDe = '+' + luProfDe; out.luProfPara = '+' + luProfPara;
+      out.luHighlights = this.levelHighlights(af.classe, novoNivel);
+      out.luMode2Sel = st.lu.asiMode === '+2'; out.luMode11Sel = st.lu.asiMode === '+1+1';
+      out.setAsi2 = () => this.setAsiMode('+2'); out.setAsi11 = () => this.setAsiMode('+1+1');
+      out.luMode2Bg = st.lu.asiMode === '+2' ? 'rgba(212,160,23,0.14)' : '#221d18'; out.luMode2Border = st.lu.asiMode === '+2' ? '1px solid rgba(212,160,23,0.7)' : '1px solid rgba(255,255,255,0.08)'; out.luMode2Color = st.lu.asiMode === '+2' ? '#F5F0E8' : '#8a8278';
+      out.luMode11Bg = st.lu.asiMode === '+1+1' ? 'rgba(212,160,23,0.14)' : '#221d18'; out.luMode11Border = st.lu.asiMode === '+1+1' ? '1px solid rgba(212,160,23,0.7)' : '1px solid rgba(255,255,255,0.08)'; out.luMode11Color = st.lu.asiMode === '+1+1' ? '#F5F0E8' : '#8a8278';
+      const luDelta = (k) => { if (!isAsi) return 0; if (st.lu.asiMode === '+2') return st.lu.asiAttrs[0] === k ? 2 : 0; return st.lu.asiAttrs.includes(k) ? 1 : 0; };
+      out.luAttrGrid = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'].map(k => { const v = af.atributos[k]; const d = luDelta(k); const sel = d > 0; const nv = v + d; return { sigla: k, nome: nomesAttr2[k], valorAtual: v, modAtual: this.fmt(this.mod(v)), sel, temDelta: d > 0, deltaLabel: '+' + d, novoMod: this.fmt(this.mod(nv)), bg: sel ? 'rgba(212,160,23,0.12)' : '#221d18', border: sel ? '1px solid rgba(212,160,23,0.7)' : '1px solid rgba(255,255,255,0.08)', onClick: () => this.toggleAsiAttr(k) }; });
+      out.luIsCaster = !!af.magia;
+      out.luSlots = this.spellSlotsAt(af.classe, novoNivel).map((q, i) => ({ circulo: (i + 1) + 'º', qtd: q }));
+      out.luTemSlots = out.luSlots.length > 0;
+      let luOk = true; if (isAsi) { luOk = st.lu.asiMode === '+2' ? st.lu.asiAttrs.length === 1 : st.lu.asiAttrs.length === 2; }
+      out.luConfirmOk = luOk; out.luConfirmBg = luOk ? '#D4A017' : 'rgba(212,160,23,0.25)'; out.luConfirmColor = luOk ? '#131110' : '#6B6560'; out.luConfirmCursor = luOk ? 'pointer' : 'not-allowed';
+    }
+
+    return out;
+  }
+}
+</script>
+</body>
+</html>

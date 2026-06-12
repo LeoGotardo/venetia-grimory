@@ -5,7 +5,7 @@ import { STORAGE_KEY_FICHA_PREFIX, STORAGE_KEY_LISTA } from '../constants'
 function buildListItem(id: string, ficha: Ficha): FichaListItem {
   return {
     id,
-    nome: ficha.identidade.nome_personagem ?? 'Sem nome',
+    nome: ficha.identidade.nome_personagem ?? '',
     classe: ficha.identidade.classe_id ?? '—',
     especie: ficha.identidade.especie_id ?? '—',
     nivel: ficha.identidade.nivel,
