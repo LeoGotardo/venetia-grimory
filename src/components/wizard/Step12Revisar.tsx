@@ -96,7 +96,7 @@ export function Step12Revisar() {
         onBack={() => setPasso(11)}
         onNext={criar}
         isLast
-        nextLabel="Criar Personagem ✦"
+        nextLabel="Criar Personagem"
         nextDisabled={!id.classe_id || !id.especie_id}
       />
     </div>

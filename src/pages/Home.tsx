@@ -7,6 +7,7 @@ import dadosJson from '../data/dnd_dados.json'
 import type { DadosJogo } from '../types'
 import { ConfigModal } from '../components/ui/ConfigModal'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
+import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { useState } from 'react'
 
 const dados = dadosJson as unknown as DadosJogo
@@ -43,7 +44,7 @@ export function Home() {
       {/* Sticky navbar */}
       <header className="sticky top-0 z-10 flex items-center justify-between h-[60px] px-7 bg-[#161311] border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <StarIcon />
+          <VenetiaLogo />
           <span className="font-extrabold tracking-[0.04em] text-sm text-[#E8DFD0]">Venetia</span>
         </div>
         <button
@@ -194,13 +195,6 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
   )
 }
 
-function StarIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="#B8860B">
-      <path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/>
-    </svg>
-  )
-}
 
 function GearIcon() {
   return (

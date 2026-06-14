@@ -148,7 +148,9 @@ function PainelConjuntoPadrao({
               htmlFor={`padrao-${attr}`}
               className={`text-sm font-semibold ${nomePrimeiroSugerido === attr ? 'text-[#D4A017]' : 'text-[#B8860B]'}`}
             >
-              {ATRIBUTO_NOMES[attr]} {nomePrimeiroSugerido === attr && '⭐'}
+              {ATRIBUTO_NOMES[attr]}{nomePrimeiroSugerido === attr && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="#D4A017" className="inline ml-1 mb-0.5"><path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/></svg>
+          )}
             </label>
             <select
               id={`padrao-${attr}`}
@@ -181,7 +183,8 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
         onClick={wizard.rolarAleatorio}
         className="px-6 py-3 bg-[#7B1D1D] hover:bg-[#9B2C2C] border border-[#B8860B]/30 rounded-lg text-[#F5F0E8] font-cinzel font-semibold text-lg transition-colors cursor-pointer"
       >
-        🎲 Rolar (4d6 descarta menor)
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
+        Rolar (4d6 descarta menor)
       </button>
 
       {wizard.rolagemValores.length > 0 && (

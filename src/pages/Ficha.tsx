@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useFichaStore } from '../store/fichaStore'
 import { carregarFicha as verificarFicha } from '../services/fichaStorage'
 import { useFichaExport } from '../hooks/useFichaExport'
+import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { PainelCombate } from '../components/ficha/PainelCombate'
 import { PainelAtributos } from '../components/ficha/PainelAtributos'
 import { PainelPericias } from '../components/ficha/PainelPericias'
@@ -117,7 +118,7 @@ export function Ficha() {
           </button>
           <div className="hidden sm:block w-px h-[22px] bg-white/10" />
           <div className="hidden sm:flex items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#B8860B"><path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/></svg>
+            <VenetiaLogo />
             <span className="font-extrabold tracking-[0.04em] text-sm text-[#E8DFD0]">Venetia</span>
           </div>
         </div>

@@ -25,7 +25,9 @@ export function PainelMagia() {
   if (!magia.conjurador) {
     return (
       <div className="text-center py-10 text-[#A8A09B]">
-        <p className="text-4xl mb-3 opacity-40">✦</p>
+        <div className="mb-3 flex justify-center opacity-40">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="#B8860B"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+        </div>
         <p className="font-cinzel text-[#B8860B] mb-1">Não conjurador</p>
         <p className="text-sm">Este personagem não possui habilidades mágicas.</p>
       </div>

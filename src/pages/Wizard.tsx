@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useFichaStore } from '../store/fichaStore'
 import { ConfigModal } from '../components/ui/ConfigModal'
+import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { Step01Nivel } from '../components/wizard/Step01Nivel'
 import { Step02Classe } from '../components/wizard/Step02Classe'
 import { Step03Subclasse } from '../components/wizard/Step03Subclasse'
@@ -53,9 +54,7 @@ export function Wizard() {
       {/* Header — sticky */}
       <header className="sticky top-0 z-20 flex items-center justify-between h-[60px] px-4 sm:px-7 bg-[#161311] border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#B8860B">
-            <path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/>
-          </svg>
+          <VenetiaLogo />
           <span className="font-extrabold tracking-[0.04em] text-sm text-[#E8DFD0]">Venetia</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3">

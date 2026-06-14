@@ -112,8 +112,16 @@ export function Step05Antecedente() {
                 </Badge>
               ))}
             </div>
-            {a.ferramenta && <p className="text-xs text-[#A8A09B]">🔧 {a.ferramenta}</p>}
-            <p className="text-xs text-[#B8860B] mt-1">✦ {a.talento}</p>
+            {a.ferramenta && (
+              <p className="flex items-center gap-1 text-xs text-[#A8A09B]">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                {a.ferramenta}
+              </p>
+            )}
+            <p className="flex items-center gap-1 text-xs text-[#B8860B] mt-1">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+              {a.talento}
+            </p>
           </Card>
         ))}
       </div>

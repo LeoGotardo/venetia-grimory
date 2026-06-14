@@ -27,8 +27,9 @@ const SECTION_TITLE = 'font-cinzel font-semibold text-[#B8860B] pb-2 border-b bo
 export function PainelEditar() {
   return (
     <div className="space-y-5 max-w-2xl">
-      <p className="text-xs text-[#A8A09B] bg-[#3D332D] border border-[#B8860B]/20 rounded-lg px-3 py-2">
-        ✦ Todas as alterações são salvas automaticamente.
+      <p className="flex items-center gap-1.5 text-xs text-[#A8A09B] bg-[#3D332D] border border-[#B8860B]/20 rounded-lg px-3 py-2">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="#B8860B" className="flex-shrink-0"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
+        Todas as alterações são salvas automaticamente.
       </p>
       <SecaoInformacoes />
       <SecaoProgressao />

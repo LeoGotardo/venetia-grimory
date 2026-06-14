@@ -174,7 +174,9 @@ export function Step08Spells() {
           </p>
         </div>
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-6 text-center">
-          <p className="text-4xl mb-3">⚔️</p>
+          <div className="mb-3 flex justify-center">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#B8860B" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-6-6"/><path d="M8 16l-4 4"/></svg>
+          </div>
           <p className="text-[#F5F0E8] font-medium">Esta classe não utiliza magia</p>
           <p className="text-[#A8A09B] text-sm mt-1">Continue para o próximo passo.</p>
         </div>

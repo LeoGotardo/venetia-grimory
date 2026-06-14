@@ -155,7 +155,8 @@ export function PainelCombate() {
             ? 'border-[#B8860B]/10 text-[#A8A09B]/40 cursor-not-allowed'
             : 'border-[#B8860B]/30 text-[#A8A09B] hover:bg-[#3D332D] hover:text-[#F5F0E8] cursor-pointer'}`}
       >
-        🛡 {ca.escudo_equipado ? 'Escudo equipado' : temEscudoNoInventario ? 'Equipar escudo' : 'Sem escudo no inventário'}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill={ca.escudo_equipado ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        {ca.escudo_equipado ? 'Escudo equipado' : temEscudoNoInventario ? 'Equipar escudo' : 'Sem escudo no inventário'}
       </button>
     </div>
   )
