@@ -27,6 +27,7 @@ export interface FichaListItem {
   especie: string
   nivel: number
   updatedAt: string
+  completa?: boolean
 }
 
 interface FichaStore {
@@ -34,6 +35,9 @@ interface FichaStore {
   fichaId: string | null
   passoAtual: number
   fichasSalvas: FichaListItem[]
+  fichaCompleta: boolean
+  rolagemAtributos: number[]
+  setRolagemAtributos: (vals: number[]) => void
 
   // Wizard
   setNivel: (nivel: number) => void
@@ -95,6 +99,9 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
   fichaId: null,
   passoAtual: 1,
   fichasSalvas: [],
+  fichaCompleta: false,
+  rolagemAtributos: [],
+  setRolagemAtributos: vals => set({ rolagemAtributos: vals }),
 
   setNivel: nivel =>
     set(s => ({ ficha: recalcular({ ...s.ficha, identidade: { ...s.ficha.identidade, nivel } }) })),
@@ -451,14 +458,21 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
     })),
 
   toggleEscudo: () =>
-    set(s => ({
-      ficha: recalcular(atualizarCombate(s.ficha, {
-        classe_de_armadura: {
-          ...s.ficha.combate.classe_de_armadura,
-          escudo_equipado: !s.ficha.combate.classe_de_armadura.escudo_equipado,
-        },
-      })),
-    })),
+    set(s => {
+      const jaEquipado = s.ficha.combate.classe_de_armadura.escudo_equipado
+      if (!jaEquipado) {
+        const temEscudo = s.ficha.inventario.itens.some(i => i.categoria === 'Escudo')
+        if (!temEscudo) return s
+      }
+      return {
+        ficha: recalcular(atualizarCombate(s.ficha, {
+          classe_de_armadura: {
+            ...s.ficha.combate.classe_de_armadura,
+            escudo_equipado: !jaEquipado,
+          },
+        })),
+      }
+    }),
 
   setArmadura: armaduraId =>
     set(s => ({
@@ -519,8 +533,8 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
   salvarLocal: () => {
     const { ficha, fichaId } = get()
     const id = fichaId ?? uuidv4()
-    salvarFicha(id, ficha)
-    set({ fichaId: id })
+    salvarFicha(id, ficha, true)
+    set({ fichaId: id, fichaCompleta: true })
   },
 
   exportarJSON: () => JSON.stringify(get().ficha, null, 2),
@@ -540,12 +554,14 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
   carregarFicha: id => {
     const ficha = carregarFichaStorage(id)
     if (!ficha) return
-    set({ ficha: recalcular(ficha), fichaId: id, passoAtual: 1 })
+    const lista = listarFichas()
+    const completa = lista.find(item => item.id === id)?.completa ?? true
+    set({ ficha: recalcular(ficha), fichaId: id, passoAtual: 1, fichaCompleta: completa })
   },
 
   novaFicha: () => {
     const id = uuidv4()
-    set({ ficha: criarFichaInicial(), fichaId: id, passoAtual: 1 })
+    set({ ficha: criarFichaInicial(), fichaId: id, passoAtual: 1, fichaCompleta: false, rolagemAtributos: [] })
   },
 
   deletarFicha: id => {
@@ -566,6 +582,6 @@ useFichaStore.subscribe(state => {
   if (saveTimeout) clearTimeout(saveTimeout)
 
   saveTimeout = setTimeout(() => {
-    salvarFicha(state.fichaId!, state.ficha)
+    salvarFicha(state.fichaId!, state.ficha, state.fichaCompleta)
   }, DEBOUNCE_SAVE_MS)
 })

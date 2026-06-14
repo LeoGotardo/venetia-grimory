@@ -25,7 +25,14 @@ export function Home() {
   )
 
   function handleNova() { novaFicha(); navigate('/novo') }
-  function handleCarregar(id: string) { carregarFicha(id); navigate(`/ficha/${id}`) }
+  function handleCarregar(f: FichaListItem) {
+    carregarFicha(f.id)
+    if (f.completa === false) {
+      navigate('/novo')
+    } else {
+      navigate(`/ficha/${f.id}`)
+    }
+  }
   function handleDeletar(f: FichaListItem) {
     if (!confirm(`Deletar "${f.nome}"? Esta ação não pode ser desfeita.`)) return
     deletarFicha(f.id)
@@ -97,7 +104,7 @@ export function Home() {
               <FichaCard
                 key={f.id}
                 ficha={f}
-                onCarregar={() => handleCarregar(f.id)}
+                onCarregar={() => handleCarregar(f)}
                 onExportar={() => exportarPorId(f.id, f.nome)}
                 onDeletar={() => handleDeletar(f)}
               />
@@ -125,16 +132,24 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
   const classe = dados.classes.find(c => c.id === ficha.classe)
   const especie = dados.especies?.find(e => e.id === ficha.especie)
   const dataFormatada = new Date(ficha.updatedAt).toLocaleDateString('pt-BR')
+  const incompleta = ficha.completa === false
 
   return (
-    <div className="vg-card p-[18px_20px]">
+    <div className={`vg-card p-[18px_20px] ${incompleta ? 'border-[rgba(212,160,23,0.15)]' : ''}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-[14px]">
           <div className="w-12 h-12 rounded-[13px] flex-shrink-0 bg-[#221d18] border border-[rgba(212,160,23,0.3)] overflow-hidden">
             <CharacterAvatar nome={ficha.nome || null} id={ficha.id} size={48} />
           </div>
           <div>
-            <div className="font-bold text-[17px] text-[#F5F0E8]">{ficha.nome || 'Sem nome'}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-[17px] text-[#F5F0E8]">{ficha.nome || 'Sem nome'}</span>
+              {incompleta && (
+                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#B8860B]/20 text-[#D4A017] border border-[#B8860B]/30">
+                  Em criação
+                </span>
+              )}
+            </div>
             <div className="text-[13px] text-[#8a8278] mt-[3px]">
               Nível {ficha.nivel} {classe?.nome ?? ficha.classe} · {especie?.nome ?? ficha.especie}
             </div>
@@ -148,8 +163,17 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
           onClick={onCarregar}
           className="flex-1 inline-flex items-center justify-center gap-[7px] text-[13px] font-bold text-[#131110] bg-[#D4A017] hover:bg-[#E8C25A] border-0 rounded-[9px] py-[9px] cursor-pointer transition-colors"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-          Continuar
+          {incompleta ? (
+            <>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg>
+              Continuar Criação
+            </>
+          ) : (
+            <>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              Abrir Ficha
+            </>
+          )}
         </button>
         <button
           onClick={onExportar}

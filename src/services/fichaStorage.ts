@@ -2,7 +2,7 @@ import type { Ficha } from '../types'
 import type { FichaListItem } from '../store/fichaStore'
 import { STORAGE_KEY_FICHA_PREFIX, STORAGE_KEY_LISTA } from '../constants'
 
-function buildListItem(id: string, ficha: Ficha): FichaListItem {
+function buildListItem(id: string, ficha: Ficha, completa: boolean): FichaListItem {
   return {
     id,
     nome: ficha.identidade.nome_personagem ?? '',
@@ -10,6 +10,7 @@ function buildListItem(id: string, ficha: Ficha): FichaListItem {
     especie: ficha.identidade.especie_id ?? '—',
     nivel: ficha.identidade.nivel,
     updatedAt: new Date().toISOString(),
+    completa,
   }
 }
 
@@ -29,15 +30,17 @@ function salvarLista(lista: FichaListItem[]): void {
   localStorage.setItem(STORAGE_KEY_LISTA, JSON.stringify(lista))
 }
 
-export function salvarFicha(id: string, ficha: Ficha): void {
+export function salvarFicha(id: string, ficha: Ficha, completa = false): void {
   localStorage.setItem(`${STORAGE_KEY_FICHA_PREFIX}${id}`, JSON.stringify(ficha))
 
   const lista = lerLista()
   const idx = lista.findIndex(item => item.id === id)
-  const novoItem = buildListItem(id, ficha)
+  const novoItem = buildListItem(id, ficha, completa)
 
   if (idx >= 0) {
-    lista[idx] = novoItem
+    // Never downgrade from complete to incomplete
+    const jaCompleta = lista[idx].completa === true
+    lista[idx] = { ...novoItem, completa: jaCompleta || completa }
   } else {
     lista.push(novoItem)
   }

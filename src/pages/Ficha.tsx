@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useFichaStore } from '../store/fichaStore'
+import { carregarFicha as verificarFicha } from '../services/fichaStorage'
 import { useFichaExport } from '../hooks/useFichaExport'
 import { PainelCombate } from '../components/ficha/PainelCombate'
 import { PainelAtributos } from '../components/ficha/PainelAtributos'
@@ -42,8 +43,15 @@ export function Ficha() {
   const [pvDelta, setPvDelta] = useState('')
 
   useEffect(() => {
-    if (id && id !== fichaId) carregarFicha(id)
-  }, [id, fichaId, carregarFicha])
+    if (!id) return
+    if (id !== fichaId) {
+      if (!verificarFicha(id)) {
+        navigate('/404', { replace: true })
+      } else {
+        carregarFicha(id)
+      }
+    }
+  }, [id])
 
   const identity = ficha.identidade
   const classe = dados.classes.find(c => c.id === identity.classe_id)

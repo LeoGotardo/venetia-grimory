@@ -9,6 +9,7 @@ const INPUT_BASE = 'bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1 te
 export function PainelCombate() {
   const { ficha, atualizarPV, atualizarPVTemp, gastarDadoVida, descansoCurto, descansoLongo, toggleEscudo } = useFichaStore()
   const { pontos_de_vida: pv, dados_de_vida: dv, classe_de_armadura: ca, iniciativa, deslocamento, _bonus_proficiencia } = ficha.combate
+  const temEscudoNoInventario = ficha.inventario.itens.some(i => i.categoria === 'Escudo')
   const [pvDelta, setPvDelta] = useState('')
   const percepcaoPassiva = 10 + (ficha.pericias.percepcao._valor ?? 0)
 
@@ -143,14 +144,18 @@ export function PainelCombate() {
       {/* Escudo toggle */}
       <button
         onClick={toggleEscudo}
+        disabled={!ca.escudo_equipado && !temEscudoNoInventario}
         aria-pressed={ca.escudo_equipado}
-        className={`px-3 py-1.5 rounded border text-sm font-medium transition-colors cursor-pointer
+        title={!temEscudoNoInventario && !ca.escudo_equipado ? 'Adicione um escudo ao inventário primeiro' : undefined}
+        className={`px-3 py-1.5 rounded border text-sm font-medium transition-colors
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]
           ${ca.escudo_equipado
-            ? 'bg-[#7B1D1D] border-[#7B1D1D] text-white'
-            : 'border-[#B8860B]/30 text-[#A8A09B] hover:bg-[#3D332D] hover:text-[#F5F0E8]'}`}
+            ? 'bg-[#7B1D1D] border-[#7B1D1D] text-white cursor-pointer'
+            : !temEscudoNoInventario
+            ? 'border-[#B8860B]/10 text-[#A8A09B]/40 cursor-not-allowed'
+            : 'border-[#B8860B]/30 text-[#A8A09B] hover:bg-[#3D332D] hover:text-[#F5F0E8] cursor-pointer'}`}
       >
-        🛡 {ca.escudo_equipado ? 'Escudo equipado' : 'Sem escudo'}
+        🛡 {ca.escudo_equipado ? 'Escudo equipado' : temEscudoNoInventario ? 'Equipar escudo' : 'Sem escudo no inventário'}
       </button>
     </div>
   )

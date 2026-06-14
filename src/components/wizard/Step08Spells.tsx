@@ -91,6 +91,14 @@ export function Step08Spells() {
       .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
   }, [progRaw])
 
+  const limitesPorCirculo = useMemo(() => {
+    const espacos = progRaw?.espacos as Record<string, number> | undefined
+    if (!espacos) return {} as Record<number, number>
+    return Object.fromEntries(
+      Object.entries(espacos).map(([k, v]) => [parseInt(k.replace('c', '')), v])
+    ) as Record<number, number>
+  }, [progRaw])
+
   const truquesDisponiveis = useMemo(
     () => getTruquesPorClasse(classeId ?? ''),
     [classeId],
@@ -104,6 +112,15 @@ export function Step08Spells() {
   const truquesSelecionados = ficha.magia.truques_conhecidos
   const magiasSelecionadas = ficha.magia.magias_preparadas
 
+  const selecionadosPorCirculo = useMemo(() => {
+    const counts: Record<number, number> = {}
+    magiasSelecionadas.forEach(nome => {
+      const m = magiasDisponiveis.find(x => x.nome === nome)
+      if (m) counts[m.circulo] = (counts[m.circulo] ?? 0) + 1
+    })
+    return counts
+  }, [magiasSelecionadas, magiasDisponiveis])
+
   function toggleTruque(nome: string) {
     const atual = truquesSelecionados
     if (atual.includes(nome)) {
@@ -113,12 +130,18 @@ export function Step08Spells() {
     }
   }
 
-  function toggleMagia(nome: string) {
+  function toggleMagia(nome: string, circulo: number) {
     const atual = magiasSelecionadas
     if (atual.includes(nome)) {
       atualizarMagia({ magias_preparadas: atual.filter(m => m !== nome) })
-    } else if (atual.length < maxMagias || maxMagias === 0) {
-      atualizarMagia({ magias_preparadas: [...atual, nome] })
+    } else {
+      const limiteCirculo = limitesPorCirculo[circulo]
+      const usadosCirculo = selecionadosPorCirculo[circulo] ?? 0
+      const dentroDoCirculo = limiteCirculo === undefined || usadosCirculo < limiteCirculo
+      const dentroDoTotal = maxMagias === 0 || atual.length < maxMagias
+      if (dentroDoCirculo && dentroDoTotal) {
+        atualizarMagia({ magias_preparadas: [...atual, nome] })
+      }
     }
   }
 
@@ -229,45 +252,66 @@ export function Step08Spells() {
 
           {/* Tabs por círculo */}
           <div className="flex gap-1 overflow-x-auto pb-1" role="tablist" aria-label="Círculos de magia">
-            {circulosDisponiveis.map(c => (
-              <button
-                key={c}
-                role="tab"
-                aria-selected={circuloAtivo === c}
-                onClick={() => setCirculoAtivo(c)}
-                className={[
-                  'px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap cursor-pointer',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
-                  circuloAtivo === c
-                    ? 'bg-[#B8860B] text-[#1A1612]'
-                    : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
-                ].join(' ')}
-              >
-                {c}º
-              </button>
-            ))}
+            {circulosDisponiveis.map(c => {
+              const usados = selecionadosPorCirculo[c] ?? 0
+              const limite = limitesPorCirculo[c]
+              const cheio = limite !== undefined && usados >= limite
+              return (
+                <button
+                  key={c}
+                  role="tab"
+                  aria-selected={circuloAtivo === c}
+                  onClick={() => setCirculoAtivo(c)}
+                  className={[
+                    'px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap cursor-pointer',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                    circuloAtivo === c
+                      ? 'bg-[#B8860B] text-[#1A1612]'
+                      : cheio
+                      ? 'bg-[#2D2520] text-[#D4A017]'
+                      : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
+                  ].join(' ')}
+                >
+                  {c}º {limite !== undefined && `${usados}/${limite}`}
+                </button>
+              )
+            })}
           </div>
 
           <div
             role="tabpanel"
             aria-label={`Magias de círculo ${circuloAtivo}`}
           >
+            {limitesPorCirculo[circuloAtivo] !== undefined && (
+              <p className="text-xs text-[#A8A09B] mb-2">
+                Espaços de magia disponíveis:{' '}
+                <span className={(selecionadosPorCirculo[circuloAtivo] ?? 0) >= limitesPorCirculo[circuloAtivo] ? 'text-[#D4A017] font-semibold' : 'text-[#F5F0E8]'}>
+                  {selecionadosPorCirculo[circuloAtivo] ?? 0}/{limitesPorCirculo[circuloAtivo]}
+                </span>
+              </p>
+            )}
             {magiasDoCirculo.length === 0 ? (
               <p className="text-xs text-[#A8A09B]">
                 {busca ? 'Nenhuma magia encontrada.' : 'Nenhuma magia disponível neste círculo.'}
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {magiasDoCirculo.map(m => (
-                  <SpellPill
-                    key={m.id}
-                    magia={m}
-                    selecionado={magiasSelecionadas.includes(m.nome)}
-                    desabilitado={magiasSelecionadas.length >= maxMagias}
-                    onToggle={() => toggleMagia(m.nome)}
-                    onInfo={() => setSpellInfo(m)}
-                  />
-                ))}
+                {magiasDoCirculo.map(m => {
+                  const limiteCirculo = limitesPorCirculo[m.circulo]
+                  const usadosCirculo = selecionadosPorCirculo[m.circulo] ?? 0
+                  const circuloCheio = limiteCirculo !== undefined && usadosCirculo >= limiteCirculo
+                  const totalCheio = maxMagias > 0 && magiasSelecionadas.length >= maxMagias
+                  return (
+                    <SpellPill
+                      key={m.id}
+                      magia={m}
+                      selecionado={magiasSelecionadas.includes(m.nome)}
+                      desabilitado={circuloCheio || totalCheio}
+                      onToggle={() => toggleMagia(m.nome, m.circulo)}
+                      onInfo={() => setSpellInfo(m)}
+                    />
+                  )
+                })}
               </div>
             )}
           </div>

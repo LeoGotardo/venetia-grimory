@@ -22,16 +22,23 @@ const VALORES_COMPRA_INICIAIS: ValoresCompra = {
   FOR: 8, DES: 8, CON: 8, INT: 8, SAB: 8, CAR: 8,
 }
 
-function rolar4d6(): number {
+export function rolar4d6(): number {
   const rolls = Array.from({ length: 4 }, () => Math.ceil(Math.random() * 6))
   return rolls.reduce((a, b) => a + b, 0) - Math.min(...rolls)
 }
 
-export function useAtributosWizard() {
+const INDICES_NULOS: Record<AtributoId, number | null> = {
+  FOR: null, DES: null, CON: null, INT: null, SAB: null, CAR: null,
+}
+
+export function useAtributosWizard(opts?: {
+  initialRoll?: number[]
+  onRoll?: (vals: number[]) => void
+}) {
   const [metodo, setMetodo] = useState<MetodoAtributos>('padrao')
   const [padrao, setPadrao] = useState<ValoresAtributos>(VALORES_NULOS)
-  const [aleatorio, setAleatorio] = useState<ValoresAtributos>(VALORES_NULOS)
-  const [rolagemValores, setRolagemValores] = useState<number[]>([])
+  const [rolagemValores, setRolagemValores] = useState<number[]>(() => opts?.initialRoll ?? [])
+  const [aleatorioIndices, setAleatorioIndices] = useState<Record<AtributoId, number | null>>(INDICES_NULOS)
   const [compra, setCompra] = useState<ValoresCompra>(VALORES_COMPRA_INICIAIS)
 
   const poolGasto = Object.values(compra).reduce(
@@ -40,6 +47,15 @@ export function useAtributosWizard() {
   )
   const poolRestante = POOL_PONTOS_COMPRA - poolGasto
 
+  const aleatorio: ValoresAtributos = ATRIBUTOS.reduce((acc, a) => {
+    const idx = aleatorioIndices[a]
+    return { ...acc, [a]: idx !== null && rolagemValores[idx] !== undefined ? rolagemValores[idx] : null }
+  }, {} as ValoresAtributos)
+
+  function isDieAvailable(dieIndex: number, forAttr: AtributoId): boolean {
+    return !ATRIBUTOS.some(a => a !== forAttr && aleatorioIndices[a] === dieIndex)
+  }
+
   function getAtributosAtuais(): ValoresAtributos {
     if (metodo === 'padrao') return padrao
     if (metodo === 'aleatorio') return aleatorio
@@ -47,7 +63,9 @@ export function useAtributosWizard() {
   }
 
   const atributosAtuais = getAtributosAtuais()
-  const estaCompleto = ATRIBUTOS.every(a => atributosAtuais[a] !== null && (atributosAtuais[a] ?? 0) > 0)
+  const estaCompleto = metodo === 'aleatorio'
+    ? rolagemValores.length === 6 && ATRIBUTOS.every(a => aleatorioIndices[a] !== null)
+    : ATRIBUTOS.every(a => atributosAtuais[a] !== null && (atributosAtuais[a] ?? 0) > 0)
 
   function isValorDisponivelNoPadrao(valor: number, attrAtual: AtributoId): boolean {
     return !Object.entries(padrao).some(([a, v]) => a !== attrAtual && v === valor)
@@ -60,15 +78,12 @@ export function useAtributosWizard() {
   function rolarAleatorio() {
     const vals = Array.from({ length: 6 }, rolar4d6)
     setRolagemValores(vals)
-    setAleatorio(prev => {
-      const novo = { ...prev }
-      ATRIBUTOS.forEach((a, i) => { novo[a] = vals[i] })
-      return novo
-    })
+    setAleatorioIndices(INDICES_NULOS)
+    opts?.onRoll?.(vals)
   }
 
-  function setAleatorioAttr(attr: AtributoId, valor: number) {
-    setAleatorio(prev => ({ ...prev, [attr]: valor }))
+  function setAleatorioAttr(attr: AtributoId, novoIndice: number | null) {
+    setAleatorioIndices(prev => ({ ...prev, [attr]: novoIndice }))
   }
 
   function setCompraAttr(attr: AtributoId, novoVal: number) {
@@ -90,6 +105,8 @@ export function useAtributosWizard() {
     isValorDisponivelNoPadrao,
     conjuntoPadrao: CONJUNTO_PADRAO_VALORES,
     aleatorio,
+    aleatorioIndices,
+    isDieAvailable,
     rolagemValores,
     rolarAleatorio,
     setAleatorioAttr,

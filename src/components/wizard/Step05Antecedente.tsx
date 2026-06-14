@@ -67,8 +67,12 @@ export function Step05Antecedente() {
   function handleConfirm() {
     if (!antecedenteId || !distribOk) return
     setAntecedente(antecedenteId, distribuicao)
-    setPasso(6)
+    setPasso(7)
   }
+
+  const atributosRolados = (['FOR','DES','CON','INT','SAB','CAR'] as AtributoId[])
+    .map(a => ({ attr: a, valor: ficha.atributos[a].valor }))
+    .filter(x => x.valor !== null) as { attr: AtributoId; valor: number }[]
 
   return (
     <div className="space-y-6">
@@ -76,6 +80,21 @@ export function Step05Antecedente() {
         <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Antecedente</h2>
         <p className="text-[#A8A09B] text-sm">A história e origem do personagem antes de se tornar um aventureiro.</p>
       </div>
+
+      {/* Atributos definidos no passo anterior */}
+      {atributosRolados.length > 0 && (
+        <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg px-4 py-3">
+          <p className="text-xs font-semibold text-[#B8860B] mb-2">Seus Atributos</p>
+          <div className="flex flex-wrap gap-2">
+            {atributosRolados.map(({ attr, valor }) => (
+              <div key={attr} className="flex flex-col items-center min-w-[44px] bg-[#3D332D] border border-[#B8860B]/20 rounded-lg px-2 py-1.5">
+                <span className="text-[10px] text-[#A8A09B] font-semibold">{attr}</span>
+                <span className="font-cinzel font-bold text-lg text-[#F5F0E8] leading-none">{valor}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {dados.antecedentes?.map(a => (
@@ -106,6 +125,7 @@ export function Step05Antecedente() {
             distribuicao={distribuicao}
             modoDistrib={modoDistrib}
             totalDistrib={totalDistrib}
+            atributosBase={ficha.atributos}
             onSetBonus={setBonus}
             onTrocarModo={trocarModo}
           />
@@ -113,7 +133,7 @@ export function Step05Antecedente() {
       )}
 
       <WizardNav
-        onBack={() => setPasso(4)}
+        onBack={() => setPasso(5)}
         onNext={handleConfirm}
         nextDisabled={!antecedenteId || !distribOk}
       />
@@ -126,6 +146,7 @@ interface DistribuicaoAtributosProps {
   distribuicao: Partial<Record<AtributoId, number>>
   modoDistrib: ModoDistribuicao
   totalDistrib: number
+  atributosBase: Record<AtributoId, { valor: number | null }>
   onSetBonus: (attr: AtributoId, val: number) => void
   onTrocarModo: (modo: ModoDistribuicao) => void
 }
@@ -135,6 +156,7 @@ function DistribuicaoAtributos({
   distribuicao,
   modoDistrib,
   totalDistrib,
+  atributosBase,
   onSetBonus,
   onTrocarModo,
 }: DistribuicaoAtributosProps) {
@@ -165,6 +187,7 @@ function DistribuicaoAtributos({
       <div className="grid grid-cols-3 gap-2">
         {ante.atributos_sugeridos.map(attr => {
           const val = distribuicao[attr] ?? 0
+          const baseRef = atributosBase[attr]?.valor ?? null
           return (
             <BonusAtributoControl
               key={attr}
@@ -172,6 +195,7 @@ function DistribuicaoAtributos({
               val={val}
               maxVal={maxPorAtributo}
               totalDistrib={totalDistrib}
+              baseRef={baseRef}
               onSetBonus={onSetBonus}
             />
           )
@@ -192,16 +216,22 @@ interface BonusAtributoControlProps {
   val: number
   maxVal: number
   totalDistrib: number
+  baseRef: number | null
   onSetBonus: (attr: AtributoId, val: number) => void
 }
 
-function BonusAtributoControl({ attr, val, maxVal, totalDistrib, onSetBonus }: BonusAtributoControlProps) {
+function BonusAtributoControl({ attr, val, maxVal, totalDistrib, baseRef, onSetBonus }: BonusAtributoControlProps) {
   const podeDecrementar = val > 0
   const podeIncrementar = val < maxVal && totalDistrib < TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE
 
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="text-[#B8860B] text-xs font-bold">{attr}</span>
+      {baseRef !== null && (
+        <span className="text-[10px] text-[#A8A09B]">
+          base ~{baseRef}{val > 0 && <span className="text-green-400"> →{baseRef + val}</span>}
+        </span>
+      )}
       <div className="flex items-center gap-1">
         <button
           onClick={() => onSetBonus(attr, Math.max(0, val - 1))}
