@@ -6,7 +6,7 @@ export function PainelAtributos() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {ATRIBUTOS.map(attr => {
           const { valor, _modificador } = ficha.atributos[attr]
           const modPos = (_modificador ?? 0) > 0

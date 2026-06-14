@@ -10,7 +10,7 @@ interface Props {
 
 export function WizardNav({ onBack, onNext, onSkip, nextLabel, backDisabled, nextDisabled, isLast }: Props) {
   return (
-    <div className="flex items-center justify-between mt-7 pt-[22px] border-t border-[rgba(212,160,23,0.16)]">
+    <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 flex-wrap mt-8 -mx-4 sm:-mx-8 md:-mx-10 px-4 sm:px-8 md:px-10 py-4 border-t border-[rgba(212,160,23,0.16)] bg-[#131110]/95 backdrop-blur-sm">
       <button
         type="button"
         onClick={onBack}

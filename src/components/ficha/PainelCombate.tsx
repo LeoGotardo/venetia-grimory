@@ -34,7 +34,7 @@ export function PainelCombate() {
   return (
     <div className="space-y-4">
       {/* Stat grid — PV hero (text-3xl), demais text-2xl */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {stats.map(({ label, value, sub, hero }) => (
           <div
             key={label}

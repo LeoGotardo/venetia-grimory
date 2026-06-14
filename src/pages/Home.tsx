@@ -51,11 +51,11 @@ export function Home() {
       <ConfigModal open={configAberta} onClose={() => setConfigAberta(false)} />
 
       {/* Main content */}
-      <div className="max-w-[920px] mx-auto px-8 py-16 pb-20">
+      <div className="max-w-[920px] mx-auto px-4 sm:px-8 py-10 sm:py-16 pb-20">
         {/* Hero */}
         <div className="text-center mb-10">
           <SwordsIcon />
-          <h1 className="font-extrabold text-[40px] tracking-tight leading-tight mt-5 mb-2 text-[#F5F0E8]">
+          <h1 className="font-extrabold text-[28px] sm:text-[40px] tracking-tight leading-tight mt-5 mb-2 text-[#F5F0E8]">
             Grimório de Venetia
           </h1>
           <p className="text-[16px] font-semibold text-[#D4A017]">Criador de Personagens D&amp;D 5.5 (2024)</p>
@@ -92,7 +92,7 @@ export function Home() {
         </div>
 
         {fichasOrdenadas.length > 0 ? (
-          <div className="grid grid-cols-2 gap-[14px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
             {fichasOrdenadas.map(f => (
               <FichaCard
                 key={f.id}

@@ -45,7 +45,7 @@ export function Step12Revisar() {
 
         <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4">
           <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">Atributos</h3>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {ATRIBUTOS.map(a => {
               const val = ficha.atributos[a].valor
               const mod = ficha.atributos[a]._modificador

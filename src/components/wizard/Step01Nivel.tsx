@@ -14,25 +14,27 @@ export function Step01Nivel() {
       </div>
 
       {/* Level picker card */}
-      <div className="vg-card flex items-center gap-5 px-8 py-7">
-        <button
-          onClick={() => setNivel(Math.max(1, nivel - 1))}
-          aria-label="Diminuir nível"
-          className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center shrink-0"
-        >−</button>
+      <div className="vg-card flex flex-col sm:flex-row items-center gap-4 sm:gap-5 px-5 sm:px-8 py-5 sm:py-7">
+        <div className="flex items-center gap-5 shrink-0">
+          <button
+            onClick={() => setNivel(Math.max(1, nivel - 1))}
+            aria-label="Diminuir nível"
+            className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center"
+          >−</button>
 
-        <div className="text-center min-w-[90px]">
-          <div className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{nivel}</div>
-          <div className="text-xs tracking-[0.1em] uppercase text-[#6B6560] mt-1">Nível</div>
+          <div className="text-center min-w-[72px]">
+            <div className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{nivel}</div>
+            <div className="text-xs tracking-[0.1em] uppercase text-[#6B6560] mt-1">Nível</div>
+          </div>
+
+          <button
+            onClick={() => setNivel(Math.min(20, nivel + 1))}
+            aria-label="Aumentar nível"
+            className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center"
+          >+</button>
         </div>
 
-        <button
-          onClick={() => setNivel(Math.min(20, nivel + 1))}
-          aria-label="Aumentar nível"
-          className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center shrink-0"
-        >+</button>
-
-        <p className="flex-1 pl-2 text-sm text-[#8a8278] leading-relaxed">
+        <p className="text-sm text-[#8a8278] leading-relaxed text-center sm:text-left sm:pl-2">
           A maioria das campanhas começa no{' '}
           <strong className="text-[#E8DFD0]">nível 1</strong>. Níveis mais altos concedem mais
           pontos de vida, magias e habilidades de classe.

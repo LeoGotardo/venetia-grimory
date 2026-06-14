@@ -70,7 +70,7 @@ function SecaoInformacoes() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
           <label className="text-sm text-[#B8860B] font-medium">Alinhamento Ético</label>
           <select
@@ -109,7 +109,7 @@ function SecaoProgressao() {
     <section aria-label="Progressão" className={SECTION_CARD}>
       <h3 className={SECTION_TITLE}>Progressão</h3>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Nível */}
         <div className="flex flex-col gap-1">
           <label htmlFor="edit-nivel" className="text-sm text-[#B8860B] font-medium">Nível</label>

@@ -36,12 +36,12 @@ export function Step06Atributos() {
         <p className="text-[#A8A09B] text-sm">Determine as capacidades físicas e mentais do personagem.</p>
       </div>
 
-      <div className="flex gap-2 border-b border-[#B8860B]/20 pb-2">
+      <div className="flex gap-2 border-b border-[#B8860B]/20 pb-2 overflow-x-auto">
         {(Object.keys(LABEL_METODO) as MetodoAtributos[]).map(tab => (
           <button
             key={tab}
             onClick={() => wizard.trocarMetodo(tab)}
-            className={`px-4 py-2 rounded-t text-sm font-medium transition-colors cursor-pointer
+            className={`px-3 sm:px-4 py-2 rounded-t text-sm font-medium transition-colors cursor-pointer whitespace-nowrap
               ${wizard.metodo === tab ? 'bg-[#7B1D1D] text-white' : 'text-[#A8A09B] hover:text-[#F5F0E8] hover:bg-[#3D332D]'}`}
           >
             {LABEL_METODO[tab]}
@@ -195,8 +195,11 @@ function PainelCompra({ wizard }: { wizard: WizardHook }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {ATRIBUTOS.map(attr => (
           <div key={attr} className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-[#B8860B]">{ATRIBUTO_NOMES[attr]}</label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-[#B8860B]">{ATRIBUTO_NOMES[attr]}</label>
+              <span className="text-xs text-[#A8A09B]">c:{CUSTO_PONTOS_COMPRA[wizard.compra[attr]] ?? 0}</span>
+            </div>
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => wizard.setCompraAttr(attr, wizard.compra[attr] - 1)}
                 disabled={wizard.compra[attr] <= 8}
@@ -204,7 +207,7 @@ function PainelCompra({ wizard }: { wizard: WizardHook }) {
               >
                 −
               </button>
-              <span className="w-8 text-center font-cinzel font-bold text-lg text-[#F5F0E8]">
+              <span className="flex-1 text-center font-cinzel font-bold text-lg text-[#F5F0E8]">
                 {wizard.compra[attr]}
               </span>
               <button
@@ -214,9 +217,6 @@ function PainelCompra({ wizard }: { wizard: WizardHook }) {
               >
                 +
               </button>
-              <span className="text-xs text-[#A8A09B]">
-                custo {CUSTO_PONTOS_COMPRA[wizard.compra[attr]] ?? 0}
-              </span>
             </div>
           </div>
         ))}
@@ -235,7 +235,7 @@ function ResumoAtributos({
   return (
     <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4">
       <h3 className="font-cinzel font-semibold text-[#B8860B] mb-3">Resumo dos Atributos</h3>
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {ATRIBUTOS.map(attr => {
           const val = atributosAtuais[attr]
           const mod = val !== null ? calcModificador(val) : null

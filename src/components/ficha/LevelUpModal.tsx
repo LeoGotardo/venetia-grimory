@@ -144,7 +144,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
         {novosSlots && (
           <div>
             <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-2">Espaços de Magia</p>
-            <div className="grid grid-cols-9 gap-1">
+            <div className="grid grid-cols-5 sm:grid-cols-9 gap-1">
               {(['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const).map((c, i) => {
                 const qtd = novosSlots[c] ?? 0
                 return (

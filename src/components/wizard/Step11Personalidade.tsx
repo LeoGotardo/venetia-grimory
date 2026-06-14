@@ -40,7 +40,7 @@ export function Step11Personalidade() {
 
       <div>
         <label className="text-sm text-[#B8860B] font-medium block mb-2">Alinhamento</label>
-        <div className="grid grid-cols-3 gap-1 max-w-xs">
+        <div className="grid grid-cols-3 gap-1 w-full max-w-xs">
           {ALINHAMENTOS_MORAL.map(moral => (
             ALINHAMENTOS_ETICO.map(etico => (
               <button

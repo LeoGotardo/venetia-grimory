@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
@@ -21,9 +21,29 @@ export function Step05Antecedente() {
   const ante = dados.antecedentes?.find(a => a.id === antecedenteId)
   const totalDistrib = Object.values(distribuicao).reduce((acc, b) => acc + b, 0)
   const distribOk = totalDistrib === TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE
+  const distribuicaoRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!antecedenteId) return
+    const timer = setTimeout(() => {
+      distribuicaoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 150)
+    return () => clearTimeout(timer)
+  }, [antecedenteId])
+
+  function autoDistribuir1Cada(sugeridos: AtributoId[]) {
+    const auto: Partial<Record<AtributoId, number>> = {}
+    sugeridos.slice(0, TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE).forEach(attr => { auto[attr] = 1 })
+    setDistribuicao(auto)
+  }
 
   function selecionarAntecedente(id: string) {
-    setDistribuicao({})
+    const novoAnte = dados.antecedentes?.find(a => a.id === id)
+    if (modoDistrib === '1+1+1' && novoAnte && novoAnte.atributos_sugeridos.length >= TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE) {
+      autoDistribuir1Cada(novoAnte.atributos_sugeridos)
+    } else {
+      setDistribuicao({})
+    }
     setAntecedenteId(id)
   }
 
@@ -37,7 +57,11 @@ export function Step05Antecedente() {
 
   function trocarModo(modo: ModoDistribuicao) {
     setModoDistrib(modo)
-    setDistribuicao({})
+    if (modo === '1+1+1' && ante && ante.atributos_sugeridos.length >= TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE) {
+      autoDistribuir1Cada(ante.atributos_sugeridos)
+    } else {
+      setDistribuicao({})
+    }
   }
 
   function handleConfirm() {
@@ -76,14 +100,16 @@ export function Step05Antecedente() {
       </div>
 
       {ante && (
-        <DistribuicaoAtributos
-          ante={ante}
-          distribuicao={distribuicao}
-          modoDistrib={modoDistrib}
-          totalDistrib={totalDistrib}
-          onSetBonus={setBonus}
-          onTrocarModo={trocarModo}
-        />
+        <div ref={distribuicaoRef}>
+          <DistribuicaoAtributos
+            ante={ante}
+            distribuicao={distribuicao}
+            modoDistrib={modoDistrib}
+            totalDistrib={totalDistrib}
+            onSetBonus={setBonus}
+            onTrocarModo={trocarModo}
+          />
+        </div>
       )}
 
       <WizardNav
@@ -136,7 +162,7 @@ function DistribuicaoAtributos({
         ))}
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {ante.atributos_sugeridos.map(attr => {
           const val = distribuicao[attr] ?? 0
           return (

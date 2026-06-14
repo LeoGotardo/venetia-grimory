@@ -24,7 +24,7 @@ export function PainelInventario() {
       {/* Moedas */}
       <section aria-label="Moedas">
         <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">Moedas</h4>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-5 gap-1 sm:gap-2">
           {MOEDAS.map(m => (
             <div key={m} className="flex flex-col items-center gap-1">
               <label htmlFor={`moeda-${m}`} className="text-xs text-[#A8A09B]">{m}</label>

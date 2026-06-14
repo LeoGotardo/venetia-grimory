@@ -34,7 +34,7 @@ export function PainelMagia() {
 
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 text-center">
           <div className="text-xs text-[#A8A09B] mb-1">CD de Magia</div>
           <div className="font-cinzel font-bold text-3xl text-[#F5F0E8]">{magia._cd_magia ?? '—'}</div>
