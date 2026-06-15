@@ -148,7 +148,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
           )}
           {efetivoCobrar && (
             <span className={`text-xs font-semibold text-[#B8860B] shrink-0 tabular-nums ${!config.rastrear_peso ? 'ml-auto' : ''}`}>
-              {ficha.inventario.moedas.PO.toFixed(1)} PO
+              {ficha.inventario.moedas.PO.toFixed(1)} {t('bag.gp')}
             </span>
           )}
         </div>
