@@ -24,9 +24,11 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 })
 
-useConfigStore.subscribe((state) => {
-  const linguaAtual = state.config.lingua
-  if (i18n.language !== linguaAtual) {
+type ConfigState = ReturnType<typeof useConfigStore.getState>
+
+useConfigStore.subscribe((state: ConfigState) => {
+  const linguaAtual = state.config?.lingua
+  if (linguaAtual && i18n.language !== linguaAtual) {
     i18n.changeLanguage(linguaAtual)
   }
 })

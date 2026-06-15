@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { useConfigStore } from '../../store/configStore'
-import { ITENS } from '../../data/itens'
+import { getItens } from '../../data/itens'
 import type { Item } from '../../data/itens'
 import type { ItemInventario } from '../../types'
 import { calcCargaMaxima } from '../../lib/calculos'
@@ -100,7 +100,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
 
   const resultados = useMemo(() => {
     const termo = busca.toLowerCase().trim()
-    return ITENS.filter(item => {
+    return getItens().filter(item => {
       const tipoOk = filtro === 'todos' || item.tipo_item === filtro
       if (!tipoOk) return false
       if (filtro === 'todos' && !termo) return false
