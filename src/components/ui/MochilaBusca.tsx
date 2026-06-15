@@ -9,16 +9,6 @@ import { calcCargaMaxima } from '../../lib/calculos'
 
 type FiltroTipo = 'todos' | 'arma' | 'armadura' | 'ferramenta' | 'kit' | 'transporte' | 'item_magico'
 
-const FILTROS: { id: FiltroTipo; label: string }[] = [
-  { id: 'todos',       label: 'Todos' },
-  { id: 'arma',        label: 'Armas' },
-  { id: 'armadura',    label: 'Armaduras' },
-  { id: 'ferramenta',  label: 'Ferramentas' },
-  { id: 'kit',         label: 'Kits' },
-  { id: 'transporte',  label: 'Transporte' },
-  { id: 'item_magico', label: 'Mágicos' },
-]
-
 function parsePreco(preco: string): number | null {
   if (!preco || preco === '—') return null
   const m = preco.match(/([\d.,]+)\s*(po|pp|pc)/i)
@@ -70,10 +60,6 @@ const BADGE_COR: Record<string, string> = {
   item_magico: 'bg-pink-900/30 text-pink-300 border-pink-900/40',
 }
 
-const TIPO_LABEL: Record<string, string> = {
-  arma: 'Arma', armadura: 'Armadura', ferramenta: 'Ferramenta',
-  kit: 'Kit', transporte: 'Transporte', item_magico: 'Mágico',
-}
 
 interface MochilaBuscaProps {
   /** Omite a lista de itens da mochila — use quando o pai já exibe o inventário */
@@ -85,8 +71,24 @@ interface MochilaBuscaProps {
 export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBuscaProps) {
   const { ficha, addItem, removeItem, updateItem, updateMoedas } = useFichaStore()
   const { config } = useConfigStore()
+  const { t } = useTranslation()
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<FiltroTipo>('todos')
+
+  const FILTROS: { id: FiltroTipo; label: string }[] = [
+    { id: 'todos',       label: t('bag.filterAll') },
+    { id: 'arma',        label: t('bag.filterWeapons') },
+    { id: 'armadura',    label: t('bag.filterArmors') },
+    { id: 'ferramenta',  label: t('bag.filterTools') },
+    { id: 'kit',         label: t('bag.filterKits') },
+    { id: 'transporte',  label: t('bag.filterTransport') },
+    { id: 'item_magico', label: t('bag.filterMagic') },
+  ]
+
+  const TIPO_LABEL: Record<string, string> = {
+    arma: t('bag.typeWeapon'), armadura: t('bag.typeArmor'), ferramenta: t('bag.typeTool'),
+    kit: t('bag.typeKit'), transporte: t('bag.typeTransport'), item_magico: t('bag.typeMagic'),
+  }
 
   const efetivoCobrar = cobrarItem && config.gerenciar_ouro
 
@@ -130,7 +132,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
         <div className="flex items-center gap-3">
           {config.rastrear_peso && (
             <>
-              <span className="text-xs text-[#A8A09B] shrink-0">Carga</span>
+              <span className="text-xs text-[#A8A09B] shrink-0">{t('bag.load')}</span>
               <div className="flex-1 h-1.5 bg-[#2D2520] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
