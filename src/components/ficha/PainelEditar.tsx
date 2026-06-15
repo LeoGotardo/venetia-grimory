@@ -485,7 +485,7 @@ function SecaoMagia() {
   }, [magiasDisponiveis])
 
   const truquesFiltrados = useMemo(
-    () => truquesDisponiveis.filter(t => !busca || t.nome.toLowerCase().includes(busca.toLowerCase())),
+    () => truquesDisponiveis.filter(tr => !busca || tr.nome.toLowerCase().includes(busca.toLowerCase())),
     [truquesDisponiveis, busca],
   )
 
@@ -552,13 +552,13 @@ function SecaoMagia() {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            {truquesFiltrados.map(t => {
-              const sel = magia.truques_conhecidos.includes(t.nome)
+            {truquesFiltrados.map(tr => {
+              const sel = magia.truques_conhecidos.includes(tr.nome)
               return (
-                <div key={t.id} className="inline-flex items-center">
+                <div key={tr.id} className="inline-flex items-center">
                   <button
                     type="button"
-                    onClick={() => toggleTruque(t.nome)}
+                    onClick={() => toggleTruque(tr.nome)}
                     aria-pressed={sel}
                     className={[
                       'pl-3 pr-2 py-1.5 rounded-l-full border-y border-l text-xs font-medium transition-colors cursor-pointer',
@@ -568,13 +568,13 @@ function SecaoMagia() {
                         : 'border-[#B8860B]/30 text-[#A8A09B] hover:border-[#B8860B]/60 hover:text-[#F5F0E8]',
                     ].join(' ')}
                   >
-                    {t.nome}
-                    {t.concentracao && <span className="ml-1 opacity-60">C</span>}
+                    {tr.nome}
+                    {tr.concentracao && <span className="ml-1 opacity-60">C</span>}
                   </button>
                   <button
                     type="button"
-                    onClick={() => setSpellInfo(t)}
-                    aria-label={`View details of ${t.nome}`}
+                    onClick={() => setSpellInfo(tr)}
+                    aria-label={t('edit.viewDetails', { nome: tr.nome })}
                     className={[
                       'inline-flex items-center justify-center w-6 py-1.5 rounded-r-full border-y border-r text-[10px] transition-colors cursor-pointer',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
@@ -646,7 +646,7 @@ function SecaoMagia() {
                       <button
                         type="button"
                         onClick={() => setSpellInfo(m)}
-                        aria-label={`Ver detalhes de ${m.nome}`}
+                        aria-label={t('edit.viewDetails', { nome: m.nome })}
                         className={[
                           'inline-flex items-center justify-center w-6 py-1.5 rounded-r-full border-y border-r text-[10px] transition-colors cursor-pointer',
                           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { useConfigStore } from '../../store/configStore'
 import { ITENS } from '../../data/itens'
