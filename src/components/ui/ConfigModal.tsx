@@ -6,8 +6,8 @@ import i18n from '../../i18n/index'
 interface SettingRowProps {
   label: string
   description: string
-  value: boolean
-  onChange: (v: boolean) => void
+  value: boolean | string
+  onChange: (v: boolean | string ) => void
 }
 
 function SettingRow({ label, description, value, onChange }: SettingRowProps) {
@@ -20,8 +20,8 @@ function SettingRow({ label, description, value, onChange }: SettingRowProps) {
       <button
         type="button"
         role="switch"
-        aria-checked={value}
-        onClick={() => onChange(!value)}
+        aria-checked={typeof value === 'boolean' ? value : undefined}
+        onClick={() => {if(typeof value === 'boolean'){onChange(!value)}else{if(value === 'pt'){onChange('en')}else{onChange('pt')}}}}
         className={[
           'relative shrink-0 w-10 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] cursor-pointer overflow-hidden',
           value ? 'bg-[#B8860B]' : 'bg-[#2D2520] border border-[#A8A09B]/30',
@@ -72,11 +72,6 @@ export function ConfigModal({ open, onClose }: ConfigModalProps) {
       label: t('config.simpleCoins'),
       description: t('config.simpleCoinsDesc'),
     },
-    {
-      key: 'lingua',
-      label: t('config.language'),
-      description: t('config.languageDesc'),
-    }
   ]
 
   return (
@@ -88,7 +83,7 @@ export function ConfigModal({ open, onClose }: ConfigModalProps) {
             {(['pt', 'en'] as const).map(lang => (
               <button
                 key={lang}
-                onClick={() => { i18n.changeLanguage(lang); localStorage.setItem('venetia-lang', lang) }}
+                onClick={() => { setConfig({ lingua: lang }); i18n.changeLanguage(lang) }}
                 className={[
                   'px-3 py-1 text-xs rounded font-medium transition-colors',
                   i18n.language === lang

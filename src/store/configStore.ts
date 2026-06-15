@@ -1,4 +1,5 @@
 import { persist } from 'zustand/middleware'
+import { create } from 'zustand'
 
 export interface Config {
   rastrear_peso: boolean
@@ -23,7 +24,10 @@ export const useConfigStore = create<ConfigStore>()(
         moedas_simples: false,
         lingua: 'en',
       },
-      setConfig: partial => set(s => ({ config: { ...s.config, ...partial } })),
+      setConfig: (partial: Partial<Config>) =>
+        set((s: ConfigStore) => ({
+          config: { ...s.config, ...partial },
+        })),
     }),
     { name: 'venetia-config' }
   )

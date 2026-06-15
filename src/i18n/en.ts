@@ -194,7 +194,7 @@ const en = {
     goldManagement: 'Manage Gold', goldManagementDesc: 'Automatically deducts cost when adding items during creation (Option B).',
     sellRefund: 'Sell Refund', sellRefundDesc: 'Returns item value in GP when using the sell button in inventory.',
     simpleCoins: 'Simple Coins', simpleCoinsDesc: 'Shows only the Gold Pieces (GP) field in inventory.',
-    language: 'PT-BR', languageDesc: 'Change the interface language to Portuguese.',
+    language: 'Language', languageDesc: 'Change the interface language.',
   },
   bag: {
     load: 'Load', gp: 'GP',

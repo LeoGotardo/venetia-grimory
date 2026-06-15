@@ -194,7 +194,7 @@ const pt = {
     goldManagement: 'Gerenciar Ouro', goldManagementDesc: 'Deduz automaticamente o custo ao adicionar itens na criação (Opção B).',
     sellRefund: 'Reembolso ao Vender', sellRefundDesc: 'Devolve o valor do item em PO ao usar o botão de venda no inventário.',
     simpleCoins: 'Moedas Simplificadas', simpleCoinsDesc: 'Exibe apenas o campo de Peças de Ouro (PO) no inventário.',
-    language: 'EN-US', languageDesc: 'Mudar o idioma da interface para Inglês.',
+    language: 'Idioma', languageDesc: 'Mudar o idioma da interface.',
   },
   bag: {
     load: 'Carga', gp: 'PO',
