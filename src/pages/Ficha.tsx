@@ -297,7 +297,7 @@ export function Ficha() {
               />
             </div>
             <div className="flex justify-between mt-[11px] text-xs text-[#c98c8c] font-medium">
-              <span>Dado de Vida {combate.dados_de_vida.tipo ?? '—'}</span>
+              <span>{t('combat.hitDice')} {combate.dados_de_vida.tipo ?? '—'}</span>
               <span>{pvEstado}</span>
             </div>
           </div>

@@ -161,14 +161,14 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
           type="text"
           value={busca}
           onChange={e => setBusca(e.target.value)}
-          placeholder="Buscar item para adicionar à mochila..."
+          placeholder={t('bag.searchPlaceholder')}
           className="w-full bg-[#2D2520] border border-[#B8860B]/30 rounded-lg pl-8 pr-3 py-2 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B] focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
-          aria-label="Buscar item"
+          aria-label={t('bag.searchAriaLabel')}
         />
       </div>
 
       {/* Filtros */}
-      <div className="flex gap-1 overflow-x-auto pb-0.5" role="tablist" aria-label="Filtrar por tipo">
+      <div className="flex gap-1 overflow-x-auto pb-0.5" role="tablist" aria-label={t('bag.filterAriaLabel')}>
         {FILTROS.map(f => (
           <button
             key={f.id}
@@ -192,7 +192,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
       {mostrarResultados && (
         <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
           {resultados.length === 0 ? (
-            <p className="text-xs text-[#A8A09B] py-2 text-center">Nenhum item encontrado.</p>
+            <p className="text-xs text-[#A8A09B] py-2 text-center">{t('bag.noItems')}</p>
           ) : (
             resultados.map(item => {
               const semFundos = efetivoCobrar && (parsePreco(item.preco) ?? 0) > ficha.inventario.moedas.PO
@@ -215,8 +215,8 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                     type="button"
                     onClick={() => adicionarItem(item)}
                     disabled={semFundos}
-                    aria-label={semFundos ? `Ouro insuficiente para ${item.nome}` : `Adicionar ${item.nome} à mochila`}
-                    title={semFundos ? 'Ouro insuficiente' : undefined}
+                    aria-label={semFundos ? t('bag.insufficientGold', { nome: item.nome }) : t('bag.addItem', { nome: item.nome })}
+                    title={semFundos ? t('bag.insufficientGoldTitle') : undefined}
                     className={[
                       'w-7 h-7 shrink-0 flex items-center justify-center rounded-full border font-bold text-base leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
                       semFundos
@@ -237,15 +237,17 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
       {!semLista && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#B8860B] font-medium">Mochila</span>
+            <span className="text-sm text-[#B8860B] font-medium">{t('bag.bagSection')}</span>
             <span className="text-xs text-[#A8A09B]">
-              {ficha.inventario.itens.length} {ficha.inventario.itens.length === 1 ? 'item' : 'itens'}
+              {ficha.inventario.itens.length === 1
+                ? t('bag.itemCount_one', { n: ficha.inventario.itens.length })
+                : t('bag.itemCount_other', { n: ficha.inventario.itens.length })}
             </span>
           </div>
 
           {ficha.inventario.itens.length === 0 ? (
             <p className="text-xs text-[#A8A09B] py-2">
-              Mochila vazia. Use a busca acima para adicionar itens.
+              {t('bag.emptyBag')}
             </p>
           ) : (
             <div className="space-y-1">
@@ -267,7 +269,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                           ? removeItem(idx)
                           : updateItem(idx, { quantidade: item.quantidade - 1 })
                       }
-                      aria-label="Reduzir quantidade"
+                      aria-label={t('bag.decreaseQty')}
                       className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-[#B8860B]/20 text-[#A8A09B] hover:text-[#F5F0E8] hover:border-[#B8860B]/50 transition-colors cursor-pointer text-sm font-bold"
                     >−</button>
                     <span className="w-5 text-center text-xs text-[#F5F0E8] font-medium tabular-nums">
@@ -276,7 +278,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                     <button
                       type="button"
                       onClick={() => updateItem(idx, { quantidade: item.quantidade + 1 })}
-                      aria-label="Aumentar quantidade"
+                      aria-label={t('bag.increaseQty')}
                       className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-[#B8860B]/20 text-[#A8A09B] hover:text-[#F5F0E8] hover:border-[#B8860B]/50 transition-colors cursor-pointer text-sm font-bold"
                     >+</button>
                     {config.reembolso_venda && item.custo_po !== null && (
@@ -286,16 +288,16 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                           updateMoedas({ PO: +(ficha.inventario.moedas.PO + item.custo_po! * item.quantidade).toFixed(4) })
                           removeItem(idx)
                         }}
-                        title={`Vender por ${(item.custo_po * item.quantidade).toFixed(1)} PO`}
-                        aria-label={`Vender ${item.nome} por ${(item.custo_po * item.quantidade).toFixed(1)} PO`}
+                        title={t('bag.sellFor', { n: (item.custo_po * item.quantidade).toFixed(1) })}
+                        aria-label={t('bag.sellAriaLabel', { nome: item.nome, n: (item.custo_po * item.quantidade).toFixed(1) })}
                         className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-[#B8860B]/30 text-[#B8860B]/60 hover:text-[#B8860B] hover:border-[#B8860B] transition-colors cursor-pointer text-[9px] font-bold ml-1"
-                      >PO</button>
+                      >{t('bag.sellBtn')}</button>
                     )}
                     <button
                       type="button"
                       onClick={() => removeItem(idx)}
-                      aria-label={`Gastar/descartar ${item.nome}`}
-                      title="Gastar (sem reembolso)"
+                      aria-label={t('bag.spendAriaLabel', { nome: item.nome })}
+                      title={t('bag.spendTitle')}
                       className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-red-900/20 text-red-500/50 hover:text-red-400 hover:border-red-900/50 transition-colors cursor-pointer text-xs"
                     >✕</button>
                   </div>
