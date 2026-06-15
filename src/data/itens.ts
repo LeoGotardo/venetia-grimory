@@ -16,63 +16,62 @@ import { ITENS_MAGICOS as ITENS_MAGICOS_EN } from './itens/en/magic_itens'
 
 export type { Item, Arma, Armadura, Ferramenta, PacoteEquipamento, Transporte, ItemMagico } from './itens/types'
 
-const current_lang = i18n.language
-
-const ARMAS = current_lang === 'pt' ? ARMAS_PT : ARMAS_EN
-const ARMADURAS = current_lang === 'pt' ? ARMADURAS_PT : ARMADURAS_EN
-const FERRAMENTAS = current_lang === 'pt' ? FERRAMENTAS_PT : FERRAMENTAS_EN
-const PACOTES_DE_EQUIPAMENTO = current_lang === 'pt' ? PACOTES_DE_EQUIPAMENTO_PT : PACOTES_DE_EQUIPAMENTO_EN
-const MONTARIAS_E_VEICULOS = current_lang === 'pt' ? MONTARIAS_E_VEICULOS_PT : MONTARIAS_E_VEICULOS_EN
-const ITENS_MAGICOS = current_lang === 'pt' ? ITENS_MAGICOS_PT : ITENS_MAGICOS_EN
-
-export { ARMAS, ARMADURAS, FERRAMENTAS, PACOTES_DE_EQUIPAMENTO, MONTARIAS_E_VEICULOS, ITENS_MAGICOS }
-
-export const ITENS = [
-  ...ARMAS,
-  ...ARMADURAS,
-  ...FERRAMENTAS,
-  ...PACOTES_DE_EQUIPAMENTO,
-  ...MONTARIAS_E_VEICULOS,
-  ...ITENS_MAGICOS,
-]
-
 export function getArmas() {
-  return ARMAS
-}
-
-export function getArmasPorCategoria(categoria: 'Simples' | 'Marcial') {
-  return ARMAS.filter(a => a.categoria === categoria)
-}
-
-export function getArmasPorTipo(tipo: 'Corpo a Corpo' | 'À Distância') {
-  return ARMAS.filter(a => a.tipo === tipo)
+  return i18n.language === 'pt' ? ARMAS_PT : ARMAS_EN
 }
 
 export function getArmaduras() {
-  return ARMADURAS
-}
-
-export function getArmadurasPorCategoria(categoria: 'Leve' | 'Média' | 'Pesada' | 'Escudo') {
-  return ARMADURAS.filter(a => a.categoria === categoria)
+  return i18n.language === 'pt' ? ARMADURAS_PT : ARMADURAS_EN
 }
 
 export function getFerramentas() {
-  return FERRAMENTAS
+  return i18n.language === 'pt' ? FERRAMENTAS_PT : FERRAMENTAS_EN
 }
 
-export function getFerramentasPorCategoria(categoria: string) {
-  return FERRAMENTAS.filter(f => f.categoria === categoria)
+export function getPacotesDeEquipamento() {
+  return i18n.language === 'pt' ? PACOTES_DE_EQUIPAMENTO_PT : PACOTES_DE_EQUIPAMENTO_EN
+}
+
+export function getMontariasEVeiculos() {
+  return i18n.language === 'pt' ? MONTARIAS_E_VEICULOS_PT : MONTARIAS_E_VEICULOS_EN
 }
 
 export function getItensMagicos() {
-  return ITENS_MAGICOS
+  return i18n.language === 'pt' ? ITENS_MAGICOS_PT : ITENS_MAGICOS_EN
+}
+
+export function getItens() {
+  return [
+    ...getArmas(),
+    ...getArmaduras(),
+    ...getFerramentas(),
+    ...getPacotesDeEquipamento(),
+    ...getMontariasEVeiculos(),
+    ...getItensMagicos(),
+  ]
+}
+
+export function getArmasPorCategoria(categoria: 'Simples' | 'Marcial') {
+  return getArmas().filter(a => a.categoria === categoria)
+}
+
+export function getArmasPorTipo(tipo: 'Corpo a Corpo' | 'À Distância') {
+  return getArmas().filter(a => a.tipo === tipo)
+}
+
+export function getArmadurasPorCategoria(categoria: 'Leve' | 'Média' | 'Pesada' | 'Escudo') {
+  return getArmaduras().filter(a => a.categoria === categoria)
+}
+
+export function getFerramentasPorCategoria(categoria: string) {
+  return getFerramentas().filter(f => f.categoria === categoria)
 }
 
 export function getItensMagicosPorRaridade(raridade: string) {
-  return ITENS_MAGICOS.filter(i => i.raridade === raridade)
+  return getItensMagicos().filter(i => i.raridade === raridade)
 }
 
 export function buscarItens(termo: string) {
   const t = termo.toLowerCase()
-  return ITENS.filter(i => i.nome.toLowerCase().includes(t) || i.descricao.toLowerCase().includes(t))
+  return getItens().filter(i => i.nome.toLowerCase().includes(t) || i.descricao.toLowerCase().includes(t))
 }
