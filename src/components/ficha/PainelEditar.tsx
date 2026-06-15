@@ -17,8 +17,8 @@ import { MochilaBusca } from '../ui/MochilaBusca'
 
 const dados = dadosJson as unknown as DadosJogo
 
-const ALINHAMENTOS_ETICO = ['Leal', 'Neutro', 'Caótico'] as const
-const ALINHAMENTOS_MORAL = ['Bom', 'Neutro', 'Mau'] as const
+const ALINHAMENTOS_ETICO = ['Lawful', 'Neutral', 'Chaotic'] as const
+const ALINHAMENTOS_MORAL = ['Good', 'Neutral', 'Evil'] as const
 const ATRIBUTO_MAX = 30
 
 const SELECT_BASE = 'w-full bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-2 text-[#F5F0E8] text-sm focus:outline-none focus:ring-1 focus:ring-[#B8860B]'
@@ -83,7 +83,11 @@ function SecaoInformacoes() {
             className={SELECT_BASE}
           >
             <option value="">{t('edit.selectDefault')}</option>
-            {ALINHAMENTOS_ETICO.map(a => <option key={a} value={a}>{a}</option>)}
+            {ALINHAMENTOS_ETICO.map(a => (
+              <option key={a} value={a}>
+                {a === 'Lawful' ? t('common.ethicLawfulAlt') : a === 'Neutral' ? t('common.ethicNeutral') : t('common.ethicChaotic')}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex flex-col gap-1">
@@ -94,7 +98,11 @@ function SecaoInformacoes() {
             className={SELECT_BASE}
           >
             <option value="">{t('edit.selectDefault')}</option>
-            {ALINHAMENTOS_MORAL.map(a => <option key={a} value={a}>{a}</option>)}
+            {ALINHAMENTOS_MORAL.map(a => (
+              <option key={a} value={a}>
+                {a === 'Good' ? t('common.moralGoodAlt') : a === 'Neutral' ? t('common.moralNeutral') : t('common.moralEvilAlt')}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -335,7 +343,7 @@ function SecaoArmadura() {
         </div>
         {armaduraAtual && (
           <p className="text-xs text-[#A8A09B]">
-            {armaduraAtual.custo_po ? `${armaduraAtual.custo_po} PO · ` : ''}
+            {armaduraAtual.custo_po ? `${armaduraAtual.custo_po} ${t('bag.gp')} · ` : ''}
             {armaduraAtual.peso_kg ? `${armaduraAtual.peso_kg} kg · ` : ''}
             CA {armaduraAtual.ca}
             {armaduraAtual.requisito_for ? ` · FOR mín. ${armaduraAtual.requisito_for}` : ''}

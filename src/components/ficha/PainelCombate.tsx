@@ -24,7 +24,7 @@ export function PainelCombate() {
     { label: t('combat.hp'), value: `${pvAtual}/${pvMax}`, sub: pv.temporario > 0 ? `+${pv.temporario} temp` : undefined, hero: true },
     { label: t('combat.ac'), value: ca.valor ?? '—', sub: ca.escudo_equipado ? t('combat.shieldBonus') : undefined },
     { label: t('combat.initiative'), value: iniciativa._valor !== null ? formatModificador(iniciativa._valor) : '—' },
-    { label: t('combat.speed'), value: deslocamento._total_metros !== null ? `${deslocamento._total_metros}m` : '—' },
+    { label: t('combat.speed'), value: deslocamento._total_metros !== null ? `${deslocamento._total_metros}${t('ficha.mUnit')}` : '—' },
     { label: t('combat.prof'), value: _bonus_proficiencia !== null ? `+${_bonus_proficiencia}` : '—' },
     { label: t('combat.passivePerception'), value: percepcaoPassiva },
   ]

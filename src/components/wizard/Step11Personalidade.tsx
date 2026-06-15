@@ -3,8 +3,8 @@ import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { Input, Textarea } from '../ui/Input'
 
-const ALINHAMENTOS_ETICO = ['Ordeiro', 'Neutro', 'Caótico']
-const ALINHAMENTOS_MORAL = ['Bondoso', 'Neutro', 'Mau']
+const ALINHAMENTOS_ETICO = ['Lawful', 'Neutral', 'Chaotic'] as const
+const ALINHAMENTOS_MORAL = ['Good', 'Neutral', 'Evil'] as const
 
 export function Step11Personalidade() {
   const { ficha, setPersonalidade, setIdentidade, setPasso } = useFichaStore()
@@ -16,6 +16,24 @@ export function Step11Personalidade() {
     const arr = [...(p[key] as string[])]
     arr[idx] = val
     setPersonalidade({ [key]: arr } as never)
+  }
+
+  const getEthicLabel = (etico: string) => {
+    switch (etico) {
+      case 'Lawful': return t('common.ethicLawful')
+      case 'Neutral': return t('common.ethicNeutral')
+      case 'Chaotic': return t('common.ethicChaotic')
+      default: return etico
+    }
+  }
+
+  const getMoralLabel = (moral: string) => {
+    switch (moral) {
+      case 'Good': return t('common.moralGood')
+      case 'Neutral': return t('common.moralNeutral')
+      case 'Evil': return t('common.moralEvil')
+      default: return moral
+    }
   }
 
   return (
@@ -53,7 +71,7 @@ export function Step11Personalidade() {
                     ? 'bg-[#7B1D1D] border-[#7B1D1D] text-white'
                     : 'border-[#B8860B]/20 text-[#A8A09B] hover:bg-[#3D332D] hover:text-[#F5F0E8]'}`}
               >
-                {etico} {moral}
+                {getEthicLabel(etico)} {getMoralLabel(moral)}
               </button>
             ))
           ))}

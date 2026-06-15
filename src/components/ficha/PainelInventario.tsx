@@ -101,7 +101,7 @@ export function PainelInventario() {
                 aria-label={t('inventory.itemQtyAriaLabel', { nome: it.nome })}
                 className="w-12 text-center bg-transparent border-b border-[#B8860B]/20 text-[#F5F0E8] text-sm focus:outline-none focus:border-[#B8860B]"
               />
-              {config.rastrear_peso && it.peso_kg && <span className="text-xs text-[#A8A09B]">{it.peso_kg}kg</span>}
+              {config.rastrear_peso && it.peso_kg && <span className="text-xs text-[#A8A09B]">{it.peso_kg}{t('bag.kg')}</span>}
               {config.reembolso_venda && it.custo_po !== null && (
                 <button
                   onClick={() => {

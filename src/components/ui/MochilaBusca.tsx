@@ -40,14 +40,15 @@ function itemParaInventario(item: Item): ItemInventario {
   }
 }
 
-function subtitulo(item: Item): string {
+function subtitulo(item: Item, t: (key: string, options?: any) => string): string {
   switch (item.tipo_item) {
     case 'arma':        return `${item.categoria} · ${item.tipo} · ${item.dano} ${item.tipo_dano}`
     case 'armadura':    return `${item.categoria} · CA ${item.ca}`
     case 'ferramenta':  return item.categoria
-    case 'kit':         return `Pacote · ${item.peso}`
+    case 'kit':         return `${t('bag.typeKit')} · ${item.peso}`
     case 'transporte':  return `${item.categoria}${item.deslocamento ? ` · ${item.deslocamento}` : ''}`
-    case 'item_magico': return `${item.raridade}${item.sintonia ? ' · Sintonia' : ''}`
+    case 'item_magico': return `${item.raridade}${item.sintonia ? ' · ' + t('bag.attunement') : ''}`
+    default:            return ''
   }
 }
 
@@ -142,7 +143,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                 />
               </div>
               <span className="text-xs text-[#A8A09B] shrink-0 tabular-nums">
-                {pesoAtual.toFixed(1)}/{cargaMax} kg
+                {pesoAtual.toFixed(1)}/{cargaMax} {t('bag.kg')}
               </span>
             </>
           )}
@@ -208,7 +209,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                         {TIPO_LABEL[item.tipo_item]}
                       </span>
                     </div>
-                    <div className="text-xs text-[#A8A09B] truncate">{subtitulo(item)}</div>
+                    <div className="text-xs text-[#A8A09B] truncate">{subtitulo(item, t)}</div>
                     <div className={`text-xs ${semFundos ? 'text-red-400/70' : 'text-[#B8860B]'}`}>{item.preco}</div>
                   </div>
                   <button
@@ -257,8 +258,8 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                     <div className="text-sm text-[#F5F0E8] font-medium truncate">{item.nome}</div>
                     <div className="text-xs text-[#A8A09B]">
                       {TIPO_LABEL[item.categoria] ?? item.categoria}
-                      {config.rastrear_peso && item.peso_kg ? ` · ${(item.peso_kg * item.quantidade).toFixed(1)} kg` : ''}
-                      {item.custo_po ? ` · ${item.custo_po} po` : ''}
+                      {config.rastrear_peso && item.peso_kg ? ` · ${(item.peso_kg * item.quantidade).toFixed(1)} ${t('bag.kg')}` : ''}
+                      {item.custo_po ? ` · ${item.custo_po} ${t('bag.gp')}` : ''}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">

@@ -60,7 +60,7 @@ export function PainelMagia() {
             const circulo = i + 1
             return (
               <div key={c} className="flex items-center gap-3">
-                <span className="text-xs text-[#A8A09B] w-8 text-right flex-shrink-0">{circulo}°</span>
+                <span className="text-xs text-[#A8A09B] w-8 text-right flex-shrink-0">{t('magic.level_n', { n: circulo })}</span>
                 <div className="flex gap-1 flex-wrap" role="group" aria-label={t('magic.circleAriaLabel', { n: circulo })}>
                   {Array.from({ length: espaco.maximo }, (_, j) => {
                     const disponivel = j < espaco.maximo - espaco.gastos

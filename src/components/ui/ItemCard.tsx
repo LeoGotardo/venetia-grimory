@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
 import type { Armadura, Arma, EquipamentoAventura } from '../../types'
 
@@ -44,14 +45,15 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function CustoRow({ custo_po, peso_kg }: { custo_po?: number | null; peso_kg?: number | null }) {
+  const { t } = useTranslation()
   if (!custo_po && !peso_kg) return null
   return (
     <div className="flex gap-3 text-sm">
       {custo_po != null && custo_po > 0 && (
-        <span className="text-[#B8860B] font-medium">{custo_po} PO</span>
+        <span className="text-[#B8860B] font-medium">{custo_po} {t('bag.gp')}</span>
       )}
       {peso_kg != null && peso_kg > 0 && (
-        <span className="text-[#A8A09B]">{peso_kg} kg</span>
+        <span className="text-[#A8A09B]">{peso_kg} {t('bag.kg')}</span>
       )}
     </div>
   )
@@ -63,7 +65,19 @@ interface ItemCardProps {
 }
 
 export function ItemCard({ item, onClose }: ItemCardProps) {
+  const { t } = useTranslation()
   if (!item) return null
+
+  const getCategoryLabel = () => {
+    switch (item._tipo) {
+      case 'armadura': return item.categoria
+      case 'arma': return item.categoria
+      case 'kit': return t('bag.typeKit')
+      case 'ferramenta': return t('bag.typeTool')
+      case 'equipamento': return (item as EquipamentoAventura).categoria
+      default: return ''
+    }
+  }
 
   return (
     <Modal open={!!item} onClose={onClose}>
@@ -72,7 +86,7 @@ export function ItemCard({ item, onClose }: ItemCardProps) {
         <div>
           <h3 className="font-cinzel font-bold text-xl text-[#F5F0E8] mb-2">{item.nome}</h3>
           <div className="flex flex-wrap gap-1.5">
-            <Tag>{item._tipo === 'armadura' ? item.categoria : item._tipo === 'arma' ? item.categoria : item._tipo === 'kit' ? 'Kit' : item._tipo === 'ferramenta' ? 'Ferramenta' : (item as EquipamentoAventura).categoria}</Tag>
+            <Tag>{getCategoryLabel()}</Tag>
           </div>
         </div>
 
@@ -81,12 +95,12 @@ export function ItemCard({ item, onClose }: ItemCardProps) {
         {/* Fields by type */}
         {item._tipo === 'armadura' && (
           <div className="space-y-2">
-            <Row label="Classe de Armadura" value={<span className="font-bold text-[#D4A017]">{item.ca}</span>} />
+            <Row label={t('inventory.armorClass')} value={<span className="font-bold text-[#D4A017]">{item.ca}</span>} />
             {item.requisito_for && (
-              <Row label="Requisito FOR" value={`${item.requisito_for}`} />
+              <Row label={t('inventory.strengthReq')} value={`${item.requisito_for}`} />
             )}
             {item.penalidade_furtividade && (
-              <Row label="Furtividade" value={<span className="text-red-400">Penalidade</span>} />
+              <Row label={t('inventory.stealth')} value={<span className="text-red-400">{t('inventory.penalty')}</span>} />
             )}
             <CustoRow custo_po={item.custo_po} peso_kg={item.peso_kg} />
           </div>
@@ -95,7 +109,7 @@ export function ItemCard({ item, onClose }: ItemCardProps) {
         {item._tipo === 'arma' && (
           <div className="space-y-2">
             <Row
-              label="Dano"
+              label={t('inventory.damage')}
               value={
                 <span>
                   <span className="font-bold text-[#D4A017]">{item.dano}</span>
@@ -104,11 +118,11 @@ export function ItemCard({ item, onClose }: ItemCardProps) {
               }
             />
             {item.maestria && (
-              <Row label="Maestria" value={item.maestria} />
+              <Row label={t('inventory.attribute')} value={item.maestria} />
             )}
             {item.propriedades.length > 0 && (
               <Row
-                label="Propriedades"
+                label={t('inventory.properties')}
                 value={
                   <div className="flex flex-wrap gap-1">
                     {item.propriedades.map(p => (
@@ -135,7 +149,7 @@ export function ItemCard({ item, onClose }: ItemCardProps) {
           <div className="space-y-2">
             {item.conteudo && item.conteudo.length > 0 && (
               <div>
-                <p className="text-xs text-[#A8A09B] mb-2">Conteúdo</p>
+                <p className="text-xs text-[#A8A09B] mb-2">{t('inventory.content')}</p>
                 <ul className="space-y-0.5">
                   {item.conteudo.map((c, i) => (
                     <li key={i} className="text-sm text-[#F5F0E8] flex items-center gap-2">
@@ -153,7 +167,7 @@ export function ItemCard({ item, onClose }: ItemCardProps) {
         {item._tipo === 'ferramenta' && (
           <div className="space-y-2">
             {item.atributo && (
-              <Row label="Atributo" value={item.atributo} />
+              <Row label={t('inventory.attribute')} value={item.atributo} />
             )}
             <CustoRow custo_po={item.custo_po} peso_kg={item.peso_kg} />
           </div>

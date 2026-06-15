@@ -18,7 +18,7 @@ export function PainelAtributos() {
             <div
               key={attr}
               className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 flex flex-col items-center gap-0.5"
-              aria-label={`${ATRIBUTO_NOMES[attr]}: ${valor ?? '—'}, modificador ${_modificador !== null ? formatModificador(_modificador) : '—'}`}
+              aria-label={t('edit.attrValue', { attr: ATRIBUTO_NOMES[attr] }) + ': ' + (valor ?? '—') + ', ' + t('edit.modifier', { n: _modificador !== null ? formatModificador(_modificador) : '—' })}
             >
               <span className="text-[10px] font-bold text-[#A8A09B] tracking-widest uppercase">
                 {ATRIBUTO_NOMES[attr].slice(0, 3)}

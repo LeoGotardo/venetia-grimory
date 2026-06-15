@@ -187,7 +187,7 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
         className="px-6 py-3 bg-[#7B1D1D] hover:bg-[#9B2C2C] border border-[#B8860B]/30 rounded-lg text-[#F5F0E8] font-cinzel font-semibold text-lg transition-colors cursor-pointer"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
-        {t('step06.tabRandom')} (4d6 descarta menor)
+        {t('step06.tabRandom')} (4d6 drop lowest)
       </button>
 
       {wizard.rolagemValores.length > 0 && (

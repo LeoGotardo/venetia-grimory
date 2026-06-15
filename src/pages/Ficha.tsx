@@ -210,7 +210,7 @@ export function Ficha() {
                 <span className="font-extrabold text-[22px] text-[#D4A017] leading-none">{identity.nivel}</span>
               </div>
               <span className="text-[13px] font-semibold text-[#A8A09B] whitespace-nowrap">
-                {xpAtual.toLocaleString('pt-BR')} / {xpProximo !== undefined ? xpProximo.toLocaleString('pt-BR') : '—'} XP
+                {xpAtual.toLocaleString()} / {xpProximo !== undefined ? xpProximo.toLocaleString() : '—'} XP
               </span>
             </div>
             {/* XP bar with shimmer */}
@@ -240,7 +240,7 @@ export function Ficha() {
                 </button>
               ) : (
                 <span className="text-xs text-[#6B6560]">
-                  {xpProximo !== undefined ? t('ficha.xpToNext', { n: (xpProximo - xpAtual).toLocaleString('pt-BR') }) : t('ficha.maxLevel')}
+                  {xpProximo !== undefined ? t('ficha.xpToNext', { n: (xpProximo - xpAtual).toLocaleString() }) : t('ficha.maxLevel')}
                 </span>
               )}
             </div>
@@ -353,7 +353,7 @@ export function Ficha() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-[rgba(212,160,23,0.22)] mb-7 overflow-x-auto no-print" role="tablist" aria-label="Abas da ficha">
+        <div className="flex gap-1 border-b border-[rgba(212,160,23,0.22)] mb-7 overflow-x-auto no-print" role="tablist" aria-label={t('wizard.stepsAriaLabel')}>
           {abas.map(a => (
             <button
               key={a.id}

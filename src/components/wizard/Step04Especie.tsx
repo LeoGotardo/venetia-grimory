@@ -33,7 +33,7 @@ export function Step04Especie() {
             <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-1">{esp.nome}</h3>
             <div className="flex flex-wrap gap-1 mb-2">
               <Badge variant="default">{esp.tamanho}</Badge>
-              <Badge variant="default">{esp.deslocamento}m</Badge>
+              <Badge variant="default">{esp.deslocamento}{t('ficha.mUnit')}</Badge>
               {esp.visao_no_escuro && <Badge variant="blue">{t('step04.darkvision', { n: esp.visao_no_escuro })}</Badge>}
             </div>
             <div className="space-y-1">
@@ -58,7 +58,7 @@ export function Step04Especie() {
                 onClick={() => setEspecie(especieId!, lin.id)}
               >
                 <h4 className="font-cinzel font-semibold text-[#F5F0E8] mb-1">{lin.nome}</h4>
-                <p className="text-xs text-[#A8A09B]">{lin.descricao ?? `Linhagem ${lin.nome}`}</p>
+                <p className="text-xs text-[#A8A09B]">{lin.descricao ?? `${t('edit.lineage')} ${lin.nome}`}</p>
                 {lin.tracos && (
                   <div className="mt-2 space-y-1">
                     {lin.tracos.slice(0, 2).map(tr => (

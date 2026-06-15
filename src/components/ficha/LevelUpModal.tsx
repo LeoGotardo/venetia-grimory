@@ -151,7 +151,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
                 const qtd = novosSlots[c] ?? 0
                 return (
                   <div key={c} className={`text-center rounded p-1.5 ${qtd > 0 ? 'bg-[#2D2520] border border-[#B8860B]/20' : 'opacity-30'}`}>
-                    <p className="text-[9px] text-[#A8A09B]">{i + 1}º</p>
+                    <p className="text-[9px] text-[#A8A09B]">{t('magic.level_n', { n: i + 1 })}</p>
                     <p className={`text-sm font-bold ${qtd > 0 ? 'text-[#F5F0E8]' : 'text-[#A8A09B]'}`}>{qtd}</p>
                   </div>
                 )

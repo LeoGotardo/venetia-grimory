@@ -1,6 +1,6 @@
-import type { Magia } from './types'
+import type { Magia } from '../types'
 
-export const MAGIA3: Magia[] = [
+export const MAGIAS3: Magia[] = [
 // ─── CÍRCULO 3 ────────────────────────────────────────────────────────────
   {
     id: 'bola_de_fogo',

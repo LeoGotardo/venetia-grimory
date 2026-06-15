@@ -41,7 +41,13 @@ export function Step12Revisar() {
             <p><span className="text-[#A8A09B]">{t('step12.labelSubclass')}</span> <span className="text-[#F5F0E8]">{subclasse?.nome ?? (id.nivel < 3 ? t('step12.subclassNA') : '—')}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelSpecies')}</span> <span className="text-[#F5F0E8]">{especie?.nome ?? '—'}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelBackground')}</span> <span className="text-[#F5F0E8]">{ante?.nome ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">{t('step12.labelAlignment')}</span> <span className="text-[#F5F0E8]">{id.alinhamento.etico} {id.alinhamento.moral}</span></p>
+            <p>
+              <span className="text-[#A8A09B]">{t('step12.labelAlignment')}</span>{' '}
+              <span className="text-[#F5F0E8]">
+                {id.alinhamento.etico === 'Lawful' ? t('common.ethicLawfulAlt') : id.alinhamento.etico === 'Neutral' ? t('common.ethicNeutral') : id.alinhamento.etico === 'Chaotic' ? t('common.ethicChaotic') : id.alinhamento.etico}{' '}
+                {id.alinhamento.moral === 'Good' ? t('common.moralGoodAlt') : id.alinhamento.moral === 'Neutral' ? t('common.moralNeutral') : id.alinhamento.moral === 'Evil' ? t('common.moralEvilAlt') : id.alinhamento.moral}
+              </span>
+            </p>
           </div>
         </div>
 
@@ -70,7 +76,7 @@ export function Step12Revisar() {
             <p><span className="text-[#A8A09B]">{t('step12.labelMaxHp')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.pontos_de_vida.maximo ?? '—'}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelAC')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.classe_de_armadura.valor ?? '—'}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelInit')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.iniciativa._valor !== null ? formatModificador(ficha.combate.iniciativa._valor) : '—'}</span></p>
-            <p><span className="text-[#A8A09B]">{t('step12.labelSpeed')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.deslocamento._total_metros ?? '—'}m</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelSpeed')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.deslocamento._total_metros ?? '—'}{t('ficha.mUnit')}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelProfBonus')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate._bonus_proficiencia !== null ? `+${ficha.combate._bonus_proficiencia}` : '—'}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelHitDie')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.dados_de_vida.tipo ?? '—'}</span></p>
           </div>

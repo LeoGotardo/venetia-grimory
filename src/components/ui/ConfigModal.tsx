@@ -72,6 +72,11 @@ export function ConfigModal({ open, onClose }: ConfigModalProps) {
       label: t('config.simpleCoins'),
       description: t('config.simpleCoinsDesc'),
     },
+    {
+      key: 'lingua',
+      label: t('config.language'),
+      description: t('config.languageDesc'),
+    }
   ]
 
   return (

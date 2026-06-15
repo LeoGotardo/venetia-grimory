@@ -1,4 +1,4 @@
-import type { Magia } from './types'
+import type { Magia } from '../types'
 
 export const MAGIAS8: Magia[] = [
   // ─── CÍRCULO 8 ────────────────────────────────────────────────────────────

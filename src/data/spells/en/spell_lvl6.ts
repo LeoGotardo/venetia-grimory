@@ -1,0 +1,106 @@
+import type { Magia } from '../types'
+
+export const MAGIAS6: Magia[] = [
+  // ─── CIRCLE 6 ────────────────────────────────────────────────────────────
+  {
+    id: 'desintegrar',
+    nome: 'Disintegrate',
+    circulo: 6,
+    escola: 'Transmutation',
+    classes: ['sorcerer', 'wizard'],
+    descricao: 'A thin green ray springs from your pointing finger. A visible creature within range must succeed on a saving throw or take massive force damage. If this damage reduces the target\'s hit points to 0, it and everything it carries are turned into gray dust.',
+    componentes: ['V', 'S', 'M'],
+    material: 'a pinch of lodestone dust and a pinch of broken glass',
+    tempo_conjuracao: '1 action',
+    alcance: '18 meters',
+    duracao: 'Instantaneous',
+    dano: '10d6+40',
+    tipo_dano: 'Force',
+    salvaguarda: 'Dexterity'
+  },
+  {
+    id: 'sugestao_em_massa',
+    nome: 'Mass Suggestion',
+    circulo: 6,
+    escola: 'Enchantment',
+    classes: ['bard', 'warlock', 'sorcerer', 'wizard'],
+    descricao: 'You suggest a course of activity (limited to a sentence or two) and magically influence up to twelve creatures within range that can hear and understand you. The suggestion must be worded in such a manner as to make the activity sound reasonable.',
+    componentes: ['V', 'M'],
+    material: 'a snake\'s tongue and a piece of honeycomb',
+    tempo_conjuracao: '1 action',
+    alcance: '45 meters',
+    duracao: '24 hours',
+    salvaguarda: 'Wisdom'
+  },
+  {
+    id: 'cura_completa',
+    nome: 'Heal',
+    circulo: 6,
+    escola: 'Evocation',
+    classes: ['cleric', 'druid'],
+    descricao: 'A wave of healing energy flows through a creature you touch. The target regains 70 hit points. This spell also ends conditions such as blindness, deafness, and any disease affecting the target.',
+    componentes: ['V', 'S'],
+    tempo_conjuracao: '1 action',
+    alcance: 'Touch',
+    duracao: 'Instantaneous'
+  },
+  {
+    id: 'muralha_ de_gelo',
+    nome: 'Wall of Ice',
+    circulo: 6,
+    escola: 'Evocation',
+    classes: ['wizard'],
+    concentracao: true,
+    descricao: 'You create a wall of ice on a surface within range. The wall can be up to 27 meters long or a circular structure up to 6 meters in diameter. It blocks line of sight and emanates a freezing cold.',
+    componentes: ['V', 'S', 'M'],
+    material: 'a small piece of quartz or clear crystal',
+    tempo_conjuracao: '1 action',
+    alcance: '27 meters',
+    duracao: 'Concentration, up to 10 minutes',
+    dano: '10d6 (upon breaking) / 5d6 (in area)',
+    tipo_dano: 'Cold',
+    salvaguarda: 'Dexterity'
+  },
+  {
+    id: 'corrente_de_relampagos',
+    nome: 'Chain Lightning',
+    circulo: 6,
+    escola: 'Evocation',
+    classes: ['sorcerer', 'wizard'],
+    descricao: 'You create a stroke of lightning that strikes one creature of your choice within range. Three additional bolts leap from the first target to up to three other targets within 9 meters of the original target. Each target must make a saving throw.',
+    componentes: ['V', 'S', 'M'],
+    material: 'a piece of fur, a glass rod, and three iron nails',
+    tempo_conjuracao: '1 action',
+    alcance: '45 meters',
+    duracao: 'Instantaneous',
+    dano: '10d8',
+    tipo_dano: 'Lightning',
+    salvaguarda: 'Dexterity'
+  },
+  {
+    id: 'visao_verdadeira',
+    nome: 'True Seeing',
+    circulo: 6,
+    escola: 'Divination',
+    classes: ['bard', 'cleric', 'sorcerer', 'wizard'],
+    descricao: 'You touch a willing creature to grant it the ability to see things as they actually are. For the duration, the target has true seeing out to a distance of 36 meters.',
+    componentes: ['V', 'S', 'M'],
+    material: 'an eye ointment made from mushroom powder, saffron, and fat, consumed by the spell',
+    tempo_conjuracao: '1 action',
+    alcance: 'Touch',
+    duracao: '1 hour'
+  },
+  {
+    id: 'banquete_dos_herois',
+    nome: 'Heroes\' Feast',
+    circulo: 6,
+    escola: 'Conjuration',
+    classes: ['cleric', 'druid'],
+    descricao: 'You bring forth a magnificent feast for up to twelve creatures. Consuming the feast takes 1 hour. The participants gain immunity to poison and fear, advantage on Wisdom saving throws, and additional maximum hit points for 24 hours.',
+    componentes: ['V', 'S', 'M'],
+    material: 'a gem-encrusted gold chalice worth at least 1,000 gp, which is consumed by the spell',
+    tempo_conjuracao: '10 minutes',
+    alcance: '9 meters',
+    duracao: 'Instantaneous'
+  }
+]

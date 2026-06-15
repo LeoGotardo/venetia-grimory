@@ -94,7 +94,7 @@ export function PainelRecursos() {
 
       {classeId === 'ladino' && r.ataque_furtivo.dado && (
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 flex items-center gap-2">
-          <span className="text-sm text-[#F5F0E8]">Ataque Furtivo</span>
+          <span className="text-sm text-[#F5F0E8]">{t('resources.sneakAttack')}</span>
           <span className="font-bold text-[#B8860B]">{r.ataque_furtivo.dado}</span>
         </div>
       )}

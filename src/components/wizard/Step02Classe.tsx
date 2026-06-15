@@ -11,6 +11,9 @@ import type { DadosJogo, Classe } from '../../types'
 const dados = dadosJson as unknown as DadosJogo
 
 const complexidadeCor: Record<string, string> = {
+  Low: 'green',
+  Medium: 'gold',
+  High: 'crimson',
   Baixa: 'green',
   Média: 'gold',
   Alta: 'crimson',
@@ -49,7 +52,7 @@ export function Step02Classe() {
             <p className="text-[#A8A09B] text-xs line-clamp-2 mb-3">{classe.descricao}</p>
             <div className="flex items-center justify-between">
               <Badge variant={complexidadeCor[classe.complexidade] as 'green' | 'gold' | 'crimson'}>
-                {classe.complexidade}
+                {classe.complexidade === 'Baixa' ? 'Low' : classe.complexidade === 'Média' ? 'Medium' : classe.complexidade === 'Alta' ? 'High' : classe.complexidade}
               </Badge>
               <button
                 onClick={e => { e.stopPropagation(); setModalClasse(classe) }}
@@ -67,7 +70,7 @@ export function Step02Classe() {
         if (!c) return null
         return (
           <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4 space-y-2">
-            <h3 className="font-cinzel font-semibold text-[#B8860B]">{c.nome} — Resumo</h3>
+            <h3 className="font-cinzel font-semibold text-[#B8860B]">{c.nome} — {t('step02.summary')}</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
               <div><span className="text-[#A8A09B]">{t('step02.hitDie')}</span> <span className="text-[#F5F0E8] font-semibold">d{c.dado_vida}</span></div>
               <div><span className="text-[#A8A09B]">{t('step02.saves')}</span> <span className="text-[#F5F0E8]">{c.salvaguardas.join(', ')}</span></div>

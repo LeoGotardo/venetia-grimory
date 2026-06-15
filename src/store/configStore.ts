@@ -1,4 +1,3 @@
-import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export interface Config {
@@ -6,6 +5,7 @@ export interface Config {
   gerenciar_ouro: boolean
   reembolso_venda: boolean
   moedas_simples: boolean
+  lingua: string
 }
 
 interface ConfigStore {
@@ -21,6 +21,7 @@ export const useConfigStore = create<ConfigStore>()(
         gerenciar_ouro: true,
         reembolso_venda: true,
         moedas_simples: false,
+        lingua: 'en',
       },
       setConfig: partial => set(s => ({ config: { ...s.config, ...partial } })),
     }),

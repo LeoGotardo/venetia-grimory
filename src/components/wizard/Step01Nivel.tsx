@@ -66,7 +66,7 @@ export function Step01Nivel() {
                 >
                   <td className={`py-2 px-4 font-semibold ${n === nivel ? 'text-[#D4A017]' : 'text-[#F5F0E8]'}`}>{n}</td>
                   <td className="py-2 px-4 text-right text-[#8a8278]">
-                    {n === 1 ? '—' : (XP_POR_NIVEL[n] ?? '—').toLocaleString('pt-BR')}
+                    {n === 1 ? '—' : (XP_POR_NIVEL[n] ?? '—').toLocaleString()}
                   </td>
                   <td className={`py-2 px-4 text-right font-bold ${n === nivel ? 'text-[#D4A017]' : 'text-[#A8A09B]'}`}>
                     +{Math.ceil(n / 4) + 1}

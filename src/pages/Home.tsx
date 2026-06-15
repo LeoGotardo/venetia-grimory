@@ -135,7 +135,7 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
   const { t } = useTranslation()
   const classe = dados.classes.find(c => c.id === ficha.classe)
   const especie = dados.especies?.find(e => e.id === ficha.especie)
-  const dataFormatada = new Date(ficha.updatedAt).toLocaleDateString('pt-BR')
+  const dataFormatada = new Date(ficha.updatedAt).toLocaleDateString()
   const incompleta = ficha.completa === false
 
   return (

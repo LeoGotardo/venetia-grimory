@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 
 interface ModalProps {
   open: boolean
@@ -10,6 +11,7 @@ interface ModalProps {
 }
 
 export function Modal({ open, onClose, title, children, wide }: ModalProps) {
+  const { t } = useTranslation()
   const panelRef = useRef<HTMLDivElement>(null)
   const titleId = title ? 'modal-title' : undefined
 
@@ -87,7 +89,7 @@ export function Modal({ open, onClose, title, children, wide }: ModalProps) {
                 </h2>
                 <button
                   onClick={onClose}
-                  aria-label="Fechar modal"
+                  aria-label={t('common.closeModal')}
                   className="w-8 h-8 flex items-center justify-center text-[#A8A09B] hover:text-[#F5F0E8] hover:bg-[#2D2520] rounded transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
                 >
                   ×
