@@ -1,7 +1,8 @@
 # HANDOFF — Grimório de Venetia
-**Date:** 2026-06-10  
+**Date:** 2026-06-15  
 **Project:** venetia-grimory (D&D 5.5 character creator SPA)  
-**Branch:** N/A (no git repo initialized)  
+**Branch:** main  
+**Repo:** https://github.com/LeoGotardo/venetia-grimory.git  
 **Working dir:** `/home/leog/Documentos/venetia-grimory`
 
 ---
@@ -100,24 +101,86 @@ None. Build is clean.
 
 ---
 
+## Session 2 Work (2026-06-15)
+
+### Capacitor Android setup — DONE
+- Installed `@capacitor/core`, `@capacitor/cli`, `@capacitor/android`, `@capacitor/assets`
+- Android project generated at `/android/`
+- Fixed Kotlin duplicate class build error in `android/app/build.gradle`:
+  added `configurations.all { resolutionStrategy { force kotlin 1.8.22 } }` block
+- Android Studio installed at `/home/leog/Documentos/android-studio/bin/studio.sh`
+- SDK at `/home/leog/Android/Sdk`, `android/local.properties` points to it
+
+### i18n PT/EN — PARTIALLY DONE (build passes ✓)
+
+Installed `i18next` + `react-i18next`.
+
+Created:
+- `src/i18n/index.ts` — i18next init, reads lang from `localStorage('venetia-lang')`, defaults `'pt'`
+- `src/i18n/pt.ts` — full Portuguese translation object
+- `src/i18n/en.ts` — full English translation object
+- `src/main.tsx` — `import './i18n/index'` added as first import
+
+**Already updated** (all use `useTranslation`):
+- All 5 pages: `Home`, `Ficha`, `Wizard`, `NotFound`, `ServerError`
+- All 12 wizard steps + `WizardNav`
+- Ficha components: `LevelUpModal`, `PainelAnotacoes`, `PainelAtributos`, `PainelCombate`, `PainelEditar`
+- UI: `ConfigModal` — has PT/EN toggle buttons at top
+
+**NOT YET updated** (hardcoded strings remain):
+- `src/components/ficha/PainelInventario.tsx` → use `inventory.*` keys
+- `src/components/ficha/PainelMagia.tsx` → use `magic.*` keys
+- `src/components/ficha/PainelPericias.tsx` → use `skills.*` keys
+- `src/components/ficha/PainelRecursos.tsx` → use `resources.*` keys
+- `src/components/ui/MochilaBusca.tsx` → use `bag.*` keys
+
+All keys for these 5 files already exist in `src/i18n/pt.ts` and `src/i18n/en.ts`.
+
+**Game data NOT translated** (user's explicit decision — they'll handle it separately).
+
+---
+
+## Next Steps
+
+1. **Complete i18n** on 5 remaining files above:
+   - For each: read file → add `import { useTranslation } from 'react-i18next'` → add `const { t } = useTranslation()` in component body → replace hardcoded strings with `t('namespace.key', { vars })`
+   - Run `npm run build` to verify
+
+2. **Verify PT/EN toggle** — `npm run dev`, open ConfigModal, switch language, confirm all text changes
+
+3. **App icon** — still pending:
+   - Create `assets/icon.png` at root (1024×1024px, no transparency)
+   - Run `npx capacitor-assets generate --android`
+
+4. **Commit** all uncommitted changes (i18n files, android fix, component updates)
+
+5. **Sync Capacitor** after build: `npm run build && npx cap sync`
+
+---
+
 ## Resume Prompt
 
 ```
 Project: Grimório de Venetia — D&D 5.5 character creator SPA
 Dir: /home/leog/Documentos/venetia-grimory
-Stack: React 18 + TypeScript + Vite + Tailwind v4 + Zustand + React Router v6
+Stack: React 18 + TypeScript + Vite + Tailwind v4 + Zustand + React Router v7
+Branch: main | Repo: https://github.com/LeoGotardo/venetia-grimory.git
 
-ALL major work is complete and `npm run build` passes clean:
-- Engineering guidelines refactor: done
-- Full UI/UX audit + implementation: done (WCAG AA contrast, focus traps, aria, etc.)
-- Edit feature: done — "✎ Editar" tab added to Ficha page renders PainelEditar
-  (src/components/ficha/PainelEditar.tsx) with 6 edit sections
+We partially implemented PT/EN i18n using i18next + react-i18next. Build passes clean.
 
-Pending work is manual QA only:
-1. Run `npm run dev`, open a completed ficha, click "✎ Editar" tab
-2. Verify all 6 sections work: Informações, Progressão, Atributos, Armadura, Perícias, Magia
-3. Check edge cases: nivel < 3 disables subclasse; non-conjurador shows message in Magia section
-4. Confirm changes persist (localStorage auto-save via Zustand subscriber)
+DONE: all pages, all wizard steps, LevelUpModal, PainelAnotacoes, PainelAtributos,
+PainelCombate, PainelEditar, ConfigModal (has PT/EN toggle).
 
-No blockers. No TypeScript errors. No pending implementation tasks.
+TODO — 5 files still need useTranslation (hardcoded strings, no i18n yet):
+  src/components/ficha/PainelInventario.tsx  → inventory.* keys
+  src/components/ficha/PainelMagia.tsx       → magic.* keys
+  src/components/ficha/PainelPericias.tsx    → skills.* keys
+  src/components/ficha/PainelRecursos.tsx    → resources.* keys
+  src/components/ui/MochilaBusca.tsx         → bag.* keys
+
+All keys already exist in src/i18n/pt.ts and src/i18n/en.ts.
+For each file: read → add useTranslation import + const { t } = useTranslation() → replace strings → npm run build.
+
+Also pending: app icon (create assets/icon.png 1024x1024 → npx capacitor-assets generate --android).
+Game data strings (spells, weapons, etc.) intentionally NOT translated — user will do separately.
 ```

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { formatModificador } from '../../lib/calculos'
 import type { Ficha } from '../../types'
@@ -20,6 +21,7 @@ const CIRCULO_CORES = [
 
 export function PainelMagia() {
   const { ficha, gastarEspaco, restaurarEspaco } = useFichaStore()
+  const { t } = useTranslation()
   const { magia } = ficha
 
   if (!magia.conjurador) {
@@ -28,8 +30,8 @@ export function PainelMagia() {
         <div className="mb-3 flex justify-center opacity-40">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="#B8860B"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
         </div>
-        <p className="font-cinzel text-[#B8860B] mb-1">Não conjurador</p>
-        <p className="text-sm">Este personagem não possui habilidades mágicas.</p>
+        <p className="font-cinzel text-[#B8860B] mb-1">{t('magic.notCaster')}</p>
+        <p className="text-sm">{t('magic.notCasterDesc')}</p>
       </div>
     )
   }
@@ -38,19 +40,19 @@ export function PainelMagia() {
     <div className="space-y-5">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 text-center">
-          <div className="text-xs text-[#A8A09B] mb-1">CD de Magia</div>
+          <div className="text-xs text-[#A8A09B] mb-1">{t('magic.spellDC')}</div>
           <div className="font-cinzel font-bold text-3xl text-[#F5F0E8]">{magia._cd_magia ?? '—'}</div>
         </div>
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 text-center">
-          <div className="text-xs text-[#A8A09B] mb-1">Bônus Ataque Mágico</div>
+          <div className="text-xs text-[#A8A09B] mb-1">{t('magic.spellAttackBonus')}</div>
           <div className="font-cinzel font-bold text-3xl text-[#F5F0E8]">
             {magia._bonus_ataque_magia !== null ? formatModificador(magia._bonus_ataque_magia) : '—'}
           </div>
         </div>
       </div>
 
-      <section aria-label="Espaços de magia">
-        <h4 className="font-cinzel font-semibold text-[#B8860B] mb-3">Espaços de Magia</h4>
+      <section aria-label={t('magic.spellSlots')}>
+        <h4 className="font-cinzel font-semibold text-[#B8860B] mb-3">{t('magic.spellSlots')}</h4>
         <div className="space-y-2">
           {CIRCULOS.map((c, i) => {
             const espaco = magia.espacos_de_magia[c]
@@ -59,7 +61,7 @@ export function PainelMagia() {
             return (
               <div key={c} className="flex items-center gap-3">
                 <span className="text-xs text-[#A8A09B] w-8 text-right flex-shrink-0">{circulo}°</span>
-                <div className="flex gap-1 flex-wrap" role="group" aria-label={`Espaços do círculo ${circulo}`}>
+                <div className="flex gap-1 flex-wrap" role="group" aria-label={t('magic.circleAriaLabel', { n: circulo })}>
                   {Array.from({ length: espaco.maximo }, (_, j) => {
                     const disponivel = j < espaco.maximo - espaco.gastos
                     return (
@@ -74,8 +76,8 @@ export function PainelMagia() {
                             : 'border-[#A8A09B]/40 bg-transparent hover:border-[#B8860B]',
                         ].join(' ')}
                         aria-label={disponivel
-                          ? `Gastar espaço ${j + 1} de ${circulo}° círculo`
-                          : `Restaurar espaço ${j + 1} de ${circulo}° círculo`}
+                          ? t('magic.spendSlot', { slot: j + 1, n: circulo })
+                          : t('magic.restoreSlot', { slot: j + 1, n: circulo })}
                         aria-pressed={!disponivel}
                       />
                     )
@@ -91,19 +93,19 @@ export function PainelMagia() {
       </section>
 
       {magia.truques_conhecidos.length > 0 && (
-        <section aria-label="Truques">
-          <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">Truques</h4>
+        <section aria-label={t('magic.cantrips')}>
+          <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('magic.cantrips')}</h4>
           <div className="flex flex-wrap gap-1">
-            {magia.truques_conhecidos.map(t => (
-              <span key={t} className="text-xs bg-[#2D2520] border border-[#B8860B]/20 rounded px-2 py-0.5 text-[#F5F0E8]">{t}</span>
+            {magia.truques_conhecidos.map(tr => (
+              <span key={tr} className="text-xs bg-[#2D2520] border border-[#B8860B]/20 rounded px-2 py-0.5 text-[#F5F0E8]">{tr}</span>
             ))}
           </div>
         </section>
       )}
 
       {magia.magias_preparadas.length > 0 && (
-        <section aria-label="Magias preparadas">
-          <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">Magias Preparadas</h4>
+        <section aria-label={t('magic.preparedSpells')}>
+          <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('magic.preparedSpells')}</h4>
           <div className="flex flex-wrap gap-1">
             {magia.magias_preparadas.map(m => (
               <span key={m} className="text-xs bg-[#2D2520] border border-[#7B1D1D]/20 rounded px-2 py-0.5 text-[#F5F0E8]">{m}</span>

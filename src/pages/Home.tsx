@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../store/fichaStore'
 import { useFichaExport } from '../hooks/useFichaExport'
 import type { FichaListItem } from '../store/fichaStore'
@@ -14,6 +15,7 @@ const dados = dadosJson as unknown as DadosJogo
 
 export function Home() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { fichasSalvas, novaFicha, carregarFicha, deletarFicha, carregarListaSalvas } = useFichaStore()
   const { exportarPorId, importar } = useFichaExport()
   const [configAberta, setConfigAberta] = useState(false)
@@ -35,7 +37,7 @@ export function Home() {
     }
   }
   function handleDeletar(f: FichaListItem) {
-    if (!confirm(`Deletar "${f.nome}"? Esta ação não pode ser desfeita.`)) return
+    if (!confirm(t('home.deleteConfirm', { name: f.nome }))) return
     deletarFicha(f.id)
   }
 
@@ -49,7 +51,7 @@ export function Home() {
         </div>
         <button
           onClick={() => setConfigAberta(true)}
-          aria-label="Configurações"
+          aria-label={t('home.settings')}
           className="w-[34px] h-[34px] rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
         >
           <GearIcon />
@@ -64,9 +66,9 @@ export function Home() {
         <div className="text-center mb-10">
           <SwordsIcon />
           <h1 className="font-extrabold text-[28px] sm:text-[40px] tracking-tight leading-tight mt-5 mb-2 text-[#F5F0E8]">
-            Grimório de Venetia
+            {t('home.title')}
           </h1>
-          <p className="text-[16px] font-semibold text-[#D4A017]">Criador de Personagens D&amp;D 5.5 (2024)</p>
+          <p className="text-[16px] font-semibold text-[#D4A017]">{t('home.subtitle')}</p>
           <p className="text-[13px] text-[#6B6560] mt-1.5">
             {dados.meta.fonte} · {dados.meta.traducao}
           </p>
@@ -79,14 +81,14 @@ export function Home() {
             className="inline-flex items-center gap-[9px] text-[15px] font-bold text-[#131110] bg-[#D4A017] hover:bg-[#E8C25A] border-0 rounded-[11px] px-6 py-[14px] cursor-pointer transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Criar Personagem
+            {t('home.createChar')}
           </button>
           <button
             onClick={importar}
             className="inline-flex items-center gap-[9px] text-[15px] font-semibold text-[#E8DFD0] bg-white/5 hover:bg-white/10 border border-[rgba(212,160,23,0.25)] hover:border-[rgba(212,160,23,0.5)] rounded-[11px] px-6 py-[14px] cursor-pointer transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
-            Importar JSON
+            {t('home.importJson')}
           </button>
         </div>
 
@@ -94,7 +96,7 @@ export function Home() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-[11px]">
             <span className="w-1 h-[19px] rounded-sm bg-gradient-to-b from-[#E8C25A] to-[#B8860B]" />
-            <h2 className="font-extrabold text-[17px] text-[#EAD9B0]">Personagens Salvos</h2>
+            <h2 className="font-extrabold text-[17px] text-[#EAD9B0]">{t('home.savedChars')}</h2>
           </div>
           <span className="text-xs text-[#6B6560]">{fichasOrdenadas.length}</span>
         </div>
@@ -113,8 +115,8 @@ export function Home() {
           </div>
         ) : (
           <div className="text-center py-14 border border-dashed border-[rgba(212,160,23,0.25)] rounded-2xl">
-            <p className="text-[#A8A09B] font-semibold">Nenhum personagem salvo ainda.</p>
-            <p className="text-[#6B6560] text-sm mt-1">Crie seu primeiro aventureiro acima!</p>
+            <p className="text-[#A8A09B] font-semibold">{t('home.noChars')}</p>
+            <p className="text-[#6B6560] text-sm mt-1">{t('home.noCharsHint')}</p>
           </div>
         )}
       </div>
@@ -130,6 +132,7 @@ interface FichaCardProps {
 }
 
 function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps) {
+  const { t } = useTranslation()
   const classe = dados.classes.find(c => c.id === ficha.classe)
   const especie = dados.especies?.find(e => e.id === ficha.especie)
   const dataFormatada = new Date(ficha.updatedAt).toLocaleDateString('pt-BR')
@@ -144,15 +147,15 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-[17px] text-[#F5F0E8]">{ficha.nome || 'Sem nome'}</span>
+              <span className="font-bold text-[17px] text-[#F5F0E8]">{ficha.nome || t('home.noName')}</span>
               {incompleta && (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#B8860B]/20 text-[#D4A017] border border-[#B8860B]/30">
-                  Em criação
+                  {t('home.inCreation')}
                 </span>
               )}
             </div>
             <div className="text-[13px] text-[#8a8278] mt-[3px]">
-              Nível {ficha.nivel} {classe?.nome ?? ficha.classe} · {especie?.nome ?? ficha.especie}
+              {t('ficha.level')} {ficha.nivel} {classe?.nome ?? ficha.classe} · {especie?.nome ?? ficha.especie}
             </div>
           </div>
         </div>
@@ -167,12 +170,12 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
           {incompleta ? (
             <>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg>
-              Continuar Criação
+              {t('home.continueCreation')}
             </>
           ) : (
             <>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-              Abrir Ficha
+              {t('home.openSheet')}
             </>
           )}
         </button>
@@ -181,11 +184,11 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
           className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-[#A8A09B] hover:text-[#E8DFD0] bg-white/[0.04] border border-white/[0.08] rounded-[9px] px-[13px] py-[9px] cursor-pointer transition-colors"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M7 9l5-5 5 5"/><path d="M12 4v12"/></svg>
-          Exportar
+          {t('home.export')}
         </button>
         <button
           onClick={onDeletar}
-          aria-label={`Deletar ${ficha.nome}`}
+          aria-label={t('home.deleteAriaLabel', { name: ficha.nome })}
           className="inline-flex items-center justify-center text-[#b56a6a] bg-[rgba(181,57,47,0.1)] border border-[rgba(181,57,47,0.28)] hover:bg-[rgba(181,57,47,0.2)] rounded-[9px] px-[11px] py-[9px] cursor-pointer transition-colors"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>

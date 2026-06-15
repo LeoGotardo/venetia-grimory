@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { calcModificador, formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
@@ -10,15 +11,16 @@ import type { MetodoAtributos } from '../../hooks/useAtributosWizard'
 
 const dados = dadosJson as unknown as DadosJogo
 
-const LABEL_METODO: Record<MetodoAtributos, string> = {
-  padrao: 'Conjunto Padrão',
-  aleatorio: 'Aleatório',
-  compra: 'Compra de Pontos',
-}
-
 export function Step06Atributos() {
   const { ficha, setAtributos, setPasso, rolagemAtributos, setRolagemAtributos } = useFichaStore()
+  const { t } = useTranslation()
   const wizard = useAtributosWizard({ initialRoll: rolagemAtributos, onRoll: setRolagemAtributos })
+
+  const LABEL_METODO: Record<MetodoAtributos, string> = {
+    padrao: t('step06.tabStandard'),
+    aleatorio: t('step06.tabRandom'),
+    compra: t('step06.tabPointBuy'),
+  }
 
   const classeId = ficha.identidade.classe_id
   const nivel = ficha.identidade.nivel ?? 1
@@ -65,8 +67,8 @@ export function Step06Atributos() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Atributos</h2>
-        <p className="text-[#A8A09B] text-sm">Determine as capacidades físicas e mentais do personagem.</p>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step06.heading')}</h2>
+        <p className="text-[#A8A09B] text-sm">{t('step06.subtitle')}</p>
       </div>
 
       <div className="flex gap-2 border-b border-[#B8860B]/20 pb-2 overflow-x-auto">
@@ -130,6 +132,7 @@ function PainelConjuntoPadrao({
   sugeridos: AtributoId[]
   nomePrimeiroSugerido: AtributoId | undefined
 }) {
+  const { t } = useTranslation()
   const classeId = useFichaStore(s => s.ficha.identidade.classe_id)
   const classe = dados.classes.find(c => c.id === classeId)
 
@@ -137,8 +140,7 @@ function PainelConjuntoPadrao({
     <div className="space-y-3">
       {classe && sugeridos.length > 0 && (
         <p className="text-xs text-[#A8A09B]">
-          Sugestão para {classe.nome}:{' '}
-          <span className="text-[#B8860B]">{sugeridos.join(' → ')}</span>
+          {t('step06.suggestion', { classe: classe.nome, attrs: sugeridos.join(' → ') })}
         </p>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -165,7 +167,7 @@ function PainelConjuntoPadrao({
                   value={v}
                   disabled={!wizard.isValorDisponivelNoPadrao(v, attr)}
                 >
-                  {v} {!wizard.isValorDisponivelNoPadrao(v, attr) ? '(usado)' : ''}
+                  {v} {!wizard.isValorDisponivelNoPadrao(v, attr) ? t('step06.used') : ''}
                 </option>
               ))}
             </select>
@@ -177,6 +179,7 @@ function PainelConjuntoPadrao({
 }
 
 function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4">
       <button
@@ -184,7 +187,7 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
         className="px-6 py-3 bg-[#7B1D1D] hover:bg-[#9B2C2C] border border-[#B8860B]/30 rounded-lg text-[#F5F0E8] font-cinzel font-semibold text-lg transition-colors cursor-pointer"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="8" r="1.5" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1.5" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1.5" fill="currentColor" stroke="none"/></svg>
-        Rolar (4d6 descarta menor)
+        {t('step06.tabRandom')} (4d6 descarta menor)
       </button>
 
       {wizard.rolagemValores.length > 0 && (
@@ -225,12 +228,12 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
                       className={`flex-1 bg-[#2D2520] border rounded px-2 py-1.5 text-[#F5F0E8] text-sm focus:outline-none focus:ring-1 focus:ring-[#B8860B]
                         ${idxAtual !== null ? 'border-[#B8860B]' : 'border-[#B8860B]/30'}`}
                     >
-                      <option value="">— escolher —</option>
+                      <option value="">{t('step06.choosePlaceholder')}</option>
                       {wizard.rolagemValores.map((v, j) => {
                         const emUso = !wizard.isDieAvailable(j, attr)
                         return (
                           <option key={j} value={j} disabled={emUso}>
-                            {v}{emUso ? ' (em uso)' : ''}
+                            {v}{emUso ? ` ${t('step06.inUse')}` : ''}
                           </option>
                         )
                       })}
@@ -239,7 +242,7 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
                       <button
                         type="button"
                         onClick={() => wizard.setAleatorioAttr(attr, null)}
-                        title="Remover dado"
+                        title={t('step06.removeDie')}
                         className="w-7 h-[34px] flex items-center justify-center rounded bg-[#2D2520] border border-[#B8860B]/30 text-[#A8A09B] hover:text-[#F5F0E8] hover:border-[#B8860B]/60 cursor-pointer text-sm"
                       >
                         ×
@@ -254,7 +257,7 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
           {/* Progresso */}
           <p className="text-xs text-right">
             <span className={ATRIBUTOS.every(a => wizard.aleatorioIndices[a] !== null) ? 'text-green-400' : 'text-[#A8A09B]'}>
-              {ATRIBUTOS.filter(a => wizard.aleatorioIndices[a] !== null).length}/6 atributos atribuídos
+              {t('step06.assigned', { n: ATRIBUTOS.filter(a => wizard.aleatorioIndices[a] !== null).length })}
             </span>
           </p>
         </div>
@@ -264,10 +267,11 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
 }
 
 function PainelCompra({ wizard }: { wizard: WizardHook }) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <span className="text-[#A8A09B] text-sm">Pool restante:</span>
+        <span className="text-[#A8A09B] text-sm">{t('step06.poolRemaining')}</span>
         <span
           className={`font-cinzel font-bold text-xl ${
             wizard.poolRestante === 0 ? 'text-green-400' : wizard.poolRestante < 0 ? 'text-red-400' : 'text-[#F5F0E8]'
@@ -275,7 +279,7 @@ function PainelCompra({ wizard }: { wizard: WizardHook }) {
         >
           {wizard.poolRestante}
         </span>
-        <span className="text-[#A8A09B] text-xs">/ 27</span>
+        <span className="text-[#A8A09B] text-xs">{t('step06.of27')}</span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -321,14 +325,15 @@ interface PainelASIProps {
 }
 
 function PainelASI({ numASIs, totalPool, totalUsado, atributosBase, asiDistrib, onSetBonus }: PainelASIProps) {
+  const { t } = useTranslation()
   return (
     <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4 space-y-4">
       <div>
         <h3 className="font-cinzel font-semibold text-[#B8860B]">
-          Melhoria de Atributo{numASIs > 1 ? ` (×${numASIs})` : ''}
+          {numASIs > 1 ? t('step06.avaHeadingMultiple', { n: numASIs }) : t('step06.avaHeading')}
         </h3>
         <p className="text-xs text-[#A8A09B] mt-1">
-          Seu nível inicial concede {numASIs} AVA{numASIs > 1 ? 's' : ''} — distribua +{totalPool} pontos entre os atributos (máx. 20 por atributo).
+          {t('step06.avaHint', { n: numASIs, s: numASIs > 1 ? 's' : '', pts: totalPool })}
         </p>
       </div>
 
@@ -347,7 +352,7 @@ function PainelASI({ numASIs, totalPool, totalUsado, atributosBase, asiDistrib, 
               <span className="text-[10px] text-[#A8A09B]">
                 {base}
                 {bonus > 0 && <span className="text-green-400"> +{bonus} = {final}</span>}
-                {noTeto && <span className="text-[#B8860B]"> (máx.)</span>}
+                {noTeto && <span className="text-[#B8860B]"> {t('step06.maxLabel')}</span>}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -375,7 +380,7 @@ function PainelASI({ numASIs, totalPool, totalUsado, atributosBase, asiDistrib, 
 
       <p className="text-xs text-right">
         <span className={totalUsado === totalPool ? 'text-green-400' : 'text-[#A8A09B]'}>
-          {totalUsado}/{totalPool} pontos de melhoria distribuídos
+          {t('step06.avaDistributed', { current: totalUsado, total: totalPool })}
         </span>
       </p>
     </div>
@@ -389,9 +394,10 @@ function ResumoAtributos({
   atributosAtuais: Record<AtributoId, number | null>
   nomePrimeiroSugerido: AtributoId | undefined
 }) {
+  const { t } = useTranslation()
   return (
     <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4">
-      <h3 className="font-cinzel font-semibold text-[#B8860B] mb-3">Resumo dos Atributos</h3>
+      <h3 className="font-cinzel font-semibold text-[#B8860B] mb-3">{t('step06.attrSummary')}</h3>
       <div className="grid grid-cols-3 gap-2">
         {ATRIBUTOS.map(attr => {
           const val = atributosAtuais[attr]

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { formatModificador } from '../../lib/calculos'
 import { DadoBadge } from '../ui/Badge'
@@ -8,6 +9,7 @@ const INPUT_BASE = 'bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1 te
 
 export function PainelCombate() {
   const { ficha, atualizarPV, atualizarPVTemp, gastarDadoVida, descansoCurto, descansoLongo, toggleEscudo } = useFichaStore()
+  const { t } = useTranslation()
   const { pontos_de_vida: pv, dados_de_vida: dv, classe_de_armadura: ca, iniciativa, deslocamento, _bonus_proficiencia } = ficha.combate
   const temEscudoNoInventario = ficha.inventario.itens.some(i => i.categoria === 'Escudo')
   const [pvDelta, setPvDelta] = useState('')
@@ -19,12 +21,12 @@ export function PainelCombate() {
 
   type Stat = { label: string; value: string | number; sub?: string; hero?: boolean }
   const stats: Stat[] = [
-    { label: 'PV', value: `${pvAtual}/${pvMax}`, sub: pv.temporario > 0 ? `+${pv.temporario} temp` : undefined, hero: true },
-    { label: 'CA', value: ca.valor ?? '—', sub: ca.escudo_equipado ? '+2 escudo' : undefined },
-    { label: 'Iniciativa', value: iniciativa._valor !== null ? formatModificador(iniciativa._valor) : '—' },
-    { label: 'Deslocamento', value: deslocamento._total_metros !== null ? `${deslocamento._total_metros}m` : '—' },
-    { label: 'Prof.', value: _bonus_proficiencia !== null ? `+${_bonus_proficiencia}` : '—' },
-    { label: 'Percepção Passiva', value: percepcaoPassiva },
+    { label: t('combat.hp'), value: `${pvAtual}/${pvMax}`, sub: pv.temporario > 0 ? `+${pv.temporario} temp` : undefined, hero: true },
+    { label: t('combat.ac'), value: ca.valor ?? '—', sub: ca.escudo_equipado ? t('combat.shieldBonus') : undefined },
+    { label: t('combat.initiative'), value: iniciativa._valor !== null ? formatModificador(iniciativa._valor) : '—' },
+    { label: t('combat.speed'), value: deslocamento._total_metros !== null ? `${deslocamento._total_metros}m` : '—' },
+    { label: t('combat.prof'), value: _bonus_proficiencia !== null ? `+${_bonus_proficiencia}` : '—' },
+    { label: t('combat.passivePerception'), value: percepcaoPassiva },
   ]
 
   function handleAjustarPV() {
@@ -54,7 +56,7 @@ export function PainelCombate() {
       {/* PV bar */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xs text-[#A8A09B]">Pontos de Vida</span>
+          <span className="text-xs text-[#A8A09B]">{t('combat.hpLabel')}</span>
           <span className="text-xs text-[#A8A09B]">{pvAtual}/{pvMax}</span>
         </div>
         <div
@@ -63,7 +65,7 @@ export function PainelCombate() {
           aria-valuenow={pvAtual}
           aria-valuemin={0}
           aria-valuemax={pvMax}
-          aria-label="Pontos de vida"
+          aria-label={t('combat.hpAriaLabel')}
         >
           <div
             className={`h-full rounded-full transition-all duration-500 ${pvPct > 50 ? 'bg-green-600' : pvPct > 20 ? 'bg-yellow-500' : 'bg-red-600'}`}
@@ -74,7 +76,7 @@ export function PainelCombate() {
 
       {/* PV adjustment */}
       <div className="flex gap-2 items-center flex-wrap">
-        <label htmlFor="pv-delta" className="text-xs text-[#A8A09B] flex-shrink-0">Ajuste PV</label>
+        <label htmlFor="pv-delta" className="text-xs text-[#A8A09B] flex-shrink-0">{t('combat.adjustHp')}</label>
         <input
           id="pv-delta"
           type="number"
@@ -83,19 +85,19 @@ export function PainelCombate() {
           onKeyDown={e => e.key === 'Enter' && handleAjustarPV()}
           placeholder="±"
           className={`w-16 ${INPUT_BASE}`}
-          aria-label="Quantidade de PV (positivo = cura, negativo = dano)"
+          aria-label={t('combat.hpDeltaAriaLabel')}
         />
         <Button size="sm" variant="secondary" onClick={handleAjustarPV} disabled={!pvDelta}>
-          Aplicar
+          {t('combat.apply')}
         </Button>
         <Button size="sm" variant="ghost" onClick={() => atualizarPV(pvMax - pvAtual)}>
-          Restaurar
+          {t('combat.restore')}
         </Button>
       </div>
 
       {/* PV temporário */}
       <div className="flex items-center gap-2">
-        <label htmlFor="pv-temp" className="text-xs text-[#A8A09B] flex-shrink-0">PV Temporário</label>
+        <label htmlFor="pv-temp" className="text-xs text-[#A8A09B] flex-shrink-0">{t('combat.tempHp')}</label>
         <input
           id="pv-temp"
           type="number"
@@ -103,7 +105,7 @@ export function PainelCombate() {
           onChange={e => atualizarPVTemp(parseInt(e.target.value) || 0)}
           className={`w-16 ${INPUT_BASE}`}
           min={0}
-          aria-label="Pontos de vida temporários"
+          aria-label={t('combat.tempHpAriaLabel')}
         />
       </div>
 
@@ -112,14 +114,14 @@ export function PainelCombate() {
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-[#A8A09B]">Dados de Vida</span>
+              <span className="text-xs text-[#A8A09B]">{t('combat.hitDice')}</span>
               <DadoBadge tipo={dv.tipo ?? 'd8'} />
             </div>
             <span className="text-sm text-[#F5F0E8]">
-              {(dv.total ?? 0) - dv.gastos}/{dv.total} disponíveis
+              {(dv.total ?? 0) - dv.gastos}/{dv.total} {t('combat.available', { n: '' }).trim()}
             </span>
           </div>
-          <div className="flex gap-1 flex-wrap mb-2" role="group" aria-label="Dados de vida">
+          <div className="flex gap-1 flex-wrap mb-2" role="group" aria-label={t('combat.hitDiceAriaLabel')}>
             {Array.from({ length: dv.total ?? 0 }, (_, i) => {
               const disponivel = i < (dv.total ?? 0) - dv.gastos
               return (
@@ -133,10 +135,10 @@ export function PainelCombate() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="secondary" onClick={gastarDadoVida} disabled={(dv.total ?? 0) - dv.gastos <= 0}>
-              Gastar dado
+              {t('combat.spendDie')}
             </Button>
-            <Button size="sm" variant="ghost" onClick={descansoCurto}>Desc. Curto</Button>
-            <Button size="sm" variant="ghost" onClick={descansoLongo}>Desc. Longo</Button>
+            <Button size="sm" variant="ghost" onClick={descansoCurto}>{t('combat.shortRest')}</Button>
+            <Button size="sm" variant="ghost" onClick={descansoLongo}>{t('combat.longRest')}</Button>
           </div>
         </div>
       )}
@@ -146,7 +148,7 @@ export function PainelCombate() {
         onClick={toggleEscudo}
         disabled={!ca.escudo_equipado && !temEscudoNoInventario}
         aria-pressed={ca.escudo_equipado}
-        title={!temEscudoNoInventario && !ca.escudo_equipado ? 'Adicione um escudo ao inventário primeiro' : undefined}
+        title={!temEscudoNoInventario && !ca.escudo_equipado ? t('combat.addShieldFirst') : undefined}
         className={`px-3 py-1.5 rounded border text-sm font-medium transition-colors
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]
           ${ca.escudo_equipado
@@ -156,7 +158,7 @@ export function PainelCombate() {
             : 'border-[#B8860B]/30 text-[#A8A09B] hover:bg-[#3D332D] hover:text-[#F5F0E8] cursor-pointer'}`}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill={ca.escudo_equipado ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        {ca.escudo_equipado ? 'Escudo equipado' : temEscudoNoInventario ? 'Equipar escudo' : 'Sem escudo no inventário'}
+        {ca.escudo_equipado ? t('combat.shieldEquipped') : temEscudoNoInventario ? t('combat.equipShield') : t('combat.noShield')}
       </button>
     </div>
   )

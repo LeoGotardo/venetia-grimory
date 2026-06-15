@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { formatModificador } from '../../lib/calculos'
@@ -8,6 +9,7 @@ const dados = dadosJson as unknown as DadosJogo
 
 export function Step07Pericias() {
   const { ficha, setPericias, setPasso } = useFichaStore()
+  const { t } = useTranslation()
   const classeId = ficha.identidade.classe_id
   const classe = dados.classes.find(c => c.id === classeId)
   const antecedenteId = ficha.identidade.antecedente_id
@@ -37,10 +39,10 @@ export function Step07Pericias() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Perícias</h2>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step07.heading')}</h2>
         <p className="text-[#A8A09B] text-sm">
-          Escolha {numMax} perícias da sua classe.
-          {' '}<span className="text-[#B8860B]">{selecionadasClasse.length}/{numMax} selecionadas</span>
+          {t('step07.chooseN', { n: numMax })}
+          {' '}<span className="text-[#B8860B]">{t('step07.selected', { n: selecionadasClasse.length, max: numMax })}</span>
         </p>
       </div>
 
@@ -66,7 +68,7 @@ export function Step07Pericias() {
               <div className="flex-1">
                 <span className={`text-sm font-medium ${selecionada ? 'text-[#F5F0E8]' : 'text-[#B8860B]'}`}>{p.nome}</span>
                 <span className="text-xs text-[#A8A09B] ml-2">({p.atributo})</span>
-                {daAnte && <span className="text-xs text-[#B8860B] ml-2">• Antecedente</span>}
+                {daAnte && <span className="text-xs text-[#B8860B] ml-2">{t('step07.backgroundBadge')}</span>}
               </div>
               <span className={`text-sm font-bold min-w-[3rem] text-right ${(mod ?? 0) >= 3 ? 'text-green-400' : mod && mod > 0 ? 'text-[#F5F0E8]' : 'text-[#A8A09B]'}`}>
                 {mod !== null && mod !== undefined ? formatModificador(mod) : '—'}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import Button from '../ui/Button'
 
@@ -5,21 +6,22 @@ const DOTS_MAX = 20
 
 export function PainelRecursos() {
   const { ficha, atualizarRecurso } = useFichaStore()
+  const { t } = useTranslation()
   const classeId = ficha.identidade.classe_id
   const r = ficha.caracteristicas_de_classe.recursos_de_classe
 
   if (!classeId) return null
 
   const recursos = [
-    { key: 'furias',               label: 'Fúrias',                  classes: ['barbaro'],              valor: r.furias },
-    { key: 'inspiracao_de_bardo',  label: 'Inspiração de Bardo',     classes: ['bardo'],                valor: r.inspiracao_de_bardo },
-    { key: 'canalizar_divindade',  label: 'Canalizar Divindade',     classes: ['clerigo', 'paladino'],   valor: r.canalizar_divindade },
-    { key: 'formas_selvagens',     label: 'Formas Selvagens',        classes: ['druida'],               valor: r.formas_selvagens },
-    { key: 'pontos_de_feiticaria', label: 'Pontos de Feitiçaria',    classes: ['feiticeiro'],           valor: r.pontos_de_feiticaria },
-    { key: 'pontos_de_foco',       label: 'Pontos de Foco',          classes: ['monge'],                valor: r.pontos_de_foco },
-    { key: 'surto_de_acao',        label: 'Surto de Ação',           classes: ['guerreiro'],            valor: { maximo: r.surto_de_acao.usos, atual: r.surto_de_acao.atual } },
-    { key: 'recuperar_folego',     label: 'Recuperar Fôlego',        classes: ['guerreiro'],            valor: r.recuperar_folego },
-    { key: 'imposicao_de_maos',    label: 'Imposição de Mãos (PV)', classes: ['paladino'],             valor: { maximo: r.imposicao_de_maos.pool_pv, atual: r.imposicao_de_maos.atual } },
+    { key: 'furias',               label: t('resources.furias'),               classes: ['barbaro'],              valor: r.furias },
+    { key: 'inspiracao_de_bardo',  label: t('resources.inspiracaoBardo'),      classes: ['bardo'],                valor: r.inspiracao_de_bardo },
+    { key: 'canalizar_divindade',  label: t('resources.canalizarDivindade'),   classes: ['clerigo', 'paladino'],   valor: r.canalizar_divindade },
+    { key: 'formas_selvagens',     label: t('resources.formasSelvagens'),      classes: ['druida'],               valor: r.formas_selvagens },
+    { key: 'pontos_de_feiticaria', label: t('resources.pontosFeiticaria'),     classes: ['feiticeiro'],           valor: r.pontos_de_feiticaria },
+    { key: 'pontos_de_foco',       label: t('resources.pontosFoco'),           classes: ['monge'],                valor: r.pontos_de_foco },
+    { key: 'surto_de_acao',        label: t('resources.surtoAcao'),            classes: ['guerreiro'],            valor: { maximo: r.surto_de_acao.usos, atual: r.surto_de_acao.atual } },
+    { key: 'recuperar_folego',     label: t('resources.recuperarFolego'),      classes: ['guerreiro'],            valor: r.recuperar_folego },
+    { key: 'imposicao_de_maos',    label: t('resources.imposicaoMaos'),        classes: ['paladino'],             valor: { maximo: r.imposicao_de_maos.pool_pv, atual: r.imposicao_de_maos.atual } },
   ]
 
   const relevantes = recursos.filter(res => res.classes.includes(classeId) && res.valor.maximo !== null)
@@ -27,7 +29,7 @@ export function PainelRecursos() {
 
   return (
     <div className="space-y-3">
-      <h3 className="font-cinzel font-semibold text-[#B8860B]">Recursos de Classe</h3>
+      <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('resources.heading')}</h3>
       {relevantes.map(res => {
         const max = res.valor.maximo ?? 0
         const atual = res.valor.atual ?? 0
@@ -76,14 +78,14 @@ export function PainelRecursos() {
                 onClick={() => atualizarRecurso(res.key, -1)}
                 disabled={atual <= 0}
               >
-                Usar
+                {t('resources.use')}
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => atualizarRecurso(res.key, max - atual)}
               >
-                Restaurar
+                {t('resources.restore')}
               </Button>
             </div>
           </div>

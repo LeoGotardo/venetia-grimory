@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { Input, Textarea } from '../ui/Input'
@@ -7,6 +8,7 @@ const ALINHAMENTOS_MORAL = ['Bondoso', 'Neutro', 'Mau']
 
 export function Step11Personalidade() {
   const { ficha, setPersonalidade, setIdentidade, setPasso } = useFichaStore()
+  const { t } = useTranslation()
   const p = ficha.personalidade
   const alin = ficha.identidade.alinhamento
 
@@ -19,27 +21,27 @@ export function Step11Personalidade() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Personalidade</h2>
-        <p className="text-[#A8A09B] text-sm">Defina a personalidade, crenças e aparência do personagem.</p>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step11.heading')}</h2>
+        <p className="text-[#A8A09B] text-sm">{t('step11.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Input
-          label="Nome do Personagem"
+          label={t('step11.charName')}
           value={ficha.identidade.nome_personagem ?? ''}
           onChange={e => setIdentidade({ nome_personagem: e.target.value })}
-          placeholder="Ex: Aria Velossombra"
+          placeholder={t('step11.charNamePlaceholder')}
         />
         <Input
-          label="Nome do Jogador"
+          label={t('step11.playerName')}
           value={ficha.identidade.nome_jogador ?? ''}
           onChange={e => setIdentidade({ nome_jogador: e.target.value })}
-          placeholder="Seu nome"
+          placeholder={t('step11.playerNamePlaceholder')}
         />
       </div>
 
       <div>
-        <label className="text-sm text-[#B8860B] font-medium block mb-2">Alinhamento</label>
+        <label className="text-sm text-[#B8860B] font-medium block mb-2">{t('step11.alignment')}</label>
         <div className="grid grid-cols-3 gap-1 w-full max-w-xs">
           {ALINHAMENTOS_MORAL.map(moral => (
             ALINHAMENTOS_ETICO.map(etico => (
@@ -60,51 +62,51 @@ export function Step11Personalidade() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Textarea
-          label="Traços de Personalidade (1)"
+          label={t('step11.trait1')}
           value={p.tracos[0] ?? ''}
           onChange={e => setTrait('tracos', 0, e.target.value)}
-          placeholder="Como você se comporta?"
+          placeholder={t('step11.trait1Placeholder')}
         />
         <Textarea
-          label="Traços de Personalidade (2)"
+          label={t('step11.trait2')}
           value={p.tracos[1] ?? ''}
           onChange={e => setTrait('tracos', 1, e.target.value)}
-          placeholder="Outro traço marcante."
+          placeholder={t('step11.trait2Placeholder')}
         />
         <Textarea
-          label="Ideais"
+          label={t('step11.ideals')}
           value={p.ideais[0] ?? ''}
           onChange={e => setPersonalidade({ ideais: [e.target.value] })}
-          placeholder="O que você acredita acima de tudo?"
+          placeholder={t('step11.idealsPlaceholder')}
         />
         <Textarea
-          label="Vínculos"
+          label={t('step11.bonds')}
           value={p.vinculos[0] ?? ''}
           onChange={e => setPersonalidade({ vinculos: [e.target.value] })}
-          placeholder="O que te prende ao mundo?"
+          placeholder={t('step11.bondsPlaceholder')}
         />
         <Textarea
-          label="Fraquezas"
+          label={t('step11.flaws')}
           value={p.fraquezas[0] ?? ''}
           onChange={e => setPersonalidade({ fraquezas: [e.target.value] })}
-          placeholder="Qual o seu defeito?"
+          placeholder={t('step11.flawsPlaceholder')}
         />
         <Textarea
-          label="História"
+          label={t('step11.backstory')}
           value={p.historia ?? ''}
           onChange={e => setPersonalidade({ historia: e.target.value })}
-          placeholder="Conte a história do personagem..."
+          placeholder={t('step11.backstoryPlaceholder')}
           className="min-h-[120px]"
         />
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-        <Input label="Idade" value={ficha.identidade.idade ?? ''} onChange={e => setIdentidade({ idade: e.target.value })} placeholder="Ex: 28 anos" />
-        <Input label="Altura" value={ficha.identidade.altura ?? ''} onChange={e => setIdentidade({ altura: e.target.value })} placeholder="Ex: 1,72m" />
-        <Input label="Peso" value={ficha.identidade.peso ?? ''} onChange={e => setIdentidade({ peso: e.target.value })} placeholder="Ex: 68 kg" />
-        <Input label="Olhos" value={ficha.identidade.olhos ?? ''} onChange={e => setIdentidade({ olhos: e.target.value })} placeholder="Ex: Azuis" />
-        <Input label="Pele" value={ficha.identidade.pele ?? ''} onChange={e => setIdentidade({ pele: e.target.value })} placeholder="Ex: Bronzeada" />
-        <Input label="Cabelo" value={ficha.identidade.cabelo ?? ''} onChange={e => setIdentidade({ cabelo: e.target.value })} placeholder="Ex: Preto" />
+        <Input label={t('step11.age')} value={ficha.identidade.idade ?? ''} onChange={e => setIdentidade({ idade: e.target.value })} placeholder={t('step11.agePlaceholder')} />
+        <Input label={t('step11.height')} value={ficha.identidade.altura ?? ''} onChange={e => setIdentidade({ altura: e.target.value })} placeholder={t('step11.heightPlaceholder')} />
+        <Input label={t('step11.weight')} value={ficha.identidade.peso ?? ''} onChange={e => setIdentidade({ peso: e.target.value })} placeholder={t('step11.weightPlaceholder')} />
+        <Input label={t('step11.eyes')} value={ficha.identidade.olhos ?? ''} onChange={e => setIdentidade({ olhos: e.target.value })} placeholder={t('step11.eyesPlaceholder')} />
+        <Input label={t('step11.skin')} value={ficha.identidade.pele ?? ''} onChange={e => setIdentidade({ pele: e.target.value })} placeholder={t('step11.skinPlaceholder')} />
+        <Input label={t('step11.hair')} value={ficha.identidade.cabelo ?? ''} onChange={e => setIdentidade({ cabelo: e.target.value })} placeholder={t('step11.hairPlaceholder')} />
       </div>
 
       <WizardNav onBack={() => setPasso(10)} onNext={() => setPasso(12)} />

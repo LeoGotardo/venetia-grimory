@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useFichaStore } from '../store/fichaStore'
 import { ConfigModal } from '../components/ui/ConfigModal'
@@ -17,23 +18,24 @@ import { Step10Equipamento } from '../components/wizard/Step10Equipamento'
 import { Step11Personalidade } from '../components/wizard/Step11Personalidade'
 import { Step12Revisar } from '../components/wizard/Step12Revisar'
 
-const PASSOS = [
-  { id: 1,  titulo: 'Nível',         Comp: Step01Nivel },
-  { id: 2,  titulo: 'Classe',        Comp: Step02Classe },
-  { id: 3,  titulo: 'Subclasse',     Comp: Step03Subclasse },
-  { id: 4,  titulo: 'Espécie',       Comp: Step04Especie },
-  { id: 5,  titulo: 'Atributos',     Comp: Step06Atributos },
-  { id: 6,  titulo: 'Antecedente',   Comp: Step05Antecedente },
-  { id: 7,  titulo: 'Perícias',      Comp: Step07Pericias },
-  { id: 8,  titulo: 'Magias',        Comp: Step08Spells },
-  { id: 9,  titulo: 'Idiomas',       Comp: Step09Idiomas },
-  { id: 10, titulo: 'Equipamento',   Comp: Step10Equipamento },
-  { id: 11, titulo: 'Personalidade', Comp: Step11Personalidade },
-  { id: 12, titulo: 'Revisar',       Comp: Step12Revisar },
+const PASSOS_COMPS = [
+  { id: 1,  stepKey: 'nivel',        Comp: Step01Nivel },
+  { id: 2,  stepKey: 'classe',       Comp: Step02Classe },
+  { id: 3,  stepKey: 'subclasse',    Comp: Step03Subclasse },
+  { id: 4,  stepKey: 'especie',      Comp: Step04Especie },
+  { id: 5,  stepKey: 'atributos',    Comp: Step06Atributos },
+  { id: 6,  stepKey: 'antecedente',  Comp: Step05Antecedente },
+  { id: 7,  stepKey: 'pericias',     Comp: Step07Pericias },
+  { id: 8,  stepKey: 'magias',       Comp: Step08Spells },
+  { id: 9,  stepKey: 'idiomas',      Comp: Step09Idiomas },
+  { id: 10, stepKey: 'equipamento',  Comp: Step10Equipamento },
+  { id: 11, stepKey: 'personalidade', Comp: Step11Personalidade },
+  { id: 12, stepKey: 'revisar',      Comp: Step12Revisar },
 ]
 
 export function Wizard() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { passoAtual, setPasso, novaFicha, fichaId } = useFichaStore()
   const [maxPasso, setMaxPasso] = useState(passoAtual)
   const [configAberta, setConfigAberta] = useState(false)
@@ -47,6 +49,12 @@ export function Wizard() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [passoAtual])
 
+  const PASSOS = PASSOS_COMPS.map(p => ({
+    ...p,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    titulo: t(`wizard.steps.${p.stepKey}` as any),
+  }))
+
   const { Comp: StepComponent } = PASSOS[passoAtual - 1]
 
   return (
@@ -59,18 +67,18 @@ export function Wizard() {
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="text-[13px] font-semibold text-[#8a8278]">
-            Passo <span className="text-[#D4A017]">{passoAtual}</span> de 12
+            {t('wizard.step', { n: passoAtual })}
           </span>
           <button
             onClick={() => setConfigAberta(true)}
-            aria-label="Configurações"
+            aria-label={t('wizard.settings')}
             className="w-[34px] h-[34px] rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
           <button
             onClick={() => navigate('/')}
-            aria-label="Fechar wizard"
+            aria-label={t('wizard.closeWizard')}
             className="w-[34px] h-[34px] rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -95,9 +103,9 @@ export function Wizard() {
         {/* Sidebar — sticky */}
         <aside className="hidden md:block w-[296px] shrink-0 bg-[#17130f] border-r border-white/[0.06] px-5 py-7 sticky top-[60px] max-h-[calc(100vh-60px)] overflow-y-auto self-start">
           <h3 className="font-bold text-[13px] tracking-[0.12em] uppercase text-[#8a8278] mb-[18px] pl-1">
-            Criação de personagem
+            {t('wizard.creationHeading')}
           </h3>
-          <nav className="flex flex-col gap-0.5" aria-label="Passos do wizard">
+          <nav className="flex flex-col gap-0.5" aria-label={t('wizard.stepsAriaLabel')}>
             {PASSOS.map(p => {
               const isDone    = p.id < passoAtual
               const isActive  = p.id === passoAtual

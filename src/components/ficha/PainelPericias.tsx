@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { formatModificador } from '../../lib/calculos'
 import dadosJson from '../../data/dnd_dados.json'
@@ -7,13 +8,14 @@ const dados = dadosJson as unknown as DadosJogo
 
 export function PainelPericias() {
   const { ficha } = useFichaStore()
+  const { t } = useTranslation()
   const percepcaoPassiva = 10 + (ficha.pericias.percepcao._valor ?? 0)
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="font-cinzel font-semibold text-[#B8860B]">Perícias</h3>
-        <span className="text-xs text-[#A8A09B]">Percepção Passiva: <span className="text-[#F5F0E8] font-bold">{percepcaoPassiva}</span></span>
+        <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('skills.heading')}</h3>
+        <span className="text-xs text-[#A8A09B]">{t('skills.passivePerception', { n: percepcaoPassiva })}</span>
       </div>
       <div className="space-y-0.5">
         {dados.pericias.map(p => {

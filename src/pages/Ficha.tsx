@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../store/fichaStore'
 import { carregarFicha as verificarFicha } from '../services/fichaStorage'
 import { useFichaExport } from '../hooks/useFichaExport'
@@ -35,6 +36,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 export function Ficha() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { ficha, fichaId, carregarFicha, setIdentidade, addXP, atualizarPV } = useFichaStore()
   const { exportar } = useFichaExport()
   const [aba, setAba] = useState<Aba>('ficha')
@@ -69,7 +71,7 @@ export function Ficha() {
   const pvAtual = combate.pontos_de_vida.atual
   const pvMax = combate.pontos_de_vida.maximo ?? 0
   const pvPct = pvMax > 0 ? Math.min(100, (pvAtual / pvMax) * 100) : 0
-  const pvEstado = pvPct > 66 ? 'Saudável' : pvPct > 33 ? 'Ferido' : pvPct > 0 ? 'Crítico' : 'Inconsciente'
+  const pvEstado = pvPct > 66 ? t('ficha.pvStates.healthy') : pvPct > 33 ? t('ficha.pvStates.wounded') : pvPct > 0 ? t('ficha.pvStates.critical') : t('ficha.pvStates.unconscious')
   const pvBarColor = pvPct > 50 ? '#5a9e52' : pvPct > 25 ? '#c9a32b' : '#d4564a'
 
   const visaoEscuro = especie?.tracos?.find(t => t.nome?.toLowerCase().includes('escuro'))
@@ -80,13 +82,13 @@ export function Ficha() {
 
   const abas = useMemo<Array<{ id: Aba; label: string }>>(
     () => [
-      { id: 'ficha', label: 'Visão Geral' },
-      ...(ficha.magia.conjurador ? [{ id: 'magia' as Aba, label: 'Magia' }] : []),
-      { id: 'inventario', label: 'Inventário' },
-      { id: 'anotacoes', label: 'Anotações' },
-      { id: 'editar', label: '✎ Editar' },
+      { id: 'ficha', label: t('ficha.tabOverview') },
+      ...(ficha.magia.conjurador ? [{ id: 'magia' as Aba, label: t('ficha.tabMagic') }] : []),
+      { id: 'inventario', label: t('ficha.tabInventory') },
+      { id: 'anotacoes', label: t('ficha.tabNotes') },
+      { id: 'editar', label: t('ficha.tabEdit') },
     ],
-    [ficha.magia.conjurador],
+    [ficha.magia.conjurador, t],
   )
 
   function handleGanharXP() {
@@ -114,7 +116,7 @@ export function Ficha() {
             className="inline-flex items-center gap-2 text-[#A8A09B] hover:text-[#E8DFD0] text-sm font-medium bg-transparent border-0 cursor-pointer transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-            Fichas
+            {t('ficha.back')}
           </button>
           <div className="hidden sm:block w-px h-[22px] bg-white/10" />
           <div className="hidden sm:flex items-center gap-2">
@@ -132,7 +134,7 @@ export function Ficha() {
               onChange={e => setXpInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleGanharXP()}
               placeholder="XP"
-              aria-label="XP a ganhar"
+              aria-label={t('ficha.xpAriaLabel')}
               className="w-14 sm:w-16 bg-white/5 border border-white/10 rounded-[7px] px-2 py-1.5 text-[#F5F0E8] text-xs placeholder:text-[#6B6560] focus:outline-none focus:border-[rgba(212,160,23,0.5)]"
             />
             <button
@@ -140,12 +142,12 @@ export function Ficha() {
               disabled={!xpInput || parseInt(xpInput) <= 0}
               className="text-[13px] font-bold text-[#131110] bg-[#D4A017] hover:bg-[#E8C25A] border-0 rounded-[9px] px-[10px] sm:px-[14px] py-[9px] cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-default"
             >
-              + XP
+              {t('ficha.addXp')}
             </button>
           </div>
           <button
             onClick={() => setConfigAberta(true)}
-            aria-label="Configurações"
+            aria-label={t('ficha.settings')}
             className="w-[34px] h-[34px] rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -155,11 +157,11 @@ export function Ficha() {
             className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#A8A09B] hover:text-[#E8DFD0] bg-white/[0.04] border border-white/[0.08] rounded-[9px] px-3 py-2 cursor-pointer transition-colors"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M7 9l5-5 5 5"/><path d="M12 4v12"/></svg>
-            Exportar
+            {t('ficha.export')}
           </button>
           <span className="hidden sm:inline-flex items-center gap-[7px] text-[#7c9b6e] text-[13px] font-medium">
             <span className="w-[7px] h-[7px] rounded-full bg-[#7c9b6e]" />
-            Salvo
+            {t('ficha.saved')}
           </span>
         </div>
       </header>
@@ -179,7 +181,7 @@ export function Ficha() {
             </div>
             <div className="min-w-0">
               <h2 className="font-extrabold text-[20px] sm:text-[26px] leading-tight tracking-tight text-[#F5F0E8] mb-2 truncate max-w-[200px] sm:max-w-none">
-                {identity.nome_personagem || 'Personagem Sem Nome'}
+                {identity.nome_personagem || t('ficha.noName')}
               </h2>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[13px] font-bold text-[#131110] bg-[#D4A017] px-[10px] py-[3px] rounded-[7px]">
@@ -204,7 +206,7 @@ export function Ficha() {
           <div className="w-full sm:min-w-[300px] flex-1 sm:max-w-[360px]">
             <div className="flex items-center justify-between mb-[10px]">
               <div className="flex items-baseline gap-2">
-                <span className="text-xs font-semibold tracking-[0.1em] uppercase text-[#6B6560]">Nível</span>
+                <span className="text-xs font-semibold tracking-[0.1em] uppercase text-[#6B6560]">{t('ficha.level')}</span>
                 <span className="font-extrabold text-[22px] text-[#D4A017] leading-none">{identity.nivel}</span>
               </div>
               <span className="text-[13px] font-semibold text-[#A8A09B] whitespace-nowrap">
@@ -234,11 +236,11 @@ export function Ficha() {
                   className="text-xs font-bold text-[#131110] border-0 rounded-[7px] px-3 py-[5px] cursor-pointer"
                   style={{ background: 'linear-gradient(180deg,#E8C25A,#D4A017)' }}
                 >
-                  ⬆ Subir de Nível
+                  {t('ficha.levelUp')}
                 </button>
               ) : (
                 <span className="text-xs text-[#6B6560]">
-                  {xpProximo !== undefined ? `${(xpProximo - xpAtual).toLocaleString('pt-BR')} XP para o próximo nível` : 'Nível máximo'}
+                  {xpProximo !== undefined ? t('ficha.xpToNext', { n: (xpProximo - xpAtual).toLocaleString('pt-BR') }) : t('ficha.maxLevel')}
                 </span>
               )}
             </div>
@@ -258,7 +260,7 @@ export function Ficha() {
           >
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.08em] uppercase text-[#e0a3a3] mb-2">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="#d4564a"><path d="M12 21s-7-4.35-9.5-8.5C.5 9 2 5 5.5 5 7.5 5 9 6.2 12 9c3-2.8 4.5-4 6.5-4C22 5 23.5 9 21.5 12.5 19 16.65 12 21 12 21z"/></svg>
-              Vida
+              {t('ficha.hp')}
             </span>
             <div className="flex items-baseline gap-[5px] whitespace-nowrap mb-2">
               <span className="font-extrabold text-[34px] sm:text-[42px] leading-none text-[#F5F0E8] tracking-tight">{pvAtual}</span>
@@ -274,17 +276,17 @@ export function Ficha() {
                   if (e.key === 'Enter') { const n = parseInt(pvDelta); if (!isNaN(n)) handleAjustarPV(n) }
                 }}
                 placeholder="±"
-                aria-label="Delta de PV"
+                aria-label={t('ficha.pvDeltaAriaLabel')}
                 className="w-14 text-center bg-black/20 border border-[rgba(181,57,47,0.4)] rounded-[6px] px-1 py-1 text-[#F5F0E8] text-xs focus:outline-none"
               />
               <button
                 onClick={() => { const n = parseInt(pvDelta); if (!isNaN(n)) handleAjustarPV(-Math.abs(n)) }}
-                aria-label="Aplicar dano"
+                aria-label={t('ficha.applyDamage')}
                 className="w-7 h-7 rounded-[6px] bg-[rgba(181,57,47,0.18)] border border-[rgba(181,57,47,0.5)] text-[#e0a3a3] text-base font-bold cursor-pointer flex items-center justify-center hover:bg-[rgba(181,57,47,0.3)] transition-colors"
               >−</button>
               <button
                 onClick={() => { const n = parseInt(pvDelta); if (!isNaN(n)) handleAjustarPV(Math.abs(n)) }}
-                aria-label="Aplicar cura"
+                aria-label={t('ficha.applyHeal')}
                 className="w-7 h-7 rounded-[6px] bg-[rgba(124,155,110,0.18)] border border-[rgba(124,155,110,0.5)] text-[#9cc090] text-base font-bold cursor-pointer flex items-center justify-center hover:bg-[rgba(124,155,110,0.3)] transition-colors"
               >+</button>
             </div>
@@ -304,7 +306,7 @@ export function Ficha() {
           <div className="vg-card p-3 sm:p-[18px_20px] flex flex-col justify-between">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.08em] uppercase text-[#8a8278]">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B8860B" strokeWidth="1.5"><path d="M12 2l7 3v6c0 4.5-3 8.5-7 9.5C8 19.5 5 15.5 5 11V5z"/></svg>
-              CA
+              {t('ficha.ac')}
             </span>
             <div className="font-extrabold text-[30px] sm:text-[38px] leading-none tracking-tight text-[#F5F0E8] mt-2 sm:mt-4">
               {combate.classe_de_armadura.valor ?? '—'}
@@ -315,7 +317,7 @@ export function Ficha() {
           <div className="vg-card p-3 sm:p-[18px_20px] flex flex-col justify-between">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.08em] uppercase text-[#8a8278]">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B8860B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
-              Inic.
+              {t('ficha.init')}
             </span>
             <div className="font-extrabold text-[30px] sm:text-[38px] leading-none tracking-tight text-[#F5F0E8] mt-2 sm:mt-4">
               {combate.iniciativa._valor !== null ? formatModificador(combate.iniciativa._valor) : '—'}
@@ -326,11 +328,11 @@ export function Ficha() {
           <div className="vg-card p-3 sm:p-[18px_20px] flex flex-col justify-between">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.08em] uppercase text-[#8a8278]">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B8860B" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 4v7l5 3M4 7l3 2-2 4 4 1 1 5"/></svg>
-              Deslocam.
+              {t('ficha.speed')}
             </span>
             <div className="font-extrabold text-[30px] sm:text-[38px] leading-none tracking-tight text-[#F5F0E8] mt-2 sm:mt-4">
               {combate.deslocamento._total_metros !== null ? (
-                <>{combate.deslocamento._total_metros}<span className="text-[14px] sm:text-[17px] text-[#6B6560] font-semibold"> m</span></>
+                <>{combate.deslocamento._total_metros}<span className="text-[14px] sm:text-[17px] text-[#6B6560] font-semibold"> {t('ficha.mUnit')}</span></>
               ) : '—'}
             </div>
           </div>
@@ -339,9 +341,9 @@ export function Ficha() {
         {/* Secondary stats row */}
         <div className="flex flex-wrap gap-[10px] mb-[30px]">
           {[
-            { label: 'Proficiência', value: combate._bonus_proficiencia !== null ? `+${combate._bonus_proficiencia}` : '—', gold: true },
-            { label: 'Percepção passiva', value: String(percepcaoPassiva) },
-            { label: 'Visão no escuro', value: visaoEscuro },
+            { label: t('ficha.profBonus'), value: combate._bonus_proficiencia !== null ? `+${combate._bonus_proficiencia}` : '—', gold: true },
+            { label: t('ficha.passivePerception'), value: String(percepcaoPassiva) },
+            { label: t('ficha.darkvision'), value: visaoEscuro },
           ].map(({ label, value, gold }) => (
             <div key={label} className="flex-1 min-w-[100px] flex flex-col sm:flex-row items-center justify-center gap-[4px] sm:gap-[9px] py-3 rounded-[12px] bg-[#1A1714] border border-[rgba(212,160,23,0.18)]">
               <span className="text-[11px] sm:text-[13px] text-[#8a8278] font-medium text-center">{label}</span>
@@ -377,17 +379,17 @@ export function Ficha() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
               <div className="space-y-7">
                 <div className="vg-card p-5">
-                  <SectionTitle>Combate</SectionTitle>
+                  <SectionTitle>{t('ficha.sectionCombat')}</SectionTitle>
                   <PainelCombate />
                 </div>
               </div>
               <div className="space-y-7">
                 <div className="vg-card p-5">
-                  <SectionTitle>Atributos</SectionTitle>
+                  <SectionTitle>{t('ficha.sectionAttrs')}</SectionTitle>
                   <PainelAtributos />
                 </div>
                 <div className="vg-card p-5">
-                  <SectionTitle>Perícias</SectionTitle>
+                  <SectionTitle>{t('ficha.sectionSkills')}</SectionTitle>
                   <PainelPericias />
                 </div>
                 <PainelRecursos />
@@ -398,7 +400,7 @@ export function Ficha() {
           {aba === 'magia' && (
             <div className="max-w-2xl">
               <div className="vg-card p-5">
-                <SectionTitle>Magia</SectionTitle>
+                <SectionTitle>{t('ficha.sectionMagic')}</SectionTitle>
                 <PainelMagia />
               </div>
             </div>
@@ -407,7 +409,7 @@ export function Ficha() {
           {aba === 'inventario' && (
             <div className="max-w-2xl">
               <div className="vg-card p-5">
-                <SectionTitle>Inventário</SectionTitle>
+                <SectionTitle>{t('ficha.sectionInventory')}</SectionTitle>
                 <PainelInventario />
               </div>
             </div>
@@ -416,7 +418,7 @@ export function Ficha() {
           {aba === 'anotacoes' && (
             <div className="max-w-2xl">
               <div className="vg-card p-5">
-                <SectionTitle>Anotações</SectionTitle>
+                <SectionTitle>{t('ficha.sectionNotes')}</SectionTitle>
                 <PainelAnotacoes />
               </div>
             </div>

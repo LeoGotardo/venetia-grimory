@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
@@ -8,6 +9,7 @@ const dados = dadosJson as unknown as DadosJogo
 
 export function Step03Subclasse() {
   const { ficha, setSubclasse, setPasso } = useFichaStore()
+  const { t } = useTranslation()
   const nivel = ficha.identidade.nivel
   const classeId = ficha.identidade.classe_id
   const subclasseId = ficha.identidade.subclasse_id
@@ -17,13 +19,13 @@ export function Step03Subclasse() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Subclasse</h2>
+          <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step03.heading')}</h2>
         </div>
         <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-6 text-center">
           <div className="text-4xl mb-3">🔒</div>
-          <h3 className="font-cinzel text-lg text-[#F5F0E8] mb-2">Subclasse desbloqueada no Nível 3</h3>
+          <h3 className="font-cinzel text-lg text-[#F5F0E8] mb-2">{t('step03.lockedHeading')}</h3>
           <p className="text-[#A8A09B] text-sm">
-            Você escolheu o nível {nivel}. A subclasse será selecionada quando o personagem atingir o nível 3.
+            {t('step03.lockedDesc', { n: nivel })}
           </p>
         </div>
         <WizardNav onBack={() => setPasso(2)} onNext={() => setPasso(4)} />
@@ -34,8 +36,8 @@ export function Step03Subclasse() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Subclasse</h2>
-        <p className="text-[#A8A09B] text-sm">Especialização de {classe?.nome}.</p>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step03.heading')}</h2>
+        <p className="text-[#A8A09B] text-sm">{t('step03.subtitle', { classe: classe?.nome })}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -47,7 +49,7 @@ export function Step03Subclasse() {
             onClick={() => setSubclasse(sub.id)}
           >
             <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-1">{sub.nome}</h3>
-            <p className="text-[#A8A09B] text-xs">{sub.descricao ?? `Especialização de ${classe.nome}`}</p>
+            <p className="text-[#A8A09B] text-xs">{sub.descricao ?? t('step03.subtitle', { classe: classe.nome })}</p>
           </Card>
         ))}
       </div>

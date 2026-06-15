@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
 
 export function PainelAtributos() {
   const { ficha } = useFichaStore()
+  const { t } = useTranslation()
 
   return (
     <div className="space-y-4">
@@ -43,8 +45,8 @@ export function PainelAtributos() {
         })}
       </div>
 
-      <section aria-label="Salvaguardas">
-        <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">Salvaguardas</h3>
+      <section aria-label={t('attrs.saves')}>
+        <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('attrs.saves')}</h3>
         <div className="grid grid-cols-2 gap-1">
           {ATRIBUTOS.map(attr => {
             const sv = ficha.combate.salvaguardas[attr]
@@ -55,7 +57,7 @@ export function PainelAtributos() {
               <div key={attr} className={`flex items-center gap-2 px-2 py-1.5 rounded ${sv.proficiente ? 'bg-[#3D2020]' : ''}`}>
                 <span
                   className={`w-3 h-3 rounded-full flex-shrink-0 ${sv.proficiente ? 'bg-[#B8860B]' : 'border border-[#A8A09B]/50'}`}
-                  aria-label={sv.proficiente ? 'Proficiente' : 'Não proficiente'}
+                  aria-label={sv.proficiente ? t('attrs.proficient') : t('attrs.notProficient')}
                 />
                 <span className="text-xs text-[#F5F0E8]">{ATRIBUTO_NOMES[attr].slice(0, 3)}</span>
                 <span

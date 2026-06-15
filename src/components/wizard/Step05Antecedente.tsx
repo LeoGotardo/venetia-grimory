@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
@@ -13,6 +14,7 @@ type ModoDistribuicao = '2+1' | '1+1+1'
 
 export function Step05Antecedente() {
   const { ficha, setAntecedenteId, setAntecedente, setPasso } = useFichaStore()
+  const { t } = useTranslation()
   const antecedenteId = ficha.identidade.antecedente_id
 
   const [distribuicao, setDistribuicao] = useState<Partial<Record<AtributoId, number>>>({})
@@ -77,14 +79,14 @@ export function Step05Antecedente() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Antecedente</h2>
-        <p className="text-[#A8A09B] text-sm">A história e origem do personagem antes de se tornar um aventureiro.</p>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step05.heading')}</h2>
+        <p className="text-[#A8A09B] text-sm">{t('step05.subtitle')}</p>
       </div>
 
       {/* Atributos definidos no passo anterior */}
       {atributosRolados.length > 0 && (
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg px-4 py-3">
-          <p className="text-xs font-semibold text-[#B8860B] mb-2">Seus Atributos</p>
+          <p className="text-xs font-semibold text-[#B8860B] mb-2">{t('step05.yourAttrs')}</p>
           <div className="flex flex-wrap gap-2">
             {atributosRolados.map(({ attr, valor }) => (
               <div key={attr} className="flex flex-col items-center min-w-[44px] bg-[#3D332D] border border-[#B8860B]/20 rounded-lg px-2 py-1.5">
@@ -168,13 +170,14 @@ function DistribuicaoAtributos({
   onSetBonus,
   onTrocarModo,
 }: DistribuicaoAtributosProps) {
+  const { t } = useTranslation()
   const maxPorAtributo = modoDistrib === '2+1' ? 2 : 1
 
   return (
     <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4 space-y-4">
-      <h3 className="font-cinzel font-semibold text-[#B8860B]">{ante.nome} — Bônus de Atributos</h3>
+      <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step05.bonusHeading', { ante: ante.nome })}</h3>
       <p className="text-[#A8A09B] text-xs">
-        Distribua +{TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE} entre os atributos elegíveis.
+        {t('step05.distributeHint', { n: TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE })}
       </p>
 
       <div className="flex gap-3">
@@ -212,7 +215,7 @@ function DistribuicaoAtributos({
 
       <p className="text-xs text-right">
         <span className={totalDistrib === TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE ? 'text-green-400' : 'text-[#A8A09B]'}>
-          {totalDistrib}/{TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE} pontos distribuídos
+          {t('step05.distributed', { current: totalDistrib, total: TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE })}
         </span>
       </p>
     </div>
@@ -229,6 +232,7 @@ interface BonusAtributoControlProps {
 }
 
 function BonusAtributoControl({ attr, val, maxVal, totalDistrib, baseRef, onSetBonus }: BonusAtributoControlProps) {
+  const { t } = useTranslation()
   const podeDecrementar = val > 0
   const podeIncrementar = val < maxVal && totalDistrib < TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE
 
@@ -237,7 +241,7 @@ function BonusAtributoControl({ attr, val, maxVal, totalDistrib, baseRef, onSetB
       <span className="text-[#B8860B] text-xs font-bold">{attr}</span>
       {baseRef !== null && (
         <span className="text-[10px] text-[#A8A09B]">
-          base ~{baseRef}{val > 0 && <span className="text-green-400"> →{baseRef + val}</span>}
+          {t('step05.base', { n: baseRef })}{val > 0 && <span className="text-green-400"> →{baseRef + val}</span>}
         </span>
       )}
       <div className="flex items-center gap-1">

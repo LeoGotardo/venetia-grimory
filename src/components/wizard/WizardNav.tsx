@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next'
+
 interface Props {
   onBack?: () => void
   onNext: () => void
@@ -9,6 +11,8 @@ interface Props {
 }
 
 export function WizardNav({ onBack, onNext, onSkip, nextLabel, backDisabled, nextDisabled, isLast }: Props) {
+  const { t } = useTranslation()
+
   return (
     <div className="sticky bottom-0 z-10 flex items-center justify-between gap-3 flex-wrap mt-8 -mx-4 sm:-mx-8 md:-mx-10 px-4 sm:px-8 md:px-10 py-4 border-t border-[rgba(212,160,23,0.16)] bg-[#131110]/95 backdrop-blur-sm">
       <button
@@ -24,7 +28,7 @@ export function WizardNav({ onBack, onNext, onSkip, nextLabel, backDisabled, nex
         ].join(' ')}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
-        Voltar
+        {t('nav.back')}
       </button>
 
       <div className="flex gap-2">
@@ -34,7 +38,7 @@ export function WizardNav({ onBack, onNext, onSkip, nextLabel, backDisabled, nex
             onClick={onSkip}
             className="inline-flex items-center text-sm font-semibold text-[#8a8278] hover:text-[#A8A09B] px-4 py-[11px] cursor-pointer transition-colors"
           >
-            Pular
+            {t('nav.skip')}
           </button>
         )}
         <button
@@ -46,7 +50,7 @@ export function WizardNav({ onBack, onNext, onSkip, nextLabel, backDisabled, nex
             nextDisabled ? 'opacity-40 cursor-default' : 'cursor-pointer',
           ].join(' ')}
         >
-          {nextLabel ?? (isLast ? 'Criar Personagem' : 'Próximo')}
+          {nextLabel ?? (isLast ? t('nav.createChar') : t('nav.next'))}
           {!isLast && (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           )}

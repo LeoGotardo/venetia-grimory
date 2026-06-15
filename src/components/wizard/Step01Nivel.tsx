@@ -1,16 +1,18 @@
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { XP_POR_NIVEL } from '../../lib/calculos'
 
 export function Step01Nivel() {
   const { ficha, setNivel, setPasso } = useFichaStore()
+  const { t } = useTranslation()
   const nivel = ficha.identidade.nivel
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-extrabold text-2xl text-[#F5F0E8] mb-1">Nível Inicial</h2>
-        <p className="text-[#8a8278] text-sm">Escolha o nível em que o personagem começa sua aventura.</p>
+        <h2 className="font-extrabold text-2xl text-[#F5F0E8] mb-1">{t('step01.heading')}</h2>
+        <p className="text-[#8a8278] text-sm">{t('step01.subtitle')}</p>
       </div>
 
       {/* Level picker card */}
@@ -18,26 +20,24 @@ export function Step01Nivel() {
         <div className="flex items-center gap-5 shrink-0">
           <button
             onClick={() => setNivel(Math.max(1, nivel - 1))}
-            aria-label="Diminuir nível"
+            aria-label={t('step01.decreaseLevel')}
             className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center"
           >−</button>
 
           <div className="text-center min-w-[72px]">
             <div className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{nivel}</div>
-            <div className="text-xs tracking-[0.1em] uppercase text-[#6B6560] mt-1">Nível</div>
+            <div className="text-xs tracking-[0.1em] uppercase text-[#6B6560] mt-1">{t('step01.levelLabel')}</div>
           </div>
 
           <button
             onClick={() => setNivel(Math.min(20, nivel + 1))}
-            aria-label="Aumentar nível"
+            aria-label={t('step01.increaseLevel')}
             className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center"
           >+</button>
         </div>
 
         <p className="text-sm text-[#8a8278] leading-relaxed text-center sm:text-left sm:pl-2">
-          A maioria das campanhas começa no{' '}
-          <strong className="text-[#E8DFD0]">nível 1</strong>. Níveis mais altos concedem mais
-          pontos de vida, magias e habilidades de classe.
+          {t('step01.hint')}
         </p>
       </div>
 
@@ -47,9 +47,9 @@ export function Step01Nivel() {
           <table className="w-full text-sm border-collapse">
             <thead className="sticky top-0 bg-[#1A1714]">
               <tr className="border-b border-[rgba(212,160,23,0.2)]">
-                <th className="py-2.5 px-4 text-left font-bold text-[#D4A017] text-xs tracking-wider uppercase">Nível</th>
-                <th className="py-2.5 px-4 text-right font-bold text-[#D4A017] text-xs tracking-wider uppercase">XP necessário</th>
-                <th className="py-2.5 px-4 text-right font-bold text-[#D4A017] text-xs tracking-wider uppercase">Prof.</th>
+                <th className="py-2.5 px-4 text-left font-bold text-[#D4A017] text-xs tracking-wider uppercase">{t('step01.colLevel')}</th>
+                <th className="py-2.5 px-4 text-right font-bold text-[#D4A017] text-xs tracking-wider uppercase">{t('step01.colXp')}</th>
+                <th className="py-2.5 px-4 text-right font-bold text-[#D4A017] text-xs tracking-wider uppercase">{t('step01.colProf')}</th>
               </tr>
             </thead>
             <tbody>

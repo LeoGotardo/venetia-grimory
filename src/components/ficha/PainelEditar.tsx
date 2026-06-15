@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { calcModificador, formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
 import { Input } from '../ui/Input'
@@ -25,11 +26,12 @@ const SECTION_CARD = 'bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 spa
 const SECTION_TITLE = 'font-cinzel font-semibold text-[#B8860B] pb-2 border-b border-[#B8860B]/20'
 
 export function PainelEditar() {
+  const { t } = useTranslation()
   return (
     <div className="space-y-5 max-w-2xl">
       <p className="flex items-center gap-1.5 text-xs text-[#A8A09B] bg-[#3D332D] border border-[#B8860B]/20 rounded-lg px-3 py-2">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="#B8860B" className="flex-shrink-0"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
-        Todas as alterações são salvas automaticamente.
+        {t('edit.autoSave')}
       </p>
       <SecaoInformacoes />
       <SecaoProgressao />
@@ -44,53 +46,54 @@ export function PainelEditar() {
 
 function SecaoInformacoes() {
   const { ficha, setIdentidade } = useFichaStore()
+  const { t } = useTranslation()
   const id = ficha.identidade
 
   return (
-    <section aria-label="Informações básicas" className={SECTION_CARD}>
-      <h3 className={SECTION_TITLE}>Informações Básicas</h3>
+    <section aria-label={t('edit.basicInfo')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.basicInfo')}</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input
-          label="Nome do Personagem"
+          label={t('edit.charName')}
           value={id.nome_personagem ?? ''}
           onChange={e => setIdentidade({ nome_personagem: e.target.value })}
-          placeholder="Nome do herói..."
+          placeholder={t('edit.charNamePlaceholder')}
         />
         <Input
-          label="Nome do Jogador"
+          label={t('edit.playerName')}
           value={id.nome_jogador ?? ''}
           onChange={e => setIdentidade({ nome_jogador: e.target.value })}
-          placeholder="Seu nome..."
+          placeholder={t('edit.playerNamePlaceholder')}
         />
         <Input
-          label="Campanha"
+          label={t('edit.campaign')}
           value={id.campanha ?? ''}
           onChange={e => setIdentidade({ campanha: e.target.value })}
-          placeholder="Nome da campanha..."
+          placeholder={t('edit.campaignPlaceholder')}
         />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-[#B8860B] font-medium">Alinhamento Ético</label>
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.ethicalAlignment')}</label>
           <select
             value={id.alinhamento.etico ?? ''}
             onChange={e => setIdentidade({ alinhamento: { ...id.alinhamento, etico: e.target.value || null } })}
             className={SELECT_BASE}
           >
-            <option value="">—</option>
+            <option value="">{t('edit.selectDefault')}</option>
             {ALINHAMENTOS_ETICO.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-[#B8860B] font-medium">Alinhamento Moral</label>
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.moralAlignment')}</label>
           <select
             value={id.alinhamento.moral ?? ''}
             onChange={e => setIdentidade({ alinhamento: { ...id.alinhamento, moral: e.target.value || null } })}
             className={SELECT_BASE}
           >
-            <option value="">—</option>
+            <option value="">{t('edit.selectDefault')}</option>
             {ALINHAMENTOS_MORAL.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
@@ -101,24 +104,25 @@ function SecaoInformacoes() {
 
 function SecaoProgressao() {
   const { ficha, setNivel, setIdentidade, setClasse, setSubclasse, setEspecie, setAntecedenteId } = useFichaStore()
+  const { t } = useTranslation()
   const id = ficha.identidade
   const nivel = id.nivel
   const classe = dados.classes.find(c => c.id === id.classe_id)
   const especie = dados.especies?.find(e => e.id === id.especie_id)
 
   return (
-    <section aria-label="Progressão" className={SECTION_CARD}>
-      <h3 className={SECTION_TITLE}>Progressão</h3>
+    <section aria-label={t('edit.progression')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.progression')}</h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Nível */}
         <div className="flex flex-col gap-1">
-          <label htmlFor="edit-nivel" className="text-sm text-[#B8860B] font-medium">Nível</label>
+          <label htmlFor="edit-nivel" className="text-sm text-[#B8860B] font-medium">{t('edit.level')}</label>
           <div className="flex items-center gap-2">
             <button
               onClick={() => setNivel(Math.max(NIVEL_MINIMO, nivel - 1))}
               className="w-8 h-8 rounded bg-[#2D2520] border border-[#B8860B]/30 text-[#F5F0E8] font-bold hover:bg-[#4D4037] transition-colors cursor-pointer"
-              aria-label="Diminuir nível"
+              aria-label={t('edit.decreaseLevel')}
             >−</button>
             <input
               id="edit-nivel"
@@ -132,14 +136,14 @@ function SecaoProgressao() {
             <button
               onClick={() => setNivel(Math.min(NIVEL_MAXIMO, nivel + 1))}
               className="w-8 h-8 rounded bg-[#2D2520] border border-[#B8860B]/30 text-[#F5F0E8] font-bold hover:bg-[#4D4037] transition-colors cursor-pointer"
-              aria-label="Aumentar nível"
+              aria-label={t('edit.increaseLevel')}
             >+</button>
           </div>
         </div>
 
         {/* XP */}
         <div className="flex flex-col gap-1">
-          <label htmlFor="edit-xp" className="text-sm text-[#B8860B] font-medium">XP</label>
+          <label htmlFor="edit-xp" className="text-sm text-[#B8860B] font-medium">{t('edit.xp')}</label>
           <input
             id="edit-xp"
             type="number"
@@ -154,13 +158,13 @@ function SecaoProgressao() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Classe */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-[#B8860B] font-medium">Classe</label>
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.class')}</label>
           <select
             value={id.classe_id ?? ''}
             onChange={e => setClasse(e.target.value)}
             className={SELECT_BASE}
           >
-            <option value="">— Selecionar —</option>
+            <option value="">{t('edit.selectClass')}</option>
             {dados.classes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
           </select>
         </div>
@@ -168,7 +172,7 @@ function SecaoProgressao() {
         {/* Subclasse (somente nível ≥ 3) */}
         <div className="flex flex-col gap-1">
           <label className="text-sm text-[#B8860B] font-medium">
-            Subclasse {nivel < 3 && <span className="text-[#A8A09B] text-xs">(nível 3+)</span>}
+            {t('edit.subclass')} {nivel < 3 && <span className="text-[#A8A09B] text-xs">({t('edit.subclassSuffix')})</span>}
           </label>
           <select
             value={id.subclasse_id ?? ''}
@@ -176,20 +180,20 @@ function SecaoProgressao() {
             disabled={!id.classe_id || nivel < 3}
             className={`${SELECT_BASE} disabled:opacity-40`}
           >
-            <option value="">— Selecionar —</option>
+            <option value="">{t('edit.selectClass')}</option>
             {classe?.subclasses.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
           </select>
         </div>
 
         {/* Espécie */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-[#B8860B] font-medium">Espécie</label>
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.species')}</label>
           <select
             value={id.especie_id ?? ''}
             onChange={e => setEspecie(e.target.value)}
             className={SELECT_BASE}
           >
-            <option value="">— Selecionar —</option>
+            <option value="">{t('edit.selectClass')}</option>
             {dados.especies?.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
           </select>
         </div>
@@ -197,13 +201,13 @@ function SecaoProgressao() {
         {/* Linhagem (se espécie tem linhagens) */}
         {especie?.linhagens && especie.linhagens.length > 0 && (
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-[#B8860B] font-medium">Linhagem</label>
+            <label className="text-sm text-[#B8860B] font-medium">{t('edit.lineage')}</label>
             <select
               value={id.linhagem_id ?? ''}
               onChange={e => setEspecie(id.especie_id!, e.target.value || undefined)}
               className={SELECT_BASE}
             >
-              <option value="">— Selecionar —</option>
+              <option value="">{t('edit.selectClass')}</option>
               {especie.linhagens.map(l => <option key={l.id} value={l.id}>{l.nome}</option>)}
             </select>
           </div>
@@ -211,13 +215,13 @@ function SecaoProgressao() {
 
         {/* Antecedente */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm text-[#B8860B] font-medium">Antecedente</label>
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.background')}</label>
           <select
             value={id.antecedente_id ?? ''}
             onChange={e => setAntecedenteId(e.target.value)}
             className={SELECT_BASE}
           >
-            <option value="">— Selecionar —</option>
+            <option value="">{t('edit.selectClass')}</option>
             {dados.antecedentes?.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
           </select>
         </div>
@@ -228,6 +232,7 @@ function SecaoProgressao() {
 
 function SecaoAtributos() {
   const { ficha, setAtributos } = useFichaStore()
+  const { t } = useTranslation()
 
   function setAttr(attr: AtributoId, novoVal: number) {
     const val = Math.max(1, Math.min(ATRIBUTO_MAX, novoVal))
@@ -239,8 +244,8 @@ function SecaoAtributos() {
   }
 
   return (
-    <section aria-label="Atributos" className={SECTION_CARD}>
-      <h3 className={SECTION_TITLE}>Atributos</h3>
+    <section aria-label={t('edit.attrs')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.attrs')}</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {ATRIBUTOS.map(attr => {
           const val = ficha.atributos[attr].valor ?? 10
@@ -257,7 +262,7 @@ function SecaoAtributos() {
                 <button
                   onClick={() => setAttr(attr, val - 1)}
                   disabled={val <= 1}
-                  aria-label={`Diminuir ${ATRIBUTO_NOMES[attr]}`}
+                  aria-label={t('edit.decreaseAttr', { attr: ATRIBUTO_NOMES[attr] })}
                   className="w-7 h-9 rounded-l bg-[#2D2520] border border-[#B8860B]/30 text-[#F5F0E8] font-bold hover:bg-[#4D4037] disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default"
                 >−</button>
                 <input
@@ -268,17 +273,17 @@ function SecaoAtributos() {
                   value={val}
                   onChange={e => setAttr(attr, Number(e.target.value))}
                   className="w-12 text-center bg-[#2D2520] border-y border-[#B8860B]/30 py-1.5 text-[#F5F0E8] font-cinzel font-bold text-lg focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
-                  aria-label={`Valor de ${ATRIBUTO_NOMES[attr]}`}
+                  aria-label={t('edit.attrValue', { attr: ATRIBUTO_NOMES[attr] })}
                 />
                 <button
                   onClick={() => setAttr(attr, val + 1)}
                   disabled={val >= ATRIBUTO_MAX}
-                  aria-label={`Aumentar ${ATRIBUTO_NOMES[attr]}`}
+                  aria-label={t('edit.increaseAttr', { attr: ATRIBUTO_NOMES[attr] })}
                   className="w-7 h-9 rounded-r bg-[#2D2520] border border-[#B8860B]/30 text-[#F5F0E8] font-bold hover:bg-[#4D4037] disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default"
                 >+</button>
                 <span
                   className={`ml-1 text-sm font-bold font-cinzel w-9 text-center ${modPos ? 'text-green-400' : modNeg ? 'text-red-400' : 'text-[#A8A09B]'}`}
-                  aria-label={`Modificador: ${formatModificador(mod)}`}
+                  aria-label={t('edit.modifier', { n: formatModificador(mod) })}
                 >
                   {formatModificador(mod)}
                 </span>
@@ -293,23 +298,24 @@ function SecaoAtributos() {
 
 function SecaoArmadura() {
   const { ficha, setArmadura } = useFichaStore()
+  const { t } = useTranslation()
   const [itemInfo, setItemInfo] = useState<ItemDetalhe | null>(null)
   const armaduraId = ficha.combate.classe_de_armadura.armadura_equipada_id
   const armaduraAtual = dados.armaduras?.find(a => a.id === armaduraId)
 
   return (
-    <section aria-label="Armadura" className={SECTION_CARD}>
-      <h3 className={SECTION_TITLE}>Armadura</h3>
+    <section aria-label={t('edit.armor')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.armor')}</h3>
       <div className="flex flex-col gap-2">
-        <label className="text-sm text-[#B8860B] font-medium">Armadura Equipada</label>
+        <label className="text-sm text-[#B8860B] font-medium">{t('edit.equippedArmor')}</label>
         <div className="flex gap-2 items-center">
           <select
             value={armaduraId ?? ''}
             onChange={e => setArmadura(e.target.value || null)}
             className={SELECT_BASE}
-            aria-label="Selecionar armadura"
+            aria-label={t('edit.equippedArmor')}
           >
-            <option value="">Sem armadura (CA = 10 + mod DES)</option>
+            <option value="">{t('edit.noArmorOption')}</option>
             {dados.armaduras?.map(a => (
               <option key={a.id} value={a.id}>
                 {a.nome} ({a.categoria} · CA {a.ca})
@@ -320,7 +326,7 @@ function SecaoArmadura() {
             <button
               type="button"
               onClick={() => setItemInfo({ ...armaduraAtual, _tipo: 'armadura' })}
-              aria-label={`Ver detalhes de ${armaduraAtual.nome}`}
+              aria-label={t('edit.viewDetails', { nome: armaduraAtual.nome })}
               className="w-8 h-8 shrink-0 flex items-center justify-center text-xs text-[#A8A09B] hover:text-[#F5F0E8] border border-[#B8860B]/20 hover:border-[#B8860B]/50 rounded-full transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
             >
               ℹ
@@ -333,14 +339,14 @@ function SecaoArmadura() {
             {armaduraAtual.peso_kg ? `${armaduraAtual.peso_kg} kg · ` : ''}
             CA {armaduraAtual.ca}
             {armaduraAtual.requisito_for ? ` · FOR mín. ${armaduraAtual.requisito_for}` : ''}
-            {armaduraAtual.penalidade_furtividade ? ' · Penalidade Furtividade' : ''}
+            {armaduraAtual.penalidade_furtividade ? ` · ${t('edit.forceStealthPenalty')}` : ''}
           </p>
         )}
       </div>
 
       {/* Lista de todas as armaduras */}
       <div className="space-y-1 pt-2">
-        <p className="text-xs text-[#A8A09B] font-medium uppercase tracking-wide">Referência</p>
+        <p className="text-xs text-[#A8A09B] font-medium uppercase tracking-wide">{t('edit.reference')}</p>
         {dados.armaduras?.map(a => (
           <div key={a.id} className="flex items-center justify-between py-1 border-b border-[#B8860B]/10 last:border-0">
             <div>
@@ -350,7 +356,7 @@ function SecaoArmadura() {
             <button
               type="button"
               onClick={() => setItemInfo({ ...a, _tipo: 'armadura' })}
-              aria-label={`Ver detalhes de ${a.nome}`}
+              aria-label={t('edit.viewDetails', { nome: a.nome })}
               className="w-6 h-6 shrink-0 flex items-center justify-center text-[10px] text-[#A8A09B] hover:text-[#F5F0E8] border border-[#B8860B]/20 hover:border-[#B8860B]/50 rounded-full transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
             >
               ℹ
@@ -366,8 +372,8 @@ function SecaoArmadura() {
 
 function SecaoPericias() {
   const { ficha, setPericias } = useFichaStore()
+  const { t } = useTranslation()
   const anteId = ficha.identidade.antecedente_id
-  const classeId = ficha.identidade.classe_id
   const ante = dados.antecedentes?.find(a => a.id === anteId)
   const antePerics = ante?.pericias ?? []
 
@@ -386,11 +392,11 @@ function SecaoPericias() {
   const atributosUnicos = [...new Set(dados.pericias.map(p => p.atributo))]
 
   return (
-    <section aria-label="Perícias" className={SECTION_CARD}>
+    <section aria-label={t('edit.skills')} className={SECTION_CARD}>
       <h3 className={SECTION_TITLE}>
-        Perícias
+        {t('edit.skills')}
         <span className="ml-2 text-xs font-normal text-[#A8A09B]">
-          {dados.pericias.filter(p => ficha.pericias[p.id]?.proficiente).length} treinadas
+          {t('edit.trainedCount', { n: dados.pericias.filter(p => ficha.pericias[p.id]?.proficiente).length })}
         </span>
       </h3>
 
@@ -418,13 +424,13 @@ function SecaoPericias() {
                       onChange={() => togglePericia(p.id)}
                       disabled={isAnte}
                       className="w-3.5 h-3.5 accent-[#B8860B] cursor-pointer disabled:cursor-default"
-                      aria-label={`${p.nome} proficiente`}
+                      aria-label={t('edit.skillProfAriaLabel', { attr: p.nome })}
                     />
                     <span className={`text-sm flex-1 ${proficiente ? 'text-[#F5F0E8]' : 'text-[#A8A09B]'}`}>
                       {p.nome}
                     </span>
-                    {isAnte && <Badge variant="gold" className="text-[9px]">Ante.</Badge>}
-                    {expertise && <Badge variant="crimson" className="text-[9px]">Expert.</Badge>}
+                    {isAnte && <Badge variant="gold" className="text-[9px]">{t('edit.backgroundBadge')}</Badge>}
+                    {expertise && <Badge variant="crimson" className="text-[9px]">{t('edit.expertiseBadge')}</Badge>}
                     {fichaP?._valor !== null && fichaP?._valor !== undefined && (
                       <span className={`text-xs font-bold min-w-[2rem] text-right ${(fichaP._valor) > 0 ? 'text-green-400' : 'text-[#A8A09B]'}`}>
                         {fichaP._valor >= 0 ? `+${fichaP._valor}` : fichaP._valor}
@@ -443,6 +449,7 @@ function SecaoPericias() {
 
 function SecaoMagia() {
   const { ficha, atualizarMagia } = useFichaStore()
+  const { t } = useTranslation()
   const { magia } = ficha
   const [circuloAtivo, setCirculoAtivo] = useState(1)
   const [busca, setBusca] = useState('')
@@ -509,9 +516,9 @@ function SecaoMagia() {
 
   if (!magia.conjurador) {
     return (
-      <section aria-label="Magia" className={SECTION_CARD}>
-        <h3 className={SECTION_TITLE}>Magia</h3>
-        <p className="text-sm text-[#A8A09B]">Este personagem não é um conjurador. Mude a classe para habilitar.</p>
+      <section aria-label={t('edit.magic')} className={SECTION_CARD}>
+        <h3 className={SECTION_TITLE}>{t('edit.magic')}</h3>
+        <p className="text-sm text-[#A8A09B]">{t('edit.notCaster')}</p>
       </section>
     )
   }
@@ -521,23 +528,23 @@ function SecaoMagia() {
   const maxMagias = (progRaw?.magias_preparadas as number | undefined) ?? 0
 
   return (
-    <section aria-label="Magia" className={SECTION_CARD}>
-      <h3 className={SECTION_TITLE}>Magia</h3>
+    <section aria-label={t('edit.magic')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.magic')}</h3>
 
       <input
         type="text"
         value={busca}
         onChange={e => setBusca(e.target.value)}
-        placeholder="Buscar magia ou truque..."
+        placeholder={t('edit.searchSpellsPlaceholder')}
         className="w-full bg-[#2D2520] border border-[#B8860B]/30 rounded-lg px-3 py-2 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B] focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
-        aria-label="Buscar magia ou truque"
+        aria-label={t('edit.searchSpellsAriaLabel')}
       />
 
       {/* Truques */}
       {truquesDisponiveis.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#B8860B] font-medium">Truques</span>
+            <span className="text-sm text-[#B8860B] font-medium">{t('edit.cantrips')}</span>
             {maxTruques > 0 && (
               <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${magia.truques_conhecidos.length >= maxTruques ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
                 {magia.truques_conhecidos.length}/{maxTruques}
@@ -567,7 +574,7 @@ function SecaoMagia() {
                   <button
                     type="button"
                     onClick={() => setSpellInfo(t)}
-                    aria-label={`Ver detalhes de ${t.nome}`}
+                    aria-label={`View details of ${t.nome}`}
                     className={[
                       'inline-flex items-center justify-center w-6 py-1.5 rounded-r-full border-y border-r text-[10px] transition-colors cursor-pointer',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
@@ -589,7 +596,7 @@ function SecaoMagia() {
       {circulosDisponiveis.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#B8860B] font-medium">Magias Preparadas</span>
+            <span className="text-sm text-[#B8860B] font-medium">{t('edit.preparedSpells')}</span>
             {maxMagias > 0 && (
               <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${magia.magias_preparadas.length >= maxMagias ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
                 {magia.magias_preparadas.length}/{maxMagias}
@@ -615,7 +622,7 @@ function SecaoMagia() {
           </div>
           <div className="flex flex-wrap gap-2" role="tabpanel">
             {magiasDoCirculo.length === 0
-              ? <p className="text-xs text-[#A8A09B]">{busca ? 'Nenhuma magia encontrada.' : 'Nenhuma magia disponível.'}</p>
+              ? <p className="text-xs text-[#A8A09B]">{busca ? t('edit.noSpellsFound') : t('edit.noSpellsAvailable')}</p>
               : magiasDoCirculo.map(m => {
                   const sel = magia.magias_preparadas.includes(m.nome)
                   return (
@@ -664,9 +671,10 @@ function SecaoMagia() {
 }
 
 function SecaoMochila() {
+  const { t } = useTranslation()
   return (
-    <section aria-label="Mochila" className={SECTION_CARD}>
-      <h3 className={SECTION_TITLE}>Mochila</h3>
+    <section aria-label={t('edit.bag')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.bag')}</h3>
       <MochilaBusca />
     </section>
   )

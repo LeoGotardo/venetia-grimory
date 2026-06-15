@@ -1,5 +1,7 @@
+import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
 import { useConfigStore, type Config } from '../../store/configStore'
+import i18n from '../../i18n/index'
 
 interface SettingRowProps {
   label: string
@@ -36,33 +38,6 @@ function SettingRow({ label, description, value, onChange }: SettingRowProps) {
   )
 }
 
-const SETTINGS: Array<{
-  key: keyof Config
-  label: string
-  description: string
-}> = [
-  {
-    key: 'rastrear_peso',
-    label: 'Rastrear Peso',
-    description: 'Exibe barras de carga e o peso dos itens no inventário.',
-  },
-  {
-    key: 'gerenciar_ouro',
-    label: 'Gerenciar Ouro',
-    description: 'Deduz automaticamente o custo ao adicionar itens na criação (Opção B).',
-  },
-  {
-    key: 'reembolso_venda',
-    label: 'Reembolso ao Vender',
-    description: 'Devolve o valor do item em PO ao usar o botão de venda no inventário.',
-  },
-  {
-    key: 'moedas_simples',
-    label: 'Moedas Simplificadas',
-    description: 'Exibe apenas o campo de Peças de Ouro (PO) no inventário.',
-  },
-]
-
 interface ConfigModalProps {
   open: boolean
   onClose: () => void
@@ -70,10 +45,57 @@ interface ConfigModalProps {
 
 export function ConfigModal({ open, onClose }: ConfigModalProps) {
   const { config, setConfig } = useConfigStore()
+  const { t } = useTranslation()
+
+  const SETTINGS: Array<{
+    key: keyof Config
+    label: string
+    description: string
+  }> = [
+    {
+      key: 'rastrear_peso',
+      label: t('config.weightTracking'),
+      description: t('config.weightTrackingDesc'),
+    },
+    {
+      key: 'gerenciar_ouro',
+      label: t('config.goldManagement'),
+      description: t('config.goldManagementDesc'),
+    },
+    {
+      key: 'reembolso_venda',
+      label: t('config.sellRefund'),
+      description: t('config.sellRefundDesc'),
+    },
+    {
+      key: 'moedas_simples',
+      label: t('config.simpleCoins'),
+      description: t('config.simpleCoinsDesc'),
+    },
+  ]
 
   return (
-    <Modal open={open} onClose={onClose} title="Configurações">
+    <Modal open={open} onClose={onClose} title={t('config.title')}>
       <div className="divide-y divide-[#B8860B]/10">
+        <div className="flex items-center justify-between gap-4 py-3 border-b border-[#B8860B]/10">
+          <p className="text-sm font-medium text-[#F5F0E8]">{t('config.language')}</p>
+          <div className="flex gap-2">
+            {(['pt', 'en'] as const).map(lang => (
+              <button
+                key={lang}
+                onClick={() => { i18n.changeLanguage(lang); localStorage.setItem('venetia-lang', lang) }}
+                className={[
+                  'px-3 py-1 text-xs rounded font-medium transition-colors',
+                  i18n.language === lang
+                    ? 'bg-[#B8860B] text-[#1A1208]'
+                    : 'border border-[#B8860B]/40 text-[#A8A09B] hover:border-[#B8860B]',
+                ].join(' ')}
+              >
+                {lang.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
         {SETTINGS.map(s => (
           <SettingRow
             key={s.key}

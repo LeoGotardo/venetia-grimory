@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { MochilaBusca } from '../ui/MochilaBusca'
@@ -14,6 +15,7 @@ function parseOuroInicial(texto: string): number {
 
 export function Step10Equipamento() {
   const { ficha, setEquipamento, updateMoedas, setPasso } = useFichaStore()
+  const { t } = useTranslation()
   const [opcao, setOpcao] = useState<'A' | 'B'>('A')
 
   const classeId = ficha.identidade.classe_id
@@ -46,8 +48,8 @@ export function Step10Equipamento() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Equipamento</h2>
-        <p className="text-[#A8A09B] text-sm">Escolha o equipamento inicial e monte sua mochila.</p>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step10.heading')}</h2>
+        <p className="text-[#A8A09B] text-sm">{t('step10.subtitle')}</p>
       </div>
 
       {/* Opções A / B */}
@@ -56,7 +58,7 @@ export function Step10Equipamento() {
           onClick={escolherOpcaoA}
           className={`cursor-pointer rounded-lg border p-4 transition-all ${opcao === 'A' ? 'border-[#7B1D1D] bg-[#4D2020]' : 'border-[#B8860B]/30 bg-[#3D332D] hover:border-[#B8860B]/60'}`}
         >
-          <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-2">Opção A — Kit de Classe</h3>
+          <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-2">{t('step10.optionA')}</h3>
           <p className="text-sm text-[#A8A09B] leading-relaxed">{classe?.equipamento_inicial.A ?? '—'}</p>
         </div>
 
@@ -64,9 +66,9 @@ export function Step10Equipamento() {
           onClick={escolherOpcaoB}
           className={`cursor-pointer rounded-lg border p-4 transition-all ${opcao === 'B' ? 'border-[#7B1D1D] bg-[#4D2020]' : 'border-[#B8860B]/30 bg-[#3D332D] hover:border-[#B8860B]/60'}`}
         >
-          <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-2">Opção B — Moedas</h3>
+          <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-2">{t('step10.optionB')}</h3>
           <p className="text-sm text-[#A8A09B] leading-relaxed">{classe?.equipamento_inicial.B ?? '—'}</p>
-          <p className="text-xs text-[#B8860B] mt-2">Monte seu inventário livremente abaixo.</p>
+          <p className="text-xs text-[#B8860B] mt-2">{t('step10.optionBHint')}</p>
         </div>
       </div>
 
@@ -74,7 +76,7 @@ export function Step10Equipamento() {
       {opcao === 'B' && (
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4">
           <h3 className="font-cinzel font-semibold text-[#B8860B] text-sm mb-4 pb-2 border-b border-[#B8860B]/20">
-            Mochila
+            {t('step10.bagHeading')}
           </h3>
           <MochilaBusca cobrarItem />
         </div>

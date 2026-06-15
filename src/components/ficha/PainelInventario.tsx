@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { useConfigStore } from '../../store/configStore'
 import { calcCargaMaxima, calcTotalPO } from '../../lib/calculos'
@@ -10,6 +11,7 @@ const MOEDAS_SIMPLES = ['PO'] as const
 export function PainelInventario() {
   const { ficha, updateMoedas, removeItem, updateItem } = useFichaStore()
   const { config } = useConfigStore()
+  const { t } = useTranslation()
   const [modoCompra, setModoCompra] = useState(false)
   const { moedas, itens } = ficha.inventario
   const MOEDAS = config.moedas_simples ? MOEDAS_SIMPLES : MOEDAS_TODAS
@@ -22,8 +24,8 @@ export function PainelInventario() {
   return (
     <div className="space-y-4">
       {/* Moedas */}
-      <section aria-label="Moedas">
-        <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">Moedas</h4>
+      <section aria-label={t('inventory.coins')}>
+        <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('inventory.coins')}</h4>
         <div className="grid grid-cols-5 gap-1 sm:gap-2">
           {MOEDAS.map(m => (
             <div key={m} className="flex flex-col items-center gap-1">
@@ -40,7 +42,7 @@ export function PainelInventario() {
           ))}
         </div>
         <p className="text-xs text-right text-[#A8A09B] mt-1">
-          Total: <span className="text-[#B8860B] font-semibold">{totalPO.toFixed(2)} PO</span>
+          <span className="text-[#B8860B] font-semibold">{t('inventory.totalGp', { n: totalPO.toFixed(2) })}</span>
         </p>
       </section>
 
@@ -48,7 +50,7 @@ export function PainelInventario() {
       {config.rastrear_peso && (
         <div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs text-[#A8A09B]">Carga: {pesoAtual.toFixed(1)} / {cargaMax} kg</span>
+            <span className="text-xs text-[#A8A09B]">{t('inventory.load', { load: pesoAtual.toFixed(1), max: cargaMax })}</span>
             <span className={`text-xs ${porcentCarga > 80 ? 'text-red-400' : 'text-[#A8A09B]'}`}>
               {porcentCarga.toFixed(0)}%
             </span>
@@ -58,7 +60,7 @@ export function PainelInventario() {
             role="progressbar"
             aria-valuenow={pesoAtual}
             aria-valuemax={cargaMax}
-            aria-label="Capacidade de carga"
+            aria-label={t('inventory.loadAriaLabel')}
           >
             <div
               className={`h-full rounded-full transition-all ${porcentCarga > 80 ? 'bg-red-500' : porcentCarga > 50 ? 'bg-yellow-500' : 'bg-green-600'}`}
@@ -69,12 +71,12 @@ export function PainelInventario() {
       )}
 
       {/* Itens */}
-      <section aria-label="Itens do inventário">
-        <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">Itens</h4>
+      <section aria-label={t('inventory.items')}>
+        <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('inventory.items')}</h4>
         <div className="space-y-1 mb-3">
           {itens.length === 0 && (
             <p className="text-xs text-[#A8A09B] text-center py-4 border border-dashed border-[#B8860B]/20 rounded-lg">
-              Nenhum item no inventário.
+              {t('inventory.noItems')}
             </p>
           )}
           {itens.map((it, idx) => (
@@ -86,7 +88,7 @@ export function PainelInventario() {
               <button
                 onClick={() => updateItem(idx, { equipado: !it.equipado })}
                 aria-pressed={it.equipado}
-                aria-label={it.equipado ? `Desequipar ${it.nome}` : `Equipar ${it.nome}`}
+                aria-label={it.equipado ? t('inventory.unequip', { nome: it.nome }) : t('inventory.equip', { nome: it.nome })}
                 className="w-3 h-3 rounded-sm border flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-1 focus-visible:ring-offset-[#2D2520]"
                 style={{ backgroundColor: it.equipado ? '#B8860B' : 'transparent', borderColor: it.equipado ? '#B8860B' : '#A8A09B' }}
               />
@@ -96,7 +98,7 @@ export function PainelInventario() {
                 min={1}
                 value={it.quantidade}
                 onChange={e => updateItem(idx, { quantidade: Math.max(1, parseInt(e.target.value) || 1) })}
-                aria-label={`Quantidade de ${it.nome}`}
+                aria-label={t('inventory.itemQtyAriaLabel', { nome: it.nome })}
                 className="w-12 text-center bg-transparent border-b border-[#B8860B]/20 text-[#F5F0E8] text-sm focus:outline-none focus:border-[#B8860B]"
               />
               {config.rastrear_peso && it.peso_kg && <span className="text-xs text-[#A8A09B]">{it.peso_kg}kg</span>}
@@ -106,17 +108,17 @@ export function PainelInventario() {
                     updateMoedas({ PO: +(moedas.PO + it.custo_po! * it.quantidade).toFixed(4) })
                     removeItem(idx)
                   }}
-                  title={`Vender por ${(it.custo_po * it.quantidade).toFixed(1)} PO`}
-                  aria-label={`Vender ${it.nome} por ${(it.custo_po * it.quantidade).toFixed(1)} PO`}
+                  title={t('inventory.sellFor', { n: (it.custo_po * it.quantidade).toFixed(1) })}
+                  aria-label={t('inventory.sellAriaLabel', { nome: it.nome, n: (it.custo_po * it.quantidade).toFixed(1) })}
                   className="text-[#B8860B]/50 hover:text-[#B8860B] transition-colors text-[9px] font-bold cursor-pointer w-5 h-5 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded border border-[#B8860B]/20 hover:border-[#B8860B]/50"
                 >
-                  PO
+                  {t('inventory.sellBtn')}
                 </button>
               )}
               <button
                 onClick={() => removeItem(idx)}
-                aria-label={`Gastar/descartar ${it.nome}`}
-                title="Gastar (sem reembolso)"
+                aria-label={t('inventory.spendAriaLabel', { nome: it.nome })}
+                title={t('inventory.spendTitle')}
                 className="text-[#A8A09B] hover:text-red-400 transition-colors text-sm cursor-pointer w-5 h-5 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded"
               >
                 ×
@@ -127,7 +129,7 @@ export function PainelInventario() {
 
         <div className="border-t border-[#B8860B]/10 pt-3 mt-1">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs text-[#A8A09B]">Adicionar item:</span>
+            <span className="text-xs text-[#A8A09B]">{t('inventory.addItem')}</span>
             <div className="flex rounded overflow-hidden border border-[#B8860B]/20">
               <button
                 type="button"
@@ -138,7 +140,7 @@ export function PainelInventario() {
                   !modoCompra ? 'bg-[#B8860B] text-[#1A1612]' : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
                 ].join(' ')}
               >
-                Livre
+                {t('inventory.free')}
               </button>
               <button
                 type="button"
@@ -149,7 +151,7 @@ export function PainelInventario() {
                   modoCompra ? 'bg-[#B8860B] text-[#1A1612]' : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
                 ].join(' ')}
               >
-                Comprar
+                {t('inventory.buy')}
               </button>
             </div>
           </div>

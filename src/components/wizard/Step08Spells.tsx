@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { getTruquesPorClasse, getMagiasPorClasseECirculo } from '../../data/magias'
@@ -22,6 +23,7 @@ function SpellPill({
   onToggle: () => void
   onInfo: () => void
 }) {
+  const { t } = useTranslation()
   return (
     <div className="inline-flex items-center">
       <button
@@ -46,7 +48,7 @@ function SpellPill({
       <button
         type="button"
         onClick={onInfo}
-        aria-label={`Ver detalhes de ${magia.nome}`}
+        aria-label={t('step08.viewDetails', { nome: magia.nome })}
         className={[
           'inline-flex items-center justify-center w-6 h-full px-1 py-1.5 rounded-r-full border-y border-r text-[10px] transition-colors cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
@@ -65,6 +67,7 @@ function SpellPill({
 
 export function Step08Spells() {
   const { ficha, atualizarMagia, setPasso } = useFichaStore()
+  const { t } = useTranslation()
   const [circuloAtivo, setCirculoAtivo] = useState(1)
   const [busca, setBusca] = useState('')
   const [spellInfo, setSpellInfo] = useState<Magia | null>(null)
@@ -159,7 +162,7 @@ export function Step08Spells() {
 
   const truquesFiltrados = useMemo(
     () => truquesDisponiveis.filter(
-      t => !busca || t.nome.toLowerCase().includes(busca.toLowerCase()),
+      tr => !busca || tr.nome.toLowerCase().includes(busca.toLowerCase()),
     ),
     [truquesDisponiveis, busca],
   )
@@ -168,17 +171,17 @@ export function Step08Spells() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Magias</h2>
+          <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step08.heading')}</h2>
           <p className="text-[#A8A09B] text-sm">
-            {classeId ? `${classe?.nome} não é uma classe conjuradora.` : 'Escolha uma classe primeiro.'}
+            {classeId ? t('step08.notCaster', { classe: classe?.nome }) : t('step08.chooseClassFirst')}
           </p>
         </div>
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-6 text-center">
           <div className="mb-3 flex justify-center">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#B8860B" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M11 19l-6-6"/><path d="M8 16l-4 4"/></svg>
           </div>
-          <p className="text-[#F5F0E8] font-medium">Esta classe não utiliza magia</p>
-          <p className="text-[#A8A09B] text-sm mt-1">Continue para o próximo passo.</p>
+          <p className="text-[#F5F0E8] font-medium">{t('step08.noMagic')}</p>
+          <p className="text-[#A8A09B] text-sm mt-1">{t('step08.continueNext')}</p>
         </div>
         <WizardNav onBack={() => setPasso(7)} onNext={() => setPasso(9)} />
       </div>
@@ -188,10 +191,8 @@ export function Step08Spells() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Magias</h2>
-        <p className="text-[#A8A09B] text-sm">
-          Escolha as magias iniciais do seu personagem com base na classe e nível.
-        </p>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step08.heading')}</h2>
+        <p className="text-[#A8A09B] text-sm">{t('step08.subtitle')}</p>
       </div>
 
       {/* Busca */}
@@ -199,16 +200,16 @@ export function Step08Spells() {
         type="text"
         value={busca}
         onChange={e => setBusca(e.target.value)}
-        placeholder="Buscar magia ou truque..."
+        placeholder={t('step08.searchPlaceholder')}
         className="w-full bg-[#2D2520] border border-[#B8860B]/30 rounded-lg px-3 py-2 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B] focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B]"
-        aria-label="Buscar magia ou truque"
+        aria-label={t('step08.searchAriaLabel')}
       />
 
       {/* Truques */}
       {maxTruques > 0 && (
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-cinzel font-semibold text-[#B8860B]">Truques</h3>
+            <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step08.cantrips')}</h3>
             <span className={[
               'text-sm font-bold px-2 py-0.5 rounded-full',
               truquesSelecionados.length >= maxTruques
@@ -219,17 +220,17 @@ export function Step08Spells() {
             </span>
           </div>
           {truquesDisponiveis.length === 0 ? (
-            <p className="text-xs text-[#A8A09B]">Nenhum truque disponível para esta classe.</p>
+            <p className="text-xs text-[#A8A09B]">{t('step08.noCantrips')}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {truquesFiltrados.map(t => (
+              {truquesFiltrados.map(tr => (
                 <SpellPill
-                  key={t.id}
-                  magia={t}
-                  selecionado={truquesSelecionados.includes(t.nome)}
+                  key={tr.id}
+                  magia={tr}
+                  selecionado={truquesSelecionados.includes(tr.nome)}
                   desabilitado={truquesSelecionados.length >= maxTruques}
-                  onToggle={() => toggleTruque(t.nome)}
-                  onInfo={() => setSpellInfo(t)}
+                  onToggle={() => toggleTruque(tr.nome)}
+                  onInfo={() => setSpellInfo(tr)}
                 />
               ))}
             </div>
@@ -241,7 +242,7 @@ export function Step08Spells() {
       {maxMagias > 0 && maxCirculo > 0 && (
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-cinzel font-semibold text-[#B8860B]">Magias Preparadas</h3>
+            <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step08.preparedSpells')}</h3>
             <span className={[
               'text-sm font-bold px-2 py-0.5 rounded-full',
               magiasSelecionadas.length >= maxMagias
@@ -253,7 +254,7 @@ export function Step08Spells() {
           </div>
 
           {/* Tabs por círculo */}
-          <div className="flex gap-1 overflow-x-auto pb-1" role="tablist" aria-label="Círculos de magia">
+          <div className="flex gap-1 overflow-x-auto pb-1" role="tablist" aria-label={t('step08.circlesAriaLabel')}>
             {circulosDisponiveis.map(c => {
               const usados = selecionadosPorCirculo[c] ?? 0
               const limite = limitesPorCirculo[c]
@@ -282,19 +283,16 @@ export function Step08Spells() {
 
           <div
             role="tabpanel"
-            aria-label={`Magias de círculo ${circuloAtivo}`}
+            aria-label={t('step08.circleAriaLabel', { n: circuloAtivo })}
           >
             {limitesPorCirculo[circuloAtivo] !== undefined && (
               <p className="text-xs text-[#A8A09B] mb-2">
-                Espaços de magia disponíveis:{' '}
-                <span className={(selecionadosPorCirculo[circuloAtivo] ?? 0) >= limitesPorCirculo[circuloAtivo] ? 'text-[#D4A017] font-semibold' : 'text-[#F5F0E8]'}>
-                  {selecionadosPorCirculo[circuloAtivo] ?? 0}/{limitesPorCirculo[circuloAtivo]}
-                </span>
+                {t('step08.slotsAvailable', { used: selecionadosPorCirculo[circuloAtivo] ?? 0, total: limitesPorCirculo[circuloAtivo] })}
               </p>
             )}
             {magiasDoCirculo.length === 0 ? (
               <p className="text-xs text-[#A8A09B]">
-                {busca ? 'Nenhuma magia encontrada.' : 'Nenhuma magia disponível neste círculo.'}
+                {busca ? t('step08.noSpellsFound') : t('step08.noSpellsCircle')}
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
@@ -323,16 +321,16 @@ export function Step08Spells() {
       {/* Seleções atuais */}
       {(truquesSelecionados.length > 0 || magiasSelecionadas.length > 0) && (
         <div className="bg-[#2D2520] border border-[#B8860B]/10 rounded-xl p-4 space-y-2">
-          <p className="text-xs text-[#A8A09B] font-medium uppercase tracking-wide">Selecionados</p>
+          <p className="text-xs text-[#A8A09B] font-medium uppercase tracking-wide">{t('step08.selectedLabel')}</p>
           {truquesSelecionados.length > 0 && (
             <div>
-              <span className="text-xs text-[#B8860B] font-medium">Truques: </span>
+              <span className="text-xs text-[#B8860B] font-medium">{t('step08.cantripsLabel')}</span>
               <span className="text-xs text-[#F5F0E8]">{truquesSelecionados.join(', ')}</span>
             </div>
           )}
           {magiasSelecionadas.length > 0 && (
             <div>
-              <span className="text-xs text-[#B8860B] font-medium">Magias: </span>
+              <span className="text-xs text-[#B8860B] font-medium">{t('step08.spellsLabel')}</span>
               <span className="text-xs text-[#F5F0E8]">{magiasSelecionadas.join(', ')}</span>
             </div>
           )}

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
@@ -9,6 +10,7 @@ const dados = dadosJson as unknown as DadosJogo
 
 export function Step12Revisar() {
   const { ficha, fichaId, setPasso, salvarLocal } = useFichaStore()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const id = ficha.identidade
 
@@ -25,26 +27,26 @@ export function Step12Revisar() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">Revisar e Concluir</h2>
-        <p className="text-[#A8A09B] text-sm">Confira tudo antes de criar o personagem.</p>
+        <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step12.heading')}</h2>
+        <p className="text-[#A8A09B] text-sm">{t('step12.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4 space-y-2">
-          <h3 className="font-cinzel font-semibold text-[#B8860B]">Identidade</h3>
+          <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step12.identity')}</h3>
           <div className="text-sm space-y-1">
-            <p><span className="text-[#A8A09B]">Nome:</span> <span className="text-[#F5F0E8]">{id.nome_personagem ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">Nível:</span> <span className="text-[#F5F0E8]">{id.nivel}</span></p>
-            <p><span className="text-[#A8A09B]">Classe:</span> <span className="text-[#F5F0E8]">{classe?.nome ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">Subclasse:</span> <span className="text-[#F5F0E8]">{subclasse?.nome ?? (id.nivel < 3 ? 'N/A (nível < 3)' : '—')}</span></p>
-            <p><span className="text-[#A8A09B]">Espécie:</span> <span className="text-[#F5F0E8]">{especie?.nome ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">Antecedente:</span> <span className="text-[#F5F0E8]">{ante?.nome ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">Alinhamento:</span> <span className="text-[#F5F0E8]">{id.alinhamento.etico} {id.alinhamento.moral}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelName')}</span> <span className="text-[#F5F0E8]">{id.nome_personagem ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelLevel')}</span> <span className="text-[#F5F0E8]">{id.nivel}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelClass')}</span> <span className="text-[#F5F0E8]">{classe?.nome ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelSubclass')}</span> <span className="text-[#F5F0E8]">{subclasse?.nome ?? (id.nivel < 3 ? t('step12.subclassNA') : '—')}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelSpecies')}</span> <span className="text-[#F5F0E8]">{especie?.nome ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelBackground')}</span> <span className="text-[#F5F0E8]">{ante?.nome ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelAlignment')}</span> <span className="text-[#F5F0E8]">{id.alinhamento.etico} {id.alinhamento.moral}</span></p>
           </div>
         </div>
 
         <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4">
-          <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">Atributos</h3>
+          <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('step12.sectionAttrs')}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {ATRIBUTOS.map(a => {
               const val = ficha.atributos[a].valor
@@ -63,32 +65,32 @@ export function Step12Revisar() {
         </div>
 
         <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4">
-          <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">Combate</h3>
+          <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('step12.sectionCombat')}</h3>
           <div className="grid grid-cols-2 gap-2 text-sm">
-            <p><span className="text-[#A8A09B]">PV máximo:</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.pontos_de_vida.maximo ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">CA:</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.classe_de_armadura.valor ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">Iniciativa:</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.iniciativa._valor !== null ? formatModificador(ficha.combate.iniciativa._valor) : '—'}</span></p>
-            <p><span className="text-[#A8A09B]">Deslocamento:</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.deslocamento._total_metros ?? '—'}m</span></p>
-            <p><span className="text-[#A8A09B]">Bônus Prof.:</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate._bonus_proficiencia !== null ? `+${ficha.combate._bonus_proficiencia}` : '—'}</span></p>
-            <p><span className="text-[#A8A09B]">Dado de vida:</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.dados_de_vida.tipo ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelMaxHp')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.pontos_de_vida.maximo ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelAC')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.classe_de_armadura.valor ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelInit')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.iniciativa._valor !== null ? formatModificador(ficha.combate.iniciativa._valor) : '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelSpeed')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.deslocamento._total_metros ?? '—'}m</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelProfBonus')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate._bonus_proficiencia !== null ? `+${ficha.combate._bonus_proficiencia}` : '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelHitDie')}</span> <span className="text-[#F5F0E8] font-bold">{ficha.combate.dados_de_vida.tipo ?? '—'}</span></p>
           </div>
         </div>
 
         <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4">
-          <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">Perícias Treinadas</h3>
+          <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('step12.trainedSkills')}</h3>
           <div className="flex flex-wrap gap-1">
             {Object.entries(ficha.pericias)
               .filter(([, v]) => v.proficiente)
-              .map(([id]) => {
-                const p = dados.pericias.find(p => p.id === id)
-                return <span key={id} className="text-xs bg-[#2D2520] border border-[#B8860B]/20 rounded px-2 py-0.5 text-[#B8860B]">{p?.nome ?? id}</span>
+              .map(([pid]) => {
+                const p = dados.pericias.find(p => p.id === pid)
+                return <span key={pid} className="text-xs bg-[#2D2520] border border-[#B8860B]/20 rounded px-2 py-0.5 text-[#B8860B]">{p?.nome ?? pid}</span>
               })}
           </div>
         </div>
       </div>
 
       <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4">
-        <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">Idiomas</h3>
+        <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('step12.languages')}</h3>
         <p className="text-sm text-[#F5F0E8]">{ficha.proficiencias.idiomas.join(', ') || '—'}</p>
       </div>
 
@@ -96,7 +98,7 @@ export function Step12Revisar() {
         onBack={() => setPasso(11)}
         onNext={criar}
         isLast
-        nextLabel="Criar Personagem"
+        nextLabel={t('step12.createChar')}
         nextDisabled={!id.classe_id || !id.especie_id}
       />
     </div>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Modal } from '../ui/Modal'
 import { useFichaStore } from '../../store/fichaStore'
 import { calcPVTotal, calcBonusProf, calcModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
@@ -17,6 +18,7 @@ interface LevelUpModalProps {
 
 export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
   const { ficha, levelUp } = useFichaStore()
+  const { t } = useTranslation()
   const [modoASI, setModoASI] = useState<ModoASI>('+2')
   const [asiUm, setAsiUm] = useState<AtributoId | null>(null)
   const [asiDois, setAsiDois] = useState<AtributoId | null>(null)
@@ -101,27 +103,27 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
         <span className="tabular-nums text-xs">
           {val}
           {selecionado && <span className="text-[#B8860B] font-bold"> +{bonus} → {Math.min(20, val + bonus)}</span>}
-          {val >= 20 && <span className="text-[#A8A09B]/50"> (máx)</span>}
+          {val >= 20 && <span className="text-[#A8A09B]/50"> {t('levelup.maxLabel')}</span>}
         </span>
       </button>
     )
   }
 
   return (
-    <Modal open={open} onClose={onClose} title={`Subindo para Nível ${novoNivel}!`}>
+    <Modal open={open} onClose={onClose} title={t('levelup.title', { n: novoNivel })}>
       <div className="space-y-5">
 
         {/* Resumo */}
         <div className="grid grid-cols-2 gap-3">
           {novoHP !== null && (
             <div className="bg-[#2D2520] rounded-lg p-3 text-center">
-              <p className="text-xs text-[#A8A09B] mb-1">Pontos de Vida</p>
+              <p className="text-xs text-[#A8A09B] mb-1">{t('levelup.hp')}</p>
               <p className="text-2xl font-cinzel font-bold text-green-400">{novoHP}</p>
               <p className="text-xs text-[#A8A09B] mt-0.5">{classe?.dado_vida && `d${classe.dado_vida} + CON`}</p>
             </div>
           )}
           <div className="bg-[#2D2520] rounded-lg p-3 text-center">
-            <p className="text-xs text-[#A8A09B] mb-1">Bônus de Proficiência</p>
+            <p className="text-xs text-[#A8A09B] mb-1">{t('levelup.profBonus')}</p>
             <p className="text-2xl font-cinzel font-bold text-[#B8860B]">+{novoProf}</p>
           </div>
         </div>
@@ -129,7 +131,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
         {/* Destaques do nível */}
         {destaques.length > 0 && (
           <div>
-            <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-2">Novos Destaques</p>
+            <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-2">{t('levelup.newHighlights')}</p>
             <div className="flex flex-wrap gap-1.5">
               {destaques.map(d => (
                 <span key={d} className="px-2 py-1 bg-[#2D2520] border border-[#B8860B]/20 rounded text-xs text-[#F5F0E8]">
@@ -143,7 +145,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
         {/* Novos slots de magia */}
         {novosSlots && (
           <div>
-            <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-2">Espaços de Magia</p>
+            <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-2">{t('levelup.spellSlots')}</p>
             <div className="grid grid-cols-5 sm:grid-cols-9 gap-1">
               {(['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const).map((c, i) => {
                 const qtd = novosSlots[c] ?? 0
@@ -157,7 +159,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
             </div>
             {progEntry?.magias_preparadas !== undefined && (
               <p className="text-xs text-[#A8A09B] mt-2">
-                Magias preparadas: <span className="text-[#F5F0E8] font-semibold">{progEntry.magias_preparadas}</span>
+                {t('levelup.preparedSpells', { n: progEntry.magias_preparadas })}
               </p>
             )}
           </div>
@@ -167,7 +169,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
         {temASI && (
           <div>
             <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-2">
-              Melhoria de Valor de Atributo
+              {t('levelup.ava')}
             </p>
 
             {/* Modo */}
@@ -182,21 +184,21 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
                     modoASI === m ? 'bg-[#B8860B] text-[#1A1612]' : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
                   ].join(' ')}
                 >
-                  {m === '+2' ? '+2 em um atributo' : '+1 em dois atributos'}
+                  {m === '+2' ? t('levelup.plus2') : t('levelup.plus1x2')}
                 </button>
               ))}
             </div>
 
             <div className="space-y-1.5">
               <p className="text-xs text-[#A8A09B] mb-1">
-                {modoASI === '+2' ? 'Escolha o atributo:' : 'Escolha o primeiro atributo:'}
+                {modoASI === '+2' ? t('levelup.chooseAttr') : t('levelup.chooseFirstAttr')}
               </p>
               {ATRIBUTOS.map(attr => <AtributoBtn key={attr} attr={attr} slot={1} />)}
             </div>
 
             {modoASI === '+1+1' && (
               <div className="space-y-1.5 mt-3">
-                <p className="text-xs text-[#A8A09B] mb-1">Escolha o segundo atributo:</p>
+                <p className="text-xs text-[#A8A09B] mb-1">{t('levelup.chooseSecondAttr')}</p>
                 {ATRIBUTOS.map(attr => <AtributoBtn key={attr} attr={attr} slot={2} />)}
               </div>
             )}
@@ -210,7 +212,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
           onClick={confirmar}
           className="w-full py-2.5 rounded-lg font-cinzel font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] disabled:opacity-40 disabled:cursor-not-allowed bg-[#7B1D1D] hover:bg-[#9B2D2D] text-[#F5F0E8] cursor-pointer"
         >
-          Confirmar Nível {novoNivel}
+          {t('levelup.confirm', { n: novoNivel })}
         </button>
       </div>
     </Modal>
