@@ -1,4 +1,7 @@
 const pt = {
+  loading: {
+    loading: 'Carregando...',
+  },
   common: {
     closeModal: 'Fechar modal',
     ethicLawful: 'Ordeiro',

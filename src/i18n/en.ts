@@ -1,4 +1,7 @@
 const en = {
+  loading: {
+    loading: 'Loading...',
+  },
   common: {
     closeModal: 'Close modal',
     ethicLawful: 'Lawful',
