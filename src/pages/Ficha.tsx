@@ -18,6 +18,7 @@ import { LevelUpModal } from '../components/ficha/LevelUpModal'
 import dadosJson from '../data/dnd_dados.json'
 import type { DadosJogo } from '../types'
 import { XP_POR_NIVEL, formatModificador } from '../lib/calculos'
+import { getAntecedentes } from '../data/antecedentes'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
 
 const dados = dadosJson as unknown as DadosJogo
@@ -59,8 +60,10 @@ export function Ficha() {
   const identity = ficha.identidade
   const classe = dados.classes.find(c => c.id === identity.classe_id)
   const especie = dados.especies?.find(e => e.id === identity.especie_id)
-  const ante = dados.antecedentes?.find(a => a.id === identity.antecedente_id)
+  const ante = getAntecedentes().find(a => a.id === identity.antecedente_id)
   const subclasse = classe?.subclasses.find(s => s.id === identity.subclasse_id)
+  const multiclasses = identity.multiclasses ?? []
+  const nivelPrimaria = identity.nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
 
   const xpAtual = identity.xp
   const xpProximo = XP_POR_NIVEL[identity.nivel + 1]
@@ -102,7 +105,34 @@ export function Ficha() {
   }
 
 
-  const classeNivel = classe ? `${classe.nome} ${identity.nivel}` : `Nível ${identity.nivel}`
+  const classeNivel = (() => {
+    if (multiclasses.length === 0) {
+      return classe ? `${classe.nome} ${identity.nivel}` : `Nível ${identity.nivel}`
+    }
+    const partes = [
+      classe ? `${classe.nome} ${nivelPrimaria}` : `? ${nivelPrimaria}`,
+      ...multiclasses.map(m => {
+        const mc = dados.classes.find(c => c.id === m.classe_id)
+        return `${mc?.nome ?? m.classe_id} ${m.nivel}`
+      }),
+    ]
+    return partes.join(' / ')
+  })()
+
+  const subclasseLabel = (() => {
+    if (multiclasses.length === 0) return subclasse?.nome ?? null
+    const labels: string[] = []
+    if (subclasse) labels.push(subclasse.nome)
+    for (const m of multiclasses) {
+      if (m.subclasse_id) {
+        const mc = dados.classes.find(c => c.id === m.classe_id)
+        const sub = mc?.subclasses.find(s => s.id === m.subclasse_id)
+        if (sub) labels.push(sub.nome)
+      }
+    }
+    return labels.length > 0 ? labels.join(' · ') : null
+  })()
+
   const especieNome = especie?.nome ?? null
   const anteNome = ante?.nome ?? null
 
@@ -186,7 +216,7 @@ export function Ficha() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[13px] font-bold text-[#131110] bg-[#D4A017] px-[10px] py-[3px] rounded-[7px]">
                   {classeNivel}
-                  {subclasse ? ` — ${subclasse.nome}` : ''}
+                  {subclasseLabel ? ` — ${subclasseLabel}` : ''}
                 </span>
                 {especieNome && (
                   <span className="text-[13px] font-medium text-[#A8A09B] bg-white/5 border border-white/[0.08] px-[10px] py-[3px] rounded-[7px]">

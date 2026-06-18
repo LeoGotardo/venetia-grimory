@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
-import { getTruquesPorClasse, getMagiasPorClasseECirculo } from '../../data/magias'
+import { getTruquesPorClasses, getMagiasPorClassesECirculos } from '../../data/magias'
 import type { Magia } from '../../data/magias'
 import { SpellCard } from '../ui/SpellCard'
 import dadosJson from '../../data/dnd_dados.json'
 import type { DadosJogo } from '../../types'
+import { TIPO_CONJURADOR } from '../../constants'
 
 const dados = dadosJson as unknown as DadosJogo
 
@@ -74,43 +75,73 @@ export function Step08Spells() {
 
   const classeId = ficha.identidade.classe_id
   const nivel = ficha.identidade.nivel
-  const classe = dados.classes.find(c => c.id === classeId)
-  const ehConjurador = !!classe?.conjurador
+  const multiclasses = ficha.identidade.multiclasses ?? []
+  const nivelPrimaria = nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
+
+  const ehConjurador = ficha.magia.conjurador
+
+  // Classe conjuradora efetiva para limits de criação (primária se conjuradora, senão primeira secundária)
+  const classeConjId = TIPO_CONJURADOR[classeId ?? ''] != null
+    ? classeId
+    : multiclasses.find(m => TIPO_CONJURADOR[m.classe_id] != null)?.classe_id ?? classeId
+  const nivelConjEfetivo = classeConjId === classeId ? nivelPrimaria : (multiclasses.find(m => m.classe_id === classeConjId)?.nivel ?? 1)
+  const classeConj = dados.classes.find(c => c.id === classeConjId)
 
   const prog = useMemo(() => {
-    if (!classe?.progressao) return null
-    return classe.progressao[nivel - 1] ?? classe.progressao[0]
-  }, [classe, nivel])
+    if (!classeConj?.progressao) return null
+    const idx = Math.max(0, Math.min(nivelConjEfetivo - 1, classeConj.progressao.length - 1))
+    return (classeConj.progressao[idx] ?? classeConj.progressao[0]) as Record<string, unknown> | null
+  }, [classeConj, nivelConjEfetivo])
 
-  const progRaw = prog as Record<string, unknown> | null
-  const maxTruques = (progRaw?.truques as number | undefined) ?? 0
-  const maxMagias = (progRaw?.magias_preparadas as number | undefined) ?? 0
+  const maxTruques = (prog?.truques as number | undefined) ?? 0
+  const maxMagias = (prog?.magias_preparadas as number | undefined) ?? 0
 
-  const maxCirculo = useMemo(() => {
-    const espacos = progRaw?.espacos as Record<string, number> | undefined
-    if (!espacos) return 0
-    return Object.entries(espacos)
-      .filter(([, v]) => v > 0)
-      .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
-  }, [progRaw])
-
+  // Limites por círculo só se aplicam na classe única (multiclasse usa tabela combinada)
   const limitesPorCirculo = useMemo(() => {
-    const espacos = progRaw?.espacos as Record<string, number> | undefined
+    if (multiclasses.length > 0) return {} as Record<number, number>
+    const espacos = prog?.espacos as Record<string, number> | undefined
     if (!espacos) return {} as Record<number, number>
     return Object.fromEntries(
       Object.entries(espacos).map(([k, v]) => [parseInt(k.replace('c', '')), v])
     ) as Record<number, number>
-  }, [progRaw])
+  }, [prog, multiclasses.length])
 
-  const truquesDisponiveis = useMemo(
-    () => getTruquesPorClasse(classeId ?? ''),
-    [classeId],
-  )
+  // Acesso por classe: cada classe conjuradora com seu círculo máximo no seu próprio nível
+  const classesParaMagias = useMemo<Array<{ classeId: string; maxCirculo: number }>>(() => {
+    function getMaxCirc(cd: { progressao: unknown[] } | undefined, niv: number) {
+      if (!cd?.progressao) return 0
+      const idx = Math.max(0, Math.min(niv - 1, cd.progressao.length - 1))
+      const p = cd.progressao[idx] as Record<string, unknown>
+      const esp = p?.espacos as Record<string, number> | undefined
+      if (!esp) return 0
+      return Object.entries(esp).filter(([, v]) => v > 0).reduce((a, [k]) => Math.max(a, parseInt(k.replace('c', ''))), 0)
+    }
+    if (multiclasses.length === 0) {
+      const classe = dados.classes.find(c => c.id === classeId)
+      const mc = getMaxCirc(classe, nivel)
+      return [{ classeId: classeId ?? '', maxCirculo: mc > 0 ? mc : 9 }]
+    }
+    const result: Array<{ classeId: string; maxCirculo: number }> = []
+    if (TIPO_CONJURADOR[classeId ?? ''] != null) {
+      const cd = dados.classes.find(c => c.id === classeId)
+      const mc = getMaxCirc(cd, Math.max(1, nivelPrimaria))
+      result.push({ classeId: classeId ?? '', maxCirculo: mc > 0 ? mc : 9 })
+    }
+    for (const m of multiclasses) {
+      if (TIPO_CONJURADOR[m.classe_id] != null) {
+        const cd = dados.classes.find(c => c.id === m.classe_id)
+        const mc = getMaxCirc(cd, m.nivel)
+        if (mc > 0) result.push({ classeId: m.classe_id, maxCirculo: mc })
+      }
+    }
+    if (result.length === 0) result.push({ classeId: classeId ?? '', maxCirculo: 9 })
+    return result
+  }, [classeId, nivel, nivelPrimaria, multiclasses])
 
-  const magiasDisponiveis = useMemo(
-    () => getMagiasPorClasseECirculo(classeId ?? '', maxCirculo),
-    [classeId, maxCirculo],
-  )
+  const allClasseIds = useMemo(() => classesParaMagias.map(c => c.classeId), [classesParaMagias])
+
+  const truquesDisponiveis = useMemo(() => getTruquesPorClasses(allClasseIds), [allClasseIds])
+  const magiasDisponiveis = useMemo(() => getMagiasPorClassesECirculos(classesParaMagias), [classesParaMagias])
 
   const truquesSelecionados = ficha.magia.truques_conhecidos
   const magiasSelecionadas = ficha.magia.magias_preparadas
@@ -173,7 +204,7 @@ export function Step08Spells() {
         <div>
           <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step08.heading')}</h2>
           <p className="text-[#A8A09B] text-sm">
-            {classeId ? t('step08.notCaster', { classe: classe?.nome }) : t('step08.chooseClassFirst')}
+            {classeId ? t('step08.notCaster', { classe: classeConj?.nome }) : t('step08.chooseClassFirst')}
           </p>
         </div>
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-6 text-center">
@@ -239,7 +270,7 @@ export function Step08Spells() {
       )}
 
       {/* Magias */}
-      {maxMagias > 0 && maxCirculo > 0 && (
+      {maxMagias > 0 && magiasDisponiveis.length > 0 && (
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step08.preparedSpells')}</h3>

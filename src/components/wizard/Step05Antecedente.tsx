@@ -7,6 +7,7 @@ import { Badge } from '../ui/Badge'
 import { TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE } from '../../constants'
 import dadosJson from '../../data/dnd_dados.json'
 import type { DadosJogo, AtributoId } from '../../types'
+import { getAntecedentes } from '../../data/antecedentes'
 
 const dados = dadosJson as unknown as DadosJogo
 
@@ -20,7 +21,7 @@ export function Step05Antecedente() {
   const [distribuicao, setDistribuicao] = useState<Partial<Record<AtributoId, number>>>({})
   const [modoDistrib, setModoDistrib] = useState<ModoDistribuicao>('2+1')
 
-  const ante = dados.antecedentes?.find(a => a.id === antecedenteId)
+  const ante = getAntecedentes().find(a => a.id === antecedenteId)
   const totalDistrib = Object.values(distribuicao).reduce((acc, b) => acc + b, 0)
   const distribOk = totalDistrib === TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE
   const distribuicaoRef = useRef<HTMLDivElement>(null)
@@ -40,7 +41,7 @@ export function Step05Antecedente() {
   }
 
   function selecionarAntecedente(id: string) {
-    const novoAnte = dados.antecedentes?.find(a => a.id === id)
+    const novoAnte = getAntecedentes().find(a => a.id === id)
     if (modoDistrib === '1+1+1' && novoAnte && novoAnte.atributos_sugeridos.length >= TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE) {
       autoDistribuir1Cada(novoAnte.atributos_sugeridos)
     } else {
@@ -99,7 +100,7 @@ export function Step05Antecedente() {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {dados.antecedentes?.map(a => (
+        {getAntecedentes().map(a => (
           <Card
             key={a.id}
             selected={antecedenteId === a.id}

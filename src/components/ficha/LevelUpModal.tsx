@@ -23,17 +23,39 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
   const [asiUm, setAsiUm] = useState<AtributoId | null>(null)
   const [asiDois, setAsiDois] = useState<AtributoId | null>(null)
 
+  const multiclasses = ficha.identidade.multiclasses ?? []
   const classeId = ficha.identidade.classe_id
-  const classe = dados.classes.find(c => c.id === classeId)
-  const progEntry = classe?.progressao.find(
-    (p: { nivel: number }) => p.nivel === novoNivel
+
+  // Nível na classe primária atual
+  const nivelPrimaria = novoNivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
+
+  // Opções de classe para level-up: primária + secundárias
+  const opcoesClasse = [
+    { id: classeId ?? '', label: dados.classes.find(c => c.id === classeId)?.nome ?? classeId ?? '', nivelAtual: nivelPrimaria - 1, isPrimaria: true },
+    ...multiclasses.map(m => ({
+      id: m.classe_id,
+      label: dados.classes.find(c => c.id === m.classe_id)?.nome ?? m.classe_id,
+      nivelAtual: m.nivel,
+      isPrimaria: false,
+    })),
+  ].filter(o => o.id)
+
+  const [classeAlvo, setClasseAlvo] = useState<string>(classeId ?? '')
+
+  const classeAlvoObj = dados.classes.find(c => c.id === classeAlvo)
+  const nivelNaClasseAlvo = classeAlvo === classeId
+    ? nivelPrimaria
+    : (multiclasses.find(m => m.classe_id === classeAlvo)?.nivel ?? 0) + 1
+
+  const progEntry = classeAlvoObj?.progressao.find(
+    (p: { nivel: number }) => p.nivel === nivelNaClasseAlvo
   ) as (Record<string, unknown> & { nivel: number; destaques?: string[]; espacos?: Record<string, number>; magias_preparadas?: number; truques?: number }) | undefined
 
   const temASI = progEntry?.destaques?.includes('AVA') ?? false
   const ehConjurador = ficha.magia.conjurador
 
   const modCON = calcModificador(ficha.atributos.CON.valor ?? 10)
-  const novoHP = classe ? calcPVTotal(novoNivel, classe.dado_vida, modCON) : null
+  const novoHP = classeAlvoObj ? calcPVTotal(novoNivel, classeAlvoObj.dado_vida, modCON) : null
   const novoProf = calcBonusProf(novoNivel)
   const destaques = (progEntry?.destaques ?? []).filter(d => d !== 'AVA')
 
@@ -58,7 +80,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
   }
 
   function confirmar() {
-    levelUp(novoNivel, calcularASI())
+    levelUp(novoNivel, calcularASI(), classeAlvo !== classeId ? classeAlvo : undefined)
     onClose()
   }
 
@@ -113,13 +135,39 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
     <Modal open={open} onClose={onClose} title={t('levelup.title', { n: novoNivel })}>
       <div className="space-y-5">
 
+        {/* Seletor de classe — só quando há multiclasse */}
+        {opcoesClasse.length > 1 && (
+          <div>
+            <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-2">
+              {t('multiclass.chooseClassLevel')}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {opcoesClasse.map(op => (
+                <button
+                  key={op.id}
+                  type="button"
+                  onClick={() => setClasseAlvo(op.id)}
+                  className={[
+                    'px-3 py-1.5 rounded-lg border text-sm transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                    classeAlvo === op.id
+                      ? 'border-[#B8860B] bg-[#B8860B]/15 text-[#F5F0E8]'
+                      : 'border-[#B8860B]/20 bg-[#2D2520] text-[#A8A09B] hover:border-[#B8860B]/50 hover:text-[#F5F0E8]',
+                  ].join(' ')}
+                >
+                  {op.label} <span className="opacity-60 text-xs">Nv {op.nivelAtual + 1}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Resumo */}
         <div className="grid grid-cols-2 gap-3">
           {novoHP !== null && (
             <div className="bg-[#2D2520] rounded-lg p-3 text-center">
               <p className="text-xs text-[#A8A09B] mb-1">{t('levelup.hp')}</p>
               <p className="text-2xl font-cinzel font-bold text-green-400">{novoHP}</p>
-              <p className="text-xs text-[#A8A09B] mt-0.5">{classe?.dado_vida && `d${classe.dado_vida} + CON`}</p>
+              <p className="text-xs text-[#A8A09B] mt-0.5">{classeAlvoObj?.dado_vida && `d${classeAlvoObj.dado_vida} + CON`}</p>
             </div>
           )}
           <div className="bg-[#2D2520] rounded-lg p-3 text-center">

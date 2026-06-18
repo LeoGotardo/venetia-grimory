@@ -14,6 +14,8 @@ import {
   DEBOUNCE_SAVE_MS,
   MAXIMO_EXAUSTAO,
   IDIOMAS_FIXOS_POR_CLASSE,
+  PROFICIENCIAS_MULTICLASSE,
+  TIPO_CONJURADOR,
 } from '../constants'
 import dadosJson from '../data/dnd_dados.json'
 import type { DadosJogo } from '../types'
@@ -76,7 +78,11 @@ interface FichaStore {
   setArmadura: (armaduraId: string | null) => void
   atualizarMagia: (parcial: Partial<Pick<Ficha['magia'], 'truques_conhecidos' | 'magias_preparadas'>>) => void
   addXP: (amount: number) => void
-  levelUp: (novoNivel: number, asi?: Partial<Record<AtributoId, number>>) => void
+  levelUp: (novoNivel: number, asi?: Partial<Record<AtributoId, number>>, classeIdAlvo?: string) => void
+  addMulticlasse: (classeId: string) => void
+  removeMulticlasse: (classeId: string) => void
+  setMulticlasseNivel: (classeId: string, nivel: number) => void
+  setSubclasseMulticlasse: (classeId: string, subclasseId: string | null) => void
 
   // Persistência
   calcularTudo: () => void
@@ -120,7 +126,7 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
 
       const ficha: Ficha = {
         ...s.ficha,
-        identidade: { ...s.ficha.identidade, classe_id: classeId, subclasse_id: null },
+        identidade: { ...s.ficha.identidade, classe_id: classeId, subclasse_id: null, multiclasses: [] },
         proficiencias: {
           ...s.ficha.proficiencias,
           armaduras: classe.armaduras,
@@ -491,12 +497,28 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
       ficha: { ...s.ficha, identidade: { ...s.ficha.identidade, xp: s.ficha.identidade.xp + amount } },
     })),
 
-  levelUp: (novoNivel, asi) =>
+  levelUp: (novoNivel, asi, classeIdAlvo) =>
     set(s => {
-      const classe = dados.classes.find(c => c.id === s.ficha.identidade.classe_id)
-      const progEntry = classe?.progressao.find((p: { nivel: number }) => p.nivel === novoNivel) as
-        | (Record<string, unknown> & { nivel: number })
-        | undefined
+      const multiclasses = s.ficha.identidade.multiclasses ?? []
+      const ehSecundaria = classeIdAlvo ? multiclasses.some(m => m.classe_id === classeIdAlvo) : false
+
+      // Incrementa nível da classe alvo
+      const novaMulticlasses = ehSecundaria
+        ? multiclasses.map(m =>
+            m.classe_id === classeIdAlvo ? { ...m, nivel: m.nivel + 1 } : m,
+          )
+        : multiclasses
+
+      // Classe e nível relevantes para lookup de progressão
+      const classeAlvoId = classeIdAlvo ?? s.ficha.identidade.classe_id
+      const classeAlvo = dados.classes.find(c => c.id === classeAlvoId)
+      const nivelNaClasse = ehSecundaria
+        ? (novaMulticlasses.find(m => m.classe_id === classeIdAlvo)?.nivel ?? 1)
+        : novoNivel - novaMulticlasses.reduce((sum, m) => sum + m.nivel, 0)
+
+      const progEntry = classeAlvo?.progressao.find(
+        (p: { nivel: number }) => p.nivel === nivelNaClasse,
+      ) as (Record<string, unknown> & { nivel: number }) | undefined
 
       let atributos = s.ficha.atributos
       if (asi) {
@@ -507,13 +529,15 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
         })
       }
 
-      let ficha = recalcular({
+      // recalcular já aplica calcSlotsMulticlasse quando há multiclasses
+      const ficha = recalcular({
         ...s.ficha,
-        identidade: { ...s.ficha.identidade, nivel: novoNivel },
+        identidade: { ...s.ficha.identidade, nivel: novoNivel, multiclasses: novaMulticlasses },
         atributos,
       })
 
-      if (ficha.magia.conjurador && progEntry?.espacos) {
+      // Slots de progressão individual (só para classe única ou sem multiclasse conjurador)
+      if (novaMulticlasses.length === 0 && ficha.magia.conjurador && progEntry?.espacos) {
         const espacosData = progEntry.espacos as Record<string, number>
         const CIRCULOS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const
         const espacos = { ...ficha.magia.espacos_de_magia }
@@ -522,10 +546,134 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
             espacos[k] = { maximo: espacosData[k], gastos: Math.min(espacos[k].gastos, espacosData[k]) }
           }
         })
-        ficha = recalcular({ ...ficha, magia: { ...ficha.magia, espacos_de_magia: espacos } })
+        return { ficha: recalcular({ ...ficha, magia: { ...ficha.magia, espacos_de_magia: espacos } }) }
       }
 
       return { ficha }
+    }),
+
+  addMulticlasse: classeId =>
+    set(s => {
+      const multi = s.ficha.identidade.multiclasses ?? []
+      if (classeId === s.ficha.identidade.classe_id) return s
+      if (multi.some(m => m.classe_id === classeId)) return s
+      if (s.ficha.identidade.nivel < 2) return s
+
+      const novaClasse = dados.classes.find(c => c.id === classeId)
+      if (!novaClasse) return s
+
+      const parcial = PROFICIENCIAS_MULTICLASSE[classeId] ?? {}
+      const prof = s.ficha.proficiencias
+      const merge = (arr: string[], novos?: string[]) =>
+        novos ? [...new Set([...arr, ...novos])] : arr
+
+      // Conjuração: se a nova classe for conjuradora e a primária não for, atualizar
+      const conjuradorAtual = s.ficha.magia.conjurador
+      const novaEhConjuradora = TIPO_CONJURADOR[classeId] != null
+      const novoConjurador = conjuradorAtual || novaEhConjuradora
+      const novoAtribConj = conjuradorAtual
+        ? s.ficha.magia.atributo_conjuracao
+        : novaEhConjuradora
+          ? ((novaClasse as { atributo_conjuracao?: string })?.atributo_conjuracao as typeof s.ficha.magia.atributo_conjuracao ?? null)
+          : s.ficha.magia.atributo_conjuracao
+
+      const ficha: Ficha = {
+        ...s.ficha,
+        identidade: {
+          ...s.ficha.identidade,
+          multiclasses: [...multi, { classe_id: classeId, subclasse_id: null, nivel: 1 }],
+        },
+        proficiencias: {
+          ...prof,
+          armaduras: merge(prof.armaduras, parcial.armaduras),
+          armas: merge(prof.armas, parcial.armas),
+          ferramentas: merge(prof.ferramentas, parcial.ferramentas),
+        },
+        magia: {
+          ...s.ficha.magia,
+          conjurador: novoConjurador,
+          atributo_conjuracao: novoAtribConj,
+        },
+      }
+      return { ficha: recalcular(ficha) }
+    }),
+
+  removeMulticlasse: classeId =>
+    set(s => {
+      const multi = s.ficha.identidade.multiclasses ?? []
+      const entrada = multi.find(m => m.classe_id === classeId)
+      if (!entrada) return s
+
+      const novaMulti = multi.filter(m => m.classe_id !== classeId)
+
+      // Reverte proficiências parciais (apenas as que não existem em nenhuma outra classe)
+      const parcial = PROFICIENCIAS_MULTICLASSE[classeId] ?? {}
+      const prof = s.ficha.proficiencias
+      const classePrimaria = dados.classes.find(c => c.id === s.ficha.identidade.classe_id)
+      const outrasMulti = novaMulti.map(m => m.classe_id)
+      const todasProfSobreviventes = [
+        ...(classePrimaria?.armaduras ?? []),
+        ...outrasMulti.flatMap(id => PROFICIENCIAS_MULTICLASSE[id]?.armaduras ?? []),
+      ]
+      const todasArmasSobreviventes = [
+        ...(classePrimaria?.armas ?? []),
+        ...outrasMulti.flatMap(id => PROFICIENCIAS_MULTICLASSE[id]?.armas ?? []),
+      ]
+
+      const remover = (arr: string[], rem?: string[], sobrev?: string[]) =>
+        rem ? arr.filter(x => !rem.includes(x) || (sobrev ?? []).includes(x)) : arr
+
+      // Recomputa conjurador após remoção
+      const conjuradorPrimaria = TIPO_CONJURADOR[s.ficha.identidade.classe_id ?? ''] != null
+      const conjuradorMulti = novaMulti.some(m => TIPO_CONJURADOR[m.classe_id] != null)
+      const novoConjurador = conjuradorPrimaria || conjuradorMulti
+
+      const classePrimObj = dados.classes.find(c => c.id === s.ficha.identidade.classe_id)
+      const atribConjPrimaria = (classePrimObj as { atributo_conjuracao?: string } | undefined)?.atributo_conjuracao as typeof s.ficha.magia.atributo_conjuracao ?? null
+      const novoAtribConj = conjuradorPrimaria
+        ? atribConjPrimaria
+        : novaMulti
+            .map(m => {
+              const c = dados.classes.find(cc => cc.id === m.classe_id)
+              return TIPO_CONJURADOR[m.classe_id] != null
+                ? ((c as { atributo_conjuracao?: string } | undefined)?.atributo_conjuracao as typeof s.ficha.magia.atributo_conjuracao ?? null)
+                : null
+            })
+            .find(Boolean) ?? null
+
+      const ficha: Ficha = {
+        ...s.ficha,
+        identidade: { ...s.ficha.identidade, multiclasses: novaMulti },
+        proficiencias: {
+          ...prof,
+          armaduras: remover(prof.armaduras, parcial.armaduras, todasProfSobreviventes),
+          armas: remover(prof.armas, parcial.armas, todasArmasSobreviventes),
+          ferramentas: prof.ferramentas,
+        },
+        magia: { ...s.ficha.magia, conjurador: novoConjurador, atributo_conjuracao: novoAtribConj },
+      }
+      return { ficha: recalcular(ficha) }
+    }),
+
+  setMulticlasseNivel: (classeId, nivel) =>
+    set(s => {
+      const multi = s.ficha.identidade.multiclasses ?? []
+      const totalSecundario = multi.reduce((sum, m) => sum + (m.classe_id === classeId ? 0 : m.nivel), 0)
+      const nivelTotal = s.ficha.identidade.nivel
+      const nivelValidado = Math.max(1, Math.min(nivel, nivelTotal - totalSecundario - 1))
+      const novaMulti = multi.map(m =>
+        m.classe_id === classeId ? { ...m, nivel: nivelValidado } : m,
+      )
+      return { ficha: recalcular({ ...s.ficha, identidade: { ...s.ficha.identidade, multiclasses: novaMulti } }) }
+    }),
+
+  setSubclasseMulticlasse: (classeId, subclasseId) =>
+    set(s => {
+      const multi = s.ficha.identidade.multiclasses ?? []
+      const novaMulti = multi.map(m =>
+        m.classe_id === classeId ? { ...m, subclasse_id: subclasseId } : m,
+      )
+      return { ficha: recalcular({ ...s.ficha, identidade: { ...s.ficha.identidade, multiclasses: novaMulti } }) }
     }),
 
   calcularTudo: () => set(s => ({ ficha: recalcular(s.ficha) })),

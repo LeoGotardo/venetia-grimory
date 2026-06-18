@@ -3,13 +3,17 @@ import {
   calcModificador,
   calcBonusProf,
   calcPVTotal,
+  calcPVMulticlasse,
   calcCA,
   calcSalvaguarda,
   calcPericia,
   calcCDMagia,
   calcBonusAtaqueMagico,
+  calcNivelConjuradorMulticlasse,
+  calcSlotsMulticlasse,
   ATRIBUTOS,
 } from './calculos'
+import { TIPO_CONJURADOR } from '../constants'
 import dadosJson from '../data/dnd_dados.json'
 import type { DadosJogo } from '../types'
 
@@ -45,6 +49,7 @@ function recalcularCombate(ficha: Ficha, bonusProf: number): Ficha {
 
   const classe = dados.classes.find(c => c.id === ficha.identidade.classe_id)
   const nivel = ficha.identidade.nivel
+  const multiclasses = ficha.identidade.multiclasses ?? []
 
   let combate = {
     ...ficha.combate,
@@ -54,7 +59,21 @@ function recalcularCombate(ficha: Ficha, bonusProf: number): Ficha {
   }
 
   if (classe) {
-    const pvMax = calcPVTotal(nivel, classe.dado_vida, modCON)
+    let pvMax: number
+    if (multiclasses.length > 0) {
+      const nivelPrimario = nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
+      const todasClasses = [
+        { dadoVida: classe.dado_vida, nivel: Math.max(1, nivelPrimario), isPrimaria: true },
+        ...multiclasses.map(m => {
+          const c2 = dados.classes.find(c => c.id === m.classe_id)
+          return { dadoVida: c2?.dado_vida ?? 8, nivel: m.nivel, isPrimaria: false }
+        }),
+      ]
+      pvMax = calcPVMulticlasse(todasClasses, modCON)
+    } else {
+      pvMax = calcPVTotal(nivel, classe.dado_vida, modCON)
+    }
+
     combate = {
       ...combate,
       pontos_de_vida: {
@@ -65,12 +84,18 @@ function recalcularCombate(ficha: Ficha, bonusProf: number): Ficha {
       dados_de_vida: { ...combate.dados_de_vida, tipo: `d${classe.dado_vida}`, total: nivel },
     }
 
+    // Salvaguardas: union de todas as classes
     const salvaguardas = { ...combate.salvaguardas }
     ATRIBUTOS.forEach(a => {
       salvaguardas[a] = { ...salvaguardas[a], proficiente: false }
     })
-    classe.salvaguardas.forEach(s => {
-      salvaguardas[s] = { ...salvaguardas[s], proficiente: true }
+    const todasSalvaguardas = new Set<string>([
+      ...classe.salvaguardas,
+      ...multiclasses.flatMap(m => dados.classes.find(c => c.id === m.classe_id)?.salvaguardas ?? []),
+    ])
+    todasSalvaguardas.forEach(s => {
+      const a = s as keyof typeof salvaguardas
+      if (salvaguardas[a]) salvaguardas[a] = { ...salvaguardas[a], proficiente: true }
     })
     combate = { ...combate, salvaguardas }
   }
@@ -87,6 +112,11 @@ function recalcularCombate(ficha: Ficha, bonusProf: number): Ficha {
     }
   })
 
+  const classeIds = [
+    ...(ficha.identidade.classe_id ? [ficha.identidade.classe_id] : []),
+    ...multiclasses.map(m => m.classe_id),
+  ]
+
   const armaduraId = combate.classe_de_armadura.armadura_equipada_id
   const armadura = armaduraId
     ? (dados.armaduras?.find((a: Armadura) => a.id === armaduraId) ?? null)
@@ -101,7 +131,7 @@ function recalcularCombate(ficha: Ficha, bonusProf: number): Ficha {
         modDES,
         modCON,
         modSAB,
-        classeId: ficha.identidade.classe_id,
+        classeIds,
         escudo: combate.classe_de_armadura.escudo_equipado,
       }),
     },
@@ -123,18 +153,55 @@ function recalcularPericias(ficha: Ficha, bonusProf: number): Ficha {
 }
 
 function recalcularMagia(ficha: Ficha, bonusProf: number): Ficha {
-  if (!ficha.magia.conjurador || !ficha.magia.atributo_conjuracao) return ficha
+  const multiclasses = ficha.identidade.multiclasses ?? []
 
-  const modConj = ficha.atributos[ficha.magia.atributo_conjuracao]._modificador ?? 0
+  // Determina se alguma classe é conjuradora
+  const classesPrimaria = ficha.identidade.classe_id ? [ficha.identidade.classe_id] : []
+  const todasClasseIds = [...classesPrimaria, ...multiclasses.map(m => m.classe_id)]
+  const ehConjuradorMulti = todasClasseIds.some(id => TIPO_CONJURADOR[id] != null)
 
-  return {
-    ...ficha,
-    magia: {
-      ...ficha.magia,
-      _cd_magia: calcCDMagia(bonusProf, modConj),
-      _bonus_ataque_magia: calcBonusAtaqueMagico(bonusProf, modConj),
-    },
+  if (!ehConjuradorMulti && !ficha.magia.conjurador) return ficha
+
+  // Determina o atributo de conjuração: usa a classe primária se conjuradora, senão a primeira secundária
+  let atributoConj = ficha.magia.atributo_conjuracao
+  if (!atributoConj) {
+    const primeiraConj = multiclasses.find(m => TIPO_CONJURADOR[m.classe_id] != null)
+    if (primeiraConj) {
+      const c = dados.classes.find(c => c.id === primeiraConj.classe_id)
+      atributoConj = ((c as { atributo_conjuracao?: string })?.atributo_conjuracao ?? null) as typeof atributoConj
+    }
   }
+  if (!atributoConj) return ficha
+
+  const modConj = ficha.atributos[atributoConj]._modificador ?? 0
+  let magia = {
+    ...ficha.magia,
+    _cd_magia: calcCDMagia(bonusProf, modConj),
+    _bonus_ataque_magia: calcBonusAtaqueMagico(bonusProf, modConj),
+  }
+
+  // Slots multiclasse: só aplica se há multiclasse e alguma classe conjuradora
+  if (multiclasses.length > 0 && ehConjuradorMulti) {
+    const nivel = ficha.identidade.nivel
+    const nivelPrimario = nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
+    const todasParaSlots = [
+      { classeId: ficha.identidade.classe_id ?? '', subclasseId: ficha.identidade.subclasse_id, nivel: Math.max(1, nivelPrimario) },
+      ...multiclasses.map(m => ({ classeId: m.classe_id, subclasseId: m.subclasse_id, nivel: m.nivel })),
+    ]
+    const nivelConj = calcNivelConjuradorMulticlasse(todasParaSlots)
+    if (nivelConj > 0) {
+      const slots = calcSlotsMulticlasse(nivelConj)
+      const CIRCULOS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const
+      const espacos = { ...magia.espacos_de_magia }
+      CIRCULOS.forEach(k => {
+        const novo = slots[k] ?? 0
+        espacos[k] = { maximo: novo, gastos: Math.min(espacos[k].gastos, novo) }
+      })
+      magia = { ...magia, espacos_de_magia: espacos }
+    }
+  }
+
+  return { ...ficha, magia }
 }
 
 export function recalcular(ficha: Ficha): Ficha {

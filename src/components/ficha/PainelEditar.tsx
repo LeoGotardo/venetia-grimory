@@ -7,8 +7,9 @@ import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import dadosJson from '../../data/dnd_dados.json'
 import type { DadosJogo, AtributoId } from '../../types'
-import { NIVEL_MINIMO, NIVEL_MAXIMO } from '../../constants'
-import { getTruquesPorClasse, getMagiasPorClasseECirculo } from '../../data/magias'
+import { NIVEL_MINIMO, NIVEL_MAXIMO, MULTICLASSE_PREREQUISITOS, TIPO_CONJURADOR } from '../../constants'
+import { getTruquesPorClasses, getMagiasPorClassesECirculos } from '../../data/magias'
+import { getAntecedentes } from '../../data/antecedentes'
 import type { Magia } from '../../data/magias'
 import { SpellCard } from '../ui/SpellCard'
 import { ItemCard } from '../ui/ItemCard'
@@ -35,6 +36,7 @@ export function PainelEditar() {
       </p>
       <SecaoInformacoes />
       <SecaoProgressao />
+      <SecaoMulticlasse />
       <SecaoAtributos />
       <SecaoArmadura />
       <SecaoPericias />
@@ -230,10 +232,146 @@ function SecaoProgressao() {
             className={SELECT_BASE}
           >
             <option value="">{t('edit.selectClass')}</option>
-            {dados.antecedentes?.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
+            {getAntecedentes().map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
           </select>
         </div>
       </div>
+    </section>
+  )
+}
+
+function SecaoMulticlasse() {
+  const { ficha, addMulticlasse, removeMulticlasse, setMulticlasseNivel, setSubclasseMulticlasse } = useFichaStore()
+  const { t } = useTranslation()
+  const id = ficha.identidade
+  const multiclasses = id.multiclasses ?? []
+  const nivelTotal = id.nivel
+  const nivelPrimaria = nivelTotal - multiclasses.reduce((s, m) => s + m.nivel, 0)
+  const [addingClass, setAddingClass] = useState(false)
+
+  function checarPrerequisito(classeId: string): boolean {
+    const prereq = MULTICLASSE_PREREQUISITOS[classeId]
+    if (!prereq) return true
+    const vals = prereq.atributos.map(a => ficha.atributos[a].valor ?? 0)
+    return prereq.modo === 'ou' ? vals.some(v => v >= 13) : vals.every(v => v >= 13)
+  }
+
+  const classesDisponiveis = dados.classes.filter(c =>
+    c.id !== id.classe_id && !multiclasses.some(m => m.classe_id === c.id)
+  )
+
+  return (
+    <section aria-label={t('multiclass.title')} className={SECTION_CARD}>
+      <div className="flex items-center justify-between pb-2 border-b border-[#B8860B]/20">
+        <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('multiclass.title')}</h3>
+        {nivelTotal > 1 && !addingClass && (
+          <button
+            type="button"
+            onClick={() => setAddingClass(true)}
+            className="text-xs text-[#B8860B] border border-[#B8860B]/40 rounded px-2 py-1 hover:bg-[#B8860B]/10 transition-colors cursor-pointer"
+          >
+            + {t('multiclass.addClass')}
+          </button>
+        )}
+      </div>
+
+      {/* Classe primária */}
+      <div className="flex items-center gap-3 text-sm">
+        <span className="text-[#A8A09B] text-xs uppercase tracking-wide min-w-[70px]">{t('multiclass.primaryClass')}</span>
+        <span className="text-[#F5F0E8] font-medium flex-1">{dados.classes.find(c => c.id === id.classe_id)?.nome ?? '—'}</span>
+        <span className="text-[#B8860B] font-cinzel font-bold">{t('multiclass.levelIn', { n: nivelPrimaria })}</span>
+      </div>
+
+      {/* Classes secundárias */}
+      {multiclasses.map(m => {
+        const c = dados.classes.find(cc => cc.id === m.classe_id)
+        const maxNivel = nivelTotal - multiclasses.filter(x => x.classe_id !== m.classe_id).reduce((s, x) => s + x.nivel, 0) - 1
+        return (
+          <div key={m.classe_id} className="space-y-2 pt-2 border-t border-[#B8860B]/10">
+            <div className="flex items-center gap-2">
+              <span className="text-[#F5F0E8] font-medium flex-1 text-sm">{c?.nome ?? m.classe_id}</span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setMulticlasseNivel(m.classe_id, m.nivel - 1)}
+                  disabled={m.nivel <= 1}
+                  className="w-6 h-6 rounded bg-[#2D2520] border border-[#B8860B]/20 text-[#F5F0E8] text-xs hover:bg-[#3D332D] disabled:opacity-30 cursor-pointer disabled:cursor-default"
+                >−</button>
+                <span className="w-6 text-center text-sm font-cinzel font-bold text-[#F5F0E8]">{m.nivel}</span>
+                <button
+                  type="button"
+                  onClick={() => setMulticlasseNivel(m.classe_id, m.nivel + 1)}
+                  disabled={m.nivel >= maxNivel}
+                  className="w-6 h-6 rounded bg-[#2D2520] border border-[#B8860B]/20 text-[#F5F0E8] text-xs hover:bg-[#3D332D] disabled:opacity-30 cursor-pointer disabled:cursor-default"
+                >+</button>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeMulticlasse(m.classe_id)}
+                className="text-[#A8A09B] hover:text-red-400 transition-colors text-sm px-1 cursor-pointer"
+                aria-label={t('multiclass.remove')}
+              >×</button>
+            </div>
+            {m.nivel >= 3 && (
+              <select
+                value={m.subclasse_id ?? ''}
+                onChange={e => setSubclasseMulticlasse(m.classe_id, e.target.value || null)}
+                className={`${SELECT_BASE} text-xs`}
+              >
+                <option value="">{t('edit.selectClass')}</option>
+                {c?.subclasses.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+              </select>
+            )}
+          </div>
+        )
+      })}
+
+      {/* Seletor para adicionar nova classe */}
+      {addingClass && (
+        <div className="space-y-2 pt-2 border-t border-[#B8860B]/10">
+          <p className="text-xs text-[#A8A09B]">{t('multiclass.selectSecondary')}</p>
+          <div className="flex flex-wrap gap-2">
+            {classesDisponiveis.map(c => {
+              const ok = checarPrerequisito(c.id)
+              const prereq = MULTICLASSE_PREREQUISITOS[c.id]
+              return (
+                <div key={c.id} className="flex flex-col items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => { addMulticlasse(c.id); setAddingClass(false) }}
+                    className={[
+                      'px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer',
+                      ok
+                        ? 'border-[#B8860B]/40 text-[#F5F0E8] hover:bg-[#B8860B]/10 hover:border-[#B8860B]'
+                        : 'border-red-800/40 text-[#A8A09B]',
+                    ].join(' ')}
+                  >
+                    {c.nome}
+                  </button>
+                  {!ok && prereq && (
+                    <span className="text-[9px] text-red-400">
+                      {prereq.atributos.join(prereq.modo === 'ou' ? '/' : '+')} 13+
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => setAddingClass(false)}
+            className="text-xs text-[#A8A09B] hover:text-[#F5F0E8] transition-colors cursor-pointer"
+          >
+            {t('multiclass.cancel')}
+          </button>
+        </div>
+      )}
+
+      {multiclasses.length === 0 && !addingClass && (
+        <p className="text-xs text-[#A8A09B]">
+          {nivelTotal > 1 ? t('multiclass.noSecondary') : t('multiclass.needLevel2')}
+        </p>
+      )}
     </section>
   )
 }
@@ -382,7 +520,7 @@ function SecaoPericias() {
   const { ficha, setPericias } = useFichaStore()
   const { t } = useTranslation()
   const anteId = ficha.identidade.antecedente_id
-  const ante = dados.antecedentes?.find(a => a.id === anteId)
+  const ante = getAntecedentes().find(a => a.id === anteId)
   const antePerics = ante?.pericias ?? []
 
   function togglePericia(periciaId: string) {
@@ -455,6 +593,17 @@ function SecaoPericias() {
   )
 }
 
+function getMaxCirculoNaClasse(classeData: { progressao: unknown[] } | undefined, nivel: number): number {
+  if (!classeData?.progressao) return 0
+  const idx = Math.max(0, Math.min(nivel - 1, classeData.progressao.length - 1))
+  const prog = classeData.progressao[idx] as Record<string, unknown>
+  const espacos = prog?.espacos as Record<string, number> | undefined
+  if (!espacos) return 0
+  return Object.entries(espacos)
+    .filter(([, v]) => v > 0)
+    .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
+}
+
 function SecaoMagia() {
   const { ficha, atualizarMagia } = useFichaStore()
   const { t } = useTranslation()
@@ -464,27 +613,48 @@ function SecaoMagia() {
   const [spellInfo, setSpellInfo] = useState<Magia | null>(null)
 
   const classeId = ficha.identidade.classe_id ?? ''
-  const nivel = ficha.identidade.nivel
+  const nivelTotal = ficha.identidade.nivel
+  const multiclasses = ficha.identidade.multiclasses ?? []
+  const nivelPrimaria = nivelTotal - multiclasses.reduce((s, m) => s + m.nivel, 0)
 
   const classe = dados.classes.find(c => c.id === classeId)
+
+  // Para cada classe conjuradora do personagem, determina o máximo de círculo acessível
+  // (baseado no nível NAQUELA classe, não no total — regra do D&D multiclasse)
+  const classesParaMagias = useMemo<Array<{ classeId: string; maxCirculo: number }>>(() => {
+    if (multiclasses.length === 0) {
+      const mc = getMaxCirculoNaClasse(classe, nivelTotal)
+      return [{ classeId, maxCirculo: mc > 0 ? mc : 9 }]
+    }
+    const result: Array<{ classeId: string; maxCirculo: number }> = []
+    if (TIPO_CONJURADOR[classeId] != null) {
+      const mc = getMaxCirculoNaClasse(classe, Math.max(1, nivelPrimaria))
+      result.push({ classeId, maxCirculo: mc > 0 ? mc : 9 })
+    }
+    for (const m of multiclasses) {
+      if (TIPO_CONJURADOR[m.classe_id] != null) {
+        const mc2 = dados.classes.find(c => c.id === m.classe_id)
+        const max = getMaxCirculoNaClasse(mc2, m.nivel)
+        if (max > 0) result.push({ classeId: m.classe_id, maxCirculo: max })
+      }
+    }
+    if (result.length === 0) result.push({ classeId, maxCirculo: 9 })
+    return result
+  }, [classeId, classe, nivelTotal, nivelPrimaria, multiclasses])
+
+  const allClasseIds = useMemo(() => classesParaMagias.map(c => c.classeId), [classesParaMagias])
+
+  // Progressão da classe primária no nível relevante (para exibir limites de truques/magias)
+  const nivel = multiclasses.length === 0 ? nivelTotal : Math.max(1, nivelPrimaria)
   const prog = useMemo(() => {
     if (!classe?.progressao) return null
-    return classe.progressao[nivel - 1] ?? classe.progressao[0]
+    return (classe.progressao[Math.max(0, nivel - 1)] ?? classe.progressao[0]) as Record<string, unknown> | null
   }, [classe, nivel])
 
-  const maxCirculo = useMemo(() => {
-    const espacos = (prog as Record<string, unknown> | null)?.espacos as Record<string, number> | undefined
-    if (!espacos) return 9
-    const max = Object.entries(espacos)
-      .filter(([, v]) => v > 0)
-      .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
-    return max > 0 ? max : 9
-  }, [prog])
-
-  const truquesDisponiveis = useMemo(() => getTruquesPorClasse(classeId), [classeId])
+  const truquesDisponiveis = useMemo(() => getTruquesPorClasses(allClasseIds), [allClasseIds])
   const magiasDisponiveis = useMemo(
-    () => getMagiasPorClasseECirculo(classeId, maxCirculo),
-    [classeId, maxCirculo],
+    () => getMagiasPorClassesECirculos(classesParaMagias),
+    [classesParaMagias],
   )
 
   const circulosDisponiveis = useMemo(() => {
@@ -531,9 +701,8 @@ function SecaoMagia() {
     )
   }
 
-  const progRaw = prog as Record<string, unknown> | null
-  const maxTruques = (progRaw?.truques as number | undefined) ?? 0
-  const maxMagias = (progRaw?.magias_preparadas as number | undefined) ?? 0
+  const maxTruques = (prog?.truques as number | undefined) ?? 0
+  const maxMagias = (prog?.magias_preparadas as number | undefined) ?? 0
 
   return (
     <section aria-label={t('edit.magic')} className={SECTION_CARD}>

@@ -76,6 +76,10 @@ npm run build && npx cap sync
 - When adding a component that renders any user-facing text, use `useTranslation` — don't
   hardcode strings. When adding new item/spell data, add entries to both `pt/` and `en/`.
 
+### Second store: useConfigStore
+
+- `src/store/configStore.ts` is a separate persisted Zustand store (`useConfigStore`, key `venetia-config`) for user preferences: `rastrear_peso`, `gerenciar_ouro`, `reembolso_venda`, `moedas_simples`, `lingua`. It never calls `recalcular` — it is entirely independent of `fichaStore`.
+
 ### Routing & pages
 
 - `src/App.tsx`: three lazy-loaded routes — `/` (`Home`, the saved-character list), `/novo`
@@ -87,6 +91,16 @@ npm run build && npx cap sync
 - `src/pages/Ficha.tsx` is the in-play sheet: tabs render `src/components/ficha/PainelXxx.tsx`
   panels (Combate, Atributos, Perícias, Recursos, Magia, Inventário, Anotações, Editar). Edits in
   any panel go through store actions, not local component state that bypasses the store.
+
+### Hooks
+
+- `src/hooks/useAtributosWizard.ts` encapsulates all attribute-assignment logic for the wizard step. It manages three methods (`padrao` — assign from the standard array `[15,14,13,12,10,8]`; `aleatorio` — roll 4d6-drop-lowest then assign dice to slots; `compra` — 27-point buy). Components should use this hook rather than re-implementing point-buy math.
+- `src/hooks/useFichaExport.ts` wraps the store's `exportarJSON`/`importarJSON` with browser file download/upload mechanics. Use this hook from UI components instead of touching `localStorage` or blobs directly.
+
+### localStorage key schema
+
+- Individual fichas: `dnd_ficha_<uuid>` (raw `Ficha` JSON).
+- List index: `dnd_fichas_lista` (array of `FichaListItem`). A `completa` flag on each list item is never downgraded once set to `true` — the wizard sets it only upon finishing step 12.
 
 ### Known data-model gotchas (read before touching combat/resources code)
 

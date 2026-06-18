@@ -49,6 +49,7 @@ export interface Ficha {
     classe_id: string | null
     subclasse_id: string | null
     nivel: number
+    multiclasses: Array<{ classe_id: string; subclasse_id: string | null; nivel: number }>
     especie_id: string | null
     linhagem_id: string | null
     antecedente_id: string | null

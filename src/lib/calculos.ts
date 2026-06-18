@@ -1,4 +1,5 @@
 import type { AtributoId, Armadura } from '../types'
+import { TIPO_CONJURADOR, SUBCLASSES_TERCEIRO_CONJURADOR } from '../constants'
 
 export function calcModificador(valor: number): number {
   return Math.floor((valor - 10) / 2)
@@ -23,20 +24,76 @@ export function calcPVTotal(nivel: number, dadoVida: number, modCON: number): nu
   return pv1 + extra
 }
 
+export function calcPVMulticlasse(
+  classes: Array<{ dadoVida: number; nivel: number; isPrimaria: boolean }>,
+  modCON: number,
+): number {
+  return classes.reduce((total, c) => {
+    if (c.nivel <= 0) return total
+    const porNivel = Math.floor(c.dadoVida / 2 + 1) + modCON
+    if (c.isPrimaria) {
+      return total + (c.dadoVida + modCON) + Math.max(0, c.nivel - 1) * porNivel
+    }
+    return total + c.nivel * porNivel
+  }, 0)
+}
+
+const TABELA_SLOTS_MULTICLASSE: Record<number, Partial<Record<string, number>>> = {
+  1:  { c1:2 },
+  2:  { c1:3 },
+  3:  { c1:4, c2:2 },
+  4:  { c1:4, c2:3 },
+  5:  { c1:4, c2:3, c3:2 },
+  6:  { c1:4, c2:3, c3:3 },
+  7:  { c1:4, c2:3, c3:3, c4:1 },
+  8:  { c1:4, c2:3, c3:3, c4:2 },
+  9:  { c1:4, c2:3, c3:3, c4:3, c5:1 },
+  10: { c1:4, c2:3, c3:3, c4:3, c5:2 },
+  11: { c1:4, c2:3, c3:3, c4:3, c5:2, c6:1 },
+  12: { c1:4, c2:3, c3:3, c4:3, c5:2, c6:1 },
+  13: { c1:4, c2:3, c3:3, c4:3, c5:2, c6:1, c7:1 },
+  14: { c1:4, c2:3, c3:3, c4:3, c5:2, c6:1, c7:1 },
+  15: { c1:4, c2:3, c3:3, c4:3, c5:2, c6:1, c7:1, c8:1 },
+  16: { c1:4, c2:3, c3:3, c4:3, c5:2, c6:1, c7:1, c8:1 },
+  17: { c1:4, c2:3, c3:3, c4:3, c5:2, c6:1, c7:1, c8:1, c9:1 },
+  18: { c1:4, c2:3, c3:3, c4:3, c5:3, c6:1, c7:1, c8:1, c9:1 },
+  19: { c1:4, c2:3, c3:3, c4:3, c5:3, c6:2, c7:1, c8:1, c9:1 },
+  20: { c1:4, c2:3, c3:3, c4:3, c5:3, c6:2, c7:2, c8:1, c9:1 },
+}
+
+export function calcNivelConjuradorMulticlasse(
+  classes: Array<{ classeId: string; subclasseId: string | null; nivel: number }>,
+): number {
+  return classes.reduce((total, c) => {
+    const tipo = TIPO_CONJURADOR[c.classeId]
+    if (tipo === 'completo') return total + c.nivel
+    if (tipo === 'meio') return total + Math.ceil(c.nivel / 2)
+    if (c.subclasseId && SUBCLASSES_TERCEIRO_CONJURADOR.includes(c.subclasseId)) {
+      return total + Math.floor(c.nivel / 3)
+    }
+    return total
+  }, 0)
+}
+
+export function calcSlotsMulticlasse(nivelConjurador: number): Partial<Record<string, number>> {
+  const nivel = Math.max(0, Math.min(20, nivelConjurador))
+  return TABELA_SLOTS_MULTICLASSE[nivel] ?? {}
+}
+
 export function calcCA(params: {
   armadura: Armadura | null
   modDES: number
   modCON: number
   modSAB: number
-  classeId: string | null
+  classeIds: string[]
   escudo: boolean
 }): number {
-  const { armadura, modDES, modCON, modSAB, classeId, escudo } = params
+  const { armadura, modDES, modCON, modSAB, classeIds, escudo } = params
   const bonusEscudo = escudo ? 2 : 0
 
   if (!armadura) {
-    if (classeId === 'barbaro') return 10 + modDES + modCON + bonusEscudo
-    if (classeId === 'monge') return 10 + modDES + modSAB + bonusEscudo
+    if (classeIds.includes('barbaro')) return 10 + modDES + modCON + bonusEscudo
+    if (classeIds.includes('monge')) return 10 + modDES + modSAB + bonusEscudo
     return 10 + modDES + bonusEscudo
   }
 

@@ -30,6 +30,47 @@ export const CONDICOES_DISPONIVEIS = [
   'Inconsciente', 'Invisível', 'Paralisado', 'Petrificado', 'Surpreendido',
 ] as const
 
+import type { AtributoId } from '../types'
+
+export const MULTICLASSE_PREREQUISITOS: Record<string, { atributos: AtributoId[]; modo: 'e' | 'ou' }> = {
+  barbaro:    { atributos: ['FOR'],        modo: 'e'  },
+  bardo:      { atributos: ['CAR'],        modo: 'e'  },
+  bruxo:      { atributos: ['CAR'],        modo: 'e'  },
+  clerigo:    { atributos: ['SAB'],        modo: 'e'  },
+  druida:     { atributos: ['SAB'],        modo: 'e'  },
+  feiticeiro: { atributos: ['CAR'],        modo: 'e'  },
+  guardiao:   { atributos: ['DES', 'SAB'], modo: 'e'  },
+  guerreiro:  { atributos: ['FOR', 'DES'], modo: 'ou' },
+  ladino:     { atributos: ['DES'],        modo: 'e'  },
+  mago:       { atributos: ['INT'],        modo: 'e'  },
+  monge:      { atributos: ['DES', 'SAB'], modo: 'e'  },
+  paladino:   { atributos: ['FOR', 'CAR'], modo: 'e'  },
+}
+
+export const TIPO_CONJURADOR: Record<string, 'completo' | 'meio' | null> = {
+  bardo: 'completo', clerigo: 'completo', druida: 'completo',
+  feiticeiro: 'completo', mago: 'completo', bruxo: 'completo',
+  paladino: 'meio', guardiao: 'meio',
+  barbaro: null, guerreiro: null, ladino: null, monge: null,
+}
+
+export const SUBCLASSES_TERCEIRO_CONJURADOR = ['cavaleiro_mistico', 'trapaceiro_arcano']
+
+export const PROFICIENCIAS_MULTICLASSE: Record<string, { armaduras?: string[]; armas?: string[]; ferramentas?: string[] }> = {
+  barbaro:    { armas: ['Marciais'], armaduras: ['Escudo'] },
+  bardo:      { armaduras: ['Leve'] },
+  bruxo:      { armaduras: ['Leve'] },
+  clerigo:    { armaduras: ['Leve', 'Média', 'Escudo'] },
+  druida:     { armaduras: ['Leve', 'Escudo'] },
+  feiticeiro: {},
+  guardiao:   { armaduras: ['Leve', 'Média', 'Escudo'], armas: ['Simples', 'Marciais'] },
+  guerreiro:  { armaduras: ['Leve', 'Média', 'Pesada', 'Escudo'], armas: ['Simples', 'Marciais'] },
+  ladino:     { armaduras: ['Leve'] },
+  mago:       {},
+  monge:      {},
+  paladino:   { armaduras: ['Leve', 'Média', 'Pesada', 'Escudo'], armas: ['Simples', 'Marciais'] },
+}
+
 export const EXAUSTAO_EFEITOS = [
   'Nenhum',
   'Desvantagem em testes de atributo',

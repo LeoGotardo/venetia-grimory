@@ -65,3 +65,19 @@ export function getTruquesPorClasse(classeId: string): Magia[] {
 export function getMagiasPorClasseECirculo(classeId: string, circuloMax: number): Magia[] {
   return getMagias().filter(m => m.circulo > 0 && m.circulo <= circuloMax && m.classes.includes(classeId))
 }
+
+// Multi-class variants: deduplication is implicit since each Magia has one entry with all its classes listed
+export function getTruquesPorClasses(classeIds: string[]): Magia[] {
+  if (classeIds.length === 0) return []
+  return getMagias().filter(m => m.circulo === 0 && m.classes.some(c => classeIds.includes(c)))
+}
+
+export function getMagiasPorClassesECirculos(
+  classes: Array<{ classeId: string; maxCirculo: number }>,
+): Magia[] {
+  if (classes.length === 0) return []
+  return getMagias().filter(m =>
+    m.circulo > 0 &&
+    classes.some(c => m.classes.includes(c.classeId) && m.circulo <= c.maxCirculo),
+  )
+}

@@ -9,6 +9,7 @@ export function criarFichaInicial(): Ficha {
       classe_id: null,
       subclasse_id: null,
       nivel: 1,
+      multiclasses: [],
       especie_id: null,
       linhagem_id: null,
       antecedente_id: null,
