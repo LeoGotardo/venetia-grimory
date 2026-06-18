@@ -56,11 +56,7 @@ npm run build && npx cap sync
   `dadosJson as unknown as DadosJogo` (see `src/types/dados.ts`) in both the store and
   `recalcular.ts`. This file is **not localized** — game data strings (spell/item/class names,
   descriptions) are intentionally left untranslated per an explicit product decision.
-- Items (`src/data/itens/`) and spells (`src/data/spells/`) are the exception: each has parallel
-  `pt/` and `en/` subfolders with identically-shaped modules. `src/data/itens.ts` and
-  `src/data/magias.ts` re-export `getXxx()` functions that pick the PT or EN array based on
-  `i18n.language` at call time — always read item/spell data through these getters, never import
-  the `pt/`/`en/` modules directly from components.
+- Items (`src/data/itens/`), spells (`src/data/spells/`), and backgrounds (`src/data/antecedentes/`) are the exception: each has parallel `pt/` and `en/` subfolders with identically-shaped modules. `src/data/itens.ts`, `src/data/magias.ts`, and `src/data/antecedentes.ts` re-export `getXxx()` functions that pick the PT or EN array based on `i18n.language` at call time — always read localized data through these getters, never import the `pt/`/`en/` modules directly from components.
 - Types for items/spells live in `src/data/itens/types.ts` and `src/data/spells/types.ts`; types
   for the rules dataset and the in-progress character live in `src/types/dados.ts` and
   `src/types/ficha.ts` respectively (both re-exported from `src/types/index.ts`).
@@ -74,7 +70,7 @@ npm run build && npx cap sync
 - Game data strings (items/spells): handled separately via the `getXxx()` pattern above, driven
   directly by `i18n.language`, not by a `t()` call.
 - When adding a component that renders any user-facing text, use `useTranslation` — don't
-  hardcode strings. When adding new item/spell data, add entries to both `pt/` and `en/`.
+  hardcode strings. When adding new item/spell/background data, add entries to both `pt/` and `en/`.
 
 ### Second store: useConfigStore
 

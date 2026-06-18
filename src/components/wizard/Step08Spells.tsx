@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
-import { getTruquesPorClasses, getMagiasPorClassesECirculos } from '../../data/magias'
+import { getTruquesPorClasse, getMagiasPorClasseECirculo } from '../../data/magias'
 import type { Magia } from '../../data/magias'
 import { SpellCard } from '../ui/SpellCard'
 import dadosJson from '../../data/dnd_dados.json'
@@ -10,6 +10,22 @@ import type { DadosJogo } from '../../types'
 import { TIPO_CONJURADOR } from '../../constants'
 
 const dados = dadosJson as unknown as DadosJogo
+
+function getMaxCirc(cd: { progressao: unknown[] } | undefined, niv: number): number {
+  if (!cd?.progressao) return 0
+  const idx = Math.max(0, Math.min(niv - 1, cd.progressao.length - 1))
+  const p = cd.progressao[idx] as Record<string, unknown>
+  // Standard casters: `espacos` object with per-circle counts
+  const esp = p?.espacos as Record<string, number> | undefined
+  if (esp) {
+    const mc = Object.entries(esp).filter(([, v]) => v > 0).reduce((a, [k]) => Math.max(a, parseInt(k.replace('c', ''))), 0)
+    if (mc > 0) return mc
+  }
+  // Warlocks use `circulo_maximo` instead of per-circle `espacos`
+  const circuloMax = p?.circulo_maximo as number | undefined
+  if (circuloMax && circuloMax > 0) return circuloMax
+  return 0
+}
 
 function SpellPill({
   magia,
@@ -66,122 +82,61 @@ function SpellPill({
   )
 }
 
-export function Step08Spells() {
-  const { ficha, atualizarMagia, setPasso } = useFichaStore()
+interface ClasseSpellSectionProps {
+  classeId: string
+  classNome: string
+  maxCirculo: number
+  nivel: number
+  busca: string
+  truquesSelecionados: string[]
+  magiasSelecionadas: string[]
+  onToggleTruque: (nome: string) => void
+  onToggleMagia: (nome: string) => void
+  onInfo: (m: Magia) => void
+  i18nLang: string
+}
+
+function ClasseSpellSection({
+  classeId,
+  classNome,
+  maxCirculo,
+  nivel,
+  busca,
+  truquesSelecionados,
+  magiasSelecionadas,
+  onToggleTruque,
+  onToggleMagia,
+  onInfo,
+  i18nLang,
+}: ClasseSpellSectionProps) {
   const { t } = useTranslation()
   const [circuloAtivo, setCirculoAtivo] = useState(1)
-  const [busca, setBusca] = useState('')
-  const [spellInfo, setSpellInfo] = useState<Magia | null>(null)
 
-  const classeId = ficha.identidade.classe_id
-  const nivel = ficha.identidade.nivel
-  const multiclasses = ficha.identidade.multiclasses ?? []
-  const nivelPrimaria = nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
-
-  const ehConjurador = ficha.magia.conjurador
-
-  // Classe conjuradora efetiva para limits de criação (primária se conjuradora, senão primeira secundária)
-  const classeConjId = TIPO_CONJURADOR[classeId ?? ''] != null
-    ? classeId
-    : multiclasses.find(m => TIPO_CONJURADOR[m.classe_id] != null)?.classe_id ?? classeId
-  const nivelConjEfetivo = classeConjId === classeId ? nivelPrimaria : (multiclasses.find(m => m.classe_id === classeConjId)?.nivel ?? 1)
-  const classeConj = dados.classes.find(c => c.id === classeConjId)
-
+  const classeData = dados.classes.find(c => c.id === classeId)
   const prog = useMemo(() => {
-    if (!classeConj?.progressao) return null
-    const idx = Math.max(0, Math.min(nivelConjEfetivo - 1, classeConj.progressao.length - 1))
-    return (classeConj.progressao[idx] ?? classeConj.progressao[0]) as Record<string, unknown> | null
-  }, [classeConj, nivelConjEfetivo])
+    if (!classeData?.progressao) return null
+    const idx = Math.max(0, Math.min(nivel - 1, classeData.progressao.length - 1))
+    return (classeData.progressao[idx] ?? classeData.progressao[0]) as Record<string, unknown> | null
+  }, [classeData, nivel])
 
   const maxTruques = (prog?.truques as number | undefined) ?? 0
   const maxMagias = (prog?.magias_preparadas as number | undefined) ?? 0
 
-  // Limites por círculo só se aplicam na classe única (multiclasse usa tabela combinada)
-  const limitesPorCirculo = useMemo(() => {
-    if (multiclasses.length > 0) return {} as Record<number, number>
-    const espacos = prog?.espacos as Record<string, number> | undefined
-    if (!espacos) return {} as Record<number, number>
-    return Object.fromEntries(
-      Object.entries(espacos).map(([k, v]) => [parseInt(k.replace('c', '')), v])
-    ) as Record<number, number>
-  }, [prog, multiclasses.length])
+  const truquesDisponiveis = useMemo(
+    () => getTruquesPorClasse(classeId).filter(tr => !busca || tr.nome.toLowerCase().includes(busca.toLowerCase())),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [classeId, busca, i18nLang],
+  )
 
-  // Acesso por classe: cada classe conjuradora com seu círculo máximo no seu próprio nível
-  const classesParaMagias = useMemo<Array<{ classeId: string; maxCirculo: number }>>(() => {
-    function getMaxCirc(cd: { progressao: unknown[] } | undefined, niv: number) {
-      if (!cd?.progressao) return 0
-      const idx = Math.max(0, Math.min(niv - 1, cd.progressao.length - 1))
-      const p = cd.progressao[idx] as Record<string, unknown>
-      const esp = p?.espacos as Record<string, number> | undefined
-      if (!esp) return 0
-      return Object.entries(esp).filter(([, v]) => v > 0).reduce((a, [k]) => Math.max(a, parseInt(k.replace('c', ''))), 0)
-    }
-    if (multiclasses.length === 0) {
-      const classe = dados.classes.find(c => c.id === classeId)
-      const mc = getMaxCirc(classe, nivel)
-      return [{ classeId: classeId ?? '', maxCirculo: mc > 0 ? mc : 9 }]
-    }
-    const result: Array<{ classeId: string; maxCirculo: number }> = []
-    if (TIPO_CONJURADOR[classeId ?? ''] != null) {
-      const cd = dados.classes.find(c => c.id === classeId)
-      const mc = getMaxCirc(cd, Math.max(1, nivelPrimaria))
-      result.push({ classeId: classeId ?? '', maxCirculo: mc > 0 ? mc : 9 })
-    }
-    for (const m of multiclasses) {
-      if (TIPO_CONJURADOR[m.classe_id] != null) {
-        const cd = dados.classes.find(c => c.id === m.classe_id)
-        const mc = getMaxCirc(cd, m.nivel)
-        if (mc > 0) result.push({ classeId: m.classe_id, maxCirculo: mc })
-      }
-    }
-    if (result.length === 0) result.push({ classeId: classeId ?? '', maxCirculo: 9 })
-    return result
-  }, [classeId, nivel, nivelPrimaria, multiclasses])
-
-  const allClasseIds = useMemo(() => classesParaMagias.map(c => c.classeId), [classesParaMagias])
-
-  const truquesDisponiveis = useMemo(() => getTruquesPorClasses(allClasseIds), [allClasseIds])
-  const magiasDisponiveis = useMemo(() => getMagiasPorClassesECirculos(classesParaMagias), [classesParaMagias])
-
-  const truquesSelecionados = ficha.magia.truques_conhecidos
-  const magiasSelecionadas = ficha.magia.magias_preparadas
-
-  const selecionadosPorCirculo = useMemo(() => {
-    const counts: Record<number, number> = {}
-    magiasSelecionadas.forEach(nome => {
-      const m = magiasDisponiveis.find(x => x.nome === nome)
-      if (m) counts[m.circulo] = (counts[m.circulo] ?? 0) + 1
-    })
-    return counts
-  }, [magiasSelecionadas, magiasDisponiveis])
-
-  function toggleTruque(nome: string) {
-    const atual = truquesSelecionados
-    if (atual.includes(nome)) {
-      atualizarMagia({ truques_conhecidos: atual.filter(t => t !== nome) })
-    } else if (atual.length < maxTruques || maxTruques === 0) {
-      atualizarMagia({ truques_conhecidos: [...atual, nome] })
-    }
-  }
-
-  function toggleMagia(nome: string, circulo: number) {
-    const atual = magiasSelecionadas
-    if (atual.includes(nome)) {
-      atualizarMagia({ magias_preparadas: atual.filter(m => m !== nome) })
-    } else {
-      const limiteCirculo = limitesPorCirculo[circulo]
-      const usadosCirculo = selecionadosPorCirculo[circulo] ?? 0
-      const dentroDoCirculo = limiteCirculo === undefined || usadosCirculo < limiteCirculo
-      const dentroDoTotal = maxMagias === 0 || atual.length < maxMagias
-      if (dentroDoCirculo && dentroDoTotal) {
-        atualizarMagia({ magias_preparadas: [...atual, nome] })
-      }
-    }
-  }
+  const magiasDisponiveis = useMemo(
+    () => getMagiasPorClasseECirculo(classeId, maxCirculo),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [classeId, maxCirculo, i18nLang],
+  )
 
   const circulosDisponiveis = useMemo(() => {
     const circs = new Set(magiasDisponiveis.map(m => m.circulo))
-    return Array.from(circs).sort((a, b) => a - b) as number[]
+    return Array.from(circs).sort((a, b) => a - b)
   }, [magiasDisponiveis])
 
   const magiasDoCirculo = useMemo(
@@ -191,12 +146,164 @@ export function Step08Spells() {
     [magiasDisponiveis, circuloAtivo, busca],
   )
 
-  const truquesFiltrados = useMemo(
-    () => truquesDisponiveis.filter(
-      tr => !busca || tr.nome.toLowerCase().includes(busca.toLowerCase()),
-    ),
-    [truquesDisponiveis, busca],
+  return (
+    <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-cinzel font-bold text-[#D4A017]">{classNome}</h3>
+        <span className="text-xs text-[#A8A09B] bg-[#2D2520] border border-[#B8860B]/20 rounded-full px-2 py-0.5">
+          {t('step08.upToCircle', { n: maxCirculo })}
+        </span>
+      </div>
+
+      {/* Truques */}
+      {maxTruques > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[#B8860B]">{t('step08.cantrips')}</span>
+            <span className={[
+              'text-xs font-bold px-2 py-0.5 rounded-full',
+              truquesSelecionados.length >= maxTruques ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]',
+            ].join(' ')}>
+              {truquesSelecionados.length}/{maxTruques}
+            </span>
+          </div>
+          {truquesDisponiveis.length === 0 ? (
+            <p className="text-xs text-[#A8A09B]">{t('step08.noCantrips')}</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {truquesDisponiveis.map(tr => (
+                <SpellPill
+                  key={tr.id}
+                  magia={tr}
+                  selecionado={truquesSelecionados.includes(tr.nome)}
+                  desabilitado={truquesSelecionados.length >= maxTruques}
+                  onToggle={() => onToggleTruque(tr.nome)}
+                  onInfo={() => onInfo(tr)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Magias preparadas */}
+      {maxMagias > 0 && magiasDisponiveis.length > 0 && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-[#B8860B]">{t('step08.preparedSpells')}</span>
+            <span className={[
+              'text-xs font-bold px-2 py-0.5 rounded-full',
+              magiasSelecionadas.length >= maxMagias ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]',
+            ].join(' ')}>
+              {magiasSelecionadas.length}/{maxMagias}
+            </span>
+          </div>
+
+          <div className="flex gap-1 overflow-x-auto pb-1" role="tablist" aria-label={t('step08.circlesAriaLabel')}>
+            {circulosDisponiveis.map(c => (
+              <button
+                key={c}
+                role="tab"
+                aria-selected={circuloAtivo === c}
+                onClick={() => setCirculoAtivo(c)}
+                className={[
+                  'px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap cursor-pointer',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                  circuloAtivo === c ? 'bg-[#B8860B] text-[#1A1612]' : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
+                ].join(' ')}
+              >
+                {c}º
+              </button>
+            ))}
+          </div>
+
+          <div role="tabpanel" aria-label={t('step08.circleAriaLabel', { n: circuloAtivo })}>
+            {magiasDoCirculo.length === 0 ? (
+              <p className="text-xs text-[#A8A09B]">
+                {busca ? t('step08.noSpellsFound') : t('step08.noSpellsCircle')}
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {magiasDoCirculo.map(m => (
+                  <SpellPill
+                    key={m.id}
+                    magia={m}
+                    selecionado={magiasSelecionadas.includes(m.nome)}
+                    desabilitado={maxMagias > 0 && magiasSelecionadas.length >= maxMagias}
+                    onToggle={() => onToggleMagia(m.nome)}
+                    onInfo={() => onInfo(m)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   )
+}
+
+export function Step08Spells() {
+  const { ficha, atualizarMagia, setPasso } = useFichaStore()
+  const { t, i18n } = useTranslation()
+  const [busca, setBusca] = useState('')
+  const [spellInfo, setSpellInfo] = useState<Magia | null>(null)
+
+  const classeId = ficha.identidade.classe_id
+  const nivel = ficha.identidade.nivel
+  const multiclasses = ficha.identidade.multiclasses ?? []
+  const nivelPrimaria = nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
+
+  // True if any class in the build is a spellcaster
+  const ehConjurador =
+    ficha.magia.conjurador ||
+    TIPO_CONJURADOR[classeId ?? ''] != null ||
+    multiclasses.some(m => TIPO_CONJURADOR[m.classe_id] != null)
+
+  // List of { classeId, nivel, maxCirculo } for each caster class in the build
+  const casterClasses = useMemo(() => {
+    const result: Array<{ classeId: string; nivel: number; maxCirculo: number }> = []
+    if (TIPO_CONJURADOR[classeId ?? ''] != null) {
+      const cd = dados.classes.find(c => c.id === classeId)
+      const niv = Math.max(1, nivelPrimaria)
+      const mc = getMaxCirc(cd, niv)
+      if (mc > 0) result.push({ classeId: classeId!, nivel: niv, maxCirculo: mc })
+    }
+    for (const m of multiclasses) {
+      if (TIPO_CONJURADOR[m.classe_id] != null) {
+        const cd = dados.classes.find(c => c.id === m.classe_id)
+        const mc = getMaxCirc(cd, m.nivel)
+        if (mc > 0) result.push({ classeId: m.classe_id, nivel: m.nivel, maxCirculo: mc })
+      }
+    }
+    return result
+  }, [classeId, nivelPrimaria, multiclasses])
+
+  const truquesPorClasse = ficha.magia.truques_por_classe
+  const magiasPorClasse = ficha.magia.magias_por_classe
+
+  function toggleTruque(cid: string, nome: string) {
+    const atual = truquesPorClasse[cid] ?? []
+    atualizarMagia({
+      truques_por_classe: {
+        ...truquesPorClasse,
+        [cid]: atual.includes(nome) ? atual.filter(t => t !== nome) : [...atual, nome],
+      },
+    })
+  }
+
+  function toggleMagia(cid: string, nome: string) {
+    const atual = magiasPorClasse[cid] ?? []
+    atualizarMagia({
+      magias_por_classe: {
+        ...magiasPorClasse,
+        [cid]: atual.includes(nome) ? atual.filter(m => m !== nome) : [...atual, nome],
+      },
+    })
+  }
+
+  const allTruques = Object.values(truquesPorClasse).flat()
+  const allMagias = Object.values(magiasPorClasse).flat()
 
   if (!ehConjurador) {
     return (
@@ -204,7 +311,7 @@ export function Step08Spells() {
         <div>
           <h2 className="font-cinzel text-2xl font-bold text-[#F5F0E8] mb-1">{t('step08.heading')}</h2>
           <p className="text-[#A8A09B] text-sm">
-            {classeId ? t('step08.notCaster', { classe: classeConj?.nome }) : t('step08.chooseClassFirst')}
+            {classeId ? t('step08.notCaster', { classe: dados.classes.find(c => c.id === classeId)?.nome }) : t('step08.chooseClassFirst')}
           </p>
         </div>
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-6 text-center">
@@ -214,7 +321,7 @@ export function Step08Spells() {
           <p className="text-[#F5F0E8] font-medium">{t('step08.noMagic')}</p>
           <p className="text-[#A8A09B] text-sm mt-1">{t('step08.continueNext')}</p>
         </div>
-        <WizardNav onBack={() => setPasso(7)} onNext={() => setPasso(9)} />
+        <WizardNav onBack={() => setPasso(8)} onNext={() => setPasso(10)} />
       </div>
     )
   }
@@ -226,7 +333,6 @@ export function Step08Spells() {
         <p className="text-[#A8A09B] text-sm">{t('step08.subtitle')}</p>
       </div>
 
-      {/* Busca */}
       <input
         type="text"
         value={busca}
@@ -236,139 +342,46 @@ export function Step08Spells() {
         aria-label={t('step08.searchAriaLabel')}
       />
 
-      {/* Truques */}
-      {maxTruques > 0 && (
-        <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step08.cantrips')}</h3>
-            <span className={[
-              'text-sm font-bold px-2 py-0.5 rounded-full',
-              truquesSelecionados.length >= maxTruques
-                ? 'bg-[#B8860B]/20 text-[#D4A017]'
-                : 'bg-[#2D2520] text-[#A8A09B]',
-            ].join(' ')}>
-              {truquesSelecionados.length}/{maxTruques}
-            </span>
-          </div>
-          {truquesDisponiveis.length === 0 ? (
-            <p className="text-xs text-[#A8A09B]">{t('step08.noCantrips')}</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {truquesFiltrados.map(tr => (
-                <SpellPill
-                  key={tr.id}
-                  magia={tr}
-                  selecionado={truquesSelecionados.includes(tr.nome)}
-                  desabilitado={truquesSelecionados.length >= maxTruques}
-                  onToggle={() => toggleTruque(tr.nome)}
-                  onInfo={() => setSpellInfo(tr)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {casterClasses.map(({ classeId: cid, nivel: niv, maxCirculo }) => {
+        const classData = dados.classes.find(c => c.id === cid)
+        return (
+          <ClasseSpellSection
+            key={cid}
+            classeId={cid}
+            classNome={classData?.nome ?? cid}
+            maxCirculo={maxCirculo}
+            nivel={niv}
+            busca={busca}
+            truquesSelecionados={truquesPorClasse[cid] ?? []}
+            magiasSelecionadas={magiasPorClasse[cid] ?? []}
+            onToggleTruque={nome => toggleTruque(cid, nome)}
+            onToggleMagia={nome => toggleMagia(cid, nome)}
+            onInfo={setSpellInfo}
+            i18nLang={i18n.language}
+          />
+        )
+      })}
 
-      {/* Magias */}
-      {maxMagias > 0 && magiasDisponiveis.length > 0 && (
-        <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step08.preparedSpells')}</h3>
-            <span className={[
-              'text-sm font-bold px-2 py-0.5 rounded-full',
-              magiasSelecionadas.length >= maxMagias
-                ? 'bg-[#B8860B]/20 text-[#D4A017]'
-                : 'bg-[#2D2520] text-[#A8A09B]',
-            ].join(' ')}>
-              {magiasSelecionadas.length}/{maxMagias}
-            </span>
-          </div>
-
-          {/* Tabs por círculo */}
-          <div className="flex gap-1 overflow-x-auto pb-1" role="tablist" aria-label={t('step08.circlesAriaLabel')}>
-            {circulosDisponiveis.map(c => {
-              const usados = selecionadosPorCirculo[c] ?? 0
-              const limite = limitesPorCirculo[c]
-              const cheio = limite !== undefined && usados >= limite
-              return (
-                <button
-                  key={c}
-                  role="tab"
-                  aria-selected={circuloAtivo === c}
-                  onClick={() => setCirculoAtivo(c)}
-                  className={[
-                    'px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap cursor-pointer',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
-                    circuloAtivo === c
-                      ? 'bg-[#B8860B] text-[#1A1612]'
-                      : cheio
-                      ? 'bg-[#2D2520] text-[#D4A017]'
-                      : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
-                  ].join(' ')}
-                >
-                  {c}º {limite !== undefined && `${usados}/${limite}`}
-                </button>
-              )
-            })}
-          </div>
-
-          <div
-            role="tabpanel"
-            aria-label={t('step08.circleAriaLabel', { n: circuloAtivo })}
-          >
-            {limitesPorCirculo[circuloAtivo] !== undefined && (
-              <p className="text-xs text-[#A8A09B] mb-2">
-                {t('step08.slotsAvailable', { used: selecionadosPorCirculo[circuloAtivo] ?? 0, total: limitesPorCirculo[circuloAtivo] })}
-              </p>
-            )}
-            {magiasDoCirculo.length === 0 ? (
-              <p className="text-xs text-[#A8A09B]">
-                {busca ? t('step08.noSpellsFound') : t('step08.noSpellsCircle')}
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {magiasDoCirculo.map(m => {
-                  const limiteCirculo = limitesPorCirculo[m.circulo]
-                  const usadosCirculo = selecionadosPorCirculo[m.circulo] ?? 0
-                  const circuloCheio = limiteCirculo !== undefined && usadosCirculo >= limiteCirculo
-                  const totalCheio = maxMagias > 0 && magiasSelecionadas.length >= maxMagias
-                  return (
-                    <SpellPill
-                      key={m.id}
-                      magia={m}
-                      selecionado={magiasSelecionadas.includes(m.nome)}
-                      desabilitado={circuloCheio || totalCheio}
-                      onToggle={() => toggleMagia(m.nome, m.circulo)}
-                      onInfo={() => setSpellInfo(m)}
-                    />
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Seleções atuais */}
-      {(truquesSelecionados.length > 0 || magiasSelecionadas.length > 0) && (
+      {/* Summary of all selections */}
+      {(allTruques.length > 0 || allMagias.length > 0) && (
         <div className="bg-[#2D2520] border border-[#B8860B]/10 rounded-xl p-4 space-y-2">
           <p className="text-xs text-[#A8A09B] font-medium uppercase tracking-wide">{t('step08.selectedLabel')}</p>
-          {truquesSelecionados.length > 0 && (
+          {allTruques.length > 0 && (
             <div>
               <span className="text-xs text-[#B8860B] font-medium">{t('step08.cantripsLabel')}</span>
-              <span className="text-xs text-[#F5F0E8]">{truquesSelecionados.join(', ')}</span>
+              <span className="text-xs text-[#F5F0E8]">{allTruques.join(', ')}</span>
             </div>
           )}
-          {magiasSelecionadas.length > 0 && (
+          {allMagias.length > 0 && (
             <div>
               <span className="text-xs text-[#B8860B] font-medium">{t('step08.spellsLabel')}</span>
-              <span className="text-xs text-[#F5F0E8]">{magiasSelecionadas.join(', ')}</span>
+              <span className="text-xs text-[#F5F0E8]">{allMagias.join(', ')}</span>
             </div>
           )}
         </div>
       )}
 
-      <WizardNav onBack={() => setPasso(7)} onNext={() => setPasso(9)} />
+      <WizardNav onBack={() => setPasso(8)} onNext={() => setPasso(10)} />
 
       <SpellCard magia={spellInfo} onClose={() => setSpellInfo(null)} />
     </div>

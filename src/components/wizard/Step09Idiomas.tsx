@@ -109,7 +109,7 @@ export function Step09Idiomas() {
         </div>
       </div>
 
-      <WizardNav onBack={() => setPasso(8)} onNext={() => setPasso(10)} nextDisabled={idiomasLivres.length < maxLivres} />
+      <WizardNav onBack={() => setPasso(9)} onNext={() => setPasso(11)} nextDisabled={idiomasLivres.length < maxLivres} />
     </div>
   )
 }

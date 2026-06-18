@@ -71,12 +71,12 @@ const pt = {
     pvStates: { healthy: 'Saudável', wounded: 'Ferido', critical: 'Crítico', unconscious: 'Inconsciente' },
   },
   wizard: {
-    step: 'Passo {{n}} de 12',
+    step: 'Passo {{n}} de 13',
     settings: 'Configurações',
     closeWizard: 'Fechar wizard',
     creationHeading: 'Criação de personagem',
     stepsAriaLabel: 'Passos do wizard',
-    steps: { nivel: 'Nível', classe: 'Classe', subclasse: 'Subclasse', especie: 'Espécie', atributos: 'Atributos', antecedente: 'Antecedente', pericias: 'Perícias', magias: 'Magias', idiomas: 'Idiomas', equipamento: 'Equipamento', personalidade: 'Personalidade', revisar: 'Revisar' },
+    steps: { nivel: 'Nível', classe: 'Classe', subclasse: 'Subclasse', especie: 'Espécie', atributos: 'Atributos', multiclasse: 'Multiclasse', antecedente: 'Antecedente', pericias: 'Perícias', magias: 'Magias', idiomas: 'Idiomas', equipamento: 'Equipamento', personalidade: 'Personalidade', revisar: 'Revisar' },
   },
   nav: { back: 'Voltar', skip: 'Pular', createChar: 'Criar Personagem', next: 'Próximo' },
   step01: {
@@ -137,6 +137,7 @@ const pt = {
     noSpellsFound: 'Nenhuma magia encontrada.', noSpellsCircle: 'Nenhuma magia disponível neste círculo.',
     selectedLabel: 'Selecionados', cantripsLabel: 'Truques: ', spellsLabel: 'Magias: ',
     viewDetails: 'Ver detalhes de {{nome}}',
+    upToCircle: 'Até {{n}}º círculo',
   },
   step09: {
     heading: 'Idiomas', chooseN: 'Escolha mais {{n}} idiomas.', chosen: '{{n}}/{{max}} escolhidos',
@@ -234,7 +235,7 @@ const pt = {
     remove: 'Remover',
     prereq: 'Requer {{attrs}} 13+',
     prereqWarning: 'Pré-requisito pode não estar cumprido',
-    prereqNote: 'Os pré-requisitos de atributo serão verificados após definir os atributos. Você pode configurar o multiclasse agora e ajustar depois.',
+    prereqNote: 'Os pré-requisitos de atributo já foram verificados com base nos atributos definidos no passo anterior.',
     cancel: 'Cancelar',
     noSecondary: 'Nenhuma classe secundária. Clique em "+ Adicionar Classe" para multiclasse.',
     needLevel2: 'Multiclasse disponível a partir do nível 2.',

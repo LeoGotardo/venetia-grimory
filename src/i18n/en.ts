@@ -71,12 +71,12 @@ const en = {
     pvStates: { healthy: 'Healthy', wounded: 'Wounded', critical: 'Critical', unconscious: 'Unconscious' },
   },
   wizard: {
-    step: 'Step {{n}} of 12',
+    step: 'Step {{n}} of 13',
     settings: 'Settings',
     closeWizard: 'Close wizard',
     creationHeading: 'Character Creation',
     stepsAriaLabel: 'Wizard steps',
-    steps: { nivel: 'Level', classe: 'Class', subclasse: 'Subclass', especie: 'Species', atributos: 'Attributes', antecedente: 'Background', pericias: 'Skills', magias: 'Spells', idiomas: 'Languages', equipamento: 'Equipment', personalidade: 'Personality', revisar: 'Review' },
+    steps: { nivel: 'Level', classe: 'Class', subclasse: 'Subclass', especie: 'Species', atributos: 'Attributes', multiclasse: 'Multiclass', antecedente: 'Background', pericias: 'Skills', magias: 'Spells', idiomas: 'Languages', equipamento: 'Equipment', personalidade: 'Personality', revisar: 'Review' },
   },
   nav: { back: 'Back', skip: 'Skip', createChar: 'Create Character', next: 'Next' },
   step01: {
@@ -137,6 +137,7 @@ const en = {
     noSpellsFound: 'No spells found.', noSpellsCircle: 'No spells available in this circle.',
     selectedLabel: 'Selected', cantripsLabel: 'Cantrips: ', spellsLabel: 'Spells: ',
     viewDetails: 'View details of {{nome}}',
+    upToCircle: 'Up to circle {{n}}',
   },
   step09: {
     heading: 'Languages', chooseN: 'Choose {{n}} more languages.', chosen: '{{n}}/{{max}} chosen',
@@ -234,7 +235,7 @@ const en = {
     remove: 'Remove',
     prereq: 'Requires {{attrs}} 13+',
     prereqWarning: 'Prerequisite may not be met',
-    prereqNote: 'Ability score prerequisites will be verified after setting attributes. You can configure multiclassing now and adjust later.',
+    prereqNote: 'Ability score prerequisites have been verified based on the attributes set in the previous step.',
     cancel: 'Cancel',
     noSecondary: 'No secondary class. Click "+ Add Class" to multiclass.',
     needLevel2: 'Multiclassing available from level 2.',

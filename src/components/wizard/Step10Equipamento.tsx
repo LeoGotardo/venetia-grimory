@@ -82,7 +82,7 @@ export function Step10Equipamento() {
         </div>
       )}
 
-      <WizardNav onBack={() => setPasso(9)} onNext={() => setPasso(11)} />
+      <WizardNav onBack={() => setPasso(10)} onNext={() => setPasso(12)} />
     </div>
   )
 }

@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { useConfigStore } from '../../store/configStore'
 import { calcCargaMaxima, calcTotalPO } from '../../lib/calculos'
 import { MochilaBusca } from '../ui/MochilaBusca'
+import { getItens } from '../../data/itens'
+import type { Item } from '../../data/itens'
+import type { ItemInventario } from '../../types'
 
 const MOEDAS_TODAS = ['PC', 'PP', 'PE', 'PO', 'PL'] as const
 const MOEDAS_SIMPLES = ['PO'] as const
@@ -11,7 +14,16 @@ const MOEDAS_SIMPLES = ['PO'] as const
 export function PainelInventario() {
   const { ficha, updateMoedas, removeItem, updateItem } = useFichaStore()
   const { config } = useConfigStore()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+
+  const itemMap = useMemo(() => {
+    const map = new Map<string, Item>()
+    getItens().forEach(i => map.set(i.id, i))
+    return map
+  }, [i18n.language])
+
+  const resolveNome = (it: ItemInventario): string =>
+    (it.id_item ? itemMap.get(it.id_item)?.nome : null) ?? it.nome ?? '—'
   const [modoCompra, setModoCompra] = useState(false)
   const { moedas, itens } = ficha.inventario
   const MOEDAS = config.moedas_simples ? MOEDAS_SIMPLES : MOEDAS_TODAS
@@ -79,26 +91,28 @@ export function PainelInventario() {
               {t('inventory.noItems')}
             </p>
           )}
-          {itens.map((it, idx) => (
+          {itens.map((it, idx) => {
+            const nomeExibido = resolveNome(it)
+            return (
             // Composite key: nome + categoria + idx evita reorder bugs com idx puro
             <div
-              key={`${it.nome}_${it.categoria}_${idx}`}
+              key={`${it.id_item ?? it.nome ?? ''}_${idx}`}
               className={`flex items-center gap-2 px-2 py-1.5 rounded ${it.equipado ? 'bg-[#3D2020] border border-[#7B1D1D]/20' : 'bg-[#2D2520]'}`}
             >
               <button
                 onClick={() => updateItem(idx, { equipado: !it.equipado })}
                 aria-pressed={it.equipado}
-                aria-label={it.equipado ? t('inventory.unequip', { nome: it.nome }) : t('inventory.equip', { nome: it.nome })}
+                aria-label={it.equipado ? t('inventory.unequip', { nome: nomeExibido }) : t('inventory.equip', { nome: nomeExibido })}
                 className="w-3 h-3 rounded-sm border flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-1 focus-visible:ring-offset-[#2D2520]"
                 style={{ backgroundColor: it.equipado ? '#B8860B' : 'transparent', borderColor: it.equipado ? '#B8860B' : '#A8A09B' }}
               />
-              <span className="text-sm text-[#F5F0E8] flex-1 min-w-0 truncate">{it.nome}</span>
+              <span className="text-sm text-[#F5F0E8] flex-1 min-w-0 truncate">{nomeExibido}</span>
               <input
                 type="number"
                 min={1}
                 value={it.quantidade}
                 onChange={e => updateItem(idx, { quantidade: Math.max(1, parseInt(e.target.value) || 1) })}
-                aria-label={t('inventory.itemQtyAriaLabel', { nome: it.nome })}
+                aria-label={t('inventory.itemQtyAriaLabel', { nome: nomeExibido })}
                 className="w-12 text-center bg-transparent border-b border-[#B8860B]/20 text-[#F5F0E8] text-sm focus:outline-none focus:border-[#B8860B]"
               />
               {config.rastrear_peso && it.peso_kg && <span className="text-xs text-[#A8A09B]">{it.peso_kg}{t('bag.kg')}</span>}
@@ -109,7 +123,7 @@ export function PainelInventario() {
                     removeItem(idx)
                   }}
                   title={t('inventory.sellFor', { n: (it.custo_po * it.quantidade).toFixed(1) })}
-                  aria-label={t('inventory.sellAriaLabel', { nome: it.nome, n: (it.custo_po * it.quantidade).toFixed(1) })}
+                  aria-label={t('inventory.sellAriaLabel', { nome: nomeExibido, n: (it.custo_po * it.quantidade).toFixed(1) })}
                   className="text-[#B8860B]/50 hover:text-[#B8860B] transition-colors text-[9px] font-bold cursor-pointer w-5 h-5 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded border border-[#B8860B]/20 hover:border-[#B8860B]/50"
                 >
                   {t('inventory.sellBtn')}
@@ -117,14 +131,14 @@ export function PainelInventario() {
               )}
               <button
                 onClick={() => removeItem(idx)}
-                aria-label={t('inventory.spendAriaLabel', { nome: it.nome })}
+                aria-label={t('inventory.spendAriaLabel', { nome: nomeExibido })}
                 title={t('inventory.spendTitle')}
                 className="text-[#A8A09B] hover:text-red-400 transition-colors text-sm cursor-pointer w-5 h-5 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded"
               >
                 ×
               </button>
             </div>
-          ))}
+          )})}
         </div>
 
         <div className="border-t border-[#B8860B]/10 pt-3 mt-1">

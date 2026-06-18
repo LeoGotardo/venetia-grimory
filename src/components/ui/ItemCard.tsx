@@ -1,6 +1,27 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
-import type { Armadura, Arma, EquipamentoAventura } from '../../types'
+import type { Armadura } from '../../types'
+
+interface Arma {
+  id: string
+  nome: string
+  categoria: string
+  dano: string
+  tipo_dano: string
+  maestria?: string
+  propriedades: string[]
+  custo_po?: number
+  peso_kg?: number
+}
+
+interface EquipamentoAventura {
+  id: string
+  nome: string
+  categoria: string
+  notas?: string
+  custo_po?: number
+  peso_kg?: number
+}
 
 export type ItemKit = {
   _tipo: 'kit'

@@ -51,15 +51,15 @@ export function getItens() {
   ]
 }
 
-export function getArmasPorCategoria(categoria: 'Simples' | 'Marcial') {
+export function getArmasPorCategoria(categoria: string) {
   return getArmas().filter(a => a.categoria === categoria)
 }
 
-export function getArmasPorTipo(tipo: 'Corpo a Corpo' | 'À Distância') {
+export function getArmasPorTipo(tipo: string) {
   return getArmas().filter(a => a.tipo === tipo)
 }
 
-export function getArmadurasPorCategoria(categoria: 'Leve' | 'Média' | 'Pesada' | 'Escudo') {
+export function getArmadurasPorCategoria(categoria: string) {
   return getArmaduras().filter(a => a.categoria === categoria)
 }
 

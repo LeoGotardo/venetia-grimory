@@ -92,22 +92,22 @@ export function PainelMagia() {
         </div>
       </section>
 
-      {magia.truques_conhecidos.length > 0 && (
+      {Object.values(magia.truques_por_classe).flat().length > 0 && (
         <section aria-label={t('magic.cantrips')}>
           <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('magic.cantrips')}</h4>
           <div className="flex flex-wrap gap-1">
-            {magia.truques_conhecidos.map(tr => (
+            {Object.values(magia.truques_por_classe).flat().map(tr => (
               <span key={tr} className="text-xs bg-[#2D2520] border border-[#B8860B]/20 rounded px-2 py-0.5 text-[#F5F0E8]">{tr}</span>
             ))}
           </div>
         </section>
       )}
 
-      {magia.magias_preparadas.length > 0 && (
+      {Object.values(magia.magias_por_classe).flat().length > 0 && (
         <section aria-label={t('magic.preparedSpells')}>
           <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('magic.preparedSpells')}</h4>
           <div className="flex flex-wrap gap-1">
-            {magia.magias_preparadas.map(m => (
+            {Object.values(magia.magias_por_classe).flat().map(m => (
               <span key={m} className="text-xs bg-[#2D2520] border border-[#7B1D1D]/20 rounded px-2 py-0.5 text-[#F5F0E8]">{m}</span>
             ))}
           </div>

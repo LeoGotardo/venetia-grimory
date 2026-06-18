@@ -7,8 +7,8 @@ export interface AtributoFicha {
 
 export interface ItemInventario {
   id_item: string | null
-  nome: string
-  categoria: string
+  nome: string | null      // null for catalog items — resolved dynamically via id_item
+  categoria: string | null // null for catalog items
   quantidade: number
   equipado: boolean
   custo_po: number | null
@@ -118,8 +118,8 @@ export interface Ficha {
     atributo_conjuracao: AtributoId | null
     _cd_magia: number | null
     _bonus_ataque_magia: number | null
-    truques_conhecidos: string[]
-    magias_preparadas: string[]
+    truques_por_classe: Record<string, string[]>
+    magias_por_classe: Record<string, string[]>
     livro_de_magias: string[]
     espacos_de_magia: Record<'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6' | 'c7' | 'c8' | 'c9', EspacoMagia>
     espacos_pacto_bruxo: { circulo: number | null; maximo: number; gastos: number }

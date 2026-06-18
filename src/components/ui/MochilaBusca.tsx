@@ -30,8 +30,8 @@ function parsePeso(item: Item): number | null {
 function itemParaInventario(item: Item): ItemInventario {
   return {
     id_item: item.id,
-    nome: item.nome,
-    categoria: item.tipo_item,
+    nome: null,
+    categoria: null,
     quantidade: 1,
     equipado: false,
     custo_po: parsePreco(item.preco),
@@ -72,9 +72,15 @@ interface MochilaBuscaProps {
 export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBuscaProps) {
   const { ficha, addItem, removeItem, updateItem, updateMoedas } = useFichaStore()
   const { config } = useConfigStore()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [busca, setBusca] = useState('')
   const [filtro, setFiltro] = useState<FiltroTipo>('todos')
+
+  const itemMap = useMemo(() => {
+    const map = new Map<string, Item>()
+    getItens().forEach(i => map.set(i.id, i))
+    return map
+  }, [i18n.language])
 
   const FILTROS: { id: FiltroTipo; label: string }[] = [
     { id: 'todos',       label: t('bag.filterAll') },
@@ -107,7 +113,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
       if (termo) return item.nome.toLowerCase().includes(termo) || item.descricao.toLowerCase().includes(termo)
       return true
     }).slice(0, 30)
-  }, [busca, filtro])
+  }, [busca, filtro, i18n.language])
 
   const mostrarResultados = busca.trim() !== '' || filtro !== 'todos'
 
@@ -252,12 +258,16 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
             </p>
           ) : (
             <div className="space-y-1">
-              {ficha.inventario.itens.map((item, idx) => (
+              {ficha.inventario.itens.map((item, idx) => {
+                const catalogItem = item.id_item ? itemMap.get(item.id_item) : null
+                const nomeExibido = catalogItem?.nome ?? item.nome ?? '—'
+                const tipoLabel = catalogItem ? (TIPO_LABEL[catalogItem.tipo_item] ?? catalogItem.tipo_item) : (TIPO_LABEL[item.categoria ?? ''] ?? item.categoria ?? '')
+                return (
                 <div key={idx} className="flex items-center gap-2 bg-[#2D2520] rounded-lg px-3 py-2">
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm text-[#F5F0E8] font-medium truncate">{item.nome}</div>
+                    <div className="text-sm text-[#F5F0E8] font-medium truncate">{nomeExibido}</div>
                     <div className="text-xs text-[#A8A09B]">
-                      {TIPO_LABEL[item.categoria] ?? item.categoria}
+                      {tipoLabel}
                       {config.rastrear_peso && item.peso_kg ? ` · ${(item.peso_kg * item.quantidade).toFixed(1)} ${t('bag.kg')}` : ''}
                       {item.custo_po ? ` · ${item.custo_po} ${t('bag.gp')}` : ''}
                     </div>
@@ -290,20 +300,20 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                           removeItem(idx)
                         }}
                         title={t('bag.sellFor', { n: (item.custo_po * item.quantidade).toFixed(1) })}
-                        aria-label={t('bag.sellAriaLabel', { nome: item.nome, n: (item.custo_po * item.quantidade).toFixed(1) })}
+                        aria-label={t('bag.sellAriaLabel', { nome: nomeExibido, n: (item.custo_po * item.quantidade).toFixed(1) })}
                         className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-[#B8860B]/30 text-[#B8860B]/60 hover:text-[#B8860B] hover:border-[#B8860B] transition-colors cursor-pointer text-[9px] font-bold ml-1"
                       >{t('bag.sellBtn')}</button>
                     )}
                     <button
                       type="button"
                       onClick={() => removeItem(idx)}
-                      aria-label={t('bag.spendAriaLabel', { nome: item.nome })}
+                      aria-label={t('bag.spendAriaLabel', { nome: nomeExibido })}
                       title={t('bag.spendTitle')}
                       className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-red-900/20 text-red-500/50 hover:text-red-400 hover:border-red-900/50 transition-colors cursor-pointer text-xs"
                     >✕</button>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>

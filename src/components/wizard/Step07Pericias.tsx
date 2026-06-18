@@ -79,8 +79,8 @@ export function Step07Pericias() {
       </div>
 
       <WizardNav
-        onBack={() => setPasso(6)}
-        onNext={() => setPasso(8)}
+        onBack={() => setPasso(7)}
+        onNext={() => setPasso(9)}
         nextDisabled={selecionadasClasse.length < numMax}
       />
     </div>

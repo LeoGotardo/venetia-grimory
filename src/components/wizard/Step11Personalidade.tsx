@@ -127,7 +127,7 @@ export function Step11Personalidade() {
         <Input label={t('step11.hair')} value={ficha.identidade.cabelo ?? ''} onChange={e => setIdentidade({ cabelo: e.target.value })} placeholder={t('step11.hairPlaceholder')} />
       </div>
 
-      <WizardNav onBack={() => setPasso(10)} onNext={() => setPasso(12)} />
+      <WizardNav onBack={() => setPasso(11)} onNext={() => setPasso(13)} />
     </div>
   )
 }

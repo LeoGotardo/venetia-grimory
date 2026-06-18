@@ -4,32 +4,6 @@
     "traducao": "Heróis Anônimos — Erratas Abril 2025",
     "versao": "1.0"
   },
-  "atributos": [
-    {
-      "id": "FOR",
-      "nome": "Força"
-    },
-    {
-      "id": "DES",
-      "nome": "Destreza"
-    },
-    {
-      "id": "CON",
-      "nome": "Constituição"
-    },
-    {
-      "id": "INT",
-      "nome": "Inteligência"
-    },
-    {
-      "id": "SAB",
-      "nome": "Sabedoria"
-    },
-    {
-      "id": "CAR",
-      "nome": "Carisma"
-    }
-  ],
   "pericias": [
     {
       "id": "acrobacia",
@@ -224,46 +198,6 @@
       }
     ]
   },
-  "bonus_proficiencia_por_nivel": {
-    "1": 2,
-    "2": 2,
-    "3": 2,
-    "4": 2,
-    "5": 3,
-    "6": 3,
-    "7": 3,
-    "8": 3,
-    "9": 4,
-    "10": 4,
-    "11": 4,
-    "12": 4,
-    "13": 5,
-    "14": 5,
-    "15": 5,
-    "16": 5,
-    "17": 6,
-    "18": 6,
-    "19": 6,
-    "20": 6
-  },
-  "formulas": {
-    "modificador": "Math.floor((valor - 10) / 2)",
-    "bonus_proficiencia": "Math.ceil(nivel / 4) + 1",
-    "pv_nivel1": "dado_vida_max + mod_CON",
-    "pv_por_nivel_media": "Math.floor(dado_vida / 2 + 1) + mod_CON",
-    "ca_armadura_leve": "11 + mod_DES",
-    "ca_armadura_media": "13 + mod_DES (máx +2)",
-    "ca_armadura_pesada": "fixo (16/17/18 conforme armadura), sem bônus DES",
-    "ca_sem_armadura_padrao": "10 + mod_DES",
-    "ca_barbaro_sem_armadura": "10 + mod_DES + mod_CON",
-    "ca_monge_sem_armadura": "10 + mod_DES + mod_SAB",
-    "iniciativa": "mod_DES",
-    "percepcao_passiva": "10 + mod_SAB + (bonus_prof se proficiente em Percepção)",
-    "salvaguarda_prof": "mod_atributo + bonus_prof",
-    "salvaguarda_sem_prof": "mod_atributo",
-    "pericia_prof": "mod_atributo + bonus_prof",
-    "pericia_expertise": "mod_atributo + (bonus_prof * 2)"
-  },
   "classes": [
     {
       "id": "barbaro",
@@ -301,18 +235,8 @@
         "A": "4 Machadinhas, Machado Grande, Kit de Aventureiro, 15 PO",
         "B": "75 PO"
       },
-      "pv_nivel1_formula": "12 + mod_CON",
       "conjurador": false,
       "complexidade": "Média",
-      "mecanica_exclusiva": [
-        "Fúria",
-        "Defesa sem Armadura (10 + mod_DES + mod_CON)"
-      ],
-      "caracteristicas_nivel1": [
-        "Fúria",
-        "Defesa sem Armadura",
-        "Maestria em Arma (2 tipos)"
-      ],
       "subclasses": [
         {
           "id": "trilha_arvore_mundo",
@@ -570,18 +494,9 @@
         "A": "Armadura de Couro, 2 Adagas, Instrumento Musical à escolha, Kit de Artista, 19 PO",
         "B": "90 PO"
       },
-      "pv_nivel1_formula": "8 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "CAR",
       "complexidade": "Alta",
-      "mecanica_exclusiva": [
-        "Inspiração de Bardo (dado D6→D12 por nível)",
-        "Conjuração (lista de Bardo)"
-      ],
-      "caracteristicas_nivel1": [
-        "Inspiração de Bardo",
-        "Conjuração"
-      ],
       "subclasses": [
         {
           "id": "colegio_bravura",
@@ -1053,19 +968,9 @@
         "A": "Armadura de Couro, Foice, 2 Adagas, Foco Arcano (orbe), Livro (conhecimento oculto), Kit de Erudito, 15 PO",
         "B": "100 PO"
       },
-      "pv_nivel1_formula": "8 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "CAR",
       "complexidade": "Alta",
-      "mecanica_exclusiva": [
-        "Invocações Místicas",
-        "Espaços de Magia (recarregam em Descanso Curto)",
-        "Pactos"
-      ],
-      "caracteristicas_nivel1": [
-        "Invocações Místicas",
-        "Conjuração"
-      ],
       "subclasses": [
         {
           "id": "patrono_arquifada",
@@ -1358,19 +1263,9 @@
         "A": "Cota de Malha Parcial, Escudo, Maça, Símbolo Sagrado, Kit de Sacerdote, 7 PO",
         "B": "110 PO"
       },
-      "pv_nivel1_formula": "8 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "SAB",
       "complexidade": "Média",
-      "mecanica_exclusiva": [
-        "Conjuração (lista de Clérigo)",
-        "Canalizar Divindade",
-        "Ordem Divina"
-      ],
-      "caracteristicas_nivel1": [
-        "Conjuração",
-        "Ordem Divina (escolha: Protetor — armas Marciais + Armadura Pesada; ou Taumaturgo — truque extra + bônus Arcanismo/Religião)"
-      ],
       "subclasses": [
         {
           "id": "dominio_guerra",
@@ -1843,18 +1738,9 @@
         "A": "Armadura de Couro, Escudo, Foice, Foco Druídico (Cajado), Kit de Explorador, Kit de Herbalismo, 9 PO",
         "B": "ver livro"
       },
-      "pv_nivel1_formula": "8 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "SAB",
       "complexidade": "Alta",
-      "mecanica_exclusiva": [
-        "Conjuração (lista de Druida)",
-        "Transformação Selvagem (Forma Selvagem)"
-      ],
-      "caracteristicas_nivel1": [
-        "Conjuração",
-        "Transformação Selvagem"
-      ],
       "subclasses": [
         {
           "id": "circulo_lua",
@@ -2330,19 +2216,9 @@
         "A": "Lança, 2 Adagas, Foco Arcano (cristal), Kit de Explorador de Masmorras, 28 PO",
         "B": "50 PO"
       },
-      "pv_nivel1_formula": "6 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "CAR",
       "complexidade": "Alta",
-      "mecanica_exclusiva": [
-        "Conjuração (lista de Feiticeiro)",
-        "Pontos de Feitiçaria",
-        "Metamagia"
-      ],
-      "caracteristicas_nivel1": [
-        "Conjuração",
-        "Feitiçaria Inata"
-      ],
       "subclasses": [
         {
           "id": "feiticaria_aberrante",
@@ -2819,20 +2695,9 @@
         "A": "Armadura de Couro Batido, Cimitarra, Espada Curta, Arco Longo, 20 Flechas, Aljava, Foco Druídico (ramo de visco), Kit de Aventureiro, 7 PO",
         "B": "150 PO"
       },
-      "pv_nivel1_formula": "10 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "SAB",
       "complexidade": "Média",
-      "mecanica_exclusiva": [
-        "Conjuração (lista de Guardião)",
-        "Inimigo Favorito (Marca do Predador sempre preparada)",
-        "Sentido da Natureza"
-      ],
-      "caracteristicas_nivel1": [
-        "Conjuração",
-        "Inimigo Favorito",
-        "Maestria em Arma (2 tipos)"
-      ],
       "subclasses": [
         {
           "id": "andarilho_feerico",
@@ -3221,19 +3086,8 @@
         "B": "Armadura de Couro Batido, Cimitarra, Espada Curta, Arco Longo, 20 Flechas, Aljava, Kit de Explorador de Masmorras",
         "C": "155 PO"
       },
-      "pv_nivel1_formula": "10 + mod_CON",
       "conjurador": false,
       "complexidade": "Baixa",
-      "mecanica_exclusiva": [
-        "Estilo de Luta",
-        "Surto de Ação",
-        "Ataque Extra"
-      ],
-      "caracteristicas_nivel1": [
-        "Estilo de Luta",
-        "Maestria em Arma (3 tipos)",
-        "Segunda Folha de Fôlego"
-      ],
       "subclasses": [
         {
           "id": "campeao",
@@ -3484,19 +3338,8 @@
         "A": "Armadura de Couro, 2 Adagas, Espada Curta, Arco Curto, 20 Flechas, Aljava, Ferramentas de Ladrão, Kit de Assaltante, 8 PO",
         "B": "100 PO"
       },
-      "pv_nivel1_formula": "8 + mod_CON",
       "conjurador": false,
       "complexidade": "Baixa",
-      "mecanica_exclusiva": [
-        "Ataque Furtivo (1d6 escalonado)",
-        "Expertise (dobra prof. em 2 perícias)",
-        "Ação Ardilosa"
-      ],
-      "caracteristicas_nivel1": [
-        "Ataque Furtivo",
-        "Especialista (Expertise em 2 perícias)",
-        "Linguagem dos Ladrões"
-      ],
       "subclasses": [
         {
           "id": "adaga_espiritual",
@@ -3724,20 +3567,9 @@
         "A": "2 Adagas, Foco Arcano (Cajado), Kit de Erudito, Livro de Magias, Túnica, 5 PO",
         "B": "55 PO"
       },
-      "pv_nivel1_formula": "6 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "INT",
       "complexidade": "Média",
-      "mecanica_exclusiva": [
-        "Livro de Magias",
-        "Adepto de Ritual",
-        "Recuperação Arcana"
-      ],
-      "caracteristicas_nivel1": [
-        "Adepto de Ritual",
-        "Conjuração",
-        "Recuperação Arcana"
-      ],
       "subclasses": [
         {
           "id": "abjurador",
@@ -4186,20 +4018,8 @@
         "A": "Lança, 5 Adagas, Ferramentas de Artesão ou Instrumento Musical (escolhido para proficiência), Kit de Aventureiro, 11 PO",
         "B": "50 PO"
       },
-      "pv_nivel1_formula": "8 + mod_CON",
       "conjurador": false,
       "complexidade": "Alta",
-      "mecanica_exclusiva": [
-        "Artes Marciais",
-        "Pontos de Ki",
-        "Movimento sem Armadura",
-        "Defesa sem Armadura (10 + mod_DES + mod_SAB)"
-      ],
-      "caracteristicas_nivel1": [
-        "Artes Marciais",
-        "Defesa sem Armadura",
-        "Pontos de Ki"
-      ],
       "subclasses": [
         {
           "id": "combatente_elementos",
@@ -4469,22 +4289,9 @@
         "A": "Cota de Malha, Escudo, Espada Longa, 6 Azagaias, Símbolo Sagrado, Kit de Sacerdote, 9 PO",
         "B": "150 PO"
       },
-      "pv_nivel1_formula": "10 + mod_CON",
       "conjurador": true,
       "atributo_conjuracao": "CAR",
       "complexidade": "Média",
-      "mecanica_exclusiva": [
-        "Imposição de Mãos",
-        "Senso Divino",
-        "Esmagar Divino",
-        "Canalizar Divindade"
-      ],
-      "caracteristicas_nivel1": [
-        "Imposição de Mãos",
-        "Senso Divino",
-        "Conjuração",
-        "Maestria em Arma (2 tipos)"
-      ],
       "subclasses": [
         {
           "id": "juramento_anciaos",
@@ -4834,20 +4641,12 @@
     {
       "id": "aasimar",
       "nome": "Aasimar",
-      "pronuncia": "AH-sih-mar",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio",
         "Pequeno"
       ],
-      "tamanho_escolha": true,
-      "altura": {
-        "medio": "1,20–2,10m",
-        "pequeno": "0,60–1,20m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": 18,
-      "expectativa_de_vida": 160,
       "tracos": [
         {
           "nome": "Resistência Celestial",
@@ -4889,17 +4688,11 @@
     {
       "id": "anao",
       "nome": "Anão",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio"
       ],
-      "tamanho_escolha": false,
-      "altura": {
-        "medio": "1,20–1,50m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": 36,
-      "expectativa_de_vida": 350,
       "tracos": [
         {
           "nome": "Visão no Escuro",
@@ -4922,14 +4715,9 @@
     {
       "id": "draconato",
       "nome": "Draconato",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio"
       ],
-      "tamanho_escolha": false,
-      "altura": {
-        "medio": "1,50–2,10m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": 18,
       "tracos": [
@@ -5001,17 +4789,11 @@
     {
       "id": "elfo",
       "nome": "Elfo",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio"
       ],
-      "tamanho_escolha": false,
-      "altura": {
-        "medio": "1,50–1,80m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": 18,
-      "expectativa_de_vida": 750,
       "nota": "Drow tem Visão no Escuro de 36m",
       "tracos": [
         {
@@ -5067,17 +4849,11 @@
     {
       "id": "gnomo",
       "nome": "Gnomo",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Pequeno"
       ],
-      "tamanho_escolha": false,
-      "altura": {
-        "pequeno": "0,90–1,20m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": 18,
-      "expectativa_de_vida": 425,
       "tracos": [
         {
           "nome": "Visão no Escuro",
@@ -5113,14 +4889,9 @@
     {
       "id": "golias",
       "nome": "Golias",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio"
       ],
-      "tamanho_escolha": false,
-      "altura": {
-        "medio": "2,10–2,40m"
-      },
       "deslocamento": 10.5,
       "visao_no_escuro": null,
       "tracos": [
@@ -5168,16 +4939,10 @@
     {
       "id": "humano",
       "nome": "Humano",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio",
         "Pequeno"
       ],
-      "tamanho_escolha": true,
-      "altura": {
-        "medio": "1,20–2,10m",
-        "pequeno": "0,60–1,20m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": null,
       "tracos": [
@@ -5198,14 +4963,9 @@
     {
       "id": "orc",
       "nome": "Orc",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio"
       ],
-      "tamanho_escolha": false,
-      "altura": {
-        "medio": "1,80–2,10m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": 36,
       "tracos": [
@@ -5226,17 +4986,11 @@
     {
       "id": "pequenino",
       "nome": "Pequenino",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Pequeno"
       ],
-      "tamanho_escolha": false,
-      "altura": {
-        "pequeno": "0,60–0,90m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": null,
-      "expectativa_de_vida": 150,
       "tracos": [
         {
           "nome": "Corajoso",
@@ -5259,16 +5013,10 @@
     {
       "id": "tiferino",
       "nome": "Tiferino",
-      "tipo_criatura": "Humanoide",
       "tamanho": [
         "Médio",
         "Pequeno"
       ],
-      "tamanho_escolha": true,
-      "altura": {
-        "medio": "1,20–2,10m",
-        "pequeno": "0,90–1,20m"
-      },
       "deslocamento": 9,
       "visao_no_escuro": 18,
       "tracos": [
@@ -5318,12 +5066,6 @@
   "antecedentes": [
     {
       "id": "acolito",
-      "nome": "Acólito",
-      "atributos_sugeridos": [
-        "INT",
-        "SAB",
-        "CAR"
-      ],
       "talento": "Iniciado em Magia (Clérigo)",
       "pericias": [
         "intuicao",
@@ -5337,12 +5079,6 @@
     },
     {
       "id": "andarilho",
-      "nome": "Andarilho",
-      "atributos_sugeridos": [
-        "DES",
-        "SAB",
-        "CAR"
-      ],
       "talento": "Sortudo",
       "pericias": [
         "furtividade",
@@ -5356,12 +5092,6 @@
     },
     {
       "id": "artesao",
-      "nome": "Artesão",
-      "atributos_sugeridos": [
-        "FOR",
-        "DES",
-        "INT"
-      ],
       "talento": "Artifista",
       "pericias": [
         "investigacao",
@@ -5375,12 +5105,6 @@
     },
     {
       "id": "artista",
-      "nome": "Artista",
-      "atributos_sugeridos": [
-        "FOR",
-        "DES",
-        "CAR"
-      ],
       "talento": "Músico",
       "pericias": [
         "acrobacia",
@@ -5394,12 +5118,6 @@
     },
     {
       "id": "charlatao",
-      "nome": "Charlatão",
-      "atributos_sugeridos": [
-        "DES",
-        "CON",
-        "CAR"
-      ],
       "talento": "Habilidoso",
       "pericias": [
         "enganacao",
@@ -5413,12 +5131,6 @@
     },
     {
       "id": "criminoso",
-      "nome": "Criminoso",
-      "atributos_sugeridos": [
-        "DES",
-        "CON",
-        "INT"
-      ],
       "talento": "Alerta",
       "pericias": [
         "furtividade",
@@ -5432,12 +5144,6 @@
     },
     {
       "id": "eremita",
-      "nome": "Eremita",
-      "atributos_sugeridos": [
-        "CON",
-        "SAB",
-        "CAR"
-      ],
       "talento": "Curandeiro",
       "pericias": [
         "medicina",
@@ -5451,12 +5157,6 @@
     },
     {
       "id": "escriba",
-      "nome": "Escriba",
-      "atributos_sugeridos": [
-        "DES",
-        "INT",
-        "SAB"
-      ],
       "talento": "Habilidoso",
       "pericias": [
         "investigacao",
@@ -5470,12 +5170,6 @@
     },
     {
       "id": "fazendeiro",
-      "nome": "Fazendeiro",
-      "atributos_sugeridos": [
-        "FOR",
-        "CON",
-        "SAB"
-      ],
       "talento": "Vigoroso",
       "pericias": [
         "lidar_com_animais",
@@ -5489,12 +5183,6 @@
     },
     {
       "id": "guarda",
-      "nome": "Guarda",
-      "atributos_sugeridos": [
-        "FOR",
-        "INT",
-        "SAB"
-      ],
       "talento": "Alerta",
       "pericias": [
         "atletismo",
@@ -5508,12 +5196,6 @@
     },
     {
       "id": "guia",
-      "nome": "Guia",
-      "atributos_sugeridos": [
-        "DES",
-        "CON",
-        "SAB"
-      ],
       "talento": "Iniciado em Magia (Druida)",
       "pericias": [
         "furtividade",
@@ -5527,12 +5209,6 @@
     },
     {
       "id": "marinheiro",
-      "nome": "Marinheiro",
-      "atributos_sugeridos": [
-        "FOR",
-        "DES",
-        "SAB"
-      ],
       "talento": "Valentão de Taverna",
       "pericias": [
         "acrobacia",
@@ -5546,12 +5222,6 @@
     },
     {
       "id": "mercador",
-      "nome": "Mercador",
-      "atributos_sugeridos": [
-        "CON",
-        "INT",
-        "CAR"
-      ],
       "talento": "Sortudo",
       "pericias": [
         "lidar_com_animais",
@@ -5565,12 +5235,6 @@
     },
     {
       "id": "nobre",
-      "nome": "Nobre",
-      "atributos_sugeridos": [
-        "FOR",
-        "INT",
-        "CAR"
-      ],
       "talento": "Habilidoso",
       "pericias": [
         "historia",
@@ -5584,12 +5248,6 @@
     },
     {
       "id": "sabio",
-      "nome": "Sábio",
-      "atributos_sugeridos": [
-        "CON",
-        "INT",
-        "SAB"
-      ],
       "talento": "Iniciado em Magia (Mago)",
       "pericias": [
         "arcanismo",
@@ -5603,12 +5261,6 @@
     },
     {
       "id": "soldado",
-      "nome": "Soldado",
-      "atributos_sugeridos": [
-        "FOR",
-        "DES",
-        "CON"
-      ],
       "talento": "Atacante Selvagem",
       "pericias": [
         "atletismo",
@@ -5719,44 +5371,6 @@
       "CAR": 14
     }
   },
-  "pv_nivel1_por_dado": {
-    "d12": "12 + mod_CON",
-    "d10": "10 + mod_CON",
-    "d8": "8 + mod_CON",
-    "d6": "6 + mod_CON"
-  },
-  "modificadores_valor": {
-    "1": -5,
-    "2": -4,
-    "3": -4,
-    "4": -3,
-    "5": -3,
-    "6": -2,
-    "7": -2,
-    "8": -1,
-    "9": -1,
-    "10": 0,
-    "11": 0,
-    "12": 1,
-    "13": 1,
-    "14": 2,
-    "15": 2,
-    "16": 3,
-    "17": 3,
-    "18": 4,
-    "19": 4,
-    "20": 5,
-    "21": 5,
-    "22": 6,
-    "23": 6,
-    "24": 7,
-    "25": 7,
-    "26": 8,
-    "27": 8,
-    "28": 9,
-    "29": 9,
-    "30": 10
-  },
   "talentos_de_origem": [
     {
       "id": "alerta",
@@ -5866,1967 +5480,136 @@
       "descricao": "PV máximos aumentam em 2 × nível de personagem ao adquirir este talento. Em cada nível posterior, PV máximos aumentam em 2 adicionais."
     }
   ],
-  "regra_atributos_antecedente": {
-    "descricao": "Cada antecedente indica 3 atributos elegíveis. Ao criar o personagem, escolha uma das opções:",
-    "opcoes": [
-      "Aumente 1 atributo em +2 e outro em +1 (ambos da lista do antecedente)",
-      "Aumente 3 atributos em +1 cada (todos da lista do antecedente)"
-    ],
-    "limite": "Nenhum valor pode ultrapassar 20 após os aumentos.",
-    "nota": "Os atributos sugeridos em 'atributos_sugeridos' em cada antecedente são os elegíveis para os bônus."
-  },
   "armaduras": [
     {
       "id": "acolchoada",
       "nome": "Acolchoada",
       "categoria": "Leve",
       "ca": "11 + mod_DES",
-      "requisito_FOR": null,
       "penalidade_furtividade": true,
       "peso_kg": 4,
-      "custo_po": 5
+      "custo_po": 5,
+      "requisito_for": null
     },
     {
       "id": "couro",
       "nome": "Couro",
       "categoria": "Leve",
       "ca": "11 + mod_DES",
-      "requisito_FOR": null,
       "penalidade_furtividade": false,
       "peso_kg": 5,
-      "custo_po": 10
+      "custo_po": 10,
+      "requisito_for": null
     },
     {
       "id": "couro_batido",
       "nome": "Couro Batido",
       "categoria": "Leve",
       "ca": "12 + mod_DES",
-      "requisito_FOR": null,
       "penalidade_furtividade": false,
       "peso_kg": 6.5,
-      "custo_po": 45
+      "custo_po": 45,
+      "requisito_for": null
     },
     {
       "id": "gibao_de_peles",
       "nome": "Gibão de Peles",
       "categoria": "Média",
       "ca": "12 + mod_DES (máx +2)",
-      "requisito_FOR": null,
       "penalidade_furtividade": false,
       "peso_kg": 6,
-      "custo_po": 10
+      "custo_po": 10,
+      "requisito_for": null
     },
     {
       "id": "cota_malha_parcial",
       "nome": "Cota de Malha Parcial",
       "categoria": "Média",
       "ca": "13 + mod_DES (máx +2)",
-      "requisito_FOR": null,
       "penalidade_furtividade": false,
       "peso_kg": 10,
-      "custo_po": 50
+      "custo_po": 50,
+      "requisito_for": null
     },
     {
       "id": "loriga_de_escamas",
       "nome": "Loriga de Escamas",
       "categoria": "Média",
       "ca": "14 + mod_DES (máx +2)",
-      "requisito_FOR": null,
       "penalidade_furtividade": true,
       "peso_kg": 22,
-      "custo_po": 50
+      "custo_po": 50,
+      "requisito_for": null
     },
     {
       "id": "couraca_peitoral",
       "nome": "Couraça Peitoral",
       "categoria": "Média",
       "ca": "14 + mod_DES (máx +2)",
-      "requisito_FOR": null,
       "penalidade_furtividade": false,
       "peso_kg": 10,
-      "custo_po": 400
+      "custo_po": 400,
+      "requisito_for": null
     },
     {
       "id": "placas_parcial",
       "nome": "Placas Parcial",
       "categoria": "Média",
       "ca": "15 + mod_DES (máx +2)",
-      "requisito_FOR": null,
       "penalidade_furtividade": true,
       "peso_kg": 20,
-      "custo_po": 750
+      "custo_po": 750,
+      "requisito_for": null
     },
     {
       "id": "cota_de_aneis",
       "nome": "Cota de Anéis",
       "categoria": "Pesada",
       "ca": "14",
-      "requisito_FOR": null,
       "penalidade_furtividade": true,
       "peso_kg": 20,
-      "custo_po": 30
+      "custo_po": 30,
+      "requisito_for": null
     },
     {
       "id": "cota_de_malha",
       "nome": "Cota de Malha",
       "categoria": "Pesada",
       "ca": "16",
-      "requisito_FOR": 13,
       "penalidade_furtividade": true,
       "peso_kg": 27,
-      "custo_po": 75
+      "custo_po": 75,
+      "requisito_for": 13
     },
     {
       "id": "armadura_de_tala",
       "nome": "Armadura de Tala",
       "categoria": "Pesada",
       "ca": "17",
-      "requisito_FOR": 15,
       "penalidade_furtividade": true,
       "peso_kg": 30,
-      "custo_po": 200
+      "custo_po": 200,
+      "requisito_for": 15
     },
     {
       "id": "placas",
       "nome": "Placas",
       "categoria": "Pesada",
       "ca": "18",
-      "requisito_FOR": 15,
       "penalidade_furtividade": true,
       "peso_kg": 32,
-      "custo_po": 1500
+      "custo_po": 1500,
+      "requisito_for": 15
     },
     {
       "id": "escudo",
       "nome": "Escudo",
       "categoria": "Escudo",
       "ca": "+2",
-      "requisito_FOR": null,
       "penalidade_furtividade": false,
       "peso_kg": 3,
-      "custo_po": 10
-    }
-  ],
-  "armas": [
-    {
-      "id": "adaga",
-      "nome": "Adaga",
-      "categoria": "Simples CaC",
-      "dano": "1d4 Perfurante",
-      "propriedades": [
-        "Acuidade",
-        "Arremesso (6/18)",
-        "Leve"
-      ],
-      "maestria": "Ágil",
-      "peso_kg": 0.5,
-      "custo_po": 2
-    },
-    {
-      "id": "azagaia",
-      "nome": "Azagaia",
-      "categoria": "Simples CaC",
-      "dano": "1d6 Perfurante",
-      "propriedades": [
-        "Arremesso (9/36)"
-      ],
-      "maestria": "Lentidão",
-      "peso_kg": 1,
-      "custo_po": 0.05
-    },
-    {
-      "id": "cajado",
-      "nome": "Cajado",
-      "categoria": "Simples CaC",
-      "dano": "1d6 Contundente",
-      "propriedades": [
-        "Versátil (1d8)"
-      ],
-      "maestria": "Derrubar",
-      "peso_kg": 2,
-      "custo_po": 0.02
-    },
-    {
-      "id": "clava",
-      "nome": "Clava",
-      "categoria": "Simples CaC",
-      "dano": "1d4 Contundente",
-      "propriedades": [
-        "Leve"
-      ],
-      "maestria": "Lentidão",
-      "peso_kg": 1,
-      "custo_po": 0.01
-    },
-    {
-      "id": "clava_grande",
-      "nome": "Clava Grande",
-      "categoria": "Simples CaC",
-      "dano": "1d8 Contundente",
-      "propriedades": [
-        "Duas Mãos"
-      ],
-      "maestria": "Empurrar",
-      "peso_kg": 5,
-      "custo_po": 0.02
-    },
-    {
-      "id": "foice",
-      "nome": "Foice",
-      "categoria": "Simples CaC",
-      "dano": "1d4 Cortante",
-      "propriedades": [
-        "Leve"
-      ],
-      "maestria": "Ágil",
-      "peso_kg": 1,
-      "custo_po": 1
-    },
-    {
-      "id": "lanca",
-      "nome": "Lança",
-      "categoria": "Simples CaC",
-      "dano": "1d6 Perfurante",
-      "propriedades": [
-        "Arremesso (6/18)",
-        "Versátil (1d8)"
-      ],
-      "maestria": "Drenar",
-      "peso_kg": 1.5,
-      "custo_po": 1
-    },
-    {
-      "id": "maca",
-      "nome": "Maça",
-      "categoria": "Simples CaC",
-      "dano": "1d6 Contundente",
-      "propriedades": [],
-      "maestria": "Drenar",
-      "peso_kg": 2,
-      "custo_po": 5
-    },
-    {
-      "id": "machadinha",
-      "nome": "Machadinha",
-      "categoria": "Simples CaC",
-      "dano": "1d6 Cortante",
-      "propriedades": [
-        "Arremesso (6/18)",
-        "Leve"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 1,
-      "custo_po": 5
-    },
-    {
-      "id": "martelo_leve",
-      "nome": "Martelo Leve",
-      "categoria": "Simples CaC",
-      "dano": "1d4 Contundente",
-      "propriedades": [
-        "Arremesso (6/18)",
-        "Leve"
-      ],
-      "maestria": "Ágil",
-      "peso_kg": 1,
-      "custo_po": 2
-    },
-    {
-      "id": "arco_curto",
-      "nome": "Arco Curto",
-      "categoria": "Simples Dist",
-      "dano": "1d6 Perfurante",
-      "propriedades": [
-        "Duas Mãos",
-        "Munição (24/96; Flecha)"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 1,
-      "custo_po": 25
-    },
-    {
-      "id": "besta_leve",
-      "nome": "Besta Leve",
-      "categoria": "Simples Dist",
-      "dano": "1d8 Perfurante",
-      "propriedades": [
-        "Duas Mãos",
-        "Munição (24/96; Virote)",
-        "Recarga"
-      ],
-      "maestria": "Lentidão",
-      "peso_kg": 2.5,
-      "custo_po": 25
-    },
-    {
-      "id": "dardo",
-      "nome": "Dardo",
-      "categoria": "Simples Dist",
-      "dano": "1d4 Perfurante",
-      "propriedades": [
-        "Acuidade",
-        "Arremesso (6/18)"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 0.15,
-      "custo_po": 0.05
-    },
-    {
-      "id": "funda",
-      "nome": "Funda",
-      "categoria": "Simples Dist",
-      "dano": "1d4 Contundente",
-      "propriedades": [
-        "Munição (9/36; Bala)"
-      ],
-      "maestria": "Lentidão",
-      "peso_kg": 0,
-      "custo_po": 0.01
-    },
-    {
-      "id": "alabarda",
-      "nome": "Alabarda",
-      "categoria": "Marcial CaC",
-      "dano": "1d10 Cortante",
-      "propriedades": [
-        "Duas Mãos",
-        "Extensão",
-        "Pesada"
-      ],
-      "maestria": "Trespassar",
-      "peso_kg": 3,
-      "custo_po": 20
-    },
-    {
-      "id": "chicote",
-      "nome": "Chicote",
-      "categoria": "Marcial CaC",
-      "dano": "1d4 Cortante",
-      "propriedades": [
-        "Acuidade",
-        "Extensão"
-      ],
-      "maestria": "Lentidão",
-      "peso_kg": 1.5,
-      "custo_po": 2
-    },
-    {
-      "id": "cimitarra",
-      "nome": "Cimitarra",
-      "categoria": "Marcial CaC",
-      "dano": "1d6 Cortante",
-      "propriedades": [
-        "Acuidade",
-        "Leve"
-      ],
-      "maestria": "Ágil",
-      "peso_kg": 1.5,
-      "custo_po": 25
-    },
-    {
-      "id": "espada_curta",
-      "nome": "Espada Curta",
-      "categoria": "Marcial CaC",
-      "dano": "1d6 Perfurante",
-      "propriedades": [
-        "Acuidade",
-        "Leve"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 1,
-      "custo_po": 10
-    },
-    {
-      "id": "espada_grande",
-      "nome": "Espada Grande",
-      "categoria": "Marcial CaC",
-      "dano": "2d6 Cortante",
-      "propriedades": [
-        "Duas Mãos",
-        "Pesada"
-      ],
-      "maestria": "Garantido",
-      "peso_kg": 3,
-      "custo_po": 50
-    },
-    {
-      "id": "espada_longa",
-      "nome": "Espada Longa",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Cortante",
-      "propriedades": [
-        "Versátil (1d10)"
-      ],
-      "maestria": "Drenar",
-      "peso_kg": 1.5,
-      "custo_po": 15
-    },
-    {
-      "id": "glaive",
-      "nome": "Glaive",
-      "categoria": "Marcial CaC",
-      "dano": "1d10 Cortante",
-      "propriedades": [
-        "Duas Mãos",
-        "Extensão",
-        "Pesada"
-      ],
-      "maestria": "Garantido",
-      "peso_kg": 3,
-      "custo_po": 20
-    },
-    {
-      "id": "lanca_de_montaria",
-      "nome": "Lança de Montaria",
-      "categoria": "Marcial CaC",
-      "dano": "1d10 Perfurante",
-      "propriedades": [
-        "Duas Mãos (desmontado)",
-        "Extensão",
-        "Pesada"
-      ],
-      "maestria": "Derrubar",
-      "peso_kg": 3,
-      "custo_po": 10
-    },
-    {
-      "id": "lanca_longa",
-      "nome": "Lança Longa",
-      "categoria": "Marcial CaC",
-      "dano": "1d10 Perfurante",
-      "propriedades": [
-        "Duas Mãos",
-        "Extensão",
-        "Pesada"
-      ],
-      "maestria": "Empurrar",
-      "peso_kg": 9,
-      "custo_po": 5
-    },
-    {
-      "id": "maca_estrela",
-      "nome": "Maça Estrela",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Perfurante",
-      "propriedades": [],
-      "maestria": "Drenar",
-      "peso_kg": 2,
-      "custo_po": 15
-    },
-    {
-      "id": "machado_batalha",
-      "nome": "Machado de Batalha",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Cortante",
-      "propriedades": [
-        "Versátil (1d10)"
-      ],
-      "maestria": "Derrubar",
-      "peso_kg": 2.5,
-      "custo_po": 10
-    },
-    {
-      "id": "machado_grande",
-      "nome": "Machado Grande",
-      "categoria": "Marcial CaC",
-      "dano": "1d12 Cortante",
-      "propriedades": [
-        "Duas Mãos",
-        "Pesada"
-      ],
-      "maestria": "Trespassar",
-      "peso_kg": 3.5,
-      "custo_po": 30
-    },
-    {
-      "id": "malho",
-      "nome": "Malho",
-      "categoria": "Marcial CaC",
-      "dano": "2d6 Contundente",
-      "propriedades": [
-        "Duas Mãos",
-        "Pesada"
-      ],
-      "maestria": "Derrubar",
-      "peso_kg": 5,
-      "custo_po": 10
-    },
-    {
-      "id": "mangual",
-      "nome": "Mangual",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Contundente",
-      "propriedades": [],
-      "maestria": "Drenar",
-      "peso_kg": 1,
-      "custo_po": 10
-    },
-    {
-      "id": "martelo_guerra",
-      "nome": "Martelo de Guerra",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Contundente",
-      "propriedades": [
-        "Versátil (1d10)"
-      ],
-      "maestria": "Empurrar",
-      "peso_kg": 1,
-      "custo_po": 15
-    },
-    {
-      "id": "picareta_guerra",
-      "nome": "Picareta de Guerra",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Perfurante",
-      "propriedades": [
-        "Versátil (1d10)"
-      ],
-      "maestria": "Drenar",
-      "peso_kg": 1,
-      "custo_po": 5
-    },
-    {
-      "id": "rapieira",
-      "nome": "Rapieira",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Perfurante",
-      "propriedades": [
-        "Acuidade"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 1,
-      "custo_po": 25
-    },
-    {
-      "id": "tridente",
-      "nome": "Tridente",
-      "categoria": "Marcial CaC",
-      "dano": "1d8 Perfurante",
-      "propriedades": [
-        "Arremesso (6/18)",
-        "Versátil (1d10)"
-      ],
-      "maestria": "Derrubar",
-      "peso_kg": 2,
-      "custo_po": 5
-    },
-    {
-      "id": "arco_longo",
-      "nome": "Arco Longo",
-      "categoria": "Marcial Dist",
-      "dano": "1d8 Perfurante",
-      "propriedades": [
-        "Duas Mãos",
-        "Munição (45/180; Flecha)",
-        "Pesada"
-      ],
-      "maestria": "Lentidão",
-      "peso_kg": 1,
-      "custo_po": 50
-    },
-    {
-      "id": "besta_de_mao",
-      "nome": "Besta de Mão",
-      "categoria": "Marcial Dist",
-      "dano": "1d6 Perfurante",
-      "propriedades": [
-        "Leve",
-        "Munição (9/36; Virote)",
-        "Recarga"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 1.5,
-      "custo_po": 75
-    },
-    {
-      "id": "besta_pesada",
-      "nome": "Besta Pesada",
-      "categoria": "Marcial Dist",
-      "dano": "1d10 Perfurante",
-      "propriedades": [
-        "Duas Mãos",
-        "Munição (30/120; Virote)",
-        "Pesada",
-        "Recarga"
-      ],
-      "maestria": "Empurrar",
-      "peso_kg": 9,
-      "custo_po": 50
-    },
-    {
-      "id": "mosquete",
-      "nome": "Mosquete",
-      "categoria": "Marcial Dist",
-      "dano": "1d12 Perfurante",
-      "propriedades": [
-        "Duas Mãos",
-        "Munição (12/36; Bala)",
-        "Recarga"
-      ],
-      "maestria": "Lentidão",
-      "peso_kg": 5,
-      "custo_po": 500
-    },
-    {
-      "id": "pistola",
-      "nome": "Pistola",
-      "categoria": "Marcial Dist",
-      "dano": "1d10 Perfurante",
-      "propriedades": [
-        "Munição (9/27; Bala)",
-        "Recarga"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 1.5,
-      "custo_po": 250
-    },
-    {
-      "id": "zarabatana",
-      "nome": "Zarabatana",
-      "categoria": "Marcial Dist",
-      "dano": "1 Perfurante",
-      "propriedades": [
-        "Munição (7,5/30; Agulha)",
-        "Recarga"
-      ],
-      "maestria": "Afligir",
-      "peso_kg": 0.5,
-      "custo_po": 10
-    }
-  ],
-  "propriedades_de_armas": [
-    {
-      "nome": "Acuidade",
-      "descricao": "Pode usar FOR ou DES para jogadas de ataque e dano."
-    },
-    {
-      "nome": "Arremesso",
-      "descricao": "Pode ser arremessada (alcance curto/longo indicado). Usa FOR ou DES (se tiver Acuidade)."
-    },
-    {
-      "nome": "Duas Mãos",
-      "descricao": "Requer duas mãos para atacar."
-    },
-    {
-      "nome": "Extensão",
-      "descricao": "Alcance de ataque corpo a corpo de 3m em vez de 1,5m."
-    },
-    {
-      "nome": "Leve",
-      "descricao": "Pode ser usada para ataque com arma secundária (luta com duas armas)."
-    },
-    {
-      "nome": "Munição",
-      "descricao": "Requer munição. Alcance curto/longo indicado."
-    },
-    {
-      "nome": "Pesada",
-      "descricao": "Criaturas Pequenas têm Desvantagem em jogadas de ataque."
-    },
-    {
-      "nome": "Recarga",
-      "descricao": "Só pode ser disparada uma vez por turno (independente de ataques extras)."
-    },
-    {
-      "nome": "Versátil",
-      "descricao": "Pode ser usada com uma ou duas mãos; o dano entre parênteses é o de duas mãos."
-    }
-  ],
-  "regra_idiomas_iniciais": {
-    "descricao": "Todo personagem começa com Comum + 2 idiomas à escolha da tabela de Idiomas Comuns.",
-    "idioma_fixo": "comum",
-    "idiomas_extras": 2,
-    "fonte_extras": "Tabela de Idiomas Comuns (ou Raros, se a classe/espécie/característica permitir)",
-    "idiomas_adicionais_por_classe": {
-      "druida": [
-        "druidico"
-      ],
-      "ladino": [
-        "giria_dos_ladroes"
-      ]
-    }
-  },
-  "moedas": {
-    "descricao": "Moedas do sistema D&D. A Peça de Ouro (PO) é a referência base. Uma moeda pesa ~10g; 100 moedas = 1 kg.",
-    "denominacoes": [
-      {
-        "id": "PC",
-        "nome": "Peça de Cobre",
-        "valor_em_PO": 0.01,
-        "equivalencia": "100 PC = 1 PO"
-      },
-      {
-        "id": "PP",
-        "nome": "Peça de Prata",
-        "valor_em_PO": 0.1,
-        "equivalencia": "10 PP = 1 PO"
-      },
-      {
-        "id": "PE",
-        "nome": "Peça de Electro",
-        "valor_em_PO": 0.5,
-        "equivalencia": "2 PE = 1 PO"
-      },
-      {
-        "id": "PO",
-        "nome": "Peça de Ouro",
-        "valor_em_PO": 1.0,
-        "equivalencia": "referência"
-      },
-      {
-        "id": "PL",
-        "nome": "Peça de Platina",
-        "valor_em_PO": 10.0,
-        "equivalencia": "1 PL = 10 PO"
-      }
-    ],
-    "conversao_direta": {
-      "1 PL": "10 PO",
-      "1 PO": "10 PP = 100 PC",
-      "1 PP": "10 PC"
-    }
-  },
-  "ferramentas": {
-    "ferramentas_de_artesao": [
-      {
-        "id": "ferramentas_carpinteiro",
-        "nome": "Ferramentas de Carpinteiro",
-        "custo_po": 8,
-        "peso_kg": 3,
-        "atributo": "FOR"
-      },
-      {
-        "id": "ferramentas_cartografo",
-        "nome": "Ferramentas de Cartógrafo",
-        "custo_po": 15,
-        "peso_kg": 3,
-        "atributo": "SAB"
-      },
-      {
-        "id": "ferramentas_coureiro",
-        "nome": "Ferramentas de Coureiro",
-        "custo_po": 5,
-        "peso_kg": 2.5,
-        "atributo": "DES"
-      },
-      {
-        "id": "ferramentas_entalhador",
-        "nome": "Ferramentas de Entalhador",
-        "custo_po": 1,
-        "peso_kg": 2.5,
-        "atributo": "DES"
-      },
-      {
-        "id": "ferramentas_ferreiro",
-        "nome": "Ferramentas de Ferreiro",
-        "custo_po": 20,
-        "peso_kg": 4,
-        "atributo": "FOR"
-      },
-      {
-        "id": "ferramentas_funileiro",
-        "nome": "Ferramentas de Funileiro",
-        "custo_po": 50,
-        "peso_kg": 5,
-        "atributo": "DES"
-      },
-      {
-        "id": "ferramentas_joalheiro",
-        "nome": "Ferramentas de Joalheiro",
-        "custo_po": 25,
-        "peso_kg": 1,
-        "atributo": "INT"
-      },
-      {
-        "id": "ferramentas_oleiro",
-        "nome": "Ferramentas de Oleiro",
-        "custo_po": 10,
-        "peso_kg": 1.5,
-        "atributo": "INT"
-      },
-      {
-        "id": "ferramentas_pedreiro",
-        "nome": "Ferramentas de Pedreiro",
-        "custo_po": 10,
-        "peso_kg": 4,
-        "atributo": "FOR"
-      },
-      {
-        "id": "ferramentas_sapateiro",
-        "nome": "Ferramentas de Sapateiro",
-        "custo_po": 5,
-        "peso_kg": 2.5,
-        "atributo": "DES"
-      },
-      {
-        "id": "ferramentas_tecelao",
-        "nome": "Ferramentas de Tecelão",
-        "custo_po": 1,
-        "peso_kg": 2.5,
-        "atributo": "DES"
-      },
-      {
-        "id": "ferramentas_vidreiro",
-        "nome": "Ferramentas de Vidreiro",
-        "custo_po": 30,
-        "peso_kg": 2.5,
-        "atributo": "INT"
-      },
-      {
-        "id": "suprimentos_alquimista",
-        "nome": "Suprimentos de Alquimista",
-        "custo_po": 50,
-        "peso_kg": 4,
-        "atributo": "INT"
-      },
-      {
-        "id": "suprimentos_calígrafo",
-        "nome": "Suprimentos de Calígrafo",
-        "custo_po": 10,
-        "peso_kg": 2.5,
-        "atributo": "DES"
-      },
-      {
-        "id": "suprimentos_cervejeiro",
-        "nome": "Suprimentos de Cervejeiro",
-        "custo_po": 20,
-        "peso_kg": 4.5,
-        "atributo": "INT"
-      },
-      {
-        "id": "suprimentos_pintor",
-        "nome": "Suprimentos de Pintor",
-        "custo_po": 10,
-        "peso_kg": 2.5,
-        "atributo": "SAB"
-      },
-      {
-        "id": "utensilios_cozinheiro",
-        "nome": "Utensílios de Cozinheiro",
-        "custo_po": 1,
-        "peso_kg": 4,
-        "atributo": "SAB"
-      }
-    ],
-    "outras_ferramentas": [
-      {
-        "id": "ferramentas_ladrao",
-        "nome": "Ferramentas de Ladrão",
-        "custo_po": 25,
-        "peso_kg": 0.5,
-        "atributo": "DES"
-      },
-      {
-        "id": "ferramentas_navegador",
-        "nome": "Ferramentas de Navegador",
-        "custo_po": 25,
-        "peso_kg": 1,
-        "atributo": "SAB"
-      },
-      {
-        "id": "kit_disfrace",
-        "nome": "Kit de Disfarce",
-        "custo_po": 25,
-        "peso_kg": 1.5,
-        "atributo": "CAR"
-      },
-      {
-        "id": "kit_falsificacao",
-        "nome": "Kit de Falsificação",
-        "custo_po": 15,
-        "peso_kg": 2.5,
-        "atributo": "DES"
-      },
-      {
-        "id": "kit_herbalismo",
-        "nome": "Kit de Herbalismo",
-        "custo_po": 5,
-        "peso_kg": 1.5,
-        "atributo": "INT"
-      },
-      {
-        "id": "kit_veneno",
-        "nome": "Kit de Veneno",
-        "custo_po": 50,
-        "peso_kg": 1,
-        "atributo": "INT"
-      }
-    ],
-    "kits_de_jogo": [
-      {
-        "id": "dados",
-        "nome": "Dados",
-        "custo_pp": 1,
-        "custo_po": 0.1
-      },
-      {
-        "id": "xadrez_do_dragao",
-        "nome": "Xadrez-do-Dragão",
-        "custo_po": 1
-      },
-      {
-        "id": "baralho",
-        "nome": "Baralho",
-        "custo_pp": 5,
-        "custo_po": 0.5
-      },
-      {
-        "id": "jogo_tres_dragoes",
-        "nome": "Conjunto do Jogo dos Três Dragões",
-        "custo_po": 1
-      }
-    ],
-    "instrumentos_musicais": [
-      {
-        "id": "alaude",
-        "nome": "Alaúde",
-        "custo_po": 35,
-        "peso_kg": 1
-      },
-      {
-        "id": "flauta",
-        "nome": "Flauta",
-        "custo_po": 2,
-        "peso_kg": 0.5
-      },
-      {
-        "id": "flauta_de_pan",
-        "nome": "Flauta de Pan",
-        "custo_po": 12,
-        "peso_kg": 1
-      },
-      {
-        "id": "gaita_de_foles",
-        "nome": "Gaita de Foles",
-        "custo_po": 30,
-        "peso_kg": 3
-      },
-      {
-        "id": "lira",
-        "nome": "Lira",
-        "custo_po": 30,
-        "peso_kg": 1
-      },
-      {
-        "id": "oboe",
-        "nome": "Oboé",
-        "custo_po": 2,
-        "peso_kg": 0.5
-      },
-      {
-        "id": "tambor",
-        "nome": "Tambor",
-        "custo_po": 6,
-        "peso_kg": 1.5
-      },
-      {
-        "id": "trombeta",
-        "nome": "Trombeta",
-        "custo_po": 3,
-        "peso_kg": 1
-      },
-      {
-        "id": "violino",
-        "nome": "Violino",
-        "custo_po": 30,
-        "peso_kg": 0.5
-      },
-      {
-        "id": "xilofone",
-        "nome": "Xilofone",
-        "custo_po": 25,
-        "peso_kg": 5
-      }
-    ]
-  },
-  "focos_de_conjuracao": {
-    "arcanos": [
-      {
-        "id": "foco_cajado",
-        "nome": "Cajado (Foco Arcano)",
-        "custo_po": 5,
-        "peso_kg": 2,
-        "usuarios": [
-          "Bruxo",
-          "Feiticeiro",
-          "Mago"
-        ]
-      },
-      {
-        "id": "foco_cetro",
-        "nome": "Cetro",
-        "custo_po": 10,
-        "peso_kg": 1,
-        "usuarios": [
-          "Bruxo",
-          "Feiticeiro",
-          "Mago"
-        ]
-      },
-      {
-        "id": "foco_cristal",
-        "nome": "Cristal",
-        "custo_po": 10,
-        "peso_kg": 0.5,
-        "usuarios": [
-          "Bruxo",
-          "Feiticeiro",
-          "Mago"
-        ]
-      },
-      {
-        "id": "foco_orbe",
-        "nome": "Orbe",
-        "custo_po": 20,
-        "peso_kg": 1.5,
-        "usuarios": [
-          "Bruxo",
-          "Feiticeiro",
-          "Mago"
-        ]
-      },
-      {
-        "id": "foco_varinha",
-        "nome": "Varinha",
-        "custo_po": 10,
-        "peso_kg": 0.5,
-        "usuarios": [
-          "Bruxo",
-          "Feiticeiro",
-          "Mago"
-        ]
-      }
-    ],
-    "druidicos": [
-      {
-        "id": "foco_cajado_druida",
-        "nome": "Cajado de Madeira",
-        "custo_po": 5,
-        "peso_kg": 2,
-        "usuarios": [
-          "Druida",
-          "Guardião"
-        ]
-      },
-      {
-        "id": "foco_ramo_visco",
-        "nome": "Ramo de Visco",
-        "custo_po": 1,
-        "peso_kg": 0,
-        "usuarios": [
-          "Druida",
-          "Guardião"
-        ]
-      },
-      {
-        "id": "foco_varinha_teixo",
-        "nome": "Varinha de Teixo",
-        "custo_po": 10,
-        "peso_kg": 0.5,
-        "usuarios": [
-          "Druida",
-          "Guardião"
-        ]
-      }
-    ],
-    "sagrados": [
-      {
-        "id": "simbolo_amuleto",
-        "nome": "Amuleto (usado/segurado)",
-        "custo_po": 5,
-        "peso_kg": 0.5,
-        "usuarios": [
-          "Clérigo",
-          "Paladino"
-        ]
-      },
-      {
-        "id": "simbolo_emblema",
-        "nome": "Emblema (em tecido/escudo)",
-        "custo_po": 5,
-        "peso_kg": 0,
-        "usuarios": [
-          "Clérigo",
-          "Paladino"
-        ]
-      },
-      {
-        "id": "simbolo_relicario",
-        "nome": "Relicário (segurado)",
-        "custo_po": 5,
-        "peso_kg": 1,
-        "usuarios": [
-          "Clérigo",
-          "Paladino"
-        ]
-      }
-    ]
-  },
-  "municao": [
-    {
-      "id": "agulhas",
-      "nome": "Agulhas",
-      "quantidade": 50,
-      "armazenamento": "Algibeira",
-      "peso_kg": 0.5,
-      "custo_po": 1
-    },
-    {
-      "id": "balas_arma_fogo",
-      "nome": "Balas (Arma de Fogo)",
-      "quantidade": 10,
-      "armazenamento": "Algibeira",
-      "peso_kg": 1,
-      "custo_po": 3
-    },
-    {
-      "id": "balas_funda",
-      "nome": "Balas (Funda)",
-      "quantidade": 20,
-      "armazenamento": "Algibeira",
-      "peso_kg": 0.75,
-      "custo_po": 0.04
-    },
-    {
-      "id": "flechas",
-      "nome": "Flechas",
-      "quantidade": 20,
-      "armazenamento": "Aljava",
-      "peso_kg": 0.5,
-      "custo_po": 1
-    },
-    {
-      "id": "virotes",
-      "nome": "Virotes",
-      "quantidade": 20,
-      "armazenamento": "Estojo",
-      "peso_kg": 0.75,
-      "custo_po": 1
-    }
-  ],
-  "equipamentos_aventura": [
-    {
-      "id": "acido",
-      "nome": "Ácido",
-      "custo_po": 25,
-      "peso_kg": 0.5,
-      "categoria": "Consumível"
-    },
-    {
-      "id": "agua_benta",
-      "nome": "Água Benta",
-      "custo_po": 25,
-      "peso_kg": 0.5,
-      "categoria": "Consumível"
-    },
-    {
-      "id": "algibeira",
-      "nome": "Algibeira",
-      "custo_pp": 5,
-      "custo_po": 0.5,
-      "peso_kg": 0.5,
-      "categoria": "Armazenamento",
-      "capacidade": "3 kg / 6 litros"
-    },
-    {
-      "id": "aljava",
-      "nome": "Aljava",
-      "custo_po": 1,
-      "peso_kg": 0.5,
-      "categoria": "Armazenamento",
-      "capacidade": "20 flechas"
-    },
-    {
-      "id": "antitoxina",
-      "nome": "Antitoxina",
-      "custo_po": 50,
-      "peso_kg": 0,
-      "categoria": "Consumível"
-    },
-    {
-      "id": "apito_sinalizador",
-      "nome": "Apito Sinalizador",
-      "custo_pc": 5,
-      "custo_po": 0.05,
-      "peso_kg": 0,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "ariete_portavel",
-      "nome": "Aríete Portável",
-      "custo_po": 4,
-      "peso_kg": 16.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "armadilha_caca",
-      "nome": "Armadilha de Caça",
-      "custo_po": 5,
-      "peso_kg": 12.5,
-      "categoria": "Combate"
-    },
-    {
-      "id": "arpeu",
-      "nome": "Arpéu",
-      "custo_po": 2,
-      "peso_kg": 2,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "balde",
-      "nome": "Balde",
-      "custo_pc": 5,
-      "custo_po": 0.05,
-      "peso_kg": 1,
-      "categoria": "Armazenamento"
-    },
-    {
-      "id": "baliza",
-      "nome": "Baliza",
-      "custo_pc": 5,
-      "custo_po": 0.05,
-      "peso_kg": 3.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "barril",
-      "nome": "Barril",
-      "custo_po": 2,
-      "peso_kg": 35,
-      "categoria": "Armazenamento",
-      "capacidade": "160 litros"
-    },
-    {
-      "id": "bau",
-      "nome": "Baú",
-      "custo_po": 5,
-      "peso_kg": 12.5,
-      "categoria": "Armazenamento",
-      "capacidade": "350 litros"
-    },
-    {
-      "id": "bolsa_componentes",
-      "nome": "Bolsa de Componentes",
-      "custo_po": 25,
-      "peso_kg": 1,
-      "categoria": "Conjuração"
-    },
-    {
-      "id": "cadeado",
-      "nome": "Cadeado",
       "custo_po": 10,
-      "peso_kg": 0.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "caixa_para_fogo",
-      "nome": "Caixa para Fogo",
-      "custo_pp": 5,
-      "custo_po": 0.5,
-      "peso_kg": 0.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "caneta_tinteiro",
-      "nome": "Caneta Tinteiro",
-      "custo_pc": 2,
-      "custo_po": 0.02,
-      "peso_kg": 0,
-      "categoria": "Escrita"
-    },
-    {
-      "id": "cantil",
-      "nome": "Cantil (cheio)",
-      "custo_pp": 2,
-      "custo_po": 0.2,
-      "peso_kg": 2.5,
-      "categoria": "Armazenamento",
-      "capacidade": "2 litros"
-    },
-    {
-      "id": "cesta",
-      "nome": "Cesta",
-      "custo_pp": 4,
-      "custo_po": 0.4,
-      "peso_kg": 1,
-      "categoria": "Armazenamento",
-      "capacidade": "20 kg / 60 cm³"
-    },
-    {
-      "id": "cobertor",
-      "nome": "Cobertor",
-      "custo_pp": 5,
-      "custo_po": 0.5,
-      "peso_kg": 1.5,
-      "categoria": "Sobrevivência"
-    },
-    {
-      "id": "corda",
-      "nome": "Corda",
-      "custo_po": 1,
-      "peso_kg": 2.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "cordao",
-      "nome": "Cordão",
-      "custo_pp": 1,
-      "custo_po": 0.1,
-      "peso_kg": 0,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "corrente",
-      "nome": "Corrente",
-      "custo_po": 5,
-      "peso_kg": 5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "escada",
-      "nome": "Escada",
-      "custo_pp": 1,
-      "custo_po": 0.1,
-      "peso_kg": 12.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "esferas_de_metal",
-      "nome": "Esferas de Metal",
-      "custo_po": 1,
-      "peso_kg": 1,
-      "categoria": "Combate"
-    },
-    {
-      "id": "espelho",
-      "nome": "Espelho",
-      "custo_po": 5,
-      "peso_kg": 0.25,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "estacas_de_ferro",
-      "nome": "Estacas de Ferro",
-      "custo_po": 1,
-      "peso_kg": 2.5,
-      "categoria": "Utensílio",
-      "nota": "pacote com 10"
-    },
-    {
-      "id": "estojo_mapa_pergaminho",
-      "nome": "Estojo (Mapa/Pergaminho)",
-      "custo_po": 1,
-      "peso_kg": 0.5,
-      "categoria": "Armazenamento",
-      "capacidade": "10 folhas de papel ou 5 de pergaminho"
-    },
-    {
-      "id": "estojo_virote",
-      "nome": "Estojo de Virotes",
-      "custo_po": 1,
-      "peso_kg": 0.5,
-      "categoria": "Armazenamento",
-      "capacidade": "20 virotes"
-    },
-    {
-      "id": "estrepes",
-      "nome": "Estrepes",
-      "custo_po": 1,
-      "peso_kg": 1,
-      "categoria": "Combate"
-    },
-    {
-      "id": "fantasia",
-      "nome": "Roupas, Fantasia",
-      "custo_po": 5,
-      "peso_kg": 2,
-      "categoria": "Vestuário"
-    },
-    {
-      "id": "fogo_alquimico",
-      "nome": "Fogo Alquímico",
-      "custo_po": 50,
-      "peso_kg": 0.5,
-      "categoria": "Consumível"
-    },
-    {
-      "id": "frasco",
-      "nome": "Frasco",
-      "custo_po": 1,
-      "peso_kg": 0,
-      "categoria": "Armazenamento",
-      "capacidade": "150 ml"
-    },
-    {
-      "id": "garrafa_vidro",
-      "nome": "Garrafa de Vidro",
-      "custo_po": 2,
-      "peso_kg": 1,
-      "categoria": "Armazenamento",
-      "capacidade": "1 litro"
-    },
-    {
-      "id": "grilhoes",
-      "nome": "Grilhões",
-      "custo_po": 2,
-      "peso_kg": 3,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "jarro",
-      "nome": "Jarro",
-      "custo_pc": 2,
-      "custo_po": 0.02,
-      "peso_kg": 2,
-      "categoria": "Armazenamento",
-      "capacidade": "4 litros"
-    },
-    {
-      "id": "lampada",
-      "nome": "Lâmpada",
-      "custo_pp": 5,
-      "custo_po": 0.5,
-      "peso_kg": 0.5,
-      "categoria": "Iluminação",
-      "iluminacao": "Luz Plena 4,5m / Meia-luz +9m"
-    },
-    {
-      "id": "lanterna_coberta",
-      "nome": "Lanterna Coberta",
-      "custo_po": 5,
-      "peso_kg": 1,
-      "categoria": "Iluminação",
-      "iluminacao": "Luz Plena 9m / Meia-luz +9m (pode tampar)"
-    },
-    {
-      "id": "lanterna_foca_facho",
-      "nome": "Lanterna Foca-Facho",
-      "custo_po": 10,
-      "peso_kg": 1,
-      "categoria": "Iluminação",
-      "iluminacao": "Cone de Luz Plena 18m / Meia-luz +18m"
-    },
-    {
-      "id": "livro",
-      "nome": "Livro",
-      "custo_po": 25,
-      "peso_kg": 2.5,
-      "categoria": "Escrita"
-    },
-    {
-      "id": "livro_de_magias",
-      "nome": "Livro de Magias",
-      "custo_po": 50,
-      "peso_kg": 2.5,
-      "categoria": "Conjuração",
-      "nota": "necessário para Mago; 100 páginas"
-    },
-    {
-      "id": "luneta",
-      "nome": "Luneta",
-      "custo_po": 1000,
-      "peso_kg": 0.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "lupa",
-      "nome": "Lupa",
-      "custo_po": 100,
-      "peso_kg": 0,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "mapa",
-      "nome": "Mapa",
-      "custo_po": 1,
-      "peso_kg": 0,
-      "categoria": "Navegação"
-    },
-    {
-      "id": "mochila",
-      "nome": "Mochila",
-      "custo_po": 2,
-      "peso_kg": 2.5,
-      "categoria": "Armazenamento",
-      "capacidade": "15 kg / 30 cm³"
-    },
-    {
-      "id": "oleo",
-      "nome": "Óleo",
-      "custo_pp": 1,
-      "custo_po": 0.1,
-      "peso_kg": 0.5,
-      "categoria": "Consumível",
-      "nota": "1 pote = 6h de combustível para lanterna"
-    },
-    {
-      "id": "pa",
-      "nome": "Pá",
-      "custo_po": 2,
-      "peso_kg": 2.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "papel",
-      "nome": "Papel",
-      "custo_pp": 2,
-      "custo_po": 0.2,
-      "peso_kg": 0,
-      "categoria": "Escrita",
-      "nota": "1 folha"
-    },
-    {
-      "id": "pe_de_cabra",
-      "nome": "Pé de Cabra",
-      "custo_po": 2,
-      "peso_kg": 2.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "perfume",
-      "nome": "Perfume",
-      "custo_po": 5,
-      "peso_kg": 0,
-      "categoria": "Consumível",
-      "nota": "120 ml; Vantagem em testes de Persuasão por 1h"
-    },
-    {
-      "id": "pergaminho",
-      "nome": "Pergaminho",
-      "custo_pp": 1,
-      "custo_po": 0.1,
-      "peso_kg": 0,
-      "categoria": "Escrita",
-      "nota": "1 folha"
-    },
-    {
-      "id": "pergaminho_magico_truque",
-      "nome": "Pergaminho Mágico (Truque)",
-      "custo_po": 30,
-      "peso_kg": 0,
-      "categoria": "Mágico"
-    },
-    {
-      "id": "pergaminho_magico_1",
-      "nome": "Pergaminho Mágico (1º Círculo)",
-      "custo_po": 50,
-      "peso_kg": 0,
-      "categoria": "Mágico"
-    },
-    {
-      "id": "pocao_de_cura",
-      "nome": "Poção de Cura",
-      "custo_po": 50,
-      "peso_kg": 0.25,
-      "categoria": "Consumível",
-      "efeito": "Cura 2d4 + 2 PV como Ação Bônus"
-    },
-    {
-      "id": "pote",
-      "nome": "Pote",
-      "custo_pc": 2,
-      "custo_po": 0.02,
-      "peso_kg": 0.5,
-      "categoria": "Armazenamento",
-      "capacidade": "0,5 litro"
-    },
-    {
-      "id": "pote_de_ferro",
-      "nome": "Pote de Ferro",
-      "custo_po": 2,
-      "peso_kg": 5,
-      "categoria": "Armazenamento",
-      "capacidade": "4 litros"
-    },
-    {
-      "id": "racoes",
-      "nome": "Rações",
-      "custo_pp": 5,
-      "custo_po": 0.5,
-      "peso_kg": 1,
-      "categoria": "Sobrevivência",
-      "nota": "1 dia de comida"
-    },
-    {
-      "id": "rede",
-      "nome": "Rede",
-      "custo_po": 1,
-      "peso_kg": 1.5,
-      "categoria": "Combate"
-    },
-    {
-      "id": "roldana_e_polias",
-      "nome": "Roldana e Polias",
-      "custo_po": 1,
-      "peso_kg": 2.5,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "roupas_finas",
-      "nome": "Roupas, Finas",
-      "custo_po": 15,
-      "peso_kg": 3,
-      "categoria": "Vestuário"
-    },
-    {
-      "id": "roupas_viagem",
-      "nome": "Roupas, Viagem",
-      "custo_po": 2,
-      "peso_kg": 2,
-      "categoria": "Vestuário"
-    },
-    {
-      "id": "saca",
-      "nome": "Saca",
-      "custo_pc": 1,
-      "custo_po": 0.01,
-      "peso_kg": 0.25,
-      "categoria": "Armazenamento",
-      "capacidade": "15 kg / 30 cm³"
-    },
-    {
-      "id": "saco_de_dormir",
-      "nome": "Saco de Dormir",
-      "custo_po": 1,
-      "peso_kg": 3.5,
-      "categoria": "Sobrevivência"
-    },
-    {
-      "id": "sino",
-      "nome": "Sino",
-      "custo_po": 1,
-      "peso_kg": 0,
-      "categoria": "Utensílio"
-    },
-    {
-      "id": "tenda",
-      "nome": "Tenda",
-      "custo_po": 2,
-      "peso_kg": 10,
-      "categoria": "Sobrevivência",
-      "capacidade": "2 criaturas Pequenas/Médias"
-    },
-    {
-      "id": "tinta",
-      "nome": "Tinta",
-      "custo_po": 10,
-      "peso_kg": 0,
-      "categoria": "Escrita",
-      "nota": "30 ml; suficiente para ~500 páginas"
-    },
-    {
-      "id": "tocha",
-      "nome": "Tocha",
-      "custo_pc": 1,
-      "custo_po": 0.01,
-      "peso_kg": 0.5,
-      "categoria": "Iluminação",
-      "iluminacao": "Luz Plena 6m / Meia-luz +6m; dura 1h"
-    },
-    {
-      "id": "tunica",
-      "nome": "Túnica",
-      "custo_po": 1,
-      "peso_kg": 2,
-      "categoria": "Vestuário"
-    },
-    {
-      "id": "vela",
-      "nome": "Vela",
-      "custo_pc": 1,
-      "custo_po": 0.01,
-      "peso_kg": 0,
-      "categoria": "Iluminação",
-      "iluminacao": "Luz Plena 1,5m / Meia-luz +1,5m; dura 1h"
-    },
-    {
-      "id": "veneno_basico",
-      "nome": "Veneno Básico",
-      "custo_po": 100,
-      "peso_kg": 0,
-      "categoria": "Consumível",
-      "nota": "Aplica em arma como Ação Bônus; alvo sofre dano Perfurante/Cortante e deve fazer salvaguarda"
+      "requisito_for": null
     }
-  ],
-  "kits": [
-    {
-      "id": "kit_aventureiro",
-      "nome": "Kit de Aventureiro",
-      "custo_po": 10,
-      "peso_kg": 27.5,
-      "conteudo": [
-        "Caixa para Fogo",
-        "Cantil",
-        "Corda",
-        "Mochila",
-        "2× Óleo",
-        "10× Rações",
-        "Saco de Dormir",
-        "10× Tocha"
-      ]
-    },
-    {
-      "id": "kit_artista",
-      "nome": "Kit de Artista",
-      "custo_po": 40,
-      "peso_kg": 29,
-      "conteudo": [
-        "Caixa para Fogo",
-        "Cantil",
-        "Espelho",
-        "3× Fantasia",
-        "Lanterna Foca-Facho",
-        "Mochila",
-        "8× Óleo",
-        "9× Rações",
-        "Saco de Dormir",
-        "Sino"
-      ]
-    },
-    {
-      "id": "kit_assaltante",
-      "nome": "Kit de Assaltante",
-      "custo_po": 16,
-      "peso_kg": 21,
-      "conteudo": [
-        "Caixa para Fogo",
-        "Cantil",
-        "Corda",
-        "Esferas de Metal",
-        "Lanterna Coberta",
-        "Mochila",
-        "7× Óleo",
-        "Pé de Cabra",
-        "5× Rações",
-        "Sino",
-        "10× Vela"
-      ]
-    },
-    {
-      "id": "kit_curandeiro",
-      "nome": "Kit de Curandeiro",
-      "custo_po": 5,
-      "peso_kg": 1.5,
-      "conteudo": [
-        "10 usos: estabiliza criatura com 0 PV sem teste de Medicina"
-      ]
-    },
-    {
-      "id": "kit_diplomata",
-      "nome": "Kit de Diplomata",
-      "custo_po": 39,
-      "peso_kg": 19.5,
-      "conteudo": [
-        "Baú",
-        "Caixa para Fogo",
-        "5× Caneta Tinteiro",
-        "2× Estojo de Mapa/Pergaminho",
-        "Lâmpada",
-        "4× Óleo",
-        "Perfume",
-        "5× Papel",
-        "5× Pergaminho",
-        "Roupas Finas",
-        "Tinta"
-      ]
-    },
-    {
-      "id": "kit_erudito",
-      "nome": "Kit de Erudito",
-      "custo_po": 40,
-      "peso_kg": 11,
-      "conteudo": [
-        "Caixa para Fogo",
-        "Caneta Tinteiro",
-        "Lâmpada",
-        "Livro",
-        "Mochila",
-        "10× Óleo",
-        "10× Pergaminho",
-        "Tinta"
-      ]
-    },
-    {
-      "id": "kit_escalada",
-      "nome": "Kit de Escalada",
-      "custo_po": 25,
-      "peso_kg": 6,
-      "conteudo": [
-        "Arnês, luvas, pítons, ponteiras de bota; se ancorado, não cai mais de 7,5m do ponto de ancoragem"
-      ]
-    },
-    {
-      "id": "kit_explorador_masmorras",
-      "nome": "Kit de Explorador de Masmorras",
-      "custo_po": 12,
-      "peso_kg": 27.5,
-      "conteudo": [
-        "Caixa para Fogo",
-        "Cantil",
-        "Corda",
-        "Estrepes",
-        "Mochila",
-        "2× Óleo",
-        "Pé de Cabra",
-        "10× Rações",
-        "10× Tocha"
-      ]
-    },
-    {
-      "id": "kit_sacerdote",
-      "nome": "Kit de Sacerdote",
-      "custo_po": 33,
-      "peso_kg": 14.5,
-      "conteudo": [
-        "Água Benta",
-        "Caixa para Fogo",
-        "Cobertor",
-        "Lâmpada",
-        "Mochila",
-        "7× Rações",
-        "Túnica"
-      ]
-    }
-  ],
-  "servicos": {
-    "descricao": "Preços de referência para serviços comuns nos mundos de D&D.",
-    "alimentacao_e_hospedagem": [
-      {
-        "servico": "Refeição barata",
-        "custo": "3 PC/dia"
-      },
-      {
-        "servico": "Refeição modesta",
-        "custo": "1 PP/dia"
-      },
-      {
-        "servico": "Refeição confortável",
-        "custo": "5 PP/dia"
-      },
-      {
-        "servico": "Refeição rica",
-        "custo": "1 PO/dia"
-      },
-      {
-        "servico": "Refeição aristocrata",
-        "custo": "4 PO/dia"
-      },
-      {
-        "servico": "Estrebaria (animal)",
-        "custo": "5 PP/dia"
-      },
-      {
-        "servico": "Pousada (humilde)",
-        "custo": "1 PP/noite"
-      },
-      {
-        "servico": "Pousada (modesta)",
-        "custo": "5 PP/noite"
-      },
-      {
-        "servico": "Pousada (confortável)",
-        "custo": "1 PO/noite"
-      },
-      {
-        "servico": "Pousada (rica)",
-        "custo": "2 PO/noite"
-      },
-      {
-        "servico": "Pousada (aristocrata)",
-        "custo": "4 PO/noite"
-      }
-    ],
-    "magias_contratadas": [
-      {
-        "circulo": 1,
-        "custo_po": 10
-      },
-      {
-        "circulo": 2,
-        "custo_po": 30
-      },
-      {
-        "circulo": 3,
-        "custo_po": 90
-      },
-      {
-        "circulo": 4,
-        "custo_po": 270
-      },
-      {
-        "circulo": 5,
-        "custo_po": 810
-      },
-      {
-        "circulo": 6,
-        "custo_po": 2430
-      },
-      {
-        "circulo": 7,
-        "custo_po": 7290
-      },
-      {
-        "circulo": 8,
-        "custo_po": 21870
-      },
-      {
-        "circulo": 9,
-        "custo_po": 65610
-      }
-    ]
-  },
-  "resumo_precos_por_categoria": {
-    "armaduras_leves": {
-      "min_po": 5,
-      "max_po": 45
-    },
-    "armaduras_medias": {
-      "min_po": 10,
-      "max_po": 750
-    },
-    "armaduras_pesadas": {
-      "min_po": 30,
-      "max_po": 1500
-    },
-    "escudo": {
-      "po": 10
-    },
-    "armas_simples": {
-      "min_po": 0.01,
-      "max_po": 25
-    },
-    "armas_marciais": {
-      "min_po": 2,
-      "max_po": 500
-    },
-    "focos_arcanos": {
-      "min_po": 5,
-      "max_po": 20
-    },
-    "focos_druidicos": {
-      "min_po": 1,
-      "max_po": 10
-    },
-    "simbolos_sagrados": {
-      "po": 5
-    },
-    "kits": {
-      "min_po": 5,
-      "max_po": 40
-    },
-    "instrumentos": {
-      "min_po": 2,
-      "max_po": 35
-    },
-    "ferramentas_artesao": {
-      "min_po": 1,
-      "max_po": 50
-    },
-    "pocao_de_cura": {
-      "po": 50
-    },
-    "veneno_basico": {
-      "po": 100
-    }
-  }
+  ]
 }

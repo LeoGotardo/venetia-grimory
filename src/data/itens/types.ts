@@ -2,8 +2,8 @@ export interface Arma {
   tipo_item: 'arma'
   id: string
   nome: string
-  categoria: 'Simples' | 'Marcial'
-  tipo: 'Corpo a Corpo' | 'À Distância'
+  categoria: 'Simples' | 'Marcial' | 'Simple' | 'Martial'
+  tipo: 'Corpo a Corpo' | 'À Distância' | 'Melee' | 'Ranged'
   preco: string
   dano: string
   tipo_dano: string
@@ -16,7 +16,7 @@ export interface Armadura {
   tipo_item: 'armadura'
   id: string
   nome: string
-  categoria: 'Leve' | 'Média' | 'Pesada' | 'Escudo'
+  categoria: 'Leve' | 'Média' | 'Pesada' | 'Escudo' | 'Light' | 'Medium' | 'Heavy' | 'Shield'
   preco: string
   ca: string
   forca_minima: number | null
@@ -29,7 +29,15 @@ export interface Ferramenta {
   tipo_item: 'ferramenta'
   id: string
   nome: string
-  categoria: 'Ferramentas de Artesão' | 'Utilitário' | 'Jogos' | 'Instrumento Musical'
+  categoria:
+    | 'Ferramentas de Artesão'
+    | 'Utilitário'
+    | 'Jogos'
+    | 'Instrumento Musical'
+    | "Artisan's Tools"
+    | 'Utility'
+    | 'Gaming Sets'
+    | 'Musical Instrument'
   preco: string
   peso: string
   descricao: string
@@ -40,7 +48,7 @@ export interface PacoteEquipamento {
   tipo_item: 'kit'
   id: string
   nome: string
-  categoria: 'Pacote de Equipamento'
+  categoria: 'Pacote de Equipamento' | 'Equipment Pack'
   preco: string
   peso: string
   itens_incluidos: string[]
@@ -51,7 +59,19 @@ export interface Transporte {
   tipo_item: 'transporte'
   id: string
   nome: string
-  categoria: 'Montaria Terrestre' | 'Animal de Carga' | 'Arreio' | 'Acessório' | 'Veículo Terrestre' | 'Veículo Aquático'
+  categoria:
+    | 'Montaria Terrestre'
+    | 'Animal de Carga'
+    | 'Arreio'
+    | 'Acessório'
+    | 'Veículo Terrestre'
+    | 'Veículo Aquático'
+    | 'Land Mount'
+    | 'Pack Animal'
+    | 'Tack'
+    | 'Accessory'
+    | 'Land Vehicle'
+    | 'Water Vehicle'
   preco: string
   peso?: string
   deslocamento?: string
@@ -64,7 +84,17 @@ export interface ItemMagico {
   id: string
   nome: string
   categoria: string
-  raridade: 'Comum' | 'Incomum' | 'Raro' | 'Muito Raro' | 'Lendário'
+  raridade:
+    | 'Comum'
+    | 'Incomum'
+    | 'Raro'
+    | 'Muito Raro'
+    | 'Lendário'
+    | 'Common'
+    | 'Uncommon'
+    | 'Rare'
+    | 'Very Rare'
+    | 'Legendary'
   preco: string
   sintonia?: boolean
   circulo?: number

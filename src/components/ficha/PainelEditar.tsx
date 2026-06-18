@@ -8,7 +8,7 @@ import { Badge } from '../ui/Badge'
 import dadosJson from '../../data/dnd_dados.json'
 import type { DadosJogo, AtributoId } from '../../types'
 import { NIVEL_MINIMO, NIVEL_MAXIMO, MULTICLASSE_PREREQUISITOS, TIPO_CONJURADOR } from '../../constants'
-import { getTruquesPorClasses, getMagiasPorClassesECirculos } from '../../data/magias'
+import { getTruquesPorClasses, getMagiasPorClassesECirculos, getTruquesPorClasse, getMagiasPorClasse } from '../../data/magias'
 import { getAntecedentes } from '../../data/antecedentes'
 import type { Magia } from '../../data/magias'
 import { SpellCard } from '../ui/SpellCard'
@@ -606,7 +606,7 @@ function getMaxCirculoNaClasse(classeData: { progressao: unknown[] } | undefined
 
 function SecaoMagia() {
   const { ficha, atualizarMagia } = useFichaStore()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { magia } = ficha
   const [circuloAtivo, setCirculoAtivo] = useState(1)
   const [busca, setBusca] = useState('')
@@ -651,10 +651,10 @@ function SecaoMagia() {
     return (classe.progressao[Math.max(0, nivel - 1)] ?? classe.progressao[0]) as Record<string, unknown> | null
   }, [classe, nivel])
 
-  const truquesDisponiveis = useMemo(() => getTruquesPorClasses(allClasseIds), [allClasseIds])
+  const truquesDisponiveis = useMemo(() => getTruquesPorClasses(allClasseIds), [allClasseIds, i18n.language])
   const magiasDisponiveis = useMemo(
     () => getMagiasPorClassesECirculos(classesParaMagias),
-    [classesParaMagias],
+    [classesParaMagias, i18n.language],
   )
 
   const circulosDisponiveis = useMemo(() => {
@@ -674,23 +674,38 @@ function SecaoMagia() {
     [magiasDisponiveis, circuloAtivo, busca],
   )
 
+  function resolveCasterClass(nome: string, isTruque: boolean): string {
+    for (const { classeId: cid } of classesParaMagias) {
+      const lista = isTruque ? getTruquesPorClasse(cid) : getMagiasPorClasse(cid)
+      if (lista.some(m => m.nome === nome)) return cid
+    }
+    return classesParaMagias[0]?.classeId ?? classeId
+  }
+
   function toggleTruque(nome: string) {
-    const atual = magia.truques_conhecidos
+    const cid = resolveCasterClass(nome, true)
+    const atual = magia.truques_por_classe[cid] ?? []
     atualizarMagia({
-      truques_conhecidos: atual.includes(nome)
-        ? atual.filter(t => t !== nome)
-        : [...atual, nome],
+      truques_por_classe: {
+        ...magia.truques_por_classe,
+        [cid]: atual.includes(nome) ? atual.filter(t => t !== nome) : [...atual, nome],
+      },
     })
   }
 
   function toggleMagia(nome: string) {
-    const atual = magia.magias_preparadas
+    const cid = resolveCasterClass(nome, false)
+    const atual = magia.magias_por_classe[cid] ?? []
     atualizarMagia({
-      magias_preparadas: atual.includes(nome)
-        ? atual.filter(m => m !== nome)
-        : [...atual, nome],
+      magias_por_classe: {
+        ...magia.magias_por_classe,
+        [cid]: atual.includes(nome) ? atual.filter(m => m !== nome) : [...atual, nome],
+      },
     })
   }
+
+  const allTruques = Object.values(magia.truques_por_classe).flat()
+  const allMagias = Object.values(magia.magias_por_classe).flat()
 
   if (!magia.conjurador) {
     return (
@@ -723,14 +738,14 @@ function SecaoMagia() {
           <div className="flex items-center justify-between">
             <span className="text-sm text-[#B8860B] font-medium">{t('edit.cantrips')}</span>
             {maxTruques > 0 && (
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${magia.truques_conhecidos.length >= maxTruques ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
-                {magia.truques_conhecidos.length}/{maxTruques}
+              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${allTruques.length >= maxTruques ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
+                {allTruques.length}/{maxTruques}
               </span>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
             {truquesFiltrados.map(tr => {
-              const sel = magia.truques_conhecidos.includes(tr.nome)
+              const sel = allTruques.includes(tr.nome)
               return (
                 <div key={tr.id} className="inline-flex items-center">
                   <button
@@ -775,8 +790,8 @@ function SecaoMagia() {
           <div className="flex items-center justify-between">
             <span className="text-sm text-[#B8860B] font-medium">{t('edit.preparedSpells')}</span>
             {maxMagias > 0 && (
-              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${magia.magias_preparadas.length >= maxMagias ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
-                {magia.magias_preparadas.length}/{maxMagias}
+              <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${allMagias.length >= maxMagias ? 'bg-[#B8860B]/20 text-[#D4A017]' : 'bg-[#2D2520] text-[#A8A09B]'}`}>
+                {allMagias.length}/{maxMagias}
               </span>
             )}
           </div>
@@ -801,7 +816,7 @@ function SecaoMagia() {
             {magiasDoCirculo.length === 0
               ? <p className="text-xs text-[#A8A09B]">{busca ? t('edit.noSpellsFound') : t('edit.noSpellsAvailable')}</p>
               : magiasDoCirculo.map(m => {
-                  const sel = magia.magias_preparadas.includes(m.nome)
+                  const sel = allMagias.includes(m.nome)
                   return (
                     <div key={m.id} className="inline-flex items-center">
                       <button

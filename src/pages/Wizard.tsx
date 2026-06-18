@@ -12,6 +12,7 @@ import { Step04Especie } from '../components/wizard/Step04Especie'
 import { Step05Antecedente } from '../components/wizard/Step05Antecedente'
 import { Step06Atributos } from '../components/wizard/Step06Atributos'
 import { Step07Pericias } from '../components/wizard/Step07Pericias'
+import { StepMulticlasse } from '../components/wizard/StepMulticlasse'
 import { Step08Spells } from '../components/wizard/Step08Spells'
 import { Step09Idiomas } from '../components/wizard/Step09Idiomas'
 import { Step10Equipamento } from '../components/wizard/Step10Equipamento'
@@ -25,12 +26,13 @@ const PASSOS_COMPS = [
   { id: 4,  stepKey: 'especie',      Comp: Step04Especie },
   { id: 5,  stepKey: 'atributos',    Comp: Step06Atributos },
   { id: 6,  stepKey: 'antecedente',  Comp: Step05Antecedente },
-  { id: 7,  stepKey: 'pericias',     Comp: Step07Pericias },
-  { id: 8,  stepKey: 'magias',       Comp: Step08Spells },
-  { id: 9,  stepKey: 'idiomas',      Comp: Step09Idiomas },
-  { id: 10, stepKey: 'equipamento',  Comp: Step10Equipamento },
-  { id: 11, stepKey: 'personalidade', Comp: Step11Personalidade },
-  { id: 12, stepKey: 'revisar',      Comp: Step12Revisar },
+  { id: 7,  stepKey: 'multiclasse',  Comp: StepMulticlasse },
+  { id: 8,  stepKey: 'pericias',     Comp: Step07Pericias },
+  { id: 9,  stepKey: 'magias',       Comp: Step08Spells },
+  { id: 10, stepKey: 'idiomas',      Comp: Step09Idiomas },
+  { id: 11, stepKey: 'equipamento',  Comp: Step10Equipamento },
+  { id: 12, stepKey: 'personalidade', Comp: Step11Personalidade },
+  { id: 13, stepKey: 'revisar',      Comp: Step12Revisar },
 ]
 
 export function Wizard() {
@@ -92,7 +94,7 @@ export function Wizard() {
       <div className="md:hidden sticky top-[60px] z-10 bg-[#17130f] border-b border-white/[0.06] px-4 py-2">
         <div className="flex items-center gap-3">
           <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-[#D4A017] rounded-full transition-all duration-300" style={{ width: `${(passoAtual / 12) * 100}%` }} />
+            <div className="h-full bg-[#D4A017] rounded-full transition-all duration-300" style={{ width: `${(passoAtual / 13) * 100}%` }} />
           </div>
           <span className="text-xs font-semibold text-[#D4A017] whitespace-nowrap">{PASSOS[passoAtual - 1].titulo}</span>
         </div>

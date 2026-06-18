@@ -5,6 +5,7 @@ import { WizardNav } from './WizardNav'
 import { formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
 import dadosJson from '../../data/dnd_dados.json'
 import type { DadosJogo } from '../../types'
+import { getAntecedentes } from '../../data/antecedentes'
 
 const dados = dadosJson as unknown as DadosJogo
 
@@ -16,7 +17,7 @@ export function Step12Revisar() {
 
   const classe = dados.classes.find(c => c.id === id.classe_id)
   const especie = dados.especies?.find(e => e.id === id.especie_id)
-  const ante = dados.antecedentes?.find(a => a.id === id.antecedente_id)
+  const anteNome = getAntecedentes().find(a => a.id === id.antecedente_id)?.nome
   const subclasse = classe?.subclasses.find(s => s.id === id.subclasse_id)
 
   function criar() {
@@ -40,7 +41,7 @@ export function Step12Revisar() {
             <p><span className="text-[#A8A09B]">{t('step12.labelClass')}</span> <span className="text-[#F5F0E8]">{classe?.nome ?? '—'}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelSubclass')}</span> <span className="text-[#F5F0E8]">{subclasse?.nome ?? (id.nivel < 3 ? t('step12.subclassNA') : '—')}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelSpecies')}</span> <span className="text-[#F5F0E8]">{especie?.nome ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">{t('step12.labelBackground')}</span> <span className="text-[#F5F0E8]">{ante?.nome ?? '—'}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelBackground')}</span> <span className="text-[#F5F0E8]">{anteNome ?? '—'}</span></p>
             <p>
               <span className="text-[#A8A09B]">{t('step12.labelAlignment')}</span>{' '}
               <span className="text-[#F5F0E8]">
@@ -101,7 +102,7 @@ export function Step12Revisar() {
       </div>
 
       <WizardNav
-        onBack={() => setPasso(11)}
+        onBack={() => setPasso(12)}
         onNext={criar}
         isLast
         nextLabel={t('step12.createChar')}

@@ -4,141 +4,141 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
   {
     tipo_item: 'kit',
     id: 'pacote_de_explorador',
-    nome: 'Pacote de Explorador',
-    categoria: 'Pacote de Equipamento',
+    nome: "Explorer's Pack",
+    categoria: 'Equipment Pack',
     preco: '10 po',
     peso: '29.5 kg',
     itens_incluidos: [
-      'Mochila',
-      'Saco de dormir',
-      'Kit de cozinha',
-      'Caixa de fogo',
-      '10 Tochas',
-      '10 dias de Rações de viagem',
-      'Cantil',
-      'Corda de cânhamo (15 m)'
+      'Backpack',
+      'Bedroll',
+      'Mess kit',
+      'Tinderbox',
+      '10 Torches',
+      '10 days of Rations',
+      'Waterskin',
+      "Hemp Rope (50 ft)"
     ],
-    descricao: 'O pacote mais versátil para viagens longas por estradas ou florestas. Garante sobrevivência básica na natureza por até dez dias.'
+    descricao: 'The most versatile pack for long journeys through roads or forests. Provides basic survival in the wild for up to ten days.'
   },
   {
     tipo_item: 'kit',
     id: 'pacote_de_masmorrista',
-    nome: 'Pacote de Masmorrista',
-    categoria: 'Pacote de Equipamento',
+    nome: "Dungeoneer's Pack",
+    categoria: 'Equipment Pack',
     preco: '12 po',
     peso: '30.5 kg',
     itens_incluidos: [
-      'Mochila',
-      'Pé de cabra',
-      'Martelo',
-      '10 Pítons',
-      '10 Tochas',
-      'Caixa de fogo',
-      '10 dias de Rações de viagem',
-      'Cantil',
-      'Corda de cânhamo (15 m)'
+      'Backpack',
+      'Crowbar',
+      'Hammer',
+      '10 Pitons',
+      '10 Torches',
+      'Tinderbox',
+      '10 days of Rations',
+      'Waterskin',
+      "Hemp Rope (50 ft)"
     ],
-    descricao: 'Ideal para explorar ruínas subterrâneas. Contém ferramentas para forçar portas, escalar paredes e prender armadilhas.'
+    descricao: 'Ideal for exploring underground ruins. Contains tools to force doors, climb walls, and secure traps.'
   },
   {
     tipo_item: 'kit',
     id: 'pacote_de_artista',
-    nome: 'Pacote de Artista',
-    categoria: 'Pacote de Equipamento',
+    nome: "Entertainer's Pack",
+    categoria: 'Equipment Pack',
     preco: '40 po',
     peso: '17.0 kg',
     itens_incluidos: [
-      'Mochila',
-      'Saco de dormir',
-      '2 Trajes de artista',
-      '5 Velas',
-      '5 dias de Rações de viagem',
-      'Cantil',
-      'Kit de disfarce'
+      'Backpack',
+      'Bedroll',
+      '2 Costumes',
+      '5 Candles',
+      '5 days of Rations',
+      'Waterskin',
+      'Disguise Kit'
     ],
-    descricao: 'Excelente para bardos e farsantes. Inclui trajes para apresentações em cortes ou tavernas e recursos para manter a aparência em viagens.'
+    descricao: 'Excellent for bards and performers. Includes costumes for court or tavern performances and resources to maintain appearance while traveling.'
   },
   {
     tipo_item: 'kit',
     id: 'pacote_de_assaltante',
-    nome: 'Pacote de Assaltante',
-    categoria: 'Pacote de Equipamento',
+    nome: "Burglar's Pack",
+    categoria: 'Equipment Pack',
     preco: '16 po',
     peso: '22.0 kg',
     itens_incluidos: [
-      'Mochila',
-      'Saco de 1.000 esferas de rolamento',
-      '10 m de linha de fio',
-      'Sino',
-      '5 Velas',
-      'Pé de cabra',
-      'Lanterna furta-fogo',
-      '2 Frascos de óleo',
-      '5 dias de Rações de viagem',
-      'Cantil',
-      'Corda de cânhamo (15 m)'
+      'Backpack',
+      'Bag of 1,000 ball bearings',
+      '10 ft of string',
+      'Bell',
+      '5 Candles',
+      'Crowbar',
+      'Hooded lantern',
+      '2 flasks of Oil',
+      '5 days of Rations',
+      'Waterskin',
+      "Hemp Rope (50 ft)"
     ],
-    descricao: 'O kit definitivo para ladinos e infiltrações silenciosas. Focado em criar distrações, arrombar barreiras e detectar armadilhas.'
+    descricao: 'The ultimate kit for rogues and silent infiltrations. Focused on creating distractions, breaking barriers, and detecting traps.'
   },
   {
     tipo_item: 'kit',
     id: 'pacote_de_erudito',
-    nome: 'Pacote de Erudito',
-    categoria: 'Pacote de Equipamento',
+    nome: "Scholar's Pack",
+    categoria: 'Equipment Pack',
     preco: '40 po',
     peso: '5.0 kg',
     itens_incluidos: [
-      'Mochila',
-      'Livro de estudo',
-      'Tinta (frasco de 30 ml)',
-      'Pena de ganso',
-      '10 folhas de Pergaminho',
-      'Faca de cortar papel',
-      'Vidro de pó de giz'
+      'Backpack',
+      'Book of lore',
+      'Ink (1 oz bottle)',
+      'Ink pen',
+      '10 sheets of Parchment',
+      'Little bag of sand',
+      'Small knife'
     ],
-    descricao: 'Perfeito para magos e clérigos focados em registro de conhecimento, deciframento de runas e cópia de pergaminhos mágicos.'
+    descricao: 'Perfect for wizards and clerics focused on recording knowledge, deciphering runes, and copying spell scrolls.'
   },
   {
     tipo_item: 'kit',
     id: 'pacote_de_sacerdote',
-    nome: 'Pacote de Sacerdote',
-    categoria: 'Pacote de Equipamento',
+    nome: "Priest's Pack",
+    categoria: 'Equipment Pack',
     preco: '19 po',
     peso: '12.0 kg',
     itens_incluidos: [
-      'Mochila',
-      'Manta acolchoada',
-      '10 Velas',
-      'Caixa de fogo',
-      'Caixa de esmolas',
-      '2 blocos de Incenso',
-      'Incensário',
-      'Vestes clericais',
-      '2 dias de Rações de viagem',
-      'Cantil'
+      'Backpack',
+      'Blanket',
+      '10 Candles',
+      'Tinderbox',
+      'Alms box',
+      '2 blocks of Incense',
+      'Censer',
+      'Vestments',
+      '2 days of Rations',
+      'Waterskin'
     ],
-    descricao: 'Para clérigos e paladinos realizarem ritos sagrados, abençoarem locais e conduzirem cerimônias durante as campanhas.'
+    descricao: 'For clerics and paladins to conduct sacred rites, bless locations, and hold ceremonies during campaigns.'
   },
   {
     tipo_item: 'kit',
     id: 'pacote_de_diplomata',
-    nome: 'Pacote de Diplomata',
-    categoria: 'Pacote de Equipamento',
+    nome: "Diplomat's Pack",
+    categoria: 'Equipment Pack',
     preco: '39 po',
     peso: '16.5 kg',
     itens_incluidos: [
-      'Cofre pequeno',
-      '2 caixas de Pergaminhos',
-      'Roupas finas',
-      'Tinta',
-      'Pena de ganso',
-      'Lacre de cera',
-      'Sinete personalizado',
-      '5 Velas',
-      'Lâmpada de óleo',
-      '2 Frascos de óleo',
-      'Frasco de perfume'
+      'Chest',
+      '2 cases for maps and scrolls',
+      'Fine clothes',
+      'Ink',
+      'Ink pen',
+      'Sealing wax',
+      'Signet ring',
+      '5 Candles',
+      'Oil lamp',
+      '2 flasks of Oil',
+      'Perfume'
     ],
-    descricao: 'Para interações de alta sociedade, negociações políticas e registros oficiais de tratados burocráticos.'
+    descricao: 'For high-society interactions, political negotiations, and official records of bureaucratic treaties.'
   }
 ]

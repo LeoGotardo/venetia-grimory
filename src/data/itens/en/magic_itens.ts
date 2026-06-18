@@ -1,228 +1,228 @@
 import type { ItemMagico } from '../types'
 
 export const ITENS_MAGICOS: ItemMagico[] = [
-  // ─── PERGAMINHOS MÁGICOS ──────────────────────────────────────────────────
+  // ─── SPELL SCROLLS ────────────────────────────────────────────────────────
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_truque',
-    nome: 'Pergaminho de Truque',
-    categoria: 'Pergaminho',
-    raridade: 'Comum',
+    nome: 'Cantrip Scroll',
+    categoria: 'Scroll',
+    raridade: 'Common',
     preco: '10 po',
     circulo: 0,
     id_magia: '',
-    descricao: 'Conjurar do pergaminho requer o tempo normal da magia e consome o item. Qualquer conjurador pode ler truques da sua lista de classe.'
+    descricao: 'Casting from the scroll requires the spell\'s normal casting time and consumes the item. Any spellcaster can read cantrips from their class list.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_1',
-    nome: 'Pergaminho de 1º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Comum',
+    nome: '1st-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Common',
     preco: '10 po',
     circulo: 1,
     id_magia: '',
-    descricao: 'Se a magia estiver na lista da sua classe, pode ser lida e conjurada sem gastar componentes ou espaços de magia.'
+    descricao: "If the spell is on your class list, it can be read and cast without expending spell components or spell slots."
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_2',
-    nome: 'Pergaminho de 2º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Incomum',
+    nome: '2nd-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Uncommon',
     preco: '30 po',
     circulo: 2,
     id_magia: '',
-    descricao: 'Se a magia for de círculo superior ao que você conjura normalmente, é necessário um teste de atributo mágico para lê-la com êxito.'
+    descricao: 'If the spell is of a higher level than you can normally cast, you must make a spellcasting ability check to read it successfully.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_3',
-    nome: 'Pergaminho de 3º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Incomum',
+    nome: '3rd-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Uncommon',
     preco: '90 po',
     circulo: 3,
     id_magia: '',
-    descricao: 'Após a leitura das runas místicas, o pergaminho desfaz-se em poeira e o efeito da magia é ativado imediatamente.'
+    descricao: 'After reading the mystical runes, the scroll crumbles to dust and the magical effect is triggered immediately.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_4',
-    nome: 'Pergaminho de 4º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Raro',
+    nome: '4th-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Rare',
     preco: '270 po',
     circulo: 4,
     id_magia: '',
-    descricao: 'Item valioso que permite a conjuradores expandirem o seu repertório tático com magias de alto impacto em momentos críticos.'
+    descricao: 'A valuable item that allows spellcasters to expand their tactical repertoire with high-impact spells at critical moments.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_5',
-    nome: 'Pergaminho de 5º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Raro',
+    nome: '5th-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Rare',
     preco: '810 po',
     circulo: 5,
     id_magia: '',
-    descricao: 'Armazena energias arcanas ou divinas complexas, prontas para serem disparadas por conjuradores experientes.'
+    descricao: 'Stores complex arcane or divine energies, ready to be unleashed by experienced spellcasters.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_6',
-    nome: 'Pergaminho de 6º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Muito Raro',
+    nome: '6th-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Very Rare',
     preco: '2430 po',
     circulo: 6,
     id_magia: '',
-    descricao: 'Raríssimo, encontrado apenas em tesouros guardados por grandes ameaças ou em ruínas de civilizações extintas.'
+    descricao: 'Extremely rare, found only in treasures guarded by great threats or in ruins of extinct civilizations.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_7',
-    nome: 'Pergaminho de 7º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Muito Raro',
+    nome: '7th-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Very Rare',
     preco: '7290 po',
     circulo: 7,
     id_magia: '',
-    descricao: 'Concentra um poder devastador ou magias de alteração da realidade que poucos mortais conseguem dominar sem treinamento extenso.'
+    descricao: 'Concentrates devastating power or reality-altering spells that few mortals can master without extensive training.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_8',
-    nome: 'Pergaminho de 8º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Lendário',
+    nome: '8th-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Legendary',
     preco: '21870 po',
     circulo: 8,
     id_magia: '',
-    descricao: 'Relíquia lendária capaz de conjurar rituais de controle climático total ou destruição em massa com uma única leitura.'
+    descricao: 'A legendary relic capable of casting rituals of total weather control or mass destruction with a single reading.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pergaminho_circulo_9',
-    nome: 'Pergaminho de 9º Círculo',
-    categoria: 'Pergaminho',
-    raridade: 'Lendário',
+    nome: '9th-Level Scroll',
+    categoria: 'Scroll',
+    raridade: 'Legendary',
     preco: '65610 po',
     circulo: 9,
     id_magia: '',
-    descricao: 'O ápice do poder em forma de pergaminho. Permite disparar magias como Parar o Tempo ou Desejo uma única vez antes de se desfazer.'
+    descricao: 'The pinnacle of power in scroll form. Allows casting spells like Time Stop or Wish a single time before crumbling to dust.'
   },
 
-  // ─── POÇÕES E CONSUMÍVEIS ─────────────────────────────────────────────────
+  // ─── POTIONS AND CONSUMABLES ──────────────────────────────────────────────
   {
     tipo_item: 'item_magico',
     id: 'pocao_de_cura',
-    nome: 'Poção de Cura',
-    categoria: 'Poção',
-    raridade: 'Comum',
+    nome: 'Potion of Healing',
+    categoria: 'Potion',
+    raridade: 'Common',
     preco: '50 po',
-    efeito: '2d4 + 2 PV',
-    descricao: 'Líquido vermelho cintilante que borbulha levemente. Beber ou administrar restaura pontos de vida imediatamente ao alvo.'
+    efeito: '2d4 + 2 HP',
+    descricao: 'A glimmering red liquid that bubbles slightly. Drinking or administering it restores hit points to the target immediately.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pocao_de_cura_maior',
-    nome: 'Poção de Cura Maior',
-    categoria: 'Poção',
-    raridade: 'Incomum',
+    nome: 'Potion of Greater Healing',
+    categoria: 'Potion',
+    raridade: 'Uncommon',
     preco: '150 po',
-    efeito: '4d4 + 4 PV',
-    descricao: 'Versão mais concentrada e espessa do elixir de cura, destinada a tratar ferimentos graves sofridos em combate intenso.'
+    efeito: '4d4 + 4 HP',
+    descricao: 'A more concentrated and thicker version of the healing elixir, intended to treat serious wounds suffered in intense combat.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pocao_de_cura_superior',
-    nome: 'Poção de Cura Superior',
-    categoria: 'Poção',
-    raridade: 'Raro',
+    nome: 'Potion of Superior Healing',
+    categoria: 'Potion',
+    raridade: 'Rare',
     preco: '270 po',
-    efeito: '8d4 + 8 PV',
-    descricao: 'Elixir de alto poder curativo de cor vermelho-escuro quase opaco. Restaura ferimentos que poções comuns não conseguem tratar por completo.'
+    efeito: '8d4 + 8 HP',
+    descricao: 'A deep, near-opaque dark-red healing elixir of high potency. Restores wounds that ordinary potions cannot fully treat.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pocao_de_cura_suprema',
-    nome: 'Poção de Cura Suprema',
-    categoria: 'Poção',
-    raridade: 'Muito Raro',
+    nome: 'Potion of Supreme Healing',
+    categoria: 'Potion',
+    raridade: 'Very Rare',
     preco: '1350 po',
-    efeito: '10d4 + 20 PV',
-    descricao: 'O mais poderoso elixir curativo mundano existente, de cor carmesim intensa e brilhante. Capaz de salvar heróis à beira da morte.'
+    efeito: '10d4 + 20 HP',
+    descricao: 'The most powerful mundane healing elixir in existence, of an intense and brilliant crimson color. Capable of saving heroes on the brink of death.'
   },
 
-  // ─── ITENS DE SINTONIA ────────────────────────────────────────────────────
+  // ─── ATTUNED ITEMS ────────────────────────────────────────────────────────
   {
     tipo_item: 'item_magico',
     id: 'anel_de_protecao',
-    nome: 'Anel de Proteção',
-    categoria: 'Anel',
-    raridade: 'Incomum',
+    nome: 'Ring of Protection',
+    categoria: 'Ring',
+    raridade: 'Uncommon',
     preco: '2000 po',
     sintonia: true,
-    descricao: 'Anel de ouro gravado com runas protetoras. Enquanto vestido, concede +1 na Classe de Armadura e em todas as salvaguardas.'
+    descricao: 'A gold ring engraved with protective runes. While worn, grants +1 to Armor Class and all saving throws.'
   },
   {
     tipo_item: 'item_magico',
     id: 'capa_de_protecao',
-    nome: 'Capa de Proteção',
-    categoria: 'Vestuário',
-    raridade: 'Incomum',
+    nome: 'Cloak of Protection',
+    categoria: 'Wondrous Item',
+    raridade: 'Uncommon',
     preco: '1500 po',
     sintonia: true,
-    descricao: 'Capa com bordados arcanos que se movem levemente mesmo sem vento. Concede +1 na Classe de Armadura e em todas as salvaguardas.'
+    descricao: 'A cloak with arcane embroidery that moves slightly even without wind. Grants +1 to Armor Class and all saving throws.'
   },
   {
     tipo_item: 'item_magico',
     id: 'botas_aladas',
-    nome: 'Botas Aladas',
-    categoria: 'Calçado',
-    raridade: 'Incomum',
+    nome: 'Winged Boots',
+    categoria: 'Wondrous Item',
+    raridade: 'Uncommon',
     preco: '4000 po',
     sintonia: true,
-    descricao: 'Botas com asas decorativas nos calcanhares que ganham vida ao ser ativadas. Concedem voo igual ao deslocamento terrestre por até 4 horas por dia.'
+    descricao: 'Boots with decorative wings at the heels that come to life when activated. Grant a flying speed equal to your walking speed for up to 4 hours per day.'
   },
   {
     tipo_item: 'item_magico',
     id: 'pedra_da_sorte',
-    nome: 'Pedra da Sorte',
-    categoria: 'Maravilha',
-    raridade: 'Incomum',
+    nome: 'Stone of Good Luck',
+    categoria: 'Wondrous Item',
+    raridade: 'Uncommon',
     preco: '4500 po',
     sintonia: true,
-    descricao: 'Seixo polido que vibra suavemente ao toque. Enquanto carregada, concede +1 em todos os testes de atributo e salvaguardas.'
+    descricao: 'A polished pebble that vibrates gently to the touch. While carried, grants +1 to all ability checks and saving throws.'
   },
   {
     tipo_item: 'item_magico',
     id: 'botas_de_velocidade',
-    nome: 'Botas de Velocidade',
-    categoria: 'Calçado',
-    raridade: 'Raro',
+    nome: 'Boots of Speed',
+    categoria: 'Wondrous Item',
+    raridade: 'Rare',
     preco: '4000 po',
     sintonia: true,
-    descricao: 'Botas com solas de metal gravadas com runas de celeridade. Ativadas com ação bônus, dobram o deslocamento e permitem ação de Disparada gratuita por 1 minuto.'
+    descricao: 'Boots with metal soles engraved with swiftness runes. Activated with a bonus action, they double your speed and allow a free Dash action for 1 minute.'
   },
   {
     tipo_item: 'item_magico',
     id: 'colar_de_bolas_de_fogo',
-    nome: 'Colar de Bolas de Fogo',
-    categoria: 'Colar',
-    raridade: 'Raro',
+    nome: 'Necklace of Fireballs',
+    categoria: 'Wondrous Item',
+    raridade: 'Rare',
     preco: '3000 po',
-    descricao: 'Colar com esferas de âmbar alaranjado. Cada esfera pode ser removida e arremessada até 27 m, explodindo como Bola de Fogo (CD 15) ao impacto. Possui 3d6 esferas.'
+    descricao: 'A necklace with orange amber beads. Each bead can be removed and thrown up to 27 m, exploding as Fireball (DC 15) on impact. Has 3d6 beads.'
   },
   {
     tipo_item: 'item_magico',
     id: 'manto_da_invisibilidade',
-    nome: 'Manto da Invisibilidade',
-    categoria: 'Vestuário',
-    raridade: 'Lendário',
+    nome: 'Cloak of Invisibility',
+    categoria: 'Wondrous Item',
+    raridade: 'Legendary',
     preco: '75000 po',
     sintonia: true,
-    descricao: 'Tecido costurado com fios de névoa e luz distorcida. Puxar o capuz concede invisibilidade completa por até 2 horas por dia (em parcelas de 1 minuto).'
+    descricao: 'Fabric sewn with threads of mist and distorted light. Pulling up the hood grants complete invisibility for up to 2 hours per day (in 1-minute increments).'
   }
 ]

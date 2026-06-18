@@ -1,318 +1,318 @@
 import type { Ferramenta } from '../types'
 
 export const FERRAMENTAS: Ferramenta[] = [
-  // ─── FERRAMENTAS DE ARTESÃO ───────────────────────────────────────────────
+  // ─── ARTISAN'S TOOLS ──────────────────────────────────────────────────────
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_alquimista',
-    nome: 'Ferramentas de Alquimista',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Alchemist's Supplies",
+    categoria: "Artisan's Tools",
     preco: '50 po',
     peso: '4.0 kg',
-    descricao: 'Béqueres de vidro, almofariz, pilão e reagentes químicos. Usadas para criar poções, fogo alquímico e antitoxinas.'
+    descricao: 'Glass beakers, a mortar and pestle, and chemical reagents. Used to create potions, alchemist\'s fire, and antitoxins.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_ferreiro',
-    nome: 'Ferramentas de Ferreiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Smith's Tools",
+    categoria: "Artisan's Tools",
     preco: '20 po',
     peso: '4.0 kg',
-    descricao: 'Martelos, tenaças, bigorna portátil, carvão e limas. Essencial para reparar armaduras, afiar espadas e forjar metais.'
+    descricao: 'Hammers, tongs, a portable anvil, charcoal, and files. Essential for repairing armor, sharpening swords, and forging metal.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_carpinteiro',
-    nome: 'Ferramentas de Carpinteiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Carpenter's Tools",
+    categoria: "Artisan's Tools",
     preco: '8 po',
     peso: '3.0 kg',
-    descricao: 'Serra, formões, martelo, pregos, enxó e plaina. Útil para reforçar portas, construir barricadas e reparar veículos.'
+    descricao: 'A saw, chisels, a hammer, nails, an adze, and a plane. Useful for reinforcing doors, building barricades, and repairing vehicles.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_cartografo',
-    nome: 'Ferramentas de Cartógrafo',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Cartographer's Tools",
+    categoria: "Artisan's Tools",
     preco: '15 po',
     peso: '3.0 kg',
-    descricao: 'Tinta, penas, pergaminhos, compassos, réguas e tubo de armazenamento. Permite mapear masmorras e territórios selvagens com precisão.'
+    descricao: 'Ink, quills, parchment, compasses, rulers, and a storage tube. Allows precise mapping of dungeons and wilderness territories.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_coureiro',
-    nome: 'Ferramentas de Coureiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Leatherworker's Tools",
+    categoria: "Artisan's Tools",
     preco: '5 po',
     peso: '2.5 kg',
-    descricao: 'Facas para raspar couro, agulhas grossas, fios reforçados e furadores. Para costurar e consertar armaduras e equipamentos de couro.'
+    descricao: 'Leather scrapers, heavy needles, reinforced thread, and awls. For stitching and repairing leather armor and equipment.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'utensilios_de_cozinha',
-    nome: 'Utensílios de Cozinha',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Cook's Utensils",
+    categoria: "Artisan's Tools",
     preco: '1 po',
     peso: '4.0 kg',
-    descricao: 'Panela de ferro, facas de corte, colheres de madeira, temperos e peneira. Permite preparar refeições nutritivas em descansos longos.'
+    descricao: 'An iron pot, cutting knives, wooden spoons, spices, and a sieve. Allows preparation of nutritious meals during long rests.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_caligrafo',
-    nome: 'Ferramentas de Calígrafo',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Calligrapher's Supplies",
+    categoria: "Artisan's Tools",
     preco: '10 po',
     peso: '2.5 kg',
-    descricao: 'Penas finas, tintas coloridas, pergaminhos e réguas. Usadas para copiar documentos, criar pergaminhos mágicos e falsificar escritos com precisão artística.'
+    descricao: 'Fine quills, colored inks, parchment, and rulers. Used to copy documents, create spell scrolls, and forge writings with artistic precision.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_cervejeiro',
-    nome: 'Ferramentas de Cervejeiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Brewer's Supplies",
+    categoria: "Artisan's Tools",
     preco: '20 po',
     peso: '4.5 kg',
-    descricao: 'Barril pequeno, funil, termômetro rudimentar e ingredientes base. Permite fermentar cervejas, hidroméis e licores durante descansos prolongados.'
+    descricao: 'A small barrel, a funnel, a rudimentary thermometer, and base ingredients. Allows fermenting ales, meads, and spirits during extended rests.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_joalheiro',
-    nome: 'Ferramentas de Joalheiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Jeweler's Tools",
+    categoria: "Artisan's Tools",
     preco: '25 po',
     peso: '2.0 kg',
-    descricao: 'Lupa, pinças de precisão, limas finas e moldes de cera. Para avaliar, lapidار e engastar gemas preciosas em joias e amuletos.'
+    descricao: 'A magnifying glass, precision tweezers, fine files, and wax molds. For evaluating, cutting, and setting precious gems into jewelry and amulets.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_oleiro',
-    nome: 'Ferramentas de Oleiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Potter's Tools",
+    categoria: "Artisan's Tools",
     preco: '10 po',
     peso: '2.5 kg',
-    descricao: 'Roda de mão portátil, ferramentas de modelagem e pigmentos. Usadas para criar recipientes de cerâmica, vasos e urnas funcionais.'
+    descricao: 'A portable hand wheel, shaping tools, and pigments. Used to create ceramic containers, vases, and functional urns.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_pedreiro',
-    nome: 'Ferramentas de Pedreiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Mason's Tools",
+    categoria: "Artisan's Tools",
     preco: '10 po',
     peso: '4.0 kg',
-    descricao: 'Cinzel, maço, nível e trolha. Permite identificar fraquezas em estruturas de pedra, construir muros e trabalhar com alvenaria.'
+    descricao: 'A chisel, a mallet, a level, and a trowel. Allows identifying weaknesses in stone structures, building walls, and working with masonry.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_pintor',
-    nome: 'Ferramentas de Pintor',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Painter's Supplies",
+    categoria: "Artisan's Tools",
     preco: '10 po',
     peso: '2.5 kg',
-    descricao: 'Pincéis de diversos tamanhos, pigmentos e óleos fixadores. Para criar pinturas, disfarçar objetos e reproduzir imagens com fidelidade.'
+    descricao: 'Brushes of various sizes, pigments, and fixing oils. For creating paintings, disguising objects, and reproducing images faithfully.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_sapateiro',
-    nome: 'Ferramentas de Sapateiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Cobbler's Tools",
+    categoria: "Artisan's Tools",
     preco: '5 po',
     peso: '2.5 kg',
-    descricao: 'Forma de madeira, agulhas, fios de couro e pregos de metal. Permite fabricar e reparar botas, sandálias e outros calçados.'
+    descricao: 'A wooden last, needles, leather thread, and metal tacks. Allows crafting and repairing boots, sandals, and other footwear.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_tecedor',
-    nome: 'Ferramentas de Tecedor',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Weaver's Tools",
+    categoria: "Artisan's Tools",
     preco: '1 po',
     peso: '2.5 kg',
-    descricao: 'Tear portátil, agulhas de tricô e bobinas de fio. Permite produzir roupas simples, redes e tecidos funcionais durante viagens.'
+    descricao: 'A portable loom, knitting needles, and yarn spools. Allows producing simple clothing, nets, and functional fabrics during travel.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_vidraceiro',
-    nome: 'Ferramentas de Vidraceiro',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Glassblower's Tools",
+    categoria: "Artisan's Tools",
     preco: '30 po',
     peso: '2.5 kg',
-    descricao: 'Cortadores de vidro, moldes e pinças refratárias. Para trabalhar com vidro soprado, identificar cristais mágicos e criar recipientes especiais.'
+    descricao: 'Glass cutters, molds, and heat-resistant tongs. For working with blown glass, identifying magical crystals, and creating special containers.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_escultor',
-    nome: 'Ferramentas de Escultor em Madeira',
-    categoria: 'Ferramentas de Artesão',
+    nome: "Woodcarver's Tools",
+    categoria: "Artisan's Tools",
     preco: '1 po',
     peso: '2.5 kg',
-    descricao: 'Formões de precisão, lixas e cera de acabamento. Permite entalhar madeira em itens funcionais, peças decorativas e cabos de armas.'
+    descricao: 'Precision chisels, sandpaper, and finishing wax. Allows carving wood into functional items, decorative pieces, and weapon handles.'
   },
 
-  // ─── UTILITÁRIO ────────────────────────────────────────────────────────────
+  // ─── UTILITY ──────────────────────────────────────────────────────────────
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_ladrao',
-    nome: 'Ferramentas de Ladrão',
-    categoria: 'Utilitário',
+    nome: "Thieves' Tools",
+    categoria: 'Utility',
     preco: '25 po',
     peso: '0.5 kg',
-    descricao: 'Lima, jogo de gazuas, espelhos em hastes, pinças e tesouras estreitas. Usada para arrombar fechaduras e desarmar armadilhas.'
+    descricao: 'A file, a set of lockpicks, mirror on a handle, tweezers, and narrow scissors. Used to pick locks and disarm traps.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'kit_de_disfarce',
-    nome: 'Kit de Disfarce',
-    categoria: 'Utilitário',
+    nome: 'Disguise Kit',
+    categoria: 'Utility',
     preco: '25 po',
     preco_venda: '12.5 po',
     peso: '1.5 kg',
-    descricao: 'Cosméticos, tinturas de cabelo, próteses de cera e peças de vestuário variadas. Permite alterar completamente a aparência física.'
+    descricao: 'Cosmetics, hair dyes, wax prosthetics, and various clothing pieces. Allows completely altering physical appearance.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'kit_de_falsificacao',
-    nome: 'Kit de Falsificação',
-    categoria: 'Utilitário',
+    nome: 'Forgery Kit',
+    categoria: 'Utility',
     preco: '15 po',
     peso: '2.5 kg',
-    descricao: 'Papéis, tintas raras, lacres de cera e sinetes em branco. Para forjar documentos, cartas oficiais e selos de autoridade.'
+    descricao: 'Papers, rare inks, wax seals, and blank signet rings. For forging documents, official letters, and seals of authority.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'kit_de_herbalismo',
-    nome: 'Kit de Herbalismo',
-    categoria: 'Utilitário',
+    nome: 'Herbalism Kit',
+    categoria: 'Utility',
     preco: '5 po',
     peso: '1.5 kg',
-    descricao: 'Bolsas para ervas, tesouras de colheita, luvas e frascos vazios. Requisitado para criar poções de cura e antídotos naturais.'
+    descricao: 'Pouches for herbs, harvesting scissors, gloves, and empty vials. Required to craft healing potions and natural antidotes.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'kit_de_envenenador',
-    nome: 'Kit de Envenenador',
-    categoria: 'Utilitário',
+    nome: "Poisoner's Kit",
+    categoria: 'Utility',
     preco: '50 po',
     peso: '1.0 kg',
-    descricao: 'Frascos selados, pipetas, luvas de couro grosso e reagentes químicos. Permite coletar, purificar e aplicar venenos em armas sem risco de auto-intoxicação.'
+    descricao: 'Sealed vials, pipettes, thick leather gloves, and chemical reagents. Allows collecting, refining, and applying poisons to weapons without risk of self-poisoning.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'ferramentas_de_navegador',
-    nome: 'Ferramentas de Navegador',
-    categoria: 'Utilitário',
+    nome: "Navigator's Tools",
+    categoria: 'Utility',
     preco: '25 po',
     peso: '2.0 kg',
-    descricao: 'Sextante, bússola, tabelas de estrelas e cartas náuticas. Permite navegar por oceanos e terrenos desconhecidos sem perder a orientação.'
+    descricao: 'A sextant, a compass, star charts, and nautical maps. Allows navigating oceans and unknown terrain without losing direction.'
   },
 
-  // ─── JOGOS ─────────────────────────────────────────────────────────────────
+  // ─── GAMING SETS ──────────────────────────────────────────────────────────
   {
     tipo_item: 'ferramenta',
     id: 'jogo_de_dados',
-    nome: 'Conjunto de Dados',
-    categoria: 'Jogos',
+    nome: 'Dice Set',
+    categoria: 'Gaming Sets',
     preco: '1 pp',
     peso: '0.0 kg',
-    descricao: 'Dados de osso ou madeira. Pode incluir dados viciados para trapacear em apostas de taverna (exige testes de Prestidigitação).'
+    descricao: 'Bone or wooden dice. May include loaded dice for cheating at tavern gambling (requires Sleight of Hand checks).'
   },
   {
     tipo_item: 'ferramenta',
     id: 'jogo_de_cartas',
-    nome: 'Baralho de Cartas',
-    categoria: 'Jogos',
+    nome: 'Playing Card Set',
+    categoria: 'Gaming Sets',
     preco: '5 pp',
     peso: '0.0 kg',
-    descricao: 'Baralho completo com ilustrações rústicas. Usado para passar o tempo durante vigílias longas ou para apostas em estalagens.'
+    descricao: 'A full deck with rustic illustrations. Used to pass time during long watches or for gambling at inns.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'xadrez_do_dragao',
-    nome: 'Xadrez do Dragão',
-    categoria: 'Jogos',
+    nome: 'Dragonchess Set',
+    categoria: 'Gaming Sets',
     preco: '1 po',
     peso: '0.5 kg',
-    descricao: 'Jogo de estratégia com peças entalhadas representando criaturas fantásticas. Popular entre nobres, táticos e aventureiros intelectuais.'
+    descricao: 'A strategy game with carved pieces representing fantastic creatures. Popular among nobles, tacticians, and intellectual adventurers.'
   },
 
-  // ─── INSTRUMENTOS MUSICAIS ────────────────────────────────────────────────
+  // ─── MUSICAL INSTRUMENTS ──────────────────────────────────────────────────
   {
     tipo_item: 'ferramenta',
     id: 'alaude',
-    nome: 'Alaúde',
-    categoria: 'Instrumento Musical',
+    nome: 'Lute',
+    categoria: 'Musical Instrument',
     preco: '35 po',
     peso: '1.0 kg',
-    descricao: 'Instrumento de cordas dedilhadas com caixa de ressonância em forma de pera. O favorito dos bardos para acompanhar baladas épicas.'
+    descricao: 'A plucked string instrument with a pear-shaped resonating body. The bard\'s favorite for accompanying epic ballads.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'flauta',
-    nome: 'Flauta',
-    categoria: 'Instrumento Musical',
+    nome: 'Flute',
+    categoria: 'Musical Instrument',
     preco: '2 po',
     peso: '0.5 kg',
-    descricao: 'Instrumento de sopro simples de madeira ou bambu. Produz melodias suaves e melancólicas, ideal para músicos iniciantes.'
+    descricao: 'A simple wind instrument of wood or bamboo. Produces soft, melancholic melodies, ideal for beginner musicians.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'tambor',
-    nome: 'Tambor',
-    categoria: 'Instrumento Musical',
+    nome: 'Drum',
+    categoria: 'Musical Instrument',
     preco: '6 po',
     peso: '1.5 kg',
-    descricao: 'Instrumento de percussão de madeira e couro esticado. Perfeito para ditar o ritmo de marchas militares ou rituais tribais.'
+    descricao: 'A percussion instrument of wood and stretched leather. Perfect for setting the rhythm of military marches or tribal rituals.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'lira',
-    nome: 'Lira',
-    categoria: 'Instrumento Musical',
+    nome: 'Lyre',
+    categoria: 'Musical Instrument',
     preco: '30 po',
     peso: '1.0 kg',
-    descricao: 'Pequeno instrumento de harpa portátil com som celestial. Muito associado a ambientes aristocráticos, divinos e músicos de corte.'
+    descricao: 'A small portable harp-like instrument with a celestial sound. Closely associated with aristocratic, divine settings, and court musicians.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'gaita_de_foles',
-    nome: 'Gaita de Foles',
-    categoria: 'Instrumento Musical',
+    nome: 'Bagpipes',
+    categoria: 'Musical Instrument',
     preco: '30 po',
     peso: '3.5 kg',
-    descricao: 'Instrumento de vento com fole de couro e tubos de madeira. Som inconfundível e penetrante, associado a culturas montanhesas e guerreiras.'
+    descricao: 'A wind instrument with a leather bellows and wooden pipes. Unmistakable and penetrating sound, associated with mountain and warrior cultures.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'harpa',
-    nome: 'Harpa',
-    categoria: 'Instrumento Musical',
+    nome: 'Harp',
+    categoria: 'Musical Instrument',
     preco: '25 po',
     peso: '2.5 kg',
-    descricao: 'Instrumento de cordas com moldura em arco e som etéreo. Associado a fadas, elfos e músicos de habilidade excepcional.'
+    descricao: 'A string instrument with an arched frame and ethereal sound. Associated with fey, elves, and musicians of exceptional skill.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'trompete',
-    nome: 'Trompete',
-    categoria: 'Instrumento Musical',
+    nome: 'Horn',
+    categoria: 'Musical Instrument',
     preco: '3 po',
     peso: '1.0 kg',
-    descricao: 'Instrumento de sopro de metal com som potente e penetrante. Usado em sinais militares, fanfarras e anúncios de alta autoridade.'
+    descricao: 'A metal wind instrument with a powerful, penetrating sound. Used in military signals, fanfares, and announcements of high authority.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'flauta_de_pa',
-    nome: 'Flauta de Pã',
-    categoria: 'Instrumento Musical',
+    nome: 'Pan Flute',
+    categoria: 'Musical Instrument',
     preco: '12 po',
     peso: '1.0 kg',
-    descricao: 'Conjunto de tubos de bambu de tamanhos variados. Instrumento de sopro rústico com som pastoral, favorito de druidas e músicos da natureza.'
+    descricao: 'A set of bamboo tubes of varying sizes. A rustic wind instrument with a pastoral sound, favored by druids and nature musicians.'
   },
   {
     tipo_item: 'ferramenta',
     id: 'viola',
-    nome: 'Viola',
-    categoria: 'Instrumento Musical',
+    nome: 'Viol',
+    categoria: 'Musical Instrument',
     preco: '30 po',
     peso: '1.5 kg',
-    descricao: 'Instrumento de cordas friccionadas com arco, de som rico e ressonante. Preferido por bardos clássicos em apresentações formais e banquetes nobres.'
+    descricao: 'A bowed string instrument with a rich, resonant sound. Preferred by classical bards for formal performances and noble banquets.'
   }
 ]

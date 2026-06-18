@@ -90,8 +90,8 @@ export function criarFichaInicial(): Ficha {
       atributo_conjuracao: null,
       _cd_magia: null,
       _bonus_ataque_magia: null,
-      truques_conhecidos: [],
-      magias_preparadas: [],
+      truques_por_classe: {},
+      magias_por_classe: {},
       livro_de_magias: [],
       espacos_de_magia: {
         c1: { maximo: 0, gastos: 0 }, c2: { maximo: 0, gastos: 0 }, c3: { maximo: 0, gastos: 0 },

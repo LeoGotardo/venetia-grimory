@@ -1,167 +1,167 @@
 import type { Armadura } from '../types'
 
 export const ARMADURAS: Armadura[] = [
-  // ─── ARMADURAS LEVES ──────────────────────────────────────────────────────
+  // ─── LIGHT ARMOR ──────────────────────────────────────────────────────────
   {
     tipo_item: 'armadura',
     id: 'acolchoada',
-    nome: 'Acolchoada',
-    categoria: 'Leve',
+    nome: 'Padded',
+    categoria: 'Light',
     preco: '5 po',
-    ca: '11 + Des',
+    ca: '11 + Dex',
     forca_minima: null,
     desvantagem_furtividade: true,
     peso: '4.0 kg',
-    descricao: 'Camadas acolchoadas de tecido e panos costurados. Leve e barata, mas o volume do tecido restringe movimentos silenciosos.'
+    descricao: 'Quilted layers of cloth and batting stitched together. Light and cheap, but the bulky fabric restricts silent movement.'
   },
   {
     tipo_item: 'armadura',
     id: 'couro',
-    nome: 'Couro',
-    categoria: 'Leve',
+    nome: 'Leather',
+    categoria: 'Light',
     preco: '10 po',
-    ca: '11 + Des',
+    ca: '11 + Dex',
     forca_minima: null,
     desvantagem_furtividade: false,
     peso: '5.0 kg',
-    descricao: 'Peitoral e ombreiras de couro fervido em óleo, com partes mais macias e flexíveis. Boa proteção sem comprometer a furtividade.'
+    descricao: 'A breastplate and shoulder guards of leather boiled in oil, with softer and more flexible parts. Good protection without compromising stealth.'
   },
   {
     tipo_item: 'armadura',
     id: 'couro_batido',
-    nome: 'Couro Batido',
-    categoria: 'Leve',
+    nome: 'Studded Leather',
+    categoria: 'Light',
     preco: '45 po',
-    ca: '12 + Des',
+    ca: '12 + Dex',
     forca_minima: null,
     desvantagem_furtividade: false,
     peso: '6.5 kg',
-    descricao: 'Couro resistente e flexível reforçado com rebites de metal. Maior proteção que o couro comum sem perder a mobilidade do usuário.'
+    descricao: 'Tough, flexible leather reinforced with metal rivets. Greater protection than plain leather without sacrificing mobility.'
   },
 
-  // ─── ARMADURAS MÉDIAS ─────────────────────────────────────────────────────
+  // ─── MEDIUM ARMOR ─────────────────────────────────────────────────────────
   {
     tipo_item: 'armadura',
     id: 'gibelao_de_couro',
-    nome: 'Gibelão de Couro',
-    categoria: 'Média',
+    nome: 'Hide',
+    categoria: 'Medium',
     preco: '10 po',
-    ca: '12 + Des (máx. +2)',
+    ca: '12 + Dex (max +2)',
     forca_minima: null,
     desvantagem_furtividade: false,
     peso: '6.0 kg',
-    descricao: 'Jaqueta de couro grosso reforçada por dentro com tiras de metal verticais. Bom equilíbrio de defesa para aventureiros ágeis.'
+    descricao: 'A thick leather jacket reinforced on the inside with vertical metal strips. A good defensive balance for agile adventurers.'
   },
   {
     tipo_item: 'armadura',
     id: 'camisao_de_malha',
-    nome: 'Camisão de Malha',
-    categoria: 'Média',
+    nome: 'Chain Shirt',
+    categoria: 'Medium',
     preco: '50 po',
-    ca: '13 + Des (máx. +2)',
+    ca: '13 + Dex (max +2)',
     forca_minima: null,
     desvantagem_furtividade: false,
     peso: '10.0 kg',
-    descricao: 'Anéis de metal interligados vestidos entre camadas de couro para evitar atrito. Ótima proteção sem ruído excessivo ao mover.'
+    descricao: 'Interlocking metal rings worn between leather layers to prevent chafing. Excellent protection without excessive noise when moving.'
   },
   {
     tipo_item: 'armadura',
     id: 'brunea',
-    nome: 'Brunéia',
-    categoria: 'Média',
+    nome: 'Scale Mail',
+    categoria: 'Medium',
     preco: '50 po',
-    ca: '14 + Des (máx. +2)',
+    ca: '14 + Dex (max +2)',
     forca_minima: null,
     desvantagem_furtividade: true,
     peso: '22.5 kg',
-    descricao: 'Casaco de couro coberto com escamas de metal sobrepostas, como a pele de um crocodilo. As escamas estalam com o movimento.'
+    descricao: 'A leather coat covered with overlapping metal scales, like the skin of a crocodile. The scales clink with movement.'
   },
   {
     tipo_item: 'armadura',
     id: 'courace',
-    nome: 'Couraça',
-    categoria: 'Média',
+    nome: 'Breastplate',
+    categoria: 'Medium',
     preco: '400 po',
-    ca: '14 + Des (máx. +2)',
+    ca: '14 + Dex (max +2)',
     forca_minima: null,
     desvantagem_furtividade: false,
     peso: '10.0 kg',
-    descricao: 'Peitoral de metal moldado com couro flexível nos membros. Protege órgãos vitais sem sacrificar agilidade ou furtividade.'
+    descricao: 'A fitted metal chest piece with flexible leather on the limbs. Protects vital organs without sacrificing agility or stealth.'
   },
   {
     tipo_item: 'armadura',
     id: 'meia_armadura',
-    nome: 'Meia-Armadura',
-    categoria: 'Média',
+    nome: 'Half Plate',
+    categoria: 'Medium',
     preco: '750 po',
-    ca: '15 + Des (máx. +2)',
+    ca: '15 + Dex (max +2)',
     forca_minima: null,
     desvantagem_furtividade: true,
     peso: '20.0 kg',
-    descricao: 'Placas de metal moldadas cobrindo a maior parte do corpo. Excelente proteção mas o metal pesado compromete completamente a furtividade.'
+    descricao: 'Shaped metal plates covering most of the body. Excellent protection but the heavy metal completely compromises stealth.'
   },
 
-  // ─── ARMADURAS PESADAS ────────────────────────────────────────────────────
+  // ─── HEAVY ARMOR ──────────────────────────────────────────────────────────
   {
     tipo_item: 'armadura',
     id: 'cota_de_aneis',
-    nome: 'Cota de Anéis',
-    categoria: 'Pesada',
+    nome: 'Ring Mail',
+    categoria: 'Heavy',
     preco: '30 po',
     ca: '14',
     forca_minima: null,
     desvantagem_furtividade: true,
     peso: '20.0 kg',
-    descricao: 'Couro grosso com pesados anéis de metal costurados no exterior. Proteção pesada de baixo custo, mas barulhenta e desconfortável.'
+    descricao: 'Thick leather with heavy metal rings sewn on the outside. Low-cost heavy protection, but loud and uncomfortable.'
   },
   {
     tipo_item: 'armadura',
     id: 'cota_de_malha',
-    nome: 'Cota de Malha',
-    categoria: 'Pesada',
+    nome: 'Chain Mail',
+    categoria: 'Heavy',
     preco: '75 po',
     ca: '16',
     forca_minima: 13,
     desvantagem_furtividade: true,
     peso: '27.5 kg',
-    descricao: 'Anéis de metal interligados cobrindo o corpo inteiro. O peso exige estrutura física robusta e torna qualquer movimento furtivo impossível.'
+    descricao: 'Interlocking metal rings covering the entire body. The weight demands a robust physique and makes any stealthy movement impossible.'
   },
   {
     tipo_item: 'armadura',
     id: 'cota_de_talas',
-    nome: 'Cota de Talas',
-    categoria: 'Pesada',
+    nome: 'Splint',
+    categoria: 'Heavy',
     preco: '200 po',
     ca: '17',
     forca_minima: 15,
     desvantagem_furtividade: true,
     peso: '30.0 kg',
-    descricao: 'Tiras verticais de metal rebitadas a couro sobre acolchoamento de tecido. Proteção formidável a passos inegavelmente pesados.'
+    descricao: 'Vertical metal strips riveted to leather over fabric padding. Formidable protection at an undeniably heavy pace.'
   },
   {
     tipo_item: 'armadura',
     id: 'armadura_completa',
-    nome: 'Armadura Completa',
-    categoria: 'Pesada',
+    nome: 'Plate',
+    categoria: 'Heavy',
     preco: '1500 po',
     ca: '18',
     forca_minima: 15,
     desvantagem_furtividade: true,
     peso: '32.5 kg',
-    descricao: 'O ápice da proteção física. Placas de metal moldadas cobrem o corpo inteiro, incluindo luvas, botas de montaria e elmo com viseira.'
+    descricao: 'The pinnacle of physical protection. Shaped metal plates cover the entire body, including gauntlets, sabatons, and a visored helm.'
   },
 
-  // ─── ESCUDOS ──────────────────────────────────────────────────────────────
+  // ─── SHIELDS ──────────────────────────────────────────────────────────────
   {
     tipo_item: 'armadura',
     id: 'escudo',
-    nome: 'Escudo',
-    categoria: 'Escudo',
+    nome: 'Shield',
+    categoria: 'Shield',
     preco: '10 po',
     ca: '+2',
     forca_minima: null,
     desvantagem_furtividade: false,
     peso: '3.0 kg',
-    descricao: 'Escudo clássico de madeira pesada ou metal. Ocupa uma mão mas concede bônus fixo de +2 na Classe de Armadura.'
+    descricao: 'A classic shield of heavy wood or metal. Occupies one hand but grants a fixed +2 bonus to Armor Class.'
   }
 ]

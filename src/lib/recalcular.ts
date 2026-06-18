@@ -180,8 +180,10 @@ function recalcularMagia(ficha: Ficha, bonusProf: number): Ficha {
     _bonus_ataque_magia: calcBonusAtaqueMagico(bonusProf, modConj),
   }
 
-  // Slots multiclasse: só aplica se há multiclasse e alguma classe conjuradora
+  const CIRCULOS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const
+
   if (multiclasses.length > 0 && ehConjuradorMulti) {
+    // Multiclasse: tabela combinada (PHB 2024)
     const nivel = ficha.identidade.nivel
     const nivelPrimario = nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
     const todasParaSlots = [
@@ -189,14 +191,43 @@ function recalcularMagia(ficha: Ficha, bonusProf: number): Ficha {
       ...multiclasses.map(m => ({ classeId: m.classe_id, subclasseId: m.subclasse_id, nivel: m.nivel })),
     ]
     const nivelConj = calcNivelConjuradorMulticlasse(todasParaSlots)
-    if (nivelConj > 0) {
-      const slots = calcSlotsMulticlasse(nivelConj)
-      const CIRCULOS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const
+    const slots = calcSlotsMulticlasse(nivelConj)
+    const espacos = { ...magia.espacos_de_magia }
+    CIRCULOS.forEach(k => {
+      const novo = slots[k] ?? 0
+      espacos[k] = { maximo: novo, gastos: Math.min(espacos[k].gastos, novo) }
+    })
+    magia = { ...magia, espacos_de_magia: espacos }
+  } else {
+    // Classe única: lê espaços diretamente da progressão da classe
+    const classeId = ficha.identidade.classe_id
+    const nivel = ficha.identidade.nivel
+    const classe = dados.classes.find(c => c.id === classeId)
+    const progRow = classe?.progressao.find((p: { nivel: number }) => p.nivel === nivel) as Record<string, unknown> | undefined
+
+    if (progRow) {
       const espacos = { ...magia.espacos_de_magia }
-      CIRCULOS.forEach(k => {
-        const novo = slots[k] ?? 0
-        espacos[k] = { maximo: novo, gastos: Math.min(espacos[k].gastos, novo) }
-      })
+      const espacosProgData = progRow.espacos as Record<string, number> | undefined
+
+      if (espacosProgData) {
+        // Conjuradores padrão: campo `espacos` com contagens por círculo
+        CIRCULOS.forEach(k => {
+          const novo = espacosProgData[k] ?? 0
+          espacos[k] = { maximo: novo, gastos: Math.min(espacos[k].gastos, novo) }
+        })
+      } else {
+        // Bruxo: Magia de Pacto usa `circulo_maximo` + `espacos_de_magia` (contagem)
+        const circuloMax = progRow.circulo_maximo as number | undefined
+        const qtdEspacos = progRow.espacos_de_magia as number | undefined
+        CIRCULOS.forEach(k => {
+          espacos[k] = { maximo: 0, gastos: 0 }
+        })
+        if (circuloMax && qtdEspacos) {
+          const key = `c${circuloMax}` as typeof CIRCULOS[number]
+          espacos[key] = { maximo: qtdEspacos, gastos: Math.min(magia.espacos_de_magia[key]?.gastos ?? 0, qtdEspacos) }
+        }
+      }
+
       magia = { ...magia, espacos_de_magia: espacos }
     }
   }

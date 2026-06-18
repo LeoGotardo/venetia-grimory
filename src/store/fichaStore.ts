@@ -76,7 +76,7 @@ interface FichaStore {
   updateMoedas: (moedas: Partial<Ficha['inventario']['moedas']>) => void
   toggleEscudo: () => void
   setArmadura: (armaduraId: string | null) => void
-  atualizarMagia: (parcial: Partial<Pick<Ficha['magia'], 'truques_conhecidos' | 'magias_preparadas'>>) => void
+  atualizarMagia: (parcial: Partial<Pick<Ficha['magia'], 'truques_por_classe' | 'magias_por_classe'>>) => void
   addXP: (amount: number) => void
   levelUp: (novoNivel: number, asi?: Partial<Record<AtributoId, number>>, classeIdAlvo?: string) => void
   addMulticlasse: (classeId: string) => void
@@ -138,6 +138,8 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
           ...s.ficha.magia,
           conjurador: classe.conjurador,
           atributo_conjuracao: classe.atributo_conjuracao ?? null,
+          truques_por_classe: {},
+          magias_por_classe: {},
         },
       }
 
@@ -536,19 +538,6 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
         atributos,
       })
 
-      // Slots de progressão individual (só para classe única ou sem multiclasse conjurador)
-      if (novaMulticlasses.length === 0 && ficha.magia.conjurador && progEntry?.espacos) {
-        const espacosData = progEntry.espacos as Record<string, number>
-        const CIRCULOS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const
-        const espacos = { ...ficha.magia.espacos_de_magia }
-        CIRCULOS.forEach(k => {
-          if (espacosData[k] !== undefined) {
-            espacos[k] = { maximo: espacosData[k], gastos: Math.min(espacos[k].gastos, espacosData[k]) }
-          }
-        })
-        return { ficha: recalcular({ ...ficha, magia: { ...ficha.magia, espacos_de_magia: espacos } }) }
-      }
-
       return { ficha }
     }),
 
@@ -650,7 +639,17 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
           armas: remover(prof.armas, parcial.armas, todasArmasSobreviventes),
           ferramentas: prof.ferramentas,
         },
-        magia: { ...s.ficha.magia, conjurador: novoConjurador, atributo_conjuracao: novoAtribConj },
+        magia: {
+          ...s.ficha.magia,
+          conjurador: novoConjurador,
+          atributo_conjuracao: novoAtribConj,
+          truques_por_classe: Object.fromEntries(
+            Object.entries(s.ficha.magia.truques_por_classe).filter(([k]) => k !== classeId),
+          ),
+          magias_por_classe: Object.fromEntries(
+            Object.entries(s.ficha.magia.magias_por_classe).filter(([k]) => k !== classeId),
+          ),
+        },
       }
       return { ficha: recalcular(ficha) }
     }),
