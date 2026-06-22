@@ -14,10 +14,7 @@ import {
   ATRIBUTOS,
 } from './calculos'
 import { TIPO_CONJURADOR } from '../constants'
-import dadosJson from '../data/dnd_dados.json'
-import type { DadosJogo } from '../types'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../data/dados'
 
 function recalcularModificadores(ficha: Ficha): Ficha {
   let f = ficha
@@ -79,21 +76,16 @@ function recalcularCombate(ficha: Ficha, bonusProf: number): Ficha {
       pontos_de_vida: {
         ...combate.pontos_de_vida,
         maximo: pvMax,
-        atual: combate.pontos_de_vida.atual === 0 && pvMax > 0 ? pvMax : combate.pontos_de_vida.atual,
       },
       dados_de_vida: { ...combate.dados_de_vida, tipo: `d${classe.dado_vida}`, total: nivel },
     }
 
-    // Salvaguardas: union de todas as classes
+    // Salvaguardas: apenas da classe primária (multiclasse não concede novas salvaguardas)
     const salvaguardas = { ...combate.salvaguardas }
     ATRIBUTOS.forEach(a => {
       salvaguardas[a] = { ...salvaguardas[a], proficiente: false }
     })
-    const todasSalvaguardas = new Set<string>([
-      ...classe.salvaguardas,
-      ...multiclasses.flatMap(m => dados.classes.find(c => c.id === m.classe_id)?.salvaguardas ?? []),
-    ])
-    todasSalvaguardas.forEach(s => {
+    classe.salvaguardas.forEach((s: string) => {
       const a = s as keyof typeof salvaguardas
       if (salvaguardas[a]) salvaguardas[a] = { ...salvaguardas[a], proficiente: true }
     })

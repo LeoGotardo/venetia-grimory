@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo } from '../../types'
-import { getAntecedentes } from '../../data/antecedentes'
 
-const dados = dadosJson as unknown as DadosJogo
+import { getAntecedentes } from '../../data/antecedentes'
+import { dados } from '../../data/dados'
 
 export function Step12Revisar() {
   const { ficha, fichaId, setPasso, salvarLocal } = useFichaStore()

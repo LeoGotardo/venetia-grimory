@@ -53,6 +53,7 @@ export interface Ficha {
     especie_id: string | null
     linhagem_id: string | null
     antecedente_id: string | null
+    distribuicao_antecedente: Partial<Record<AtributoId, number>>
     alinhamento: { etico: string | null; moral: string | null }
     idade: string | null
     altura: string | null
@@ -110,7 +111,9 @@ export interface Ficha {
       recuperacao_arcana: { circulos_recuperaveis: number | null }
     }
     ordem_divina: string | null
+    ordem_primal: string | null
     estilo_de_luta: string | null
+    inimigo_favorito: string | null
     juramento: string | null
   }
   magia: {

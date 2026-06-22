@@ -13,6 +13,7 @@ export function criarFichaInicial(): Ficha {
       especie_id: null,
       linhagem_id: null,
       antecedente_id: null,
+      distribuicao_antecedente: {},
       alinhamento: { etico: null, moral: null },
       idade: null, altura: null, peso: null, olhos: null, pele: null, cabelo: null,
       xp: 0,
@@ -82,7 +83,9 @@ export function criarFichaInicial(): Ficha {
         recuperacao_arcana: { circulos_recuperaveis: null },
       },
       ordem_divina: null,
+      ordem_primal: null,
       estilo_de_luta: null,
+      inimigo_favorito: null,
       juramento: null,
     },
     magia: {

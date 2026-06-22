@@ -94,6 +94,35 @@ export interface Talento {
   prereq?: string
 }
 
+export interface EstiloDeLuta {
+  id: string
+  nome: string
+  descricao: string
+}
+
+export interface OrdemDivina {
+  id: string
+  nome: string
+  descricao: string
+  prof_armaduras: string[]
+  prof_armas: string[]
+  prof_pericia?: string
+}
+
+export interface OrdemPrimal {
+  id: string
+  nome: string
+  descricao: string
+  prof_armaduras: string[]
+  prof_armas: string[]
+  prof_pericia?: string
+}
+
+export interface InmigoFavorito {
+  id: string
+  nome: string
+}
+
 export interface DadosJogo {
   meta: { fonte: string; traducao: string; versao: string }
   pericias: Pericia[]
@@ -103,5 +132,10 @@ export interface DadosJogo {
   antecedentes: Antecedente[]
   atributos_sugeridos_por_classe?: Record<string, AtributoId[]>
   talentos_de_origem?: Talento[]
+  talentos_gerais?: Talento[]
   armaduras: Armadura[]
+  estilos_de_luta?: EstiloDeLuta[]
+  ordens_divinas?: OrdemDivina[]
+  ordens_primais?: OrdemPrimal[]
+  inimigos_favoritos?: InmigoFavorito[]
 }

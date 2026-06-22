@@ -2,11 +2,9 @@ import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo } from '../../types'
-import { MULTICLASSE_PREREQUISITOS } from '../../constants'
 
-const dados = dadosJson as unknown as DadosJogo
+import { MULTICLASSE_PREREQUISITOS } from '../../constants'
+import { dados } from '../../data/dados'
 
 export function StepMulticlasse() {
   const {

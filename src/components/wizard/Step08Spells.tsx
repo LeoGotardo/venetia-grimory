@@ -5,11 +5,9 @@ import { WizardNav } from './WizardNav'
 import { getTruquesPorClasse, getMagiasPorClasseECirculo } from '../../data/magias'
 import type { Magia } from '../../data/magias'
 import { SpellCard } from '../ui/SpellCard'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo } from '../../types'
-import { TIPO_CONJURADOR } from '../../constants'
 
-const dados = dadosJson as unknown as DadosJogo
+import { TIPO_CONJURADOR } from '../../constants'
+import { dados } from '../../data/dados'
 
 function getMaxCirc(cd: { progressao: unknown[] } | undefined, niv: number): number {
   if (!cd?.progressao) return 0

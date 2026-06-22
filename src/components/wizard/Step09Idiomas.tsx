@@ -2,10 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { Badge } from '../ui/Badge'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo } from '../../types'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../../data/dados'
 
 const IDIOMAS_FIXOS_POR_CLASSE: Record<string, string[]> = {
   druida: ['druidico'],

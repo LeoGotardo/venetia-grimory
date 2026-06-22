@@ -5,10 +5,8 @@ import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { Badge, DadoBadge } from '../ui/Badge'
 import { Modal } from '../ui/Modal'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo, Classe } from '../../types'
-
-const dados = dadosJson as unknown as DadosJogo
+import type { Classe } from '../../types'
+import { dados } from '../../data/dados'
 
 const complexidadeCor: Record<string, string> = {
   Low: 'green',

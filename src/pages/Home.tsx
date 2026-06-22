@@ -4,14 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../store/fichaStore'
 import { useFichaExport } from '../hooks/useFichaExport'
 import type { FichaListItem } from '../store/fichaStore'
-import dadosJson from '../data/dnd_dados.json'
-import type { DadosJogo } from '../types'
+
 import { ConfigModal } from '../components/ui/ConfigModal'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { useState } from 'react'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../data/dados'
 
 export function Home() {
   const navigate = useNavigate()
@@ -197,7 +195,6 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
     </div>
   )
 }
-
 
 function GearIcon() {
   return (

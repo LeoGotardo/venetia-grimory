@@ -10,6 +10,7 @@ import {
   deletarFicha as deletarFichaStorage,
   listarFichas,
 } from '../services/fichaStorage'
+import { dados } from '../data/dados'
 import {
   DEBOUNCE_SAVE_MS,
   MAXIMO_EXAUSTAO,
@@ -17,10 +18,6 @@ import {
   PROFICIENCIAS_MULTICLASSE,
   TIPO_CONJURADOR,
 } from '../constants'
-import dadosJson from '../data/dnd_dados.json'
-import type { DadosJogo } from '../types'
-
-const dados = dadosJson as unknown as DadosJogo
 
 export interface FichaListItem {
   id: string
@@ -50,6 +47,13 @@ interface FichaStore {
   setAntecedente: (antecedenteId: string, distribuicao: Partial<Record<AtributoId, number>>) => void
   setAtributos: (valores: Partial<Record<AtributoId, number>>, metodo?: string) => void
   setPericias: (periciaIds: string[]) => void
+  setEscolhasDeClasse: (escolhas: {
+    estilo_de_luta?: string | null
+    ordem_divina?: string | null
+    ordem_primal?: string | null
+    inimigo_favorito?: string | null
+  }) => void
+  setEspecializacao: (periciaIds: string[]) => void
   setIdiomas: (idiomas: string[]) => void
   setEquipamento: (opcao: 'A' | 'B', itens: ItemInventario[]) => void
   setPersonalidade: (p: Partial<Ficha['personalidade']>) => void
@@ -78,7 +82,7 @@ interface FichaStore {
   setArmadura: (armaduraId: string | null) => void
   atualizarMagia: (parcial: Partial<Pick<Ficha['magia'], 'truques_por_classe' | 'magias_por_classe'>>) => void
   addXP: (amount: number) => void
-  levelUp: (novoNivel: number, asi?: Partial<Record<AtributoId, number>>, classeIdAlvo?: string) => void
+  levelUp: (novoNivel: number, asi?: Partial<Record<AtributoId, number>>, classeIdAlvo?: string, talentoId?: string, especializacoes?: string[]) => void
   addMulticlasse: (classeId: string) => void
   removeMulticlasse: (classeId: string) => void
   setMulticlasseNivel: (classeId: string, nivel: number) => void
@@ -124,9 +128,18 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
         ...idiomasClasse,
       ]
 
+      const ante = dados.antecedentes?.find(a => a.id === s.ficha.identidade.antecedente_id)
+      const antePerics = ante?.pericias ?? []
+      const pericias = { ...s.ficha.pericias }
+      Object.keys(pericias).forEach(pid => {
+        if (antePerics.includes(pid)) return
+        pericias[pid] = { ...pericias[pid], proficiente: false }
+      })
+
       const ficha: Ficha = {
         ...s.ficha,
         identidade: { ...s.ficha.identidade, classe_id: classeId, subclasse_id: null, multiclasses: [] },
+        pericias,
         proficiencias: {
           ...s.ficha.proficiencias,
           armaduras: classe.armaduras,
@@ -201,33 +214,48 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
       const ante = dados.antecedentes?.find(a => a.id === antecedenteId)
       if (!ante) return s
 
+      // Clear previous antecedente pericias, then apply new ones
+      const anteAnterior = dados.antecedentes?.find(a => a.id === s.ficha.identidade.antecedente_id)
+      const pericsAnteAnterior = anteAnterior?.pericias ?? []
       const pericias = { ...s.ficha.pericias }
+      Object.keys(pericias).forEach(pid => {
+        if (pericsAnteAnterior.includes(pid)) pericias[pid] = { ...pericias[pid], proficiente: false }
+      })
       ante.pericias.forEach(pid => {
         if (pericias[pid]) pericias[pid] = { ...pericias[pid], proficiente: true }
       })
 
+      // Remove old antecedente talent, add new one
+      const talentoAnteriorId = anteAnterior?.talento
+      const listaBase = s.ficha.talentos.lista.filter(t => t.talento_id !== talentoAnteriorId)
       const talentoData = dados.talentos_de_origem?.find(
         t => t.id === ante.talento || t.nome === ante.talento,
       )
-      const talentoJaAdicionado = s.ficha.talentos.lista.some(t => t.talento_id === ante.talento)
+      const talentoJaAdicionado = listaBase.some(t => t.talento_id === ante.talento)
       const talentos = talentoData && !talentoJaAdicionado
-        ? [
-            ...s.ficha.talentos.lista,
-            { talento_id: ante.talento, nome: talentoData.nome, categoria: 'Origem', origem: 'Antecedente', escolhas: {} },
-          ]
-        : s.ficha.talentos.lista
+        ? [...listaBase, { talento_id: ante.talento, nome: talentoData.nome, categoria: 'Origem', origem: 'Antecedente', escolhas: {} }]
+        : listaBase
 
+      // Undo previous attribute distribution, then apply new one
       const atributos = { ...s.ficha.atributos }
+      const distribAnterior = s.ficha.identidade.distribuicao_antecedente ?? {}
+      Object.entries(distribAnterior).forEach(([attr, bonus]) => {
+        const a = attr as AtributoId
+        atributos[a] = { ...atributos[a], valor: (atributos[a].valor ?? 0) - (bonus ?? 0) }
+      })
       Object.entries(distribuicao).forEach(([attr, bonus]) => {
         const a = attr as AtributoId
-        const valAtual = atributos[a].valor ?? 8
-        atributos[a] = { ...atributos[a], valor: valAtual + bonus }
+        atributos[a] = { ...atributos[a], valor: (atributos[a].valor ?? 0) + (bonus ?? 0) }
       })
 
       return {
         ficha: recalcular({
           ...s.ficha,
-          identidade: { ...s.ficha.identidade, antecedente_id: antecedenteId },
+          identidade: {
+            ...s.ficha.identidade,
+            antecedente_id: antecedenteId,
+            distribuicao_antecedente: distribuicao,
+          },
           pericias,
           talentos: { lista: talentos },
           atributos,
@@ -245,6 +273,72 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
       })
       if (metodo) atributos.metodo_geracao = metodo
       return { ficha: recalcular({ ...s.ficha, atributos }) }
+    }),
+
+  setEscolhasDeClasse: escolhas =>
+    set(s => {
+      const classeId = s.ficha.identidade.classe_id ?? ''
+      const classe = dados.classes.find(c => c.id === classeId)
+      if (!classe) return s
+
+      const multiclasses = s.ficha.identidade.multiclasses ?? []
+
+      // Rebuild proficiencias from class base + multiclasse + nova ordem
+      const merge = (arr: string[], novos: string[]) => [...new Set([...arr, ...novos])]
+      let armaduras = [...classe.armaduras]
+      let armas = [...classe.armas]
+      multiclasses.forEach(m => {
+        const p = PROFICIENCIAS_MULTICLASSE[m.classe_id] ?? {}
+        if (p.armaduras) armaduras = merge(armaduras, p.armaduras)
+        if (p.armas) armas = merge(armas, p.armas)
+      })
+
+      const novaOrdemDivina = 'ordem_divina' in escolhas ? escolhas.ordem_divina : s.ficha.caracteristicas_de_classe.ordem_divina
+      const novaOrdemPrimal = 'ordem_primal' in escolhas ? escolhas.ordem_primal : s.ficha.caracteristicas_de_classe.ordem_primal
+
+      const ordemDiv = novaOrdemDivina ? dados.ordens_divinas?.find(o => o.id === novaOrdemDivina) : null
+      const ordemPrim = novaOrdemPrimal ? dados.ordens_primais?.find(o => o.id === novaOrdemPrimal) : null
+
+      if (ordemDiv?.prof_armaduras) armaduras = merge(armaduras, ordemDiv.prof_armaduras)
+      if (ordemDiv?.prof_armas) armas = merge(armas, ordemDiv.prof_armas)
+      if (ordemPrim?.prof_armaduras) armaduras = merge(armaduras, ordemPrim.prof_armaduras)
+      if (ordemPrim?.prof_armas) armas = merge(armas, ordemPrim.prof_armas)
+
+      // Expertise em perícia concedida pela ordem (Arcanismo para taumaturgo/mágico)
+      const pericias = { ...s.ficha.pericias }
+      const profPericiaOrdem = ordemDiv?.prof_pericia ?? ordemPrim?.prof_pericia ?? null
+      if (profPericiaOrdem && pericias[profPericiaOrdem]) {
+        const jaProf = pericias[profPericiaOrdem].proficiente
+        pericias[profPericiaOrdem] = {
+          ...pericias[profPericiaOrdem],
+          proficiente: true,
+          expertise: jaProf,
+        }
+      }
+
+      return {
+        ficha: recalcular({
+          ...s.ficha,
+          proficiencias: { ...s.ficha.proficiencias, armaduras, armas },
+          pericias,
+          caracteristicas_de_classe: {
+            ...s.ficha.caracteristicas_de_classe,
+            estilo_de_luta: 'estilo_de_luta' in escolhas ? escolhas.estilo_de_luta ?? null : s.ficha.caracteristicas_de_classe.estilo_de_luta,
+            ordem_divina: novaOrdemDivina ?? null,
+            ordem_primal: novaOrdemPrimal ?? null,
+            inimigo_favorito: 'inimigo_favorito' in escolhas ? escolhas.inimigo_favorito ?? null : s.ficha.caracteristicas_de_classe.inimigo_favorito,
+          },
+        }),
+      }
+    }),
+
+  setEspecializacao: periciaIds =>
+    set(s => {
+      const pericias = { ...s.ficha.pericias }
+      Object.keys(pericias).forEach(pid => {
+        pericias[pid] = { ...pericias[pid], expertise: periciaIds.includes(pid) }
+      })
+      return { ficha: recalcular({ ...s.ficha, pericias }) }
     }),
 
   setPericias: periciaIds =>
@@ -499,7 +593,7 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
       ficha: { ...s.ficha, identidade: { ...s.ficha.identidade, xp: s.ficha.identidade.xp + amount } },
     })),
 
-  levelUp: (novoNivel, asi, classeIdAlvo) =>
+  levelUp: (novoNivel, asi, classeIdAlvo, talentoId, especializacoes) =>
     set(s => {
       const multiclasses = s.ficha.identidade.multiclasses ?? []
       const ehSecundaria = classeIdAlvo ? multiclasses.some(m => m.classe_id === classeIdAlvo) : false
@@ -521,6 +615,7 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
       const progEntry = classeAlvo?.progressao.find(
         (p: { nivel: number }) => p.nivel === nivelNaClasse,
       ) as (Record<string, unknown> & { nivel: number }) | undefined
+      void progEntry
 
       let atributos = s.ficha.atributos
       if (asi) {
@@ -531,11 +626,35 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
         })
       }
 
+      let talentos = s.ficha.talentos
+      if (talentoId) {
+        const talento = dados.talentos_gerais?.find(t => t.id === talentoId)
+        if (talento) {
+          talentos = {
+            lista: [
+              ...s.ficha.talentos.lista,
+              { talento_id: talentoId, nome: talento.nome, categoria: 'Geral', origem: `nivel_${novoNivel}`, escolhas: {} },
+            ],
+          }
+        }
+      }
+
+      let pericias = s.ficha.pericias
+      if (especializacoes && especializacoes.length > 0) {
+        especializacoes.forEach(pid => {
+          if (pericias[pid]?.proficiente) {
+            pericias = { ...pericias, [pid]: { ...pericias[pid], expertise: true } }
+          }
+        })
+      }
+
       // recalcular já aplica calcSlotsMulticlasse quando há multiclasses
       const ficha = recalcular({
         ...s.ficha,
         identidade: { ...s.ficha.identidade, nivel: novoNivel, multiclasses: novaMulticlasses },
         atributos,
+        talentos,
+        pericias,
       })
 
       return { ficha }
@@ -678,10 +797,22 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
   calcularTudo: () => set(s => ({ ficha: recalcular(s.ficha) })),
 
   salvarLocal: () => {
-    const { ficha, fichaId } = get()
+    const { ficha, fichaId, fichaCompleta } = get()
     const id = fichaId ?? uuidv4()
-    salvarFicha(id, ficha, true)
-    set({ fichaId: id, fichaCompleta: true })
+    const fichaFinal = !fichaCompleta
+      ? {
+          ...ficha,
+          combate: {
+            ...ficha.combate,
+            pontos_de_vida: {
+              ...ficha.combate.pontos_de_vida,
+              atual: ficha.combate.pontos_de_vida.maximo ?? 0,
+            },
+          },
+        }
+      : ficha
+    salvarFicha(id, fichaFinal, true)
+    set({ ficha: fichaFinal, fichaId: id, fichaCompleta: true })
   },
 
   exportarJSON: () => JSON.stringify(get().ficha, null, 2),

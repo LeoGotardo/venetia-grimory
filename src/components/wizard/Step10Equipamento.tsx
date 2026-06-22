@@ -1,12 +1,75 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { MochilaBusca } from '../ui/MochilaBusca'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo, ItemInventario } from '../../types'
+import type { ItemInventario } from '../../types'
+import { dados } from '../../data/dados'
+import { getItens } from '../../data/itens'
+import type { Item } from '../../data/itens'
 
-const dados = dadosJson as unknown as DadosJogo
+function normStr(s: string) {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\(.*?\)/g, '')
+    .trim()
+}
+
+function buscarNoCatalogo(nome: string, catalogo: Item[]): Item | undefined {
+  const n = normStr(nome)
+  return catalogo.find(it => {
+    const c = normStr(it.nome)
+    return c === n || c === n.replace(/s$/, '') || c + 's' === n || c === n + 's'
+  })
+}
+
+function parsePO(preco: string): number | null {
+  const m = preco.match(/([\d.,]+)\s*(po|gp)/i)
+  return m ? parseFloat(m[1].replace(',', '.')) : null
+}
+
+function parsePeso(peso: string | undefined): number | null {
+  if (!peso) return null
+  const m = peso.match(/([\d.,]+)\s*kg/i)
+  return m ? parseFloat(m[1].replace(',', '.')) : null
+}
+
+function parsearEquipamentoA(texto: string, catalogo: Item[]): { itens: ItemInventario[]; ouro: number } {
+  const partes = texto.split(',').map(p => p.trim()).filter(Boolean)
+  const itensParsed: ItemInventario[] = []
+  let ouro = 0
+
+  for (const parte of partes) {
+    // Ouro: "15 PO", "75 PO"
+    const poMatch = parte.match(/^(\d+(?:[.,]\d+)?)\s*PO$/i)
+    if (poMatch) {
+      ouro += parseFloat(poMatch[1].replace(',', '.'))
+      continue
+    }
+
+    // Quantidade inicial: "4 Machadinhas", "2 Adagas"
+    const qtyMatch = parte.match(/^(\d+)\s+(.+)$/)
+    const quantidade = qtyMatch ? parseInt(qtyMatch[1]) : 1
+    const nomeRaw = qtyMatch ? qtyMatch[2] : parte
+
+    const found = buscarNoCatalogo(nomeRaw, catalogo)
+
+    itensParsed.push({
+      id_item: found?.id ?? null,
+      nome: found ? null : nomeRaw,
+      categoria: found?.tipo_item ?? null,
+      quantidade,
+      equipado: false,
+      custo_po: found ? parsePO(found.preco) : null,
+      peso_kg: found ? parsePeso((found as { peso?: string }).peso) : null,
+      notas: null,
+    })
+  }
+
+  return { itens: itensParsed, ouro }
+}
 
 function parseOuroInicial(texto: string): number {
   const m = texto.match(/(\d+)\s*PO/i)
@@ -15,26 +78,19 @@ function parseOuroInicial(texto: string): number {
 
 export function Step10Equipamento() {
   const { ficha, setEquipamento, updateMoedas, setPasso } = useFichaStore()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [opcao, setOpcao] = useState<'A' | 'B'>('A')
+
+  const catalogo = useMemo(() => getItens(), [i18n.language])
 
   const classeId = ficha.identidade.classe_id
   const classe = dados.classes.find(c => c.id === classeId)
 
   function escolherOpcaoA() {
     if (!classe) return
-    const itens: ItemInventario[] = [{
-      id_item: 'kit_opcao_a',
-      nome: classe.equipamento_inicial.A,
-      categoria: 'kit',
-      quantidade: 1,
-      equipado: false,
-      custo_po: null,
-      peso_kg: null,
-      notas: null,
-    }]
+    const { itens, ouro } = parsearEquipamentoA(classe.equipamento_inicial.A, catalogo)
     setEquipamento('A', itens)
-    updateMoedas({ PO: 0 })
+    if (ouro > 0) updateMoedas({ PO: ouro })
     setOpcao('A')
   }
 

@@ -5,8 +5,7 @@ import { calcModificador, formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '.
 import { Input } from '../ui/Input'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo, AtributoId } from '../../types'
+import type { AtributoId } from '../../types'
 import { NIVEL_MINIMO, NIVEL_MAXIMO, MULTICLASSE_PREREQUISITOS, TIPO_CONJURADOR } from '../../constants'
 import { getTruquesPorClasses, getMagiasPorClassesECirculos, getTruquesPorClasse, getMagiasPorClasse } from '../../data/magias'
 import { getAntecedentes } from '../../data/antecedentes'
@@ -15,8 +14,7 @@ import { SpellCard } from '../ui/SpellCard'
 import { ItemCard } from '../ui/ItemCard'
 import type { ItemDetalhe } from '../ui/ItemCard'
 import { MochilaBusca } from '../ui/MochilaBusca'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../../data/dados'
 
 const ALINHAMENTOS_ETICO = ['Lawful', 'Neutral', 'Chaotic'] as const
 const ALINHAMENTOS_MORAL = ['Good', 'Neutral', 'Evil'] as const

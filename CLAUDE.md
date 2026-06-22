@@ -81,12 +81,15 @@ npm run build && npx cap sync
 - `src/App.tsx`: three lazy-loaded routes — `/` (`Home`, the saved-character list), `/novo`
   (`Wizard`, character creation), `/ficha/:id` (`Ficha`, the play sheet). Wrapped in an
   `ErrorBoundary` (`src/pages/ServerError.tsx`) and a `Suspense` fallback.
-- `src/pages/Wizard.tsx` drives `src/components/wizard/Step01…Step12*.tsx` in sequence, tracked by
-  `passoAtual`/`setPasso` in the store; each step calls the corresponding store setter
-  (`setNivel`, `setClasse`, `setEspecie`, …) which internally triggers `recalcular`.
+- `src/pages/Wizard.tsx` drives 13 steps in sequence, tracked by `passoAtual`/`setPasso` in the
+  store. Step components are `Step01Nivel` through `Step12Revisar` (filenames) but the sequence
+  includes `StepMulticlasse` at position 7 (between Perícias and Magias), making the final review
+  step id 13. Each step calls the corresponding store setter which internally triggers `recalcular`.
 - `src/pages/Ficha.tsx` is the in-play sheet: tabs render `src/components/ficha/PainelXxx.tsx`
   panels (Combate, Atributos, Perícias, Recursos, Magia, Inventário, Anotações, Editar). Edits in
   any panel go through store actions, not local component state that bypasses the store.
+  `LevelUpModal` (in `src/components/ficha/`) handles ASI selection (+2 or +1+1) on level-up and
+  supports choosing which class (primary or multiclasse) gains the level.
 
 ### Hooks
 
@@ -96,7 +99,15 @@ npm run build && npx cap sync
 ### localStorage key schema
 
 - Individual fichas: `dnd_ficha_<uuid>` (raw `Ficha` JSON).
-- List index: `dnd_fichas_lista` (array of `FichaListItem`). A `completa` flag on each list item is never downgraded once set to `true` — the wizard sets it only upon finishing step 12.
+- List index: `dnd_fichas_lista` (array of `FichaListItem`). A `completa` flag on each list item is never downgraded once set to `true` — the wizard sets it only upon finishing the final review step (currently step 13, `Step12Revisar` component).
+
+### Multiclasse system
+
+- `Ficha.identidade.multiclasses` is an array of `{ classe_id, subclasse_id, nivel }` for secondary classes. The primary class level is `ficha.identidade.nivel - sum(multiclasses[].nivel)` — never stored redundantly.
+- Store actions: `addMulticlasse`, `removeMulticlasse`, `setMulticlasseNivel`, `setSubclasseMulticlasse`. `levelUp` accepts an optional `classeIdAlvo` to route the level gain to a specific class.
+- Prerequisites (`MULTICLASSE_PREREQUISITOS`) and granted proficiencies (`PROFICIENCIAS_MULTICLASSE`) live in `src/constants/index.ts`.
+- Spellcasting is recalculated via `calcNivelConjuradorMulticlasse` and `calcSlotsMulticlasse` in `src/lib/calculos.ts`, using `TIPO_CONJURADOR` weights (`completo`, `meio`, `null`). `SUBCLASSES_TERCEIRO_CONJURADOR` in constants handles the Eldritch Knight/Arcane Trickster ⅓-caster subclasses.
+- HP on level-up uses `calcPVMulticlasse`, which knows each class's hit die separately.
 
 ### Known data-model gotchas (read before touching combat/resources code)
 

@@ -15,13 +15,11 @@ import { PainelAnotacoes } from '../components/ficha/PainelAnotacoes'
 import { PainelEditar } from '../components/ficha/PainelEditar'
 import { ConfigModal } from '../components/ui/ConfigModal'
 import { LevelUpModal } from '../components/ficha/LevelUpModal'
-import dadosJson from '../data/dnd_dados.json'
-import type { DadosJogo } from '../types'
+
 import { XP_POR_NIVEL, formatModificador } from '../lib/calculos'
 import { getAntecedentes } from '../data/antecedentes'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../data/dados'
 
 type Aba = 'ficha' | 'magia' | 'inventario' | 'anotacoes' | 'editar'
 
@@ -103,7 +101,6 @@ export function Ficha() {
     atualizarPV(delta)
     setPvDelta('')
   }
-
 
   const classeNivel = (() => {
     if (multiclasses.length === 0) {

@@ -1,10 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { formatModificador } from '../../lib/calculos'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo } from '../../types'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../../data/dados'
 
 export function PainelPericias() {
   const { ficha } = useFichaStore()

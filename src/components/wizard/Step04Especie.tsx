@@ -3,10 +3,7 @@ import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo } from '../../types'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../../data/dados'
 
 export function Step04Especie() {
   const { ficha, setEspecie, setPasso } = useFichaStore()

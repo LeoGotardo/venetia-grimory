@@ -5,11 +5,9 @@ import { WizardNav } from './WizardNav'
 import { calcModificador, formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
 import { useAtributosWizard } from '../../hooks/useAtributosWizard'
 import { CUSTO_PONTOS_COMPRA } from '../../constants'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo, AtributoId } from '../../types'
+import type { AtributoId } from '../../types'
 import type { MetodoAtributos } from '../../hooks/useAtributosWizard'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../../data/dados'
 
 export function Step06Atributos() {
   const { ficha, setAtributos, setPasso, rolagemAtributos, setRolagemAtributos } = useFichaStore()

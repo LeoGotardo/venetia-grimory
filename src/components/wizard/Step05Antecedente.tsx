@@ -5,11 +5,9 @@ import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
 import { TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE } from '../../constants'
-import dadosJson from '../../data/dnd_dados.json'
-import type { DadosJogo, AtributoId } from '../../types'
+import type { AtributoId } from '../../types'
 import { getAntecedentes } from '../../data/antecedentes'
-
-const dados = dadosJson as unknown as DadosJogo
+import { dados } from '../../data/dados'
 
 type ModoDistribuicao = '2+1' | '1+1+1'
 
