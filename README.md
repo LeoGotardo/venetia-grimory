@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# Grimório de Venetia
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A D&D 5.5 (2024 edition) character creator and play sheet — single-page app, no backend.
+Create a character through a guided wizard, then track combat, resources, spells, and inventory
+during play. Also packaged as an Android app via Capacitor.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+React 19 · TypeScript · Vite · Tailwind CSS v4 · Zustand · React Router v7 · Framer Motion · Zod ·
+i18next
 
-## React Compiler
+## Getting started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev       # Vite dev server
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+```bash
+npm run build      # tsc -b (typecheck) && vite build — the correctness gate for this repo
+npm run lint        # eslint .
+npm run preview      # serve the production build locally
+```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+There is no test runner configured. `npm run build` runs the full TypeScript project-reference
+build before bundling, so a clean build is the closest thing to "tests pass" in this repo —
+always run it after non-trivial changes.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Android (Capacitor)
+
+```bash
+npm run build && npx cap sync
+```
+
+## Features
+
+- **Guided wizard** — 13-step character creation (level, species, class, attributes, skills,
+  multiclass, spells, equipment, background, review).
+- **Play sheet** — tabbed panels for combat, attributes, skills, class resources, spellcasting,
+  inventory, and notes, with level-up (including ASI and multiclass) handled in place.
+- **Multiclassing** — full support for secondary classes, prerequisites, granted proficiencies,
+  and multiclass spell slot/spellcaster-level calculation.
+- **Local-first** — every character is stored in `localStorage`; no account, no server, no
+  network dependency.
+- **i18n** — UI available in Portuguese and English.
+
+## Architecture
+
+- `src/store/fichaStore.ts` — the single Zustand store (`useFichaStore`) that all character
+  mutations go through. Actions that touch attributes, class, species, level, armor, or spell
+  slots run the result through `recalcular` before returning state, so derived fields are never
+  hand-patched.
+- `src/lib/recalcular.ts` — a pipeline of pure functions
+  (`recalcularModificadores → recalcularCombate → recalcularPericias → recalcularMagia`) that
+  compute every derived (`_`-prefixed) field on a `Ficha`.
+- `src/lib/calculos.ts` — the actual D&D rules math (modifiers, proficiency bonus, AC, HP, saves,
+  skills, spell DC) as standalone pure functions.
+- `src/data/dnd_dados.json` — the static rules dataset (classes, species, backgrounds, feats,
+  progression tables, armors), intentionally left untranslated. Items, spells, and backgrounds
+  live in `src/data/{itens,spells,antecedentes}/` with parallel `pt/`/`en/` modules, exposed
+  through `getXxx()` getters that pick a language at call time.
+- `src/store/configStore.ts` — a second, independent persisted store for user preferences
+  (language, weight/gold tracking, etc.); it never touches `recalcular`.
+- `src/pages/` — `Home` (saved characters), `Wizard` (creation flow), `Ficha` (play sheet),
+  routed in `src/App.tsx`.
+
+See `CLAUDE.md` for the full architecture notes, data-model gotchas, and conventions used across
+the codebase.
+
+## Project structure
+
+```
+src/
+  components/    UI components (wizard steps, ficha panels, shared)
+  constants/     pool sizes, level caps, storage keys, point-buy costs, etc.
+  data/          static rules data + localized items/spells/backgrounds
+  hooks/         useAtributosWizard, useFichaExport, ...
+  i18n/          UI translation strings (pt/en)
+  lib/           recalcular.ts, calculos.ts (rules math)
+  pages/         Home, Wizard, Ficha
+  services/      fichaStorage.ts (localStorage persistence)
+  store/         fichaStore.ts, configStore.ts
+  types/         Ficha, DadosJogo, and related types
+android/         Capacitor Android project
 ```
