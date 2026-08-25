@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import type { Ficha, AtributoId, ItemInventario } from '../types'
 import { criarFichaInicial } from '../lib/fichaInicial'
 import { recalcular } from '../lib/recalcular'
+import { migrarFicha } from '../lib/migrarFicha'
 import { ATRIBUTOS } from '../lib/calculos'
 import {
   salvarFicha,
@@ -10,7 +11,7 @@ import {
   deletarFicha as deletarFichaStorage,
   listarFichas,
 } from '../services/fichaStorage'
-import { dados } from '../data/dados'
+import { dadosPT as dados } from '../data/dados'
 import {
   DEBOUNCE_SAVE_MS,
   MAXIMO_EXAUSTAO,
@@ -819,7 +820,7 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
 
   importarJSON: json => {
     try {
-      const ficha = JSON.parse(json) as Ficha
+      const ficha = migrarFicha(JSON.parse(json) as Ficha)
       const id = uuidv4()
       salvarFicha(id, ficha)
       set({ ficha: recalcular(ficha), fichaId: id })

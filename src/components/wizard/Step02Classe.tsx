@@ -75,6 +75,8 @@ export function Step02Classe() {
               <div><span className="text-[#A8A09B]">{t('step02.armors')}</span> <span className="text-[#F5F0E8]">{c.armaduras.join(', ') || t('step02.noArmor')}</span></div>
               <div><span className="text-[#A8A09B]">{t('step02.skills')}</span> <span className="text-[#F5F0E8]">{t('step02.skillChoice', { n: c.num_pericias })}</span></div>
             </div>
+
+            <CaracteristicasDeClasse classe={c} nivel={ficha.identidade.nivel} />
           </div>
         )
       })()}
@@ -110,7 +112,10 @@ export function Step02Classe() {
               <div className="text-[#B8860B] font-semibold mb-2">{t('step02.subclassesSection')}</div>
               <div className="grid grid-cols-2 gap-2">
                 {modalClasse.subclasses.map(s => (
-                  <div key={s.id} className="bg-[#2D2520] rounded p-2 text-[#F5F0E8] text-sm">{s.nome}</div>
+                  <div key={s.id} className="bg-[#2D2520] rounded p-2">
+                    <div className="text-[#F5F0E8] text-sm font-semibold">{s.nome}</div>
+                    {s.descricao && <p className="text-[#A8A09B] text-xs mt-0.5 leading-relaxed">{s.descricao}</p>}
+                  </div>
                 ))}
               </div>
             </div>
@@ -125,13 +130,18 @@ export function Step02Classe() {
                   </tr>
                 </thead>
                 <tbody>
-                  {modalClasse.progressao.slice(0, ficha.identidade.nivel).map(p => (
-                    <tr key={p.nivel} className="border-b border-[#3D332D]">
-                      <td className="py-1 px-2 text-[#F5F0E8]">{p.nivel}</td>
-                      <td className="py-1 px-2 text-[#F5F0E8]">+{p.bonus_prof}</td>
-                      <td className="py-1 px-2 text-[#A8A09B]">{p.destaques.join(', ')}</td>
-                    </tr>
-                  ))}
+                  {modalClasse.progressao.map(p => {
+                    const bloqueado = p.nivel > ficha.identidade.nivel
+                    return (
+                      <tr key={p.nivel} className={`border-b border-[#3D332D] ${bloqueado ? 'opacity-45' : ''}`}>
+                        <td className="py-1 px-2 text-[#F5F0E8] whitespace-nowrap">
+                          {bloqueado && <LockIcon />} {p.nivel}
+                        </td>
+                        <td className="py-1 px-2 text-[#F5F0E8]">+{p.bonus_prof}</td>
+                        <td className="py-1 px-2 text-[#A8A09B]">{p.destaques.join(', ')}</td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -141,5 +151,84 @@ export function Step02Classe() {
 
       <WizardNav onBack={() => setPasso(1)} onNext={() => setPasso(3)} nextDisabled={!classeId} />
     </div>
+  )
+}
+
+interface CaracteristicasProps {
+  classe: Classe
+  nivel: number
+}
+
+/**
+ * Características de classe por nível: as já desbloqueadas no nível escolhido
+ * aparecem destacadas; as de níveis acima ficam esmaecidas com cadeado.
+ */
+function CaracteristicasDeClasse({ classe, nivel }: CaracteristicasProps) {
+  const { t } = useTranslation()
+  const linhas = classe.progressao.filter(p => p.destaques.length > 0)
+  const desbloqueadas = linhas
+    .filter(p => p.nivel <= nivel)
+    .reduce((soma, p) => soma + p.destaques.length, 0)
+
+  return (
+    <div className="pt-3 border-t border-[#B8860B]/20 space-y-2">
+      <div className="flex items-baseline justify-between">
+        <h4 className="font-cinzel font-semibold text-[#B8860B] text-sm">{t('step02.featuresHeading')}</h4>
+        <span className="text-xs text-[#A8A09B]">
+          {t('step02.featuresUnlocked', { n: desbloqueadas, nivel })}
+        </span>
+      </div>
+
+      <div className="max-h-56 overflow-y-auto pr-1 space-y-1.5">
+        {linhas.map(p => {
+          const bloqueado = p.nivel > nivel
+          return (
+            <div key={p.nivel} className="flex items-start gap-2">
+              <span
+                title={bloqueado ? t('step02.lockedAtLevel', { n: p.nivel }) : undefined}
+                className={[
+                  'shrink-0 w-9 text-center text-[11px] font-bold rounded px-1 py-0.5 border',
+                  bloqueado
+                    ? 'border-[#A8A09B]/25 text-[#A8A09B]/60'
+                    : 'border-[#B8860B]/50 bg-[#B8860B]/15 text-[#D4A017]',
+                ].join(' ')}
+              >
+                {p.nivel}
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {p.destaques.map(d => (
+                  <span
+                    key={d}
+                    className={[
+                      'inline-flex items-center gap-1 text-xs rounded px-2 py-0.5 border',
+                      bloqueado
+                        ? 'bg-transparent border-[#A8A09B]/20 text-[#A8A09B]/60'
+                        : 'bg-[#2D2520] border-[#B8860B]/25 text-[#F5F0E8]',
+                    ].join(' ')}
+                  >
+                    {bloqueado && <LockIcon />}
+                    {d}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function LockIcon() {
+  return (
+    <svg
+      width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+      className="inline-block shrink-0 opacity-70"
+      aria-hidden="true"
+    >
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
   )
 }

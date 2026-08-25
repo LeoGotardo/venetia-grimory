@@ -91,7 +91,10 @@ const en = {
     skills: 'Skills:', skillChoice: '{{n}} of choice',
     hitDieSection: 'Hit Die', primaryAttrs: 'Primary Attributes', savesSection: 'Saving Throws',
     profs: 'Proficiencies', subclassesSection: 'Subclasses',
-    progressionSection: 'Progression (first 5 levels)',
+    progressionSection: 'Progression',
+    featuresHeading: 'Class Features',
+    featuresUnlocked: '{{n}} unlocked at level {{nivel}}',
+    lockedAtLevel: 'Unlocked at level {{n}}',
     colLevel: 'Level', colProfBonus: 'Prof. Bonus', colHighlights: 'Highlights',
   },
   step03: {
@@ -272,7 +275,11 @@ const en = {
     selectExhaustion: 'Select exhaustion level', exhaustionLevelAriaLabel: 'Exhaustion level {{n}}',
     freeNotes: 'Free Notes', notesPlaceholder: 'Notes, mission details, contacts...',
   },
-  attrs: { saves: 'Saving Throws', proficient: 'Proficient', notProficient: 'Not proficient' },
+  attrs: {
+    saves: 'Saving Throws', proficient: 'Proficient', notProficient: 'Not proficient',
+    FOR: 'Strength', DES: 'Dexterity', CON: 'Constitution',
+    INT: 'Intelligence', SAB: 'Wisdom', CAR: 'Charisma',
+  },
   combat: {
     hp: 'HP', ac: 'AC', initiative: 'Initiative', speed: 'Speed', prof: 'Prof.',
     passivePerception: 'Passive Perception', shieldBonus: '+2 shield',
@@ -352,6 +359,10 @@ const en = {
     ritual: 'Ritual',
     noDescription: 'Detailed description not available.',
     classes: 'Classes',
+    selectedCount: '{{n}} selected',
+    noSpellsSelected: 'No spells chosen yet. Use the Edit tab to pick cantrips and spells.',
+    spellNotFound: 'Spell not found in the catalog.',
+    viewDetails: 'View details of {{nome}}',
   },
   skills: { heading: 'Skills', passivePerception: 'Passive Perception: {{n}}' },
   resources: {

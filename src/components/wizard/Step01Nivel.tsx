@@ -25,7 +25,7 @@ export function Step01Nivel() {
           >−</button>
 
           <div className="text-center min-w-[72px]">
-            <div className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{nivel}</div>
+            <div data-testid="nivel-valor" className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{nivel}</div>
             <div className="text-xs tracking-[0.1em] uppercase text-[#6B6560] mt-1">{t('step01.levelLabel')}</div>
           </div>
 

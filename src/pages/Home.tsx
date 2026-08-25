@@ -137,7 +137,7 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
   const incompleta = ficha.completa === false
 
   return (
-    <div className={`vg-card p-[18px_20px] ${incompleta ? 'border-[rgba(212,160,23,0.15)]' : ''}`}>
+    <div data-testid="ficha-card" className={`vg-card p-[18px_20px] ${incompleta ? 'border-[rgba(212,160,23,0.15)]' : ''}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-[14px]">
           <div className="w-12 h-12 rounded-[13px] flex-shrink-0 bg-[#221d18] border border-[rgba(212,160,23,0.3)] overflow-hidden">
@@ -145,7 +145,7 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-[17px] text-[#F5F0E8]">{ficha.nome || t('home.noName')}</span>
+              <span data-testid="ficha-card-nome" className="font-bold text-[17px] text-[#F5F0E8]">{ficha.nome || t('home.noName')}</span>
               {incompleta && (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#B8860B]/20 text-[#D4A017] border border-[#B8860B]/30">
                   {t('home.inCreation')}

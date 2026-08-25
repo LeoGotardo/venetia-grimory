@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
-import { calcModificador, formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
+import { calcModificador, formatModificador, ATRIBUTOS, nomeAtributo } from '../../lib/calculos'
 import { Input } from '../ui/Input'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
@@ -400,13 +400,13 @@ function SecaoAtributos() {
           return (
             <div key={attr} className="flex flex-col gap-1">
               <label htmlFor={`edit-attr-${attr}`} className="text-sm text-[#B8860B] font-medium">
-                {ATRIBUTO_NOMES[attr]}
+                {nomeAtributo(attr, t)}
               </label>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setAttr(attr, val - 1)}
                   disabled={val <= 1}
-                  aria-label={t('edit.decreaseAttr', { attr: ATRIBUTO_NOMES[attr] })}
+                  aria-label={t('edit.decreaseAttr', { attr: nomeAtributo(attr, t) })}
                   className="w-7 h-9 rounded-l bg-[#2D2520] border border-[#B8860B]/30 text-[#F5F0E8] font-bold hover:bg-[#4D4037] disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default"
                 >−</button>
                 <input
@@ -417,12 +417,12 @@ function SecaoAtributos() {
                   value={val}
                   onChange={e => setAttr(attr, Number(e.target.value))}
                   className="w-12 text-center bg-[#2D2520] border-y border-[#B8860B]/30 py-1.5 text-[#F5F0E8] font-cinzel font-bold text-lg focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
-                  aria-label={t('edit.attrValue', { attr: ATRIBUTO_NOMES[attr] })}
+                  aria-label={t('edit.attrValue', { attr: nomeAtributo(attr, t) })}
                 />
                 <button
                   onClick={() => setAttr(attr, val + 1)}
                   disabled={val >= ATRIBUTO_MAX}
-                  aria-label={t('edit.increaseAttr', { attr: ATRIBUTO_NOMES[attr] })}
+                  aria-label={t('edit.increaseAttr', { attr: nomeAtributo(attr, t) })}
                   className="w-7 h-9 rounded-r bg-[#2D2520] border border-[#B8860B]/30 text-[#F5F0E8] font-bold hover:bg-[#4D4037] disabled:opacity-30 transition-colors cursor-pointer disabled:cursor-default"
                 >+</button>
                 <span

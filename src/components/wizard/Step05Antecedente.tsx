@@ -106,6 +106,9 @@ export function Step05Antecedente() {
             onClick={() => selecionarAntecedente(a.id)}
           >
             <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-1">{a.nome}</h3>
+            {a.descricao && (
+              <p className="text-[#A8A09B] text-xs leading-relaxed mb-2">{a.descricao}</p>
+            )}
             <div className="flex flex-wrap gap-1 mb-2">
               {a.pericias.map(p => (
                 <Badge key={p} variant="blue">
@@ -236,7 +239,7 @@ function BonusAtributoControl({ attr, val, maxVal, totalDistrib, baseRef, onSetB
   const podeIncrementar = val < maxVal && totalDistrib < TOTAL_PONTOS_ATRIBUTO_ANTECEDENTE
 
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div data-testid={`bonus-${attr}`} className="flex flex-col items-center gap-1">
       <span className="text-[#B8860B] text-xs font-bold">{attr}</span>
       {baseRef !== null && (
         <span className="text-[10px] text-[#A8A09B]">

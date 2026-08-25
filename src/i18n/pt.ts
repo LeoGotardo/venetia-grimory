@@ -91,7 +91,10 @@ const pt = {
     skills: 'Perícias:', skillChoice: '{{n}} de escolha',
     hitDieSection: 'Dado de Vida', primaryAttrs: 'Atributos Primários', savesSection: 'Salvaguardas',
     profs: 'Proficiências', subclassesSection: 'Subclasses',
-    progressionSection: 'Progressão (primeiros 5 níveis)',
+    progressionSection: 'Progressão',
+    featuresHeading: 'Características de Classe',
+    featuresUnlocked: '{{n}} desbloqueadas no nível {{nivel}}',
+    lockedAtLevel: 'Desbloqueada no nível {{n}}',
     colLevel: 'Nível', colProfBonus: 'Bônus Prof.', colHighlights: 'Destaques',
   },
   step03: {
@@ -272,7 +275,11 @@ const pt = {
     selectExhaustion: 'Selecionar nível de exaustão', exhaustionLevelAriaLabel: 'Nível de exaustão {{n}}',
     freeNotes: 'Notas Livres', notesPlaceholder: 'Anotações, detalhes de missão, contatos...',
   },
-  attrs: { saves: 'Salvaguardas', proficient: 'Proficiente', notProficient: 'Não proficiente' },
+  attrs: {
+    saves: 'Salvaguardas', proficient: 'Proficiente', notProficient: 'Não proficiente',
+    FOR: 'Força', DES: 'Destreza', CON: 'Constituição',
+    INT: 'Inteligência', SAB: 'Sabedoria', CAR: 'Carisma',
+  },
   combat: {
     hp: 'PV', ac: 'CA', initiative: 'Iniciativa', speed: 'Deslocamento', prof: 'Prof.',
     passivePerception: 'Percepção Passiva', shieldBonus: '+2 escudo',
@@ -352,6 +359,10 @@ const pt = {
     ritual: 'Ritual',
     noDescription: 'Descrição detalhada não disponível.',
     classes: 'Classes',
+    selectedCount: '{{n}} selecionada(s)',
+    noSpellsSelected: 'Nenhuma magia escolhida ainda. Use a aba Editar para escolher truques e magias.',
+    spellNotFound: 'Magia não encontrada no catálogo.',
+    viewDetails: 'Ver detalhes de {{nome}}',
   },
   skills: { heading: 'Perícias', passivePerception: 'Percepção Passiva: {{n}}' },
   resources: {

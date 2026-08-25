@@ -81,3 +81,16 @@ export function getMagiasPorClassesECirculos(
     classes.some(c => m.classes.includes(c.classeId) && m.circulo <= c.maxCirculo),
   )
 }
+// As magias são gravadas na ficha pelo nome, no idioma em que foram escolhidas.
+// Este índice permite reencontrá-las depois de uma troca de idioma.
+const INDICE_POR_NOME = new Map<string, string>()
+for (const lista of [TODAS_MAGIAS_PT, TODAS_MAGIAS_EN]) {
+  for (const m of lista) INDICE_POR_NOME.set(m.nome.toLowerCase(), m.id)
+}
+
+/** Resolve uma magia salva (nome em qualquer idioma, ou id) para o idioma atual. */
+export function resolverMagia(nomeOuId: string): Magia | null {
+  const magias = getMagias()
+  const id = INDICE_POR_NOME.get(nomeOuId.toLowerCase()) ?? nomeOuId
+  return magias.find(m => m.id === id) ?? null
+}

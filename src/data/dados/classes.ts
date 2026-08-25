@@ -40,19 +40,23 @@ export default [
     "subclasses": [
       {
         "id": "trilha_arvore_mundo",
-        "nome": "Trilha da Árvore do Mundo"
+        "nome": "Trilha da Árvore do Mundo",
+        "descricao": "Canaliza a Árvore do Mundo: ganha PV temporários ao entrar em Fúria e prende inimigos com raízes espectrais."
       },
       {
         "id": "trilha_berserker",
-        "nome": "Trilha do Berserker"
+        "nome": "Trilha do Berserker",
+        "descricao": "Fúria brutal e implacável: ataques frenéticos, presença aterrorizante e retaliação a quem o fere."
       },
       {
         "id": "trilha_coracao_selvagem",
-        "nome": "Trilha do Coração Selvagem"
+        "nome": "Trilha do Coração Selvagem",
+        "descricao": "Comunhão com espíritos animais, ganhando sentidos aguçados, rastreamento e talentos bestiais na Fúria."
       },
       {
         "id": "trilha_fanatico",
-        "nome": "Trilha do Fanático"
+        "nome": "Trilha do Fanático",
+        "descricao": "Fúria abençoada por um deus: dano necrótico ou radiante extra e resistência sobrenatural à morte."
       }
     ],
     "nivel_subclasse": 3,
@@ -300,19 +304,23 @@ export default [
     "subclasses": [
       {
         "id": "colegio_bravura",
-        "nome": "Colégio da Bravura"
+        "nome": "Colégio da Bravura",
+        "descricao": "Bardo de batalha: proficiência marcial, armadura média e Inspiração que reforça ataques dos aliados."
       },
       {
         "id": "colegio_conhecimento",
-        "nome": "Colégio do Conhecimento"
+        "nome": "Colégio do Conhecimento",
+        "descricao": "Erudito e crítico: Palavras Cortantes atrapalham inimigos e Segredos Mágicos abrem listas de outras classes."
       },
       {
         "id": "colegio_danca",
-        "nome": "Colégio da Dança"
+        "nome": "Colégio da Dança",
+        "descricao": "Dança de batalha: movimento ágil, defesa sem armadura e ataques desarmados guiados pela Inspiração."
       },
       {
         "id": "colegio_glamour",
-        "nome": "Colégio do Glamour"
+        "nome": "Colégio do Glamour",
+        "descricao": "Magia feérica de encanto: cativa plateias, protege aliados com esplendor e impõe respeito sobrenatural."
       }
     ],
     "nivel_subclasse": 3,
@@ -774,19 +782,23 @@ export default [
     "subclasses": [
       {
         "id": "patrono_arquifada",
-        "nome": "Patrono Arquifada"
+        "nome": "Patrono Arquifada",
+        "descricao": "Pacto com um senhor feérico: teleporte curto, encantamentos e passos entre a Faéria."
       },
       {
         "id": "patrono_celestial",
-        "nome": "Patrono Celestial"
+        "nome": "Patrono Celestial",
+        "descricao": "Pacto com um ser celestial: luz radiante, Dados de Cura para aliados e resistência à morte."
       },
       {
         "id": "patrono_grande_antigo",
-        "nome": "Patrono O Grande Antigo"
+        "nome": "Patrono O Grande Antigo",
+        "descricao": "Pacto com uma entidade alienígena: telepatia, dano psíquico e visões que enlouquecem os inimigos."
       },
       {
         "id": "patrono_infero",
-        "nome": "Patrono Ínfero"
+        "nome": "Patrono Ínfero",
+        "descricao": "Pacto infernal: PV temporários a cada abate, resistência a dano e sorte sombria nas rolagens."
       }
     ],
     "nivel_subclasse": 3,
@@ -1069,19 +1081,23 @@ export default [
     "subclasses": [
       {
         "id": "dominio_guerra",
-        "nome": "Domínio da Guerra"
+        "nome": "Domínio da Guerra",
+        "descricao": "Sacerdote guerreiro: proficiência marcial, ataque divino como Ação Bônus e bênçãos em combate."
       },
       {
         "id": "dominio_luz",
-        "nome": "Domínio da Luz"
+        "nome": "Domínio da Luz",
+        "descricao": "Fogo e luz radiante: Chama Protetora atrapalha atacantes e a explosão de luz cega inimigos."
       },
       {
         "id": "dominio_trapaca",
-        "nome": "Domínio da Trapaça"
+        "nome": "Domínio da Trapaça",
+        "descricao": "Ilusão e furtividade abençoadas: duplicatas ilusórias e bênçãos que escondem o grupo."
       },
       {
         "id": "dominio_vida",
-        "nome": "Domínio da Vida"
+        "nome": "Domínio da Vida",
+        "descricao": "Cura superior: toda magia de cura rende PV extras e a Canalizar Divindade restaura o grupo."
       }
     ],
     "nivel_subclasse": 3,
@@ -1544,19 +1560,23 @@ export default [
     "subclasses": [
       {
         "id": "circulo_lua",
-        "nome": "Círculo da Lua"
+        "nome": "Círculo da Lua",
+        "descricao": "Forma Selvagem de combate: assume feras poderosas e conjura magias na forma animal."
       },
       {
         "id": "circulo_terra",
-        "nome": "Círculo da Terra"
+        "nome": "Círculo da Terra",
+        "descricao": "Magia ligada ao terreno: magias adicionais por bioma e recuperação de espaços de magia."
       },
       {
         "id": "circulo_estrelas",
-        "nome": "Círculo das Estrelas"
+        "nome": "Círculo das Estrelas",
+        "descricao": "Forma Estelar: assume constelações que curam, atacam à distância ou reforçam a concentração."
       },
       {
         "id": "circulo_mar",
-        "nome": "Círculo do Mar"
+        "nome": "Círculo do Mar",
+        "descricao": "Fúria do mar: uma aura de tempestade e gelo que fere e empurra quem se aproxima."
       }
     ],
     "nivel_subclasse": 3,
@@ -2022,19 +2042,23 @@ export default [
     "subclasses": [
       {
         "id": "feiticaria_aberrante",
-        "nome": "Feitiçaria Aberrante"
+        "nome": "Feitiçaria Aberrante",
+        "descricao": "Magia psiônica de origem alienígena: telepatia, magias psíquicas e transformação do próprio corpo."
       },
       {
         "id": "feiticaria_draconica",
-        "nome": "Feitiçaria Dracônica"
+        "nome": "Feitiçaria Dracônica",
+        "descricao": "Sangue de dragão: PV extras, escamas que servem de armadura, resistência elemental e asas."
       },
       {
         "id": "feiticaria_mecanica",
-        "nome": "Feitiçaria Mecânica"
+        "nome": "Feitiçaria Mecânica",
+        "descricao": "Ordem de Mecanus: anula vantagem e desvantagem, restaura o equilíbrio e protege contra o caos."
       },
       {
         "id": "feiticaria_selvagem",
-        "nome": "Feitiçaria Selvagem"
+        "nome": "Feitiçaria Selvagem",
+        "descricao": "Magia instável: surtos aleatórios, Marés do Caos e capacidade de dobrar a sorte do grupo."
       }
     ],
     "nivel_subclasse": 3,
@@ -2501,19 +2525,23 @@ export default [
     "subclasses": [
       {
         "id": "andarilho_feerico",
-        "nome": "Andarilho Feérico"
+        "nome": "Andarilho Feérico",
+        "descricao": "Toque da Faéria: dano psíquico nos ataques, encantos, e resistência a medo e enfeitiçamento."
       },
       {
         "id": "cacador",
-        "nome": "Caçador"
+        "nome": "Caçador",
+        "descricao": "Técnicas de caça sob medida: escolhe golpes contra hordas ou contra ameaças únicas e poderosas."
       },
       {
         "id": "senhor_das_feras",
-        "nome": "Senhor das Feras"
+        "nome": "Senhor das Feras",
+        "descricao": "Um companheiro primal luta ao seu lado, agindo em conjunto com seus próprios ataques."
       },
       {
         "id": "vigilante_das_sombras",
-        "nome": "Vigilante das Sombras"
+        "nome": "Vigilante das Sombras",
+        "descricao": "Emboscada na escuridão: iniciativa e ataque extra no primeiro turno, visão às cegas e invisibilidade."
       }
     ],
     "nivel_subclasse": 3,
@@ -2891,19 +2919,23 @@ export default [
     "subclasses": [
       {
         "id": "campeao",
-        "nome": "Campeão"
+        "nome": "Campeão",
+        "descricao": "Perfeição marcial simples e direta: crítico ampliado, atletismo aprimorado e recuperação constante."
       },
       {
         "id": "cavaleiro_mistico",
-        "nome": "Cavaleiro Místico"
+        "nome": "Cavaleiro Místico",
+        "descricao": "Guerreiro-mago: magias de Abjuração e Evocação, vínculo com a arma e golpe mágico combinado."
       },
       {
         "id": "combatente_psiquico",
-        "nome": "Combatente Psíquico"
+        "nome": "Combatente Psíquico",
+        "descricao": "Energia psiônica canalizada para proteger aliados, empurrar inimigos e potencializar ataques."
       },
       {
         "id": "mestre_da_batalha",
-        "nome": "Mestre da Batalha"
+        "nome": "Mestre da Batalha",
+        "descricao": "Manobras táticas com Dados de Superioridade: desarmar, derrubar, provocar e comandar o campo."
       }
     ],
     "nivel_subclasse": 3,
@@ -3143,19 +3175,23 @@ export default [
     "subclasses": [
       {
         "id": "adaga_espiritual",
-        "nome": "Adaga Espiritual"
+        "nome": "Adaga Espiritual",
+        "descricao": "Lâminas psiônicas manifestas: ataca com a mente, comunica-se em segredo e teleporta-se em silêncio."
       },
       {
         "id": "assassino",
-        "nome": "Assassino"
+        "nome": "Assassino",
+        "descricao": "Especialista em emboscada: vantagem no primeiro turno, dano brutal contra surpreendidos e disfarces."
       },
       {
         "id": "ladrao",
-        "nome": "Ladrão"
+        "nome": "Ladrão",
+        "descricao": "Ofício clássico: mãos rápidas como Ação Bônus, escalada veloz e uso de itens mágicos alheios."
       },
       {
         "id": "trapaceiro_arcano",
-        "nome": "Trapaceiro Arcano"
+        "nome": "Trapaceiro Arcano",
+        "descricao": "Magia de Ilusão e Encantamento a serviço do furto, com Mão Mágica aprimorada e truques à distância."
       }
     ],
     "nivel_subclasse": 3,
@@ -3373,19 +3409,23 @@ export default [
     "subclasses": [
       {
         "id": "abjurador",
-        "nome": "Abjurador"
+        "nome": "Abjurador",
+        "descricao": "Proteção Arcana absorve dano por você e pelos aliados, e a defesa contra magia melhora com o nível."
       },
       {
         "id": "adivinhador",
-        "nome": "Adivinhador"
+        "nome": "Adivinhador",
+        "descricao": "Presságio: rolagens guardadas de antemão substituem resultados seus ou dos inimigos."
       },
       {
         "id": "evocador",
-        "nome": "Evocador"
+        "nome": "Evocador",
+        "descricao": "Molda a explosão para poupar aliados e, no auge, garante dano máximo nas magias de dano."
       },
       {
         "id": "ilusionista",
-        "nome": "Ilusionista"
+        "nome": "Ilusionista",
+        "descricao": "Ilusões maleáveis que mudam de forma em tempo real e, no fim, tornam-se parcialmente reais."
       }
     ],
     "nivel_subclasse": 3,
@@ -3823,19 +3863,23 @@ export default [
     "subclasses": [
       {
         "id": "combatente_elementos",
-        "nome": "Combatente dos Elementos"
+        "nome": "Combatente dos Elementos",
+        "descricao": "Golpes elementais: alcance ampliado, empurrões e dano de fogo, gelo, relâmpago ou trovão."
       },
       {
         "id": "combatente_mao_espalmada",
-        "nome": "Combatente da Mão Espalmada"
+        "nome": "Combatente da Mão Espalmada",
+        "descricao": "Técnica clássica: empurra, derruba ou atordoa com ataques desarmados, e cura a si mesmo."
       },
       {
         "id": "combatente_misericordia",
-        "nome": "Combatente da Misericórdia"
+        "nome": "Combatente da Misericórdia",
+        "descricao": "Mãos que curam e matam: transfere vida ou inflige dano necrótico com um toque."
       },
       {
         "id": "combatente_sombras",
-        "nome": "Combatente das Sombras"
+        "nome": "Combatente das Sombras",
+        "descricao": "Discípulo das trevas: cria escuridão, enxerga através dela e teleporta-se entre sombras."
       }
     ],
     "nivel_subclasse": 3,
@@ -4095,19 +4139,23 @@ export default [
     "subclasses": [
       {
         "id": "juramento_anciaos",
-        "nome": "Juramento dos Anciões"
+        "nome": "Juramento dos Anciões",
+        "descricao": "Defensor da luz e da vida: aura que reduz dano mágico, encantos feéricos e longevidade."
       },
       {
         "id": "juramento_devocao",
-        "nome": "Juramento da Devoção"
+        "nome": "Juramento da Devoção",
+        "descricao": "Cavaleiro exemplar: arma sagrada, proteção contra medo e enfeitiçamento para todo o grupo."
       },
       {
         "id": "juramento_gloria",
-        "nome": "Juramento da Glória"
+        "nome": "Juramento da Glória",
+        "descricao": "Herói lendário: atletismo sobrenatural, velocidade extra para aliados e inspiração em combate."
       },
       {
         "id": "juramento_vinganca",
-        "nome": "Juramento da Vingança"
+        "nome": "Juramento da Vingança",
+        "descricao": "Caçador implacável: marca um inimigo jurado, persegue-o e ataca com vantagem até o fim."
       }
     ],
     "nivel_subclasse": 3,

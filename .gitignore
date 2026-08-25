@@ -6,3 +6,8 @@ android/app/build/
 android/.gradle/
 android/local.properties
 .claude/
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

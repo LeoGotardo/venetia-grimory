@@ -4,6 +4,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'acolito',
     nome: 'Acolyte',
+    descricao: "You served in a temple, learning rites and prayers under the clergy's guidance.",
     atributos_sugeridos: ['INT', 'SAB', 'CAR'],
     talento: 'Magic Initiate (Cleric)',
     pericias: ['intuicao', 'religiao'],
@@ -16,6 +17,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'andarilho',
     nome: 'Wayfarer',
+    descricao: 'You grew up on the streets, living by wit, luck, and the help of other outcasts.',
     atributos_sugeridos: ['DES', 'SAB', 'CAR'],
     talento: 'Lucky',
     pericias: ['furtividade', 'intuicao'],
@@ -28,6 +30,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'artesao',
     nome: 'Artisan',
+    descricao: 'Apprenticed in a workshop, you mastered a craft and the trade that comes with it.',
     atributos_sugeridos: ['FOR', 'DES', 'INT'],
     talento: 'Crafter',
     pericias: ['investigacao', 'persuasao'],
@@ -40,6 +43,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'artista',
     nome: 'Entertainer',
+    descricao: 'You lived from stage to stage, winning crowds with music, dance, or acting.',
     atributos_sugeridos: ['FOR', 'DES', 'CAR'],
     talento: 'Musician',
     pericias: ['acrobacia', 'atuacao'],
@@ -52,6 +56,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'charlatao',
     nome: 'Charlatan',
+    descricao: 'You lived off scams and disguises, always a step ahead of those you fooled.',
     atributos_sugeridos: ['DES', 'CON', 'CAR'],
     talento: 'Skilled',
     pericias: ['enganacao', 'prestidigitacao'],
@@ -64,6 +69,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'criminoso',
     nome: 'Criminal',
+    descricao: 'You worked outside the law, with underworld contacts and an eye for locked doors.',
     atributos_sugeridos: ['DES', 'CON', 'INT'],
     talento: 'Alert',
     pericias: ['furtividade', 'prestidigitacao'],
@@ -76,6 +82,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'eremita',
     nome: 'Hermit',
+    descricao: 'You spent years in isolated contemplation, seeking a truth only you understand.',
     atributos_sugeridos: ['CON', 'SAB', 'CAR'],
     talento: 'Healer',
     pericias: ['medicina', 'religiao'],
@@ -88,6 +95,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'escriba',
     nome: 'Scribe',
+    descricao: 'You copied and drafted documents, training a steady hand and an eye for detail.',
     atributos_sugeridos: ['DES', 'INT', 'SAB'],
     talento: 'Skilled',
     pericias: ['investigacao', 'percepcao'],
@@ -100,6 +108,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'fazendeiro',
     nome: 'Farmer',
+    descricao: 'You grew up working the land, gaining endurance, patience, and calloused hands.',
     atributos_sugeridos: ['FOR', 'CON', 'SAB'],
     talento: 'Tough',
     pericias: ['lidar_com_animais', 'natureza'],
@@ -112,6 +121,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'guarda',
     nome: 'Guard',
+    descricao: 'You watched walls and gates, learning discipline and how to read intent in a crowd.',
     atributos_sugeridos: ['FOR', 'INT', 'SAB'],
     talento: 'Alert',
     pericias: ['atletismo', 'percepcao'],
@@ -124,6 +134,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'guia',
     nome: 'Guide',
+    descricao: 'You know the wild trails like no one else, and how to cross them safely.',
     atributos_sugeridos: ['DES', 'CON', 'SAB'],
     talento: 'Magic Initiate (Druid)',
     pericias: ['furtividade', 'sobrevivencia'],
@@ -136,6 +147,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'marinheiro',
     nome: 'Sailor',
+    descricao: 'You served aboard ship, mastering ropes, currents, and the tales that run through ports.',
     atributos_sugeridos: ['FOR', 'DES', 'SAB'],
     talento: 'Tavern Brawler',
     pericias: ['acrobacia', 'percepcao'],
@@ -148,6 +160,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'mercador',
     nome: 'Merchant',
+    descricao: 'You traded along roads and fairs, with a nose for prices and for trustworthy people.',
     atributos_sugeridos: ['CON', 'INT', 'CAR'],
     talento: 'Lucky',
     pericias: ['lidar_com_animais', 'persuasao'],
@@ -160,6 +173,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'nobre',
     nome: 'Noble',
+    descricao: 'Raised with privilege and etiquette, you bear a name that opens doors — at a price.',
     atributos_sugeridos: ['FOR', 'INT', 'CAR'],
     talento: 'Skilled',
     pericias: ['historia', 'persuasao'],
@@ -172,6 +186,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'sabio',
     nome: 'Sage',
+    descricao: 'You spent years among books and mentors, amassing lore about the world and its mysteries.',
     atributos_sugeridos: ['CON', 'INT', 'SAB'],
     talento: 'Magic Initiate (Wizard)',
     pericias: ['arcanismo', 'historia'],
@@ -184,6 +199,7 @@ export const ANTECEDENTES: Antecedente[] = [
   {
     id: 'soldado',
     nome: 'Soldier',
+    descricao: 'You served in an army, learning hierarchy, tactics, and the true weight of battle.',
     atributos_sugeridos: ['FOR', 'DES', 'CON'],
     talento: 'Savage Attacker',
     pericias: ['atletismo', 'intimidacao'],

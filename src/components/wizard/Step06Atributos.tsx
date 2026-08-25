@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useFichaStore } from '../../store/fichaStore'
 import { WizardNav } from './WizardNav'
-import { calcModificador, formatModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
+import { calcModificador, formatModificador, ATRIBUTOS, nomeAtributo } from '../../lib/calculos'
 import { useAtributosWizard } from '../../hooks/useAtributosWizard'
 import { CUSTO_PONTOS_COMPRA } from '../../constants'
 import type { AtributoId } from '../../types'
@@ -148,7 +148,7 @@ function PainelConjuntoPadrao({
               htmlFor={`padrao-${attr}`}
               className={`text-sm font-semibold ${nomePrimeiroSugerido === attr ? 'text-[#D4A017]' : 'text-[#B8860B]'}`}
             >
-              {ATRIBUTO_NOMES[attr]}{nomePrimeiroSugerido === attr && (
+              {nomeAtributo(attr, t)}{nomePrimeiroSugerido === attr && (
             <svg width="12" height="12" viewBox="0 0 24 24" fill="#D4A017" className="inline ml-1 mb-0.5"><path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/></svg>
           )}
             </label>
@@ -216,7 +216,7 @@ function PainelAleatorio({ wizard }: { wizard: WizardHook }) {
               return (
                 <div key={attr} className="flex flex-col gap-1">
                   <label htmlFor={`aleatorio-${attr}`} className="text-sm font-semibold text-[#B8860B]">
-                    {ATRIBUTO_NOMES[attr]}
+                    {nomeAtributo(attr, t)}
                   </label>
                   <div className="flex gap-1">
                     <select
@@ -284,7 +284,7 @@ function PainelCompra({ wizard }: { wizard: WizardHook }) {
         {ATRIBUTOS.map(attr => (
           <div key={attr} className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-[#B8860B]">{ATRIBUTO_NOMES[attr]}</label>
+              <label className="text-sm font-semibold text-[#B8860B]">{nomeAtributo(attr, t)}</label>
               <span className="text-xs text-[#A8A09B]">c:{CUSTO_PONTOS_COMPRA[wizard.compra[attr]] ?? 0}</span>
             </div>
             <div className="flex items-center gap-1">

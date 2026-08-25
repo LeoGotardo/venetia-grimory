@@ -1,5 +1,6 @@
 import type { Ficha } from '../types'
 import type { FichaListItem } from '../store/fichaStore'
+import { migrarFicha } from '../lib/migrarFicha'
 import { STORAGE_KEY_FICHA_PREFIX, STORAGE_KEY_LISTA } from '../constants'
 
 function buildListItem(id: string, ficha: Ficha, completa: boolean): FichaListItem {
@@ -53,7 +54,7 @@ export function carregarFicha(id: string): Ficha | null {
   if (!raw) return null
 
   try {
-    return JSON.parse(raw) as Ficha
+    return migrarFicha(JSON.parse(raw) as Ficha)
   } catch {
     console.error(`[fichaStorage] Ficha ${id} corrompida.`)
     return null

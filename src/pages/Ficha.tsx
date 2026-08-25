@@ -290,8 +290,8 @@ export function Ficha() {
               {t('ficha.hp')}
             </span>
             <div className="flex items-baseline gap-[5px] whitespace-nowrap mb-2">
-              <span className="font-extrabold text-[34px] sm:text-[42px] leading-none text-[#F5F0E8] tracking-tight">{pvAtual}</span>
-              <span className="text-[16px] sm:text-[19px] font-semibold text-[#c98c8c]">/ {pvMax}</span>
+              <span data-testid="pv-atual" className="font-extrabold text-[34px] sm:text-[42px] leading-none text-[#F5F0E8] tracking-tight">{pvAtual}</span>
+              <span data-testid="pv-maximo" className="text-[16px] sm:text-[19px] font-semibold text-[#c98c8c]">/ {pvMax}</span>
             </div>
             {/* Quick HP adjust — linha própria, sem concorrer com o label */}
             <div className="flex items-center gap-1 mb-2">
@@ -335,7 +335,7 @@ export function Ficha() {
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B8860B" strokeWidth="1.5"><path d="M12 2l7 3v6c0 4.5-3 8.5-7 9.5C8 19.5 5 15.5 5 11V5z"/></svg>
               {t('ficha.ac')}
             </span>
-            <div className="font-extrabold text-[30px] sm:text-[38px] leading-none tracking-tight text-[#F5F0E8] mt-2 sm:mt-4">
+            <div data-testid="ca-valor" className="font-extrabold text-[30px] sm:text-[38px] leading-none tracking-tight text-[#F5F0E8] mt-2 sm:mt-4">
               {combate.classe_de_armadura.valor ?? '—'}
             </div>
           </div>
@@ -372,7 +372,7 @@ export function Ficha() {
             { label: t('ficha.passivePerception'), value: String(percepcaoPassiva) },
             { label: t('ficha.darkvision'), value: visaoEscuro },
           ].map(({ label, value, gold }) => (
-            <div key={label} className="flex-1 min-w-[100px] flex flex-col sm:flex-row items-center justify-center gap-[4px] sm:gap-[9px] py-3 rounded-[12px] bg-[#1A1714] border border-[rgba(212,160,23,0.18)]">
+            <div key={label} data-testid={`stat-${label}`} className="flex-1 min-w-[100px] flex flex-col sm:flex-row items-center justify-center gap-[4px] sm:gap-[9px] py-3 rounded-[12px] bg-[#1A1714] border border-[rgba(212,160,23,0.18)]">
               <span className="text-[11px] sm:text-[13px] text-[#8a8278] font-medium text-center">{label}</span>
               <span className={`font-extrabold text-[16px] ${gold ? 'text-[#D4A017]' : 'text-[#F5F0E8]'}`}>{value}</span>
             </div>

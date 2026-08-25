@@ -3,10 +3,13 @@ import { useFichaStore } from '../../store/fichaStore'
 import { Textarea } from '../ui/Input'
 import { Badge } from '../ui/Badge'
 import { CONDICOES_DISPONIVEIS, EXAUSTAO_EFEITOS, MAXIMO_EXAUSTAO } from '../../constants'
+import { traduzirTermo } from '../../data/dados/traducao'
 
 export function PainelAnotacoes() {
   const { ficha, toggleCondicao, setExaustao, setNotas } = useFichaStore()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  // As condições são guardadas na ficha em português (valor canônico das regras).
+  const traduzir = (termo: string) => traduzirTermo(termo, i18n.language)
   const p = ficha.personalidade
 
   const traitsMap = [
@@ -45,10 +48,10 @@ export function PainelAnotacoes() {
             <button
               key={c}
               onClick={() => toggleCondicao(c)}
-              aria-label={t('notes.removeConditionAriaLabel', { c })}
+              aria-label={t('notes.removeConditionAriaLabel', { c: traduzir(c) })}
               className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded"
             >
-              <Badge variant="red">{c} ×</Badge>
+              <Badge variant="red">{traduzir(c)} ×</Badge>
             </button>
           ))}
           {ficha.condicoes_ativas.length === 0 && (
@@ -60,10 +63,10 @@ export function PainelAnotacoes() {
             <button
               key={c}
               onClick={() => toggleCondicao(c)}
-              aria-label={t('notes.applyCondition', { c })}
+              aria-label={t('notes.applyCondition', { c: traduzir(c) })}
               className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded"
             >
-              <Badge variant="default" className="hover:border-[#7B1D1D]/60">{c}</Badge>
+              <Badge variant="default" className="hover:border-[#7B1D1D]/60">{traduzir(c)}</Badge>
             </button>
           ))}
         </div>
@@ -92,7 +95,7 @@ export function PainelAnotacoes() {
           ))}
         </div>
         <p className="text-xs text-[#A8A09B]">
-          {(EXAUSTAO_EFEITOS as readonly string[])[ficha.niveis_de_exaustao]}
+          {traduzir((EXAUSTAO_EFEITOS as readonly string[])[ficha.niveis_de_exaustao])}
         </p>
       </section>
 

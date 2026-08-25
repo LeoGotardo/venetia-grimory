@@ -152,6 +152,12 @@ export function formatModificador(mod: number | null): string {
 
 export const ATRIBUTOS: AtributoId[] = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR']
 
+/** Nome do atributo no idioma da interface (recebe o `t` do react-i18next). */
+export function nomeAtributo(attr: AtributoId, t: (chave: string) => string): string {
+  return t(`attrs.${attr}`)
+}
+
+/** Nomes em português — fallback para contextos sem i18n. */
 export const ATRIBUTO_NOMES: Record<AtributoId, string> = {
   FOR: 'Força',
   DES: 'Destreza',

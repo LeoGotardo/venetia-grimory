@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../ui/Modal'
 import { useFichaStore } from '../../store/fichaStore'
-import { calcPVTotal, calcBonusProf, calcModificador, ATRIBUTOS, ATRIBUTO_NOMES } from '../../lib/calculos'
+import { calcPVTotal, calcBonusProf, calcModificador, ATRIBUTOS, nomeAtributo } from '../../lib/calculos'
 import type { AtributoId } from '../../types'
 import { dados } from '../../data/dados'
 
@@ -156,7 +156,7 @@ export function LevelUpModal({ open, onClose, novoNivel }: LevelUpModalProps) {
             : 'border-[#B8860B]/20 bg-[#2D2520] text-[#A8A09B] hover:border-[#B8860B]/50 hover:text-[#F5F0E8]',
         ].join(' ')}
       >
-        <span className="font-medium">{ATRIBUTO_NOMES[attr]}</span>
+        <span className="font-medium">{nomeAtributo(attr, t)}</span>
         <span className="tabular-nums text-xs">
           {val}
           {selecionado && <span className="text-[#B8860B] font-bold"> +{bonus} → {Math.min(20, val + bonus)}</span>}

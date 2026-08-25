@@ -14,7 +14,7 @@ import {
   ATRIBUTOS,
 } from './calculos'
 import { TIPO_CONJURADOR } from '../constants'
-import { dados } from '../data/dados'
+import { dadosPT as dados } from '../data/dados'
 
 function recalcularModificadores(ficha: Ficha): Ficha {
   let f = ficha

@@ -3,6 +3,7 @@ import type { AtributoId } from '../../types/dados'
 export interface Antecedente {
   id: string
   nome: string
+  descricao: string
   atributos_sugeridos: AtributoId[]
   talento: string
   pericias: string[]
