@@ -399,10 +399,19 @@ export const useFichaStore = create<FichaStore>((set, get) => ({
   gastarDadoVida: () =>
     set(s => {
       const dv = s.ficha.combate.dados_de_vida
-      if (!dv.total || dv.gastos >= dv.total) return s
+      const max_vida = s.ficha.combate.pontos_de_vida.maximo ?? 0
+
+      if (!dv.total || dv.gastos >= dv.total || s.ficha.combate.pontos_de_vida.atual >= max_vida) return s
+      
+      let vida = s.ficha.combate.pontos_de_vida.atual
+      const dados = Number(s.ficha.combate.dados_de_vida.tipo?.split('d')[1])
+
+      vida = Math.min(Math.floor((vida + Math.random() * (dados - 1 + 1) + 1)), max_vida);
+
       return {
         ficha: atualizarCombate(s.ficha, {
           dados_de_vida: { ...dv, gastos: dv.gastos + 1 },
+          pontos_de_vida: { ...s.ficha.combate.pontos_de_vida, atual: vida }
         }),
       }
     }),
