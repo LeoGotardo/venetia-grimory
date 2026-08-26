@@ -40,6 +40,10 @@ npm run build && npx cap sync
   inventory, and notes, with level-up (including ASI and multiclass) handled in place.
 - **Multiclassing** — full support for secondary classes, prerequisites, granted proficiencies,
   and multiclass spell slot/spellcaster-level calculation.
+- **Official sheet export** — fill the official D&D 5.5 (2024) character sheet as a PDF, in
+  Portuguese or English, either complete (flattened, ready to archive) or blank of everything
+  that changes during play (current HP, XP, spent slots, coins) for printing and filling in by
+  hand. Printing opens the browser's print dialog directly.
 - **Local-first** — every character is stored in `localStorage`; no account, no server, no
   network dependency.
 - **i18n** — UI available in Portuguese and English.
@@ -74,12 +78,18 @@ src/
   components/    UI components (wizard steps, ficha panels, shared)
   constants/     pool sizes, level caps, storage keys, point-buy costs, etc.
   data/          static rules data + localized items/spells/backgrounds
-  hooks/         useAtributosWizard, useFichaExport, ...
+  hooks/         useAtributosWizard, useFichaExport, useFichaPdf, ...
   i18n/          UI translation strings (pt/en)
   lib/           recalcular.ts, calculos.ts (rules math)
+  lib/pdf/       official-sheet export (generated field map + filler)
   pages/         Home, Wizard, Ficha
   services/      fichaStorage.ts (localStorage persistence)
   store/         fichaStore.ts, configStore.ts
   types/         Ficha, DadosJogo, and related types
 android/         Capacitor Android project
+public/          static assets, including the two blank sheet models (~4.5 MB each)
+scripts/         one-off node tools that build those models and generate the field map
 ```
+
+The PDF pipeline (how the blank models and `src/lib/pdf/camposFicha.ts` are produced) is
+documented in `scripts/README.md`.

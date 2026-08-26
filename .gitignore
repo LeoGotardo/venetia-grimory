@@ -11,3 +11,6 @@ android/local.properties
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Modelo oficial usado só pelos scripts (12 MB, arte da WotC)
+docs/*.pdf

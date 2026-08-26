@@ -13,6 +13,7 @@ import { PainelMagia } from '../components/ficha/PainelMagia'
 import { PainelInventario } from '../components/ficha/PainelInventario'
 import { PainelAnotacoes } from '../components/ficha/PainelAnotacoes'
 import { PainelEditar } from '../components/ficha/PainelEditar'
+import { MenuExportar } from '../components/ficha/MenuExportar'
 import { ConfigModal } from '../components/ui/ConfigModal'
 import { LevelUpModal } from '../components/ficha/LevelUpModal'
 
@@ -36,7 +37,7 @@ export function Ficha() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { ficha, fichaId, carregarFicha, setIdentidade, addXP, atualizarPV } = useFichaStore()
+  const { ficha, fichaId, carregarFicha, addXP, atualizarPV } = useFichaStore()
   const { exportar } = useFichaExport()
   const [aba, setAba] = useState<Aba>('ficha')
   const [configAberta, setConfigAberta] = useState(false)
@@ -179,13 +180,7 @@ export function Ficha() {
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
-          <button
-            onClick={() => exportar(identity.nome_personagem)}
-            className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#A8A09B] hover:text-[#E8DFD0] bg-white/[0.04] border border-white/[0.08] rounded-[9px] px-3 py-2 cursor-pointer transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M7 9l5-5 5 5"/><path d="M12 4v12"/></svg>
-            {t('ficha.export')}
-          </button>
+          <MenuExportar onExportarJSON={() => exportar(identity.nome_personagem)} />
           <span className="hidden sm:inline-flex items-center gap-[7px] text-[#7c9b6e] text-[13px] font-medium">
             <span className="w-[7px] h-[7px] rounded-full bg-[#7c9b6e]" />
             {t('ficha.saved')}

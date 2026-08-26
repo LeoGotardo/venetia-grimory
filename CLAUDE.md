@@ -95,6 +95,18 @@ npm run build && npx cap sync
 
 - `src/hooks/useAtributosWizard.ts` encapsulates all attribute-assignment logic for the wizard step. It manages three methods (`padrao` — assign from the standard array `[15,14,13,12,10,8]`; `aleatorio` — roll 4d6-drop-lowest then assign dice to slots; `compra` — 27-point buy). Components should use this hook rather than re-implementing point-buy math.
 - `src/hooks/useFichaExport.ts` wraps the store's `exportarJSON`/`importarJSON` with browser file download/upload mechanics. Use this hook from UI components instead of touching `localStorage` or blobs directly.
+- `src/hooks/useFichaPdf.ts` generates the official sheet as a PDF — `gerarPdf(modo, acao)` with `modo: 'exportar' | 'imprimir'` and `acao: 'baixar' | 'imprimir'`. It picks the model by `i18n.language`, caches it per path, and lazily imports `preencherFicha` so pdf-lib stays out of the main chunk.
+
+### PDF export: two prefilled models and a generated field map
+
+- `public/ficha-modelo.pdf` (PT-BR) and `public/ficha-modelo-en.pdf` are the official D&D 5.5 sheets carrying **the same 411 AcroForm fields, with the same names, at the same coordinates** — PT and EN are the same InDesign template (603×774 pts). That is what lets `preencherFicha.ts` fill either one without knowing the language.
+- `src/lib/pdf/camposFicha.ts` is **generated** — do not hand-edit. The PDF's own field names are machine-generated (`text_1aoob`, `checkbox_148cprb`); the generator identifies each field by page + position and fails if any field ends up without a semantic key. Regenerate with the pipeline in `scripts/README.md`.
+- `src/lib/pdf/preencherFicha.ts` maps a `Ficha` onto those keys. `exportar` fills everything and flattens; `imprimir` leaves blank what changes during play (current/temp HP, spent Hit Dice, XP, spent spell slots, coins) and keeps the form editable. That split is documented in the file's header with its three sources (2024 rest rules, the sheet's own tracker boxes, the store's in-play actions) — keep it in sync if you add fields.
+- Death saves, Heroic Inspiration and item attunement are never filled: `Ficha` has no such fields.
+- Class resources print their **maximum** only (level-derived, permanent); the current value is restored by `descansoLongo` and stays out.
+- Two PDF gotchas, both already worked around — don't "simplify" them away:
+  - The checkboxes' on-state appearance references a font the widget doesn't declare, so `check()` renders nothing and `flatten()` emits broken XObjects. Marks are drawn on the page as filled circles and the checkbox fields are removed before flattening.
+  - Each widget carries its own `/DA`, which **overrides** the field-level one — `setFontSize()` alone has no effect, so the widget `/DA` is deleted whenever the font is shrunk to fit.
 
 ### localStorage key schema
 
