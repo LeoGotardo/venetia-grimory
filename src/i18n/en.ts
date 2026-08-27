@@ -44,6 +44,8 @@ const en = {
     filePrint: 'print',
     fileFallbackName: 'Character',
     exportJson: 'Backup (JSON)',
+    sharePdf: 'Share filled PDF',
+    sharePrintPdf: 'Share PDF to print',
     print: 'Print now',
     printHint: 'Opens the print dialog with the blank sheet',
     preparingPrint: 'Preparing print…',

@@ -44,6 +44,8 @@ const pt = {
     filePrint: 'imprimir',
     fileFallbackName: 'Personagem',
     exportJson: 'Backup (JSON)',
+    sharePdf: 'Compartilhar PDF preenchido',
+    sharePrintPdf: 'Compartilhar PDF para imprimir',
     print: 'Imprimir agora',
     printHint: 'Abre o diálogo de impressão com a ficha em branco',
     preparingPrint: 'Preparando impressão…',

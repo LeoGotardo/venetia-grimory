@@ -3,8 +3,6 @@ import i18n from '../i18n'
 import { useFichaStore } from '../store/fichaStore'
 import type { ModoFichaPdf } from '../lib/pdf/preencherFicha'
 
-const MS_ATE_LIMPAR_IMPRESSAO = 60_000
-
 /** Ficha oficial no idioma da interface — os dois modelos têm os mesmos campos. */
 function caminhoDoModelo(): string {
   const arquivo = i18n.language === 'pt' ? 'ficha-modelo.pdf' : 'ficha-modelo-en.pdf'
@@ -34,66 +32,39 @@ async function carregarModelo(): Promise<ArrayBuffer> {
   return bytes
 }
 
-function urlDoPdf(bytes: Uint8Array): string {
-  const blob = new Blob([bytes as unknown as BlobPart], { type: 'application/pdf' })
-  return URL.createObjectURL(blob)
-}
-
-function baixar(bytes: Uint8Array, nomeArquivo: string) {
-  const url = urlDoPdf(bytes)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = nomeArquivo
-  link.click()
-  URL.revokeObjectURL(url)
-}
-
-function imprimir(bytes: Uint8Array) {
-  const url = urlDoPdf(bytes)
-  const iframe = document.createElement('iframe')
-  iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
-  iframe.src = url
-
-  iframe.onload = () => {
-    try {
-      iframe.contentWindow?.focus()
-      iframe.contentWindow?.print()
-    } catch {
-      // Alguns navegadores não imprimem PDF em iframe — cai para abrir em aba.
-      window.open(url, '_blank')
-    }
-  }
-
-  document.body.appendChild(iframe)
-  // O diálogo bloqueia a aba na maioria dos navegadores, mas não em todos:
-  // a limpeza espera o suficiente para a impressão terminar.
-  window.setTimeout(() => {
-    URL.revokeObjectURL(url)
-    iframe.remove()
-  }, MS_ATE_LIMPAR_IMPRESSAO)
-}
-
 /**
  * Gera a ficha no modelo oficial (D&D 5.5). `exportar` sai preenchida e
  * achatada; `imprimir` sai só com o que não muda em jogo e segue editável.
+ * A entrega (download, folha de compartilhamento ou diálogo de impressão) fica
+ * a cargo de `entregarPdf`, que conhece as limitações de cada plataforma.
  */
 export function useFichaPdf() {
   const ficha = useFichaStore(s => s.ficha)
   const [gerando, setGerando] = useState<TarefaPdf | null>(null)
   const [erro, setErro] = useState<string | null>(null)
 
+  /**
+   * Adianta o download do modelo e do chunk do pdf-lib. No celular, a folha de
+   * compartilhamento precisa abrir logo após o toque; com isso já em cache, o
+   * tempo entre o toque e a folha cai para a geração do PDF.
+   */
+  const prepararPdf = useCallback(() => {
+    void import('../lib/pdf/preencherFicha')
+    void carregarModelo().catch(() => {})
+  }, [])
+
   const gerarPdf = useCallback(
     async (modo: ModoFichaPdf, acao: AcaoFichaPdf = 'baixar') => {
       setGerando({ modo, acao })
       setErro(null)
       try {
-        const [{ preencherFichaPdf }, modelo] = await Promise.all([
+        const [{ preencherFichaPdf }, { entregarPdf }, modelo] = await Promise.all([
           import('../lib/pdf/preencherFicha'),
+          import('../lib/pdf/entregarPdf'),
           carregarModelo(),
         ])
         const bytes = await preencherFichaPdf(ficha, modo, modelo)
-        if (acao === 'imprimir') imprimir(bytes)
-        else baixar(bytes, nomeDoArquivo(ficha.identidade.nome_personagem, modo))
+        await entregarPdf(bytes, nomeDoArquivo(ficha.identidade.nome_personagem, modo), acao)
       } catch (err) {
         console.error('[useFichaPdf] falha ao gerar o PDF:', err)
         setErro(err instanceof Error ? err.message : String(err))
@@ -104,7 +75,7 @@ export function useFichaPdf() {
     [ficha],
   )
 
-  return { gerarPdf, gerando, erro }
+  return { gerarPdf, prepararPdf, gerando, erro }
 }
 
 /** `Ficha - Grukk Pedra-Cinza.pdf` / `Sheet - Grukk Pedra-Cinza (print).pdf` */

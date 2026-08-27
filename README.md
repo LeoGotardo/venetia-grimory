@@ -43,7 +43,8 @@ npm run build && npx cap sync
 - **Official sheet export** — fill the official D&D 5.5 (2024) character sheet as a PDF, in
   Portuguese or English, either complete (flattened, ready to archive) or blank of everything
   that changes during play (current HP, XP, spent slots, coins) for printing and filling in by
-  hand. Printing opens the browser's print dialog directly.
+  hand. On desktop it downloads or opens the print dialog; on phones and inside the Android app
+  it goes through the system share sheet (save to files, print, send to another app).
 - **Local-first** — every character is stored in `localStorage`; no account, no server, no
   network dependency.
 - **i18n** — UI available in Portuguese and English.
