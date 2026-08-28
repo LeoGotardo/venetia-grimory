@@ -3,6 +3,7 @@ import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { gameData } from '../../data/rules'
+import { calcPrimaryClassLevel, canChooseSubclass } from '../../lib/calculations'
 
 function hasFightingStyle(classId: string, level: number) {
   if (classId === 'guerreiro') return level >= 1
@@ -21,9 +22,11 @@ export function Step03Subclass() {
   const classId = sheet.identity.class_id ?? ''
   const subclassId = sheet.identity.subclass_id
   const cc = sheet.class_features
+  // Subclasse depende dos níveis NA classe primária, não do nível total
+  const primaryLevel = calcPrimaryClassLevel(level, sheet.identity.multiclasses ?? [])
   const charClass = gameData.classes.find(c => c.id === classId)
 
-  const needsSubclass = level >= 3
+  const needsSubclass = canChooseSubclass(primaryLevel)
   const needsFightingStyle = hasFightingStyle(classId, level)
   const needsDivineOrder = hasDivineOrder(classId)
   const needsPrimalOrder = hasPrimalOrder(classId)
@@ -47,7 +50,7 @@ export function Step03Subclass() {
         <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-6 text-center">
           <div className="text-4xl mb-3">🔒</div>
           <h3 className="font-cinzel text-lg text-[#F5F0E8] mb-2">{t('step03.lockedHeading')}</h3>
-          <p className="text-[#A8A09B] text-sm">{t('step03.lockedDesc', { n: level })}</p>
+          <p className="text-[#A8A09B] text-sm">{t('step03.lockedDesc', { n: primaryLevel })}</p>
         </div>
         <WizardNav onBack={() => setStep(2)} onNext={() => setStep(4)} />
       </div>

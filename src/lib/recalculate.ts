@@ -11,10 +11,35 @@ import {
   calcSpellAttackBonus,
   calcMulticlassCasterLevel,
   calcMulticlassSlots,
+  calcPrimaryClassLevel,
+  canChooseSubclass,
   ABILITIES,
 } from './calculations'
 import { CASTER_TYPE } from '../constants'
 import { gameDataPt as gameData } from '../data/rules'
+
+// Subclasse exige 3 níveis NA classe: redistribuir níveis entre classes pode
+// invalidar uma escolha já feita, então ela é descartada aqui.
+function enforceSubclassEligibility(sheet: CharacterSheet): CharacterSheet {
+  const identity = sheet.identity
+  const multiclasses = identity.multiclasses ?? []
+  const primaryLevel = calcPrimaryClassLevel(identity.level, multiclasses)
+
+  const subclassId = canChooseSubclass(primaryLevel) ? identity.subclass_id : null
+  const newMulticlasses = multiclasses.map(m =>
+    canChooseSubclass(m.level) ? m : { ...m, subclass_id: null },
+  )
+
+  const changed =
+    subclassId !== identity.subclass_id ||
+    newMulticlasses.some((m, i) => m.subclass_id !== multiclasses[i].subclass_id)
+  if (!changed) return sheet
+
+  return {
+    ...sheet,
+    identity: { ...identity, subclass_id: subclassId, multiclasses: newMulticlasses },
+  }
+}
 
 function recalculateModifiers(sheet: CharacterSheet): CharacterSheet {
   let f = sheet
@@ -230,7 +255,8 @@ function recalculateSpellcasting(sheet: CharacterSheet, profBonus: number): Char
 export function recalculate(sheet: CharacterSheet): CharacterSheet {
   const profBonus = calcProfBonus(sheet.identity.level)
 
-  const withModifiers = recalculateModifiers(sheet)
+  const eligible = enforceSubclassEligibility(sheet)
+  const withModifiers = recalculateModifiers(eligible)
   const withCombat = recalculateCombat(withModifiers, profBonus)
   const withSkills = recalculateSkills(withCombat, profBonus)
   const withSpellcasting = recalculateSpellcasting(withSkills, profBonus)

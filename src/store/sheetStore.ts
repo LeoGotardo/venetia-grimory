@@ -4,7 +4,7 @@ import type { CharacterSheet, AbilityId, InventoryItem } from '../types'
 import { createInitialSheet } from '../lib/initialSheet'
 import { recalculate } from '../lib/recalculate'
 import { migrateSheet } from '../lib/migrateSheet'
-import { ABILITIES } from '../lib/calculations'
+import { ABILITIES, calcPrimaryClassLevel, canChooseSubclass } from '../lib/calculations'
 import {
   saveSheet,
   loadSheet as loadSheetFromStorage,
@@ -161,9 +161,12 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
     }),
 
   setSubclass: subclassId =>
-    set(s => ({
-      sheet: { ...s.sheet, identity: { ...s.sheet.identity, subclass_id: subclassId } },
-    })),
+    set(s => {
+      const identity = s.sheet.identity
+      const primaryLevel = calcPrimaryClassLevel(identity.level, identity.multiclasses ?? [])
+      if (subclassId && !canChooseSubclass(primaryLevel)) return s
+      return { sheet: { ...s.sheet, identity: { ...identity, subclass_id: subclassId } } }
+    }),
 
   setSpecies: (speciesId, lineageId) =>
     set(s => {
@@ -798,6 +801,8 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
   setMulticlassSubclass: (classId, subclassId) =>
     set(s => {
       const multi = s.sheet.identity.multiclasses ?? []
+      const target = multi.find(m => m.class_id === classId)
+      if (subclassId && (!target || !canChooseSubclass(target.level))) return s
       const newMulticlass = multi.map(m =>
         m.class_id === classId ? { ...m, subclass_id: subclassId } : m,
       )

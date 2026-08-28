@@ -5,6 +5,7 @@ import { WizardNav } from './WizardNav'
 
 import { MULTICLASS_PREREQUISITES } from '../../constants'
 import { gameData } from '../../data/rules'
+import { canChooseSubclass } from '../../lib/calculations'
 
 export function StepMulticlass() {
   const {
@@ -25,14 +26,14 @@ export function StepMulticlass() {
 
   useEffect(() => {
     for (const m of multiclasses) {
-      if (m.level >= 3 && !m.subclass_id) {
+      if (canChooseSubclass(m.level) && !m.subclass_id) {
         const firstSub = gameData.classes.find(c => c.id === m.class_id)?.subclasses[0]
         if (firstSub) setMulticlassSubclass(m.class_id, firstSub.id)
       }
     }
   }, [multiclasses])
 
-  const multiclassOk = multiclasses.every(m => m.level < 3 || !!m.subclass_id)
+  const multiclassOk = multiclasses.every(m => !canChooseSubclass(m.level) || !!m.subclass_id)
 
   function checkPrerequisite(classId: string): boolean {
     const prereq = MULTICLASS_PREREQUISITES[classId]
@@ -77,7 +78,7 @@ export function StepMulticlass() {
                 <button type="button" onClick={() => removeMulticlass(m.class_id)}
                   className="text-[#A8A09B] hover:text-red-400 px-1 text-sm cursor-pointer transition-colors">×</button>
               </div>
-              {m.level >= 3 && (
+              {canChooseSubclass(m.level) && (
                 <select value={m.subclass_id ?? ''} onChange={e => setMulticlassSubclass(m.class_id, e.target.value)}
                   className="w-full bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1.5 text-[#F5F0E8] text-xs focus:outline-none focus:ring-1 focus:ring-[#B8860B]">
                   {c?.subclasses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}

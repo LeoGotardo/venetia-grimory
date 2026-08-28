@@ -1,5 +1,5 @@
 import type { AbilityId, Armor } from '../types'
-import { CASTER_TYPE, THIRD_CASTER_SUBCLASSES } from '../constants'
+import { CASTER_TYPE, SUBCLASS_LEVEL, THIRD_CASTER_SUBCLASSES } from '../constants'
 
 export function calcModifier(value: number): number {
   return Math.floor((value - 10) / 2)
@@ -7,6 +7,19 @@ export function calcModifier(value: number): number {
 
 export function calcProfBonus(level: number): number {
   return Math.ceil(level / 4) + 1
+}
+
+/** Nível na classe primária: total menos os níveis alocados nas multiclasses. */
+export function calcPrimaryClassLevel(
+  totalLevel: number,
+  multiclasses: Array<{ level: number }> = [],
+): number {
+  return totalLevel - multiclasses.reduce((sum, m) => sum + m.level, 0)
+}
+
+/** Subclasse só é liberada com 3+ níveis NAQUELA classe, não no nível total. */
+export function canChooseSubclass(classLevel: number): boolean {
+  return classLevel >= SUBCLASS_LEVEL
 }
 
 export function calcHpAtLevel1(hitDie: number, conMod: number): number {

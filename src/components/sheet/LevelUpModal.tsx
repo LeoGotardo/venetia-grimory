@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../ui/Modal'
 import { useSheetStore } from '../../store/sheetStore'
-import { calcTotalHp, calcProfBonus, calcModifier, ABILITIES, abilityName } from '../../lib/calculations'
+import { calcTotalHp, calcProfBonus, calcModifier, canChooseSubclass, ABILITIES, abilityName } from '../../lib/calculations'
 import type { AbilityId } from '../../types'
 import { gameData } from '../../data/rules'
 
@@ -16,7 +16,7 @@ interface LevelUpModalProps {
 }
 
 export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
-  const { sheet, levelUp } = useSheetStore()
+  const { sheet, levelUp, setSubclass, setMulticlassSubclass } = useSheetStore()
   const { t } = useTranslation()
   const [refundMode, setRefundMode] = useState<RefundMode>('asi')
   const [asiMode, setAsiMode] = useState<AsiMode>('+2')
@@ -25,6 +25,7 @@ export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
   const [selectedFeat, setSelectedFeat] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [selectedExpertise, setSelectedExpertise] = useState<string[]>([])
+  const [selectedSubclass, setSelectedSubclass] = useState<string | null>(null)
 
   const multiclasses = sheet.identity.multiclasses ?? []
   const classId = sheet.identity.class_id
@@ -53,6 +54,14 @@ export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
   const progEntry = targetClassObj?.progression.find(
     (p: { level: number }) => p.level === levelInTargetClass
   ) as (Record<string, unknown> & { level: number; highlights?: string[]; slots?: Record<string, number>; prepared_spells?: number; cantrips?: number }) | undefined
+
+  // Subclasse é liberada por 3 níveis NA classe alvo — primária ou multiclasse
+  const currentSubclassId = targetClass === classId
+    ? sheet.identity.subclass_id
+    : multiclasses.find(m => m.class_id === targetClass)?.subclass_id ?? null
+  const subclassOptions = targetClassObj?.subclasses ?? []
+  const needsSubclass =
+    canChooseSubclass(levelInTargetClass) && !currentSubclassId && subclassOptions.length > 0
 
   const hasAsi = progEntry?.highlights?.includes('AVA') ?? false
   const hasExpertise = progEntry?.highlights?.some(d => d === 'Especialista' || d === 'Especialização') ?? false
@@ -93,6 +102,7 @@ export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
   }
 
   function canFinish() {
+    if (needsSubclass && !selectedSubclass) return false
     if (hasExpertise && selectedExpertise.length < modalExpertiseCount) return false
     if (!hasAsi) return true
     if (refundMode === 'talento') return selectedFeat !== null
@@ -107,6 +117,11 @@ export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
       levelUp(newLevel, undefined, targetClassArg, selectedFeat ?? undefined, speciesArg)
     } else {
       levelUp(newLevel, calcAsi(), targetClassArg, undefined, speciesArg)
+    }
+    // Depois do levelUp: a classe já tem os 3 níveis que a store exige para aceitar a subclasse
+    if (needsSubclass && selectedSubclass) {
+      if (targetClass === classId) setSubclass(selectedSubclass)
+      else setMulticlassSubclass(targetClass, selectedSubclass)
     }
     onClose()
   }
@@ -181,7 +196,7 @@ export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
                 <button
                   key={op.id}
                   type="button"
-                  onClick={() => setTargetClass(op.id)}
+                  onClick={() => { setTargetClass(op.id); setSelectedSubclass(null) }}
                   className={[
                     'px-3 py-1.5 rounded-lg border text-sm transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
                     targetClass === op.id
@@ -245,6 +260,41 @@ export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
                 {t('levelup.preparedSpells', { n: progEntry.prepared_spells })}
               </p>
             )}
+          </div>
+        )}
+
+        {/* Subclasse — a classe alvo atinge o 3º nível */}
+        {needsSubclass && (
+          <div>
+            <p className="text-xs font-semibold text-[#B8860B] uppercase tracking-wide mb-1">
+              {t('levelup.subclassHeading', { charClass: targetClassObj?.name ?? '' })}
+            </p>
+            <p className="text-xs text-[#A8A09B] mb-3">{t('levelup.subclassHint')}</p>
+            <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+              {subclassOptions.map(sub => {
+                const selected = selectedSubclass === sub.id
+                return (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => setSelectedSubclass(selected ? null : sub.id)}
+                    className={[
+                      'w-full text-left px-3 py-2.5 rounded-lg border transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                      selected
+                        ? 'border-[#B8860B] bg-[#B8860B]/15'
+                        : 'border-[#B8860B]/20 bg-[#2D2520] hover:border-[#B8860B]/50',
+                    ].join(' ')}
+                  >
+                    <p className={`text-sm font-semibold mb-0.5 ${selected ? 'text-[#F5F0E8]' : 'text-[#B8860B]'}`}>
+                      {sub.name}
+                    </p>
+                    {sub.description && (
+                      <p className="text-xs text-[#A8A09B] leading-relaxed">{sub.description}</p>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
 

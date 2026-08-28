@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
-import { formatModifier, ABILITIES, abilityName } from '../../lib/calculations'
+import { formatModifier, ABILITIES, abilityName, calcPrimaryClassLevel, canChooseSubclass } from '../../lib/calculations'
 
 import { getBackgrounds } from '../../data/backgrounds'
 import { gameData } from '../../data/rules'
@@ -17,6 +17,7 @@ export function Step12Review() {
   const species = gameData.species?.find(e => e.id === id.species_id)
   const backgroundName = getBackgrounds().find(a => a.id === id.background_id)?.name
   const subclass = charClass?.subclasses.find(s => s.id === id.subclass_id)
+  const primaryLevel = calcPrimaryClassLevel(id.level, id.multiclasses ?? [])
 
   function create() {
     saveLocal()
@@ -37,7 +38,7 @@ export function Step12Review() {
             <p><span className="text-[#A8A09B]">{t('step12.labelName')}</span> <span className="text-[#F5F0E8]">{id.character_name ?? '—'}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelLevel')}</span> <span className="text-[#F5F0E8]">{id.level}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelClass')}</span> <span className="text-[#F5F0E8]">{charClass?.name ?? '—'}</span></p>
-            <p><span className="text-[#A8A09B]">{t('step12.labelSubclass')}</span> <span className="text-[#F5F0E8]">{subclass?.name ?? (id.level < 3 ? t('step12.subclassNA') : '—')}</span></p>
+            <p><span className="text-[#A8A09B]">{t('step12.labelSubclass')}</span> <span className="text-[#F5F0E8]">{subclass?.name ?? (canChooseSubclass(primaryLevel) ? '—' : t('step12.subclassNA'))}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelSpecies')}</span> <span className="text-[#F5F0E8]">{species?.name ?? '—'}</span></p>
             <p><span className="text-[#A8A09B]">{t('step12.labelBackground')}</span> <span className="text-[#F5F0E8]">{backgroundName ?? '—'}</span></p>
             <p>

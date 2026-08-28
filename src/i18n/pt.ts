@@ -263,6 +263,8 @@ const pt = {
     especHeading: 'Especialização',
     especHint: 'Escolha {{n}} perícias para ganhar especialização (dobra o bônus de proficiência):',
     expertiseSelected: '{{n}}/{{max}} selecionadas',
+    subclassHeading: 'Subclasse de {{charClass}}',
+    subclassHint: 'A classe chega ao 3º nível — escolha a subclasse:',
   },
   multiclass: {
     title: 'Multiclasse',

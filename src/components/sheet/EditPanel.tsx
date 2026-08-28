@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
-import { calcModifier, formatModifier, ABILITIES, abilityName } from '../../lib/calculations'
+import { calcModifier, formatModifier, ABILITIES, abilityName, calcPrimaryClassLevel, canChooseSubclass } from '../../lib/calculations'
 import { Input } from '../ui/Input'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
@@ -115,6 +115,9 @@ function ProgressionSection() {
   const { t } = useTranslation()
   const id = sheet.identity
   const level = id.level
+  // Subclasse exige 3 níveis na classe primária, não no nível total
+  const primaryLevel = calcPrimaryClassLevel(level, id.multiclasses ?? [])
+  const subclassUnlocked = canChooseSubclass(primaryLevel)
   const charClass = gameData.classes.find(c => c.id === id.class_id)
   const species = gameData.species?.find(e => e.id === id.species_id)
 
@@ -180,12 +183,12 @@ function ProgressionSection() {
         {/* Subclasse (somente nível ≥ 3) */}
         <div className="flex flex-col gap-1">
           <label className="text-sm text-[#B8860B] font-medium">
-            {t('edit.subclass')} {level < 3 && <span className="text-[#A8A09B] text-xs">({t('edit.subclassSuffix')})</span>}
+            {t('edit.subclass')} {!subclassUnlocked && <span className="text-[#A8A09B] text-xs">({t('edit.subclassSuffix')})</span>}
           </label>
           <select
             value={id.subclass_id ?? ''}
             onChange={e => setSubclass(e.target.value || null)}
-            disabled={!id.class_id || level < 3}
+            disabled={!id.class_id || !subclassUnlocked}
             className={`${SELECT_BASE} disabled:opacity-40`}
           >
             <option value="">{t('edit.selectClass')}</option>
@@ -310,7 +313,7 @@ function MulticlassSection() {
                 aria-label={t('multiclass.remove')}
               >×</button>
             </div>
-            {m.level >= 3 && (
+            {canChooseSubclass(m.level) && (
               <select
                 value={m.subclass_id ?? ''}
                 onChange={e => setMulticlassSubclass(m.class_id, e.target.value || null)}

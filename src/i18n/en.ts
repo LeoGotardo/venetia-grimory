@@ -263,6 +263,8 @@ const en = {
     especHeading: 'Expertise',
     especHint: 'Choose {{n}} skills to gain expertise (doubles proficiency bonus):',
     expertiseSelected: '{{n}}/{{max}} selected',
+    subclassHeading: '{{charClass}} Subclass',
+    subclassHint: 'This class reaches level 3 — choose its subclass:',
   },
   multiclass: {
     title: 'Multiclass',
