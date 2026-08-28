@@ -1,45 +1,45 @@
 import { expect, test } from '@playwright/test'
-import { criarFichaCompleta, semearFicha } from './helpers/storage'
+import { createCompleteSheet, seedSheet } from './helpers/storage'
 
-const ID_FICHA = '22222222-2222-4222-8222-222222222222'
+const SHEET_ID = '22222222-2222-4222-8222-222222222222'
 
 test.describe('Ficha do personagem', () => {
   test.beforeEach(async ({ page }) => {
-    await semearFicha(page, { id: ID_FICHA, ficha: criarFichaCompleta() })
-    await page.goto(`/ficha/${ID_FICHA}`)
+    await seedSheet(page, { id: SHEET_ID, sheet: createCompleteSheet() })
+    await page.goto(`/ficha/${SHEET_ID}`)
     await expect(page.getByRole('heading', { name: 'Aria Sombravéu' })).toBeVisible()
   })
 
   test('mostra identidade e indicadores principais', async ({ page }) => {
     await expect(page.getByText('Fighter 3 — Champion')).toBeVisible()
-    await expect(page.getByTestId('pv-atual')).toHaveText('28')
-    await expect(page.getByTestId('pv-maximo')).toHaveText('/ 28')
+    await expect(page.getByTestId('hp-current')).toHaveText('28')
+    await expect(page.getByTestId('hp-max')).toHaveText('/ 28')
     await expect(page.getByText('900 / 2,700 XP')).toBeVisible()
   })
 
   test('aplica dano e cura nos pontos de vida', async ({ page }) => {
-    const campoDelta = page.getByLabel('HP delta')
+    const deltaField = page.getByLabel('HP delta')
 
-    await campoDelta.fill('10')
+    await deltaField.fill('10')
     await page.getByRole('button', { name: 'Apply damage' }).click()
-    await expect(page.getByTestId('pv-atual')).toHaveText('18')
+    await expect(page.getByTestId('hp-current')).toHaveText('18')
 
-    await campoDelta.fill('5')
+    await deltaField.fill('5')
     await page.getByRole('button', { name: 'Apply healing' }).click()
-    await expect(page.getByTestId('pv-atual')).toHaveText('23')
+    await expect(page.getByTestId('hp-current')).toHaveText('23')
   })
 
   test('PV não passa do máximo nem fica negativo', async ({ page }) => {
-    const campoDelta = page.getByLabel('HP delta')
+    const deltaField = page.getByLabel('HP delta')
 
-    await campoDelta.fill('999')
+    await deltaField.fill('999')
     await page.getByRole('button', { name: 'Apply damage' }).click()
-    await expect(page.getByTestId('pv-atual')).toHaveText('0')
+    await expect(page.getByTestId('hp-current')).toHaveText('0')
     await expect(page.getByText('Unconscious')).toBeVisible()
 
-    await campoDelta.fill('999')
+    await deltaField.fill('999')
     await page.getByRole('button', { name: 'Apply healing' }).click()
-    await expect(page.getByTestId('pv-atual')).toHaveText('28')
+    await expect(page.getByTestId('hp-current')).toHaveText('28')
   })
 
   test('ganhar XP libera o botão de subir de nível', async ({ page }) => {
@@ -71,13 +71,13 @@ test.describe('Ficha do personagem', () => {
   test('alterações de PV persistem no localStorage', async ({ page }) => {
     await page.getByLabel('HP delta').fill('7')
     await page.getByRole('button', { name: 'Apply damage' }).click()
-    await expect(page.getByTestId('pv-atual')).toHaveText('21')
+    await expect(page.getByTestId('hp-current')).toHaveText('21')
 
     // aguarda o debounce de salvamento (500ms) antes de recarregar
     await page.waitForTimeout(900)
     await page.reload()
 
-    await expect(page.getByTestId('pv-atual')).toHaveText('21')
+    await expect(page.getByTestId('hp-current')).toHaveText('21')
   })
 
   test('id inexistente redireciona para a página 404', async ({ page }) => {

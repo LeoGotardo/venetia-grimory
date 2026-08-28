@@ -1,37 +1,37 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../../store/fichaStore'
-import { formatModificador } from '../../lib/calculos'
-import { DadoBadge } from '../ui/Badge'
+import { useSheetStore } from '../../store/sheetStore'
+import { formatModifier } from '../../lib/calculations'
+import { DieBadge } from '../ui/Badge'
 import Button from '../ui/Button'
 
 const INPUT_BASE = 'bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1 text-[#F5F0E8] text-sm text-center focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B]'
 
-export function PainelCombate() {
-  const { ficha, atualizarPV, atualizarPVTemp, gastarDadoVida, descansoCurto, descansoLongo, toggleEscudo } = useFichaStore()
+export function CombatPanel() {
+  const { sheet, updateHp, updateTempHp, spendHitDie, shortRest, longRest, toggleShield } = useSheetStore()
   const { t } = useTranslation()
-  const { pontos_de_vida: pv, dados_de_vida: dv, classe_de_armadura: ca, iniciativa, deslocamento, _bonus_proficiencia } = ficha.combate
-  const temEscudoNoInventario = ficha.inventario.itens.some(i => i.categoria === 'Escudo')
-  const [pvDelta, setPvDelta] = useState('')
-  const percepcaoPassiva = 10 + (ficha.pericias.percepcao._valor ?? 0)
+  const { hit_points: hp, hit_dice: dv, armor_class: ac, initiative, speed, _proficiency_bonus } = sheet.combat
+  const hasShieldInInventory = sheet.inventory.items.some(i => i.category === 'Escudo')
+  const [hpDelta, setHpDelta] = useState('')
+  const passivePerception = 10 + (sheet.skills.percepcao._value ?? 0)
 
-  const pvMax = pv.maximo ?? 0
-  const pvAtual = pv.atual
-  const pvPct = pvMax > 0 ? (pvAtual / pvMax) * 100 : 0
+  const maxHp = hp.max ?? 0
+  const currentHp = hp.current
+  const hpPct = maxHp > 0 ? (currentHp / maxHp) * 100 : 0
 
   type Stat = { label: string; value: string | number; sub?: string; hero?: boolean }
   const stats: Stat[] = [
-    { label: t('combat.hp'), value: `${pvAtual}/${pvMax}`, sub: pv.temporario > 0 ? `+${pv.temporario} temp` : undefined, hero: true },
-    { label: t('combat.ac'), value: ca.valor ?? '—', sub: ca.escudo_equipado ? t('combat.shieldBonus') : undefined },
-    { label: t('combat.initiative'), value: iniciativa._valor !== null ? formatModificador(iniciativa._valor) : '—' },
-    { label: t('combat.speed'), value: deslocamento._total_metros !== null ? `${deslocamento._total_metros}${t('ficha.mUnit')}` : '—' },
-    { label: t('combat.prof'), value: _bonus_proficiencia !== null ? `+${_bonus_proficiencia}` : '—' },
-    { label: t('combat.passivePerception'), value: percepcaoPassiva },
+    { label: t('combat.hp'), value: `${currentHp}/${maxHp}`, sub: hp.temporary > 0 ? `+${hp.temporary} temp` : undefined, hero: true },
+    { label: t('combat.ac'), value: ac.value ?? '—', sub: ac.shield_equipped ? t('combat.shieldBonus') : undefined },
+    { label: t('combat.initiative'), value: initiative._value !== null ? formatModifier(initiative._value) : '—' },
+    { label: t('combat.speed'), value: speed._total_meters !== null ? `${speed._total_meters}${t('sheet.mUnit')}` : '—' },
+    { label: t('combat.prof'), value: _proficiency_bonus !== null ? `+${_proficiency_bonus}` : '—' },
+    { label: t('combat.passivePerception'), value: passivePerception },
   ]
 
-  function handleAjustarPV() {
-    const delta = parseInt(pvDelta)
-    if (!isNaN(delta)) { atualizarPV(delta); setPvDelta('') }
+  function handleAdjustHp() {
+    const delta = parseInt(hpDelta)
+    if (!isNaN(delta)) { updateHp(delta); setHpDelta('') }
   }
 
   return (
@@ -57,19 +57,19 @@ export function PainelCombate() {
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs text-[#A8A09B]">{t('combat.hpLabel')}</span>
-          <span className="text-xs text-[#A8A09B]">{pvAtual}/{pvMax}</span>
+          <span className="text-xs text-[#A8A09B]">{currentHp}/{maxHp}</span>
         </div>
         <div
           className="h-3 bg-[#2D2520] rounded-full overflow-hidden"
           role="progressbar"
-          aria-valuenow={pvAtual}
+          aria-valuenow={currentHp}
           aria-valuemin={0}
-          aria-valuemax={pvMax}
+          aria-valuemax={maxHp}
           aria-label={t('combat.hpAriaLabel')}
         >
           <div
-            className={`h-full rounded-full transition-all duration-500 ${pvPct > 50 ? 'bg-green-600' : pvPct > 20 ? 'bg-yellow-500' : 'bg-red-600'}`}
-            style={{ width: `${pvPct}%` }}
+            className={`h-full rounded-full transition-all duration-500 ${hpPct > 50 ? 'bg-green-600' : hpPct > 20 ? 'bg-yellow-500' : 'bg-red-600'}`}
+            style={{ width: `${hpPct}%` }}
           />
         </div>
       </div>
@@ -80,17 +80,17 @@ export function PainelCombate() {
         <input
           id="pv-delta"
           type="number"
-          value={pvDelta}
-          onChange={e => setPvDelta(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleAjustarPV()}
+          value={hpDelta}
+          onChange={e => setHpDelta(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleAdjustHp()}
           placeholder="±"
           className={`w-16 ${INPUT_BASE}`}
           aria-label={t('combat.hpDeltaAriaLabel')}
         />
-        <Button size="sm" variant="secondary" onClick={handleAjustarPV} disabled={!pvDelta}>
+        <Button size="sm" variant="secondary" onClick={handleAdjustHp} disabled={!hpDelta}>
           {t('combat.apply')}
         </Button>
-        <Button size="sm" variant="ghost" onClick={() => atualizarPV(pvMax - pvAtual)}>
+        <Button size="sm" variant="ghost" onClick={() => updateHp(maxHp - currentHp)}>
           {t('combat.restore')}
         </Button>
       </div>
@@ -101,8 +101,8 @@ export function PainelCombate() {
         <input
           id="pv-temp"
           type="number"
-          value={pv.temporario}
-          onChange={e => atualizarPVTemp(parseInt(e.target.value) || 0)}
+          value={hp.temporary}
+          onChange={e => updateTempHp(parseInt(e.target.value) || 0)}
           className={`w-16 ${INPUT_BASE}`}
           min={0}
           aria-label={t('combat.tempHpAriaLabel')}
@@ -110,55 +110,55 @@ export function PainelCombate() {
       </div>
 
       {/* Dados de vida */}
-      {dv.tipo && (
+      {dv.type && (
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <span className="text-xs text-[#A8A09B]">{t('combat.hitDice')}</span>
-              <DadoBadge tipo={dv.tipo ?? 'd8'} />
+              <DieBadge type={dv.type ?? 'd8'} />
             </div>
             <span className="text-sm text-[#F5F0E8]">
-              {(dv.total ?? 0) - dv.gastos}/{dv.total} {t('combat.available', { n: '' }).trim()}
+              {(dv.total ?? 0) - dv.spent}/{dv.total} {t('combat.available', { n: '' }).trim()}
             </span>
           </div>
           <div className="flex gap-1 flex-wrap mb-2" role="group" aria-label={t('combat.hitDiceAriaLabel')}>
             {Array.from({ length: dv.total ?? 0 }, (_, i) => {
-              const disponivel = i < (dv.total ?? 0) - dv.gastos
+              const available = i < (dv.total ?? 0) - dv.spent
               return (
                 <span
                   key={i}
-                  className={`w-5 h-5 rounded-full border ${disponivel ? 'bg-[#B8860B] border-[#B8860B]' : 'border-[#A8A09B]/40'}`}
+                  className={`w-5 h-5 rounded-full border ${available ? 'bg-[#B8860B] border-[#B8860B]' : 'border-[#A8A09B]/40'}`}
                   aria-hidden="true"
                 />
               )
             })}
           </div>
           <div className="flex gap-2 flex-wrap">
-            <Button size="sm" variant="secondary" onClick={gastarDadoVida} disabled={(dv.total ?? 0) - dv.gastos <= 0}>
+            <Button size="sm" variant="secondary" onClick={spendHitDie} disabled={(dv.total ?? 0) - dv.spent <= 0}>
               {t('combat.spendDie')}
             </Button>
-            <Button size="sm" variant="ghost" onClick={descansoCurto}>{t('combat.shortRest')}</Button>
-            <Button size="sm" variant="ghost" onClick={descansoLongo}>{t('combat.longRest')}</Button>
+            <Button size="sm" variant="ghost" onClick={shortRest}>{t('combat.shortRest')}</Button>
+            <Button size="sm" variant="ghost" onClick={longRest}>{t('combat.longRest')}</Button>
           </div>
         </div>
       )}
 
       {/* Escudo toggle */}
       <button
-        onClick={toggleEscudo}
-        disabled={!ca.escudo_equipado && !temEscudoNoInventario}
-        aria-pressed={ca.escudo_equipado}
-        title={!temEscudoNoInventario && !ca.escudo_equipado ? t('combat.addShieldFirst') : undefined}
+        onClick={toggleShield}
+        disabled={!ac.shield_equipped && !hasShieldInInventory}
+        aria-pressed={ac.shield_equipped}
+        title={!hasShieldInInventory && !ac.shield_equipped ? t('combat.addShieldFirst') : undefined}
         className={`px-3 py-1.5 rounded border text-sm font-medium transition-colors
           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]
-          ${ca.escudo_equipado
+          ${ac.shield_equipped
             ? 'bg-[#7B1D1D] border-[#7B1D1D] text-white cursor-pointer'
-            : !temEscudoNoInventario
+            : !hasShieldInInventory
             ? 'border-[#B8860B]/10 text-[#A8A09B]/40 cursor-not-allowed'
             : 'border-[#B8860B]/30 text-[#A8A09B] hover:bg-[#3D332D] hover:text-[#F5F0E8] cursor-pointer'}`}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill={ca.escudo_equipado ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        {ca.escudo_equipado ? t('combat.shieldEquipped') : temEscudoNoInventario ? t('combat.equipShield') : t('combat.noShield')}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill={ac.shield_equipped ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        {ac.shield_equipped ? t('combat.shieldEquipped') : hasShieldInInventory ? t('combat.equipShield') : t('combat.noShield')}
       </button>
     </div>
   )

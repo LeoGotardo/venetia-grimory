@@ -2,62 +2,62 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useFichaStore } from '../store/fichaStore'
+import { useSheetStore } from '../store/sheetStore'
 import { ConfigModal } from '../components/ui/ConfigModal'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
-import { Step01Nivel } from '../components/wizard/Step01Nivel'
-import { Step02Classe } from '../components/wizard/Step02Classe'
-import { Step03Subclasse } from '../components/wizard/Step03Subclasse'
-import { Step04Especie } from '../components/wizard/Step04Especie'
-import { Step05Antecedente } from '../components/wizard/Step05Antecedente'
-import { Step06Atributos } from '../components/wizard/Step06Atributos'
-import { Step07Pericias } from '../components/wizard/Step07Pericias'
-import { StepMulticlasse } from '../components/wizard/StepMulticlasse'
+import { Step01Level } from '../components/wizard/Step01Level'
+import { Step02Class } from '../components/wizard/Step02Class'
+import { Step03Subclass } from '../components/wizard/Step03Subclass'
+import { Step04Species } from '../components/wizard/Step04Species'
+import { Step05Background } from '../components/wizard/Step05Background'
+import { Step06Abilities } from '../components/wizard/Step06Abilities'
+import { Step07Skills } from '../components/wizard/Step07Skills'
+import { StepMulticlass } from '../components/wizard/StepMulticlass'
 import { Step08Spells } from '../components/wizard/Step08Spells'
-import { Step09Idiomas } from '../components/wizard/Step09Idiomas'
-import { Step10Equipamento } from '../components/wizard/Step10Equipamento'
-import { Step11Personalidade } from '../components/wizard/Step11Personalidade'
-import { Step12Revisar } from '../components/wizard/Step12Revisar'
+import { Step09Languages } from '../components/wizard/Step09Languages'
+import { Step10Equipment } from '../components/wizard/Step10Equipment'
+import { Step11Personality } from '../components/wizard/Step11Personality'
+import { Step12Review } from '../components/wizard/Step12Review'
 
-const PASSOS_COMPS = [
-  { id: 1,  stepKey: 'nivel',        Comp: Step01Nivel },
-  { id: 2,  stepKey: 'classe',       Comp: Step02Classe },
-  { id: 3,  stepKey: 'subclasse',    Comp: Step03Subclasse },
-  { id: 4,  stepKey: 'especie',      Comp: Step04Especie },
-  { id: 5,  stepKey: 'atributos',    Comp: Step06Atributos },
-  { id: 6,  stepKey: 'antecedente',  Comp: Step05Antecedente },
-  { id: 7,  stepKey: 'multiclasse',  Comp: StepMulticlasse },
-  { id: 8,  stepKey: 'pericias',     Comp: Step07Pericias },
-  { id: 9,  stepKey: 'magias',       Comp: Step08Spells },
-  { id: 10, stepKey: 'idiomas',      Comp: Step09Idiomas },
-  { id: 11, stepKey: 'equipamento',  Comp: Step10Equipamento },
-  { id: 12, stepKey: 'personalidade', Comp: Step11Personalidade },
-  { id: 13, stepKey: 'revisar',      Comp: Step12Revisar },
+const STEP_COMPONENTS = [
+  { id:  1, stepKey: 'level', Comp: Step01Level },
+  { id:  2, stepKey: 'charClass', Comp: Step02Class },
+  { id:  3, stepKey: 'subclass', Comp: Step03Subclass },
+  { id:  4, stepKey: 'species', Comp: Step04Species },
+  { id:  5, stepKey: 'abilities', Comp: Step06Abilities },
+  { id:  6, stepKey: 'background', Comp: Step05Background },
+  { id:  7, stepKey: 'multiclass', Comp: StepMulticlass },
+  { id:  8, stepKey: 'skills', Comp: Step07Skills },
+  { id:  9, stepKey: 'spells', Comp: Step08Spells },
+  { id: 10, stepKey: 'languages', Comp: Step09Languages },
+  { id: 11, stepKey: 'equipment', Comp: Step10Equipment },
+  { id: 12, stepKey: 'personality', Comp: Step11Personality },
+  { id: 13, stepKey: 'review', Comp: Step12Review },
 ]
 
 export function Wizard() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { passoAtual, setPasso, novaFicha, fichaId } = useFichaStore()
-  const [maxPasso, setMaxPasso] = useState(passoAtual)
-  const [configAberta, setConfigAberta] = useState(false)
+  const { currentStep, setStep, newSheet, sheetId } = useSheetStore()
+  const [maxStep, setMaxStep] = useState(currentStep)
+  const [configOpen, setConfigOpen] = useState(false)
 
   useEffect(() => {
-    if (!fichaId) novaFicha()
+    if (!sheetId) newSheet()
   }, [])
 
   useEffect(() => {
-    setMaxPasso(prev => Math.max(prev, passoAtual))
+    setMaxStep(prev => Math.max(prev, currentStep))
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [passoAtual])
+  }, [currentStep])
 
-  const PASSOS = PASSOS_COMPS.map(p => ({
+  const STEPS = STEP_COMPONENTS.map(p => ({
     ...p,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    titulo: t(`wizard.steps.${p.stepKey}` as any),
+    title: t(`wizard.steps.${p.stepKey}` as any),
   }))
 
-  const { Comp: StepComponent } = PASSOS[passoAtual - 1]
+  const { Comp: StepComponent } = STEPS[currentStep - 1]
 
   return (
     <div className="min-h-screen bg-[#131110]">
@@ -69,10 +69,10 @@ export function Wizard() {
         </div>
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="text-[13px] font-semibold text-[#8a8278]">
-            {t('wizard.step', { n: passoAtual })}
+            {t('wizard.step', { n: currentStep })}
           </span>
           <button
-            onClick={() => setConfigAberta(true)}
+            onClick={() => setConfigOpen(true)}
             aria-label={t('wizard.settings')}
             className="w-[34px] h-[34px] rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
           >
@@ -88,15 +88,15 @@ export function Wizard() {
         </div>
       </header>
 
-      <ConfigModal open={configAberta} onClose={() => setConfigAberta(false)} />
+      <ConfigModal open={configOpen} onClose={() => setConfigOpen(false)} />
 
       {/* Mobile step progress — sticky below header */}
       <div className="md:hidden sticky top-[60px] z-10 bg-[#17130f] border-b border-white/[0.06] px-4 py-2">
         <div className="flex items-center gap-3">
           <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-[#D4A017] rounded-full transition-all duration-300" style={{ width: `${(passoAtual / 13) * 100}%` }} />
+            <div className="h-full bg-[#D4A017] rounded-full transition-all duration-300" style={{ width: `${(currentStep / 13) * 100}%` }} />
           </div>
-          <span className="text-xs font-semibold text-[#D4A017] whitespace-nowrap">{PASSOS[passoAtual - 1].titulo}</span>
+          <span className="text-xs font-semibold text-[#D4A017] whitespace-nowrap">{STEPS[currentStep - 1].title}</span>
         </div>
       </div>
 
@@ -108,15 +108,15 @@ export function Wizard() {
             {t('wizard.creationHeading')}
           </h3>
           <nav className="flex flex-col gap-0.5" aria-label={t('wizard.stepsAriaLabel')}>
-            {PASSOS.map(p => {
-              const isDone    = p.id < passoAtual
-              const isActive  = p.id === passoAtual
-              const isLocked  = p.id > maxPasso
+            {STEPS.map(p => {
+              const isDone    = p.id < currentStep
+              const isActive  = p.id === currentStep
+              const isLocked  = p.id > maxStep
 
               return (
                 <button
                   key={p.id}
-                  onClick={() => !isLocked && setPasso(p.id)}
+                  onClick={() => !isLocked && setStep(p.id)}
                   disabled={isLocked}
                   aria-current={isActive ? 'step' : undefined}
                   className={[
@@ -144,7 +144,7 @@ export function Wizard() {
                     isDone    ? 'text-[#D4A017]' : '',
                     !isDone && !isActive ? 'text-[#8a8278]' : '',
                   ].join(' ')}>
-                    {p.titulo}
+                    {p.title}
                   </span>
                 </button>
               )
@@ -156,7 +156,7 @@ export function Wizard() {
         <div className="flex-1 px-4 sm:px-8 md:px-10 py-6 md:py-8 min-w-0">
           <AnimatePresence mode="wait">
             <motion.div
-              key={passoAtual}
+              key={currentStep}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}

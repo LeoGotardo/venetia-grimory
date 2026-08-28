@@ -1,35 +1,35 @@
-export interface Arma {
-  tipo_item: 'arma'
+export interface Weapon {
+  item_type: 'arma'
   id: string
-  nome: string
-  categoria: 'Simples' | 'Marcial' | 'Simple' | 'Martial'
-  tipo: 'Corpo a Corpo' | 'À Distância' | 'Melee' | 'Ranged'
-  preco: string
-  dano: string
-  tipo_dano: string
-  peso: string
-  propriedades: string[]
-  descricao: string
+  name: string
+  category: 'Simples' | 'Marcial' | 'Simple' | 'Martial'
+  type: 'Corpo a Corpo' | 'À Distância' | 'Melee' | 'Ranged'
+  price: string
+  damage: string
+  damage_type: string
+  weight: string
+  properties: string[]
+  description: string
 }
 
-export interface Armadura {
-  tipo_item: 'armadura'
+export interface Armor {
+  item_type: 'armadura'
   id: string
-  nome: string
-  categoria: 'Leve' | 'Média' | 'Pesada' | 'Escudo' | 'Light' | 'Medium' | 'Heavy' | 'Shield'
-  preco: string
-  ca: string
-  forca_minima: number | null
-  desvantagem_furtividade: boolean
-  peso: string
-  descricao: string
+  name: string
+  category: 'Leve' | 'Média' | 'Pesada' | 'Escudo' | 'Light' | 'Medium' | 'Heavy' | 'Shield'
+  price: string
+  ac: string
+  min_strength: number | null
+  stealth_disadvantage: boolean
+  weight: string
+  description: string
 }
 
-export interface Ferramenta {
-  tipo_item: 'ferramenta'
+export interface Tool {
+  item_type: 'ferramenta'
   id: string
-  nome: string
-  categoria:
+  name: string
+  category:
     | 'Ferramentas de Artesão'
     | 'Utilitário'
     | 'Jogos'
@@ -38,28 +38,28 @@ export interface Ferramenta {
     | 'Utility'
     | 'Gaming Sets'
     | 'Musical Instrument'
-  preco: string
-  peso: string
-  descricao: string
-  preco_venda?: string
+  price: string
+  weight: string
+  description: string
+  sale_price?: string
 }
 
-export interface PacoteEquipamento {
-  tipo_item: 'kit'
+export interface EquipmentPack {
+  item_type: 'kit'
   id: string
-  nome: string
-  categoria: 'Pacote de Equipamento' | 'Equipment Pack'
-  preco: string
-  peso: string
-  itens_incluidos: string[]
-  descricao: string
+  name: string
+  category: 'Pacote de Equipamento' | 'Equipment Pack'
+  price: string
+  weight: string
+  included_items: string[]
+  description: string
 }
 
-export interface Transporte {
-  tipo_item: 'transporte'
+export interface Transport {
+  item_type: 'transporte'
   id: string
-  nome: string
-  categoria:
+  name: string
+  category:
     | 'Montaria Terrestre'
     | 'Animal de Carga'
     | 'Arreio'
@@ -72,19 +72,19 @@ export interface Transporte {
     | 'Accessory'
     | 'Land Vehicle'
     | 'Water Vehicle'
-  preco: string
-  peso?: string
-  deslocamento?: string
-  capacidade_carga?: string
-  descricao: string
+  price: string
+  weight?: string
+  speed?: string
+  carry_capacity?: string
+  description: string
 }
 
-export interface ItemMagico {
-  tipo_item: 'item_magico'
+export interface MagicItem {
+  item_type: 'item_magico'
   id: string
-  nome: string
-  categoria: string
-  raridade:
+  name: string
+  category: string
+  rarity:
     | 'Comum'
     | 'Incomum'
     | 'Raro'
@@ -95,12 +95,12 @@ export interface ItemMagico {
     | 'Rare'
     | 'Very Rare'
     | 'Legendary'
-  preco: string
-  sintonia?: boolean
-  circulo?: number
-  id_magia?: string
-  efeito?: string
-  descricao: string
+  price: string
+  attunement?: boolean
+  level?: number
+  spell_id?: string
+  effect?: string
+  description: string
 }
 
-export type Item = Arma | Armadura | Ferramenta | PacoteEquipamento | Transporte | ItemMagico
+export type Item = Weapon | Armor | Tool | EquipmentPack | Transport | MagicItem

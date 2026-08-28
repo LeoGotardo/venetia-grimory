@@ -1,102 +1,102 @@
 export default {
-  "comuns": [
+  "common": [
     {
       "id": "comum",
-      "nome": "Comum",
-      "origem": "Sigil"
+      "name": "Comum",
+      "source": "Sigil"
     },
     {
       "id": "linguagem_de_sinais",
-      "nome": "Linguagem de Sinais Comum",
-      "origem": "Sigil"
+      "name": "Linguagem de Sinais Comum",
+      "source": "Sigil"
     },
     {
       "id": "draconico",
-      "nome": "Dracônico",
-      "origem": "Dragões"
+      "name": "Dracônico",
+      "source": "Dragões"
     },
     {
       "id": "anao",
-      "nome": "Anão",
-      "origem": "Anões"
+      "name": "Anão",
+      "source": "Anões"
     },
     {
       "id": "elfico",
-      "nome": "Élfico",
-      "origem": "Elfos"
+      "name": "Élfico",
+      "source": "Elfos"
     },
     {
       "id": "gigante",
-      "nome": "Gigante",
-      "origem": "Gigantes"
+      "name": "Gigante",
+      "source": "Gigantes"
     },
     {
       "id": "gnomico",
-      "nome": "Gnômico",
-      "origem": "Gnomos"
+      "name": "Gnômico",
+      "source": "Gnomos"
     },
     {
       "id": "goblin",
-      "nome": "Goblin",
-      "origem": "Goblinoides"
+      "name": "Goblin",
+      "source": "Goblinoides"
     },
     {
       "id": "pequenino",
-      "nome": "Pequenino",
-      "origem": "Pequeninos"
+      "name": "Pequenino",
+      "source": "Pequeninos"
     },
     {
       "id": "orc",
-      "nome": "Orc",
-      "origem": "Orcs"
+      "name": "Orc",
+      "source": "Orcs"
     }
   ],
-  "raros": [
+  "rare": [
     {
       "id": "abissal",
-      "nome": "Abissal",
-      "origem": "Demônios do Abismo"
+      "name": "Abissal",
+      "source": "Demônios do Abismo"
     },
     {
       "id": "celestial",
-      "nome": "Celestial",
-      "origem": "Celestiais"
+      "name": "Celestial",
+      "source": "Celestiais"
     },
     {
       "id": "dialeto_obscuro",
-      "nome": "Dialeto Obscuro",
-      "origem": "Aberrações"
+      "name": "Dialeto Obscuro",
+      "source": "Aberrações"
     },
     {
       "id": "druidico",
-      "nome": "Druídico",
-      "origem": "Círculos druídicos"
+      "name": "Druídico",
+      "source": "Círculos druídicos"
     },
     {
       "id": "giria_dos_ladroes",
-      "nome": "Gíria dos Ladrões",
-      "origem": "Várias guildas criminosas"
+      "name": "Gíria dos Ladrões",
+      "source": "Várias guildas criminosas"
     },
     {
       "id": "infernal",
-      "nome": "Infernal",
-      "origem": "Diabos dos Nove Infernos"
+      "name": "Infernal",
+      "source": "Diabos dos Nove Infernos"
     },
     {
       "id": "primordial",
-      "nome": "Primordial",
-      "origem": "Elementais",
+      "name": "Primordial",
+      "source": "Elementais",
       "nota": "Inclui dialetos Aquan, Auran, Ignan e Terran"
     },
     {
       "id": "silvestre",
-      "nome": "Silvestre",
-      "origem": "A Faéria"
+      "name": "Silvestre",
+      "source": "A Faéria"
     },
     {
       "id": "subcomum",
-      "nome": "Subcomum",
-      "origem": "A Umbraeterna"
+      "name": "Subcomum",
+      "source": "A Umbraeterna"
     }
   ]
 }

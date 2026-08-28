@@ -24,7 +24,7 @@ export function Badge({ variant = 'default', className = '', children, ...props 
   )
 }
 
-export function DadoBadge({ tipo }: { tipo: string }) {
+export function DieBadge({ type }: { type: string }) {
   // On-theme colors instead of generic Tailwind grays
   const colors: Record<string, string> = {
     d4:  'bg-[#3D332D] border border-[#A8A09B]/40 text-[#A8A09B]',
@@ -35,8 +35,8 @@ export function DadoBadge({ tipo }: { tipo: string }) {
     d20: 'bg-[#B8860B]/20 border border-[#B8860B]/50 text-[#D4A017]',
   }
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colors[tipo] ?? 'bg-[#3D332D] border border-[#A8A09B]/40 text-[#A8A09B]'}`}>
-      {tipo}
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ${colors[type] ?? 'bg-[#3D332D] border border-[#A8A09B]/40 text-[#A8A09B]'}`}>
+      {type}
     </span>
   )
 }

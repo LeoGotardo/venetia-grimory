@@ -1,46 +1,46 @@
-import type { DadosJogo } from '../../types/dados'
+import type { GameData } from '../../types/gameData'
 import i18n from '../../i18n'
-import { traduzirDados } from './traducao'
+import { translateData } from './translation'
 
 import meta from './meta'
-import pericias from './pericias'
-import idiomas from './idiomas'
+import skills from './skills'
+import languages from './languages'
 import classes from './classes'
-import especies from './especies'
-import antecedentes from './antecedentes'
-import atributos_sugeridos_por_classe from './atributos_sugeridos'
-import armaduras from './armaduras'
-import talentos_de_origem from './talentos_de_origem'
-import talentos_gerais from './talentos_gerais'
-import estilos_de_luta from './estilos_de_luta'
-import ordens_divinas from './ordens_divinas'
-import ordens_primais from './ordens_primais'
-import inimigos_favoritos from './inimigos_favoritos'
+import species from './species'
+import backgrounds from './backgrounds'
+import suggested_abilities_by_class from './suggested_abilities'
+import armors from './armors'
+import origin_feats from './origin_feats'
+import general_feats from './general_feats'
+import fighting_styles from './fighting_styles'
+import divine_orders from './divine_orders'
+import primal_orders from './primal_orders'
+import favored_enemies from './favored_enemies'
 
 /**
  * Dados canônicos, sempre em português. É a fonte das regras: cálculos e store
  * comparam strings como 'Leve' ou 'Escudo', que não podem variar com o idioma.
  */
-export const dadosPT: DadosJogo = {
+export const gameDataPt: GameData = {
   meta,
-  pericias,
-  idiomas,
+  skills,
+  languages,
   classes,
-  especies,
-  antecedentes,
-  atributos_sugeridos_por_classe,
-  armaduras,
-  talentos_de_origem,
-  talentos_gerais,
-  estilos_de_luta,
-  ordens_divinas,
-  ordens_primais,
-  inimigos_favoritos,
-} as unknown as DadosJogo
+  species,
+  backgrounds,
+  suggested_abilities_by_class,
+  armors,
+  origin_feats,
+  general_feats,
+  fighting_styles,
+  divine_orders,
+  primal_orders,
+  favored_enemies,
+} as unknown as GameData
 
 /** Dados no idioma da interface. Use na UI; as regras usam `dadosPT`. */
-export function getDados(): DadosJogo {
-  return traduzirDados(dadosPT, i18n.language)
+export function getGameData(): GameData {
+  return translateData(gameDataPt, i18n.language)
 }
 
 /**
@@ -48,14 +48,14 @@ export function getDados(): DadosJogo {
  * assim os componentes já existentes continuam usando `dados.classes` e passam
  * a acompanhar a troca de idioma sem alteração.
  */
-export const dados: DadosJogo = new Proxy({} as DadosJogo, {
-  get: (_alvo, prop) => getDados()[prop as keyof DadosJogo],
-  has: (_alvo, prop) => prop in getDados(),
-  ownKeys: () => Reflect.ownKeys(getDados()),
-  getOwnPropertyDescriptor: (_alvo, prop) =>
-    Object.getOwnPropertyDescriptor(getDados(), prop) ?? {
+export const gameData: GameData = new Proxy({} as GameData, {
+  get: (_target, prop) => getGameData()[prop as keyof GameData],
+  has: (_target, prop) => prop in getGameData(),
+  ownKeys: () => Reflect.ownKeys(getGameData()),
+  getOwnPropertyDescriptor: (_target, prop) =>
+    Object.getOwnPropertyDescriptor(getGameData(), prop) ?? {
       configurable: true,
       enumerable: true,
-      value: getDados()[prop as keyof DadosJogo],
+      value: getGameData()[prop as keyof GameData],
     },
 })

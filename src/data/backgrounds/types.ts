@@ -1,14 +1,14 @@
-import type { AtributoId } from '../../types/dados'
+import type { AbilityId } from '../../types/gameData'
 
-export interface Antecedente {
+export interface Background {
   id: string
-  nome: string
-  descricao: string
-  atributos_sugeridos: AtributoId[]
-  talento: string
-  pericias: string[]
-  ferramenta: string
-  equipamento_inicial: {
+  name: string
+  description: string
+  suggested_abilities: AbilityId[]
+  feat: string
+  skills: string[]
+  tool: string
+  starting_equipment: {
     A: string
     B: string
   }

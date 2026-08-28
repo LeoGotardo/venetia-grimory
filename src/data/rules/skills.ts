@@ -1,92 +1,92 @@
 export default [
   {
     "id": "acrobacia",
-    "nome": "Acrobacia",
-    "atributo": "DES"
+    "name": "Acrobacia",
+    "ability": "DES"
   },
   {
     "id": "arcanismo",
-    "nome": "Arcanismo",
-    "atributo": "INT"
+    "name": "Arcanismo",
+    "ability": "INT"
   },
   {
     "id": "atletismo",
-    "nome": "Atletismo",
-    "atributo": "FOR"
+    "name": "Atletismo",
+    "ability": "FOR"
   },
   {
     "id": "atuacao",
-    "nome": "Atuação",
-    "atributo": "CAR"
+    "name": "Atuação",
+    "ability": "CAR"
   },
   {
     "id": "enganacao",
-    "nome": "Enganação",
-    "atributo": "CAR"
+    "name": "Enganação",
+    "ability": "CAR"
   },
   {
     "id": "furtividade",
-    "nome": "Furtividade",
-    "atributo": "DES"
+    "name": "Furtividade",
+    "ability": "DES"
   },
   {
     "id": "historia",
-    "nome": "História",
-    "atributo": "INT"
+    "name": "História",
+    "ability": "INT"
   },
   {
     "id": "intimidacao",
-    "nome": "Intimidação",
-    "atributo": "CAR"
+    "name": "Intimidação",
+    "ability": "CAR"
   },
   {
     "id": "intuicao",
-    "nome": "Intuição",
-    "atributo": "SAB"
+    "name": "Intuição",
+    "ability": "SAB"
   },
   {
     "id": "investigacao",
-    "nome": "Investigação",
-    "atributo": "INT"
+    "name": "Investigação",
+    "ability": "INT"
   },
   {
     "id": "lidar_com_animais",
-    "nome": "Lidar com Animais",
-    "atributo": "SAB"
+    "name": "Lidar com Animais",
+    "ability": "SAB"
   },
   {
     "id": "medicina",
-    "nome": "Medicina",
-    "atributo": "SAB"
+    "name": "Medicina",
+    "ability": "SAB"
   },
   {
     "id": "natureza",
-    "nome": "Natureza",
-    "atributo": "INT"
+    "name": "Natureza",
+    "ability": "INT"
   },
   {
     "id": "percepcao",
-    "nome": "Percepção",
-    "atributo": "SAB"
+    "name": "Percepção",
+    "ability": "SAB"
   },
   {
     "id": "persuasao",
-    "nome": "Persuasão",
-    "atributo": "CAR"
+    "name": "Persuasão",
+    "ability": "CAR"
   },
   {
     "id": "prestidigitacao",
-    "nome": "Prestidigitação",
-    "atributo": "DES"
+    "name": "Prestidigitação",
+    "ability": "DES"
   },
   {
     "id": "religiao",
-    "nome": "Religião",
-    "atributo": "INT"
+    "name": "Religião",
+    "ability": "INT"
   },
   {
     "id": "sobrevivencia",
-    "nome": "Sobrevivência",
-    "atributo": "SAB"
+    "name": "Sobrevivência",
+    "ability": "SAB"
   }
 ]

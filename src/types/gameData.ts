@@ -1,141 +1,141 @@
-export type AtributoId = 'FOR' | 'DES' | 'CON' | 'INT' | 'SAB' | 'CAR'
+export type AbilityId = 'FOR' | 'DES' | 'CON' | 'INT' | 'SAB' | 'CAR'
 
-export interface Pericia {
+export interface Skill {
   id: string
-  nome: string
-  atributo: AtributoId
+  name: string
+  ability: AbilityId
 }
 
-export interface Subclasse {
+export interface Subclass {
   id: string
-  nome: string
-  descricao?: string
+  name: string
+  description?: string
 }
 
-export interface ProgressaoNivel {
-  nivel: number
-  bonus_prof: number
-  destaques: string[]
-  furias?: number
-  dano_furia?: number
-  espacos_de_magia?: Record<string, number>
+export interface LevelProgression {
+  level: number
+  prof_bonus: number
+  highlights: string[]
+  rages?: number
+  rage_damage?: number
+  spell_slots?: Record<string, number>
   [key: string]: unknown
 }
 
-export interface Classe {
+export interface CharClass {
   id: string
-  nome: string
-  descricao: string
-  interesse: string
-  dado_vida: number
-  atributos_primarios: AtributoId[]
-  salvaguardas: AtributoId[]
-  num_pericias: number
-  pericias_disponiveis: string[] | 'qualquer'
-  armas: string[]
-  armaduras: string[]
-  ferramentas: string[]
-  equipamento_inicial: { A: string; B: string }
-  conjurador: boolean
-  atributo_conjuracao?: AtributoId
-  complexidade: 'Baixa' | 'Média' | 'Alta'
-  subclasses: Subclasse[]
-  nivel_subclasse?: number
-  progressao: ProgressaoNivel[]
-  idiomas_concedidos?: string[]
+  name: string
+  description: string
+  appeal: string
+  hit_die: number
+  primary_abilities: AbilityId[]
+  saves: AbilityId[]
+  num_skills: number
+  available_skills: string[] | 'qualquer'
+  weapons: string[]
+  armors: string[]
+  tools: string[]
+  starting_equipment: { A: string; B: string }
+  spellcaster: boolean
+  spellcasting_ability?: AbilityId
+  complexity: 'Baixa' | 'Média' | 'Alta'
+  subclasses: Subclass[]
+  subclass_level?: number
+  progression: LevelProgression[]
+  granted_languages?: string[]
 }
 
-export interface Traco {
-  nome: string
-  descricao: string
-  usos_maximos?: number | string
+export interface Trait {
+  name: string
+  description: string
+  max_uses?: number | string
 }
 
-export interface Linhagem {
+export interface Lineage {
   id: string
-  nome: string
-  descricao?: string
-  tracos?: Traco[]
+  name: string
+  description?: string
+  traits?: Trait[]
 }
 
-export interface Especie {
+export interface Species {
   id: string
-  nome: string
-  tamanho: string
-  deslocamento: number
-  visao_no_escuro?: number
-  tracos: Traco[]
-  linhagens?: Linhagem[]
+  name: string
+  size: string
+  speed: number
+  darkvision?: number
+  traits: Trait[]
+  lineages?: Lineage[]
 }
 
-export interface Antecedente {
+export interface Background {
   id: string
-  talento: string
-  pericias: string[]
-  ferramenta?: string
-  equipamento_inicial: string
+  feat: string
+  skills: string[]
+  tool?: string
+  starting_equipment: string
 }
 
-export interface Armadura {
+export interface Armor {
   id: string
-  nome: string
-  categoria: 'Leve' | 'Média' | 'Pesada' | 'Escudo'
-  ca: string | number
-  requisito_for?: number
-  penalidade_furtividade?: boolean
-  custo_po?: number
-  peso_kg?: number
+  name: string
+  category: 'Leve' | 'Média' | 'Pesada' | 'Escudo'
+  ac: string | number
+  str_requirement?: number
+  stealth_penalty?: boolean
+  cost_gp?: number
+  weight_kg?: number
 }
 
-export interface Talento {
+export interface Feat {
   id: string
-  nome: string
-  descricao: string
+  name: string
+  description: string
   prereq?: string
 }
 
-export interface EstiloDeLuta {
+export interface FightingStyle {
   id: string
-  nome: string
-  descricao: string
+  name: string
+  description: string
 }
 
-export interface OrdemDivina {
+export interface DivineOrder {
   id: string
-  nome: string
-  descricao: string
-  prof_armaduras: string[]
-  prof_armas: string[]
-  prof_pericia?: string
+  name: string
+  description: string
+  armor_profs: string[]
+  weapon_profs: string[]
+  skill_prof?: string
 }
 
-export interface OrdemPrimal {
+export interface PrimalOrder {
   id: string
-  nome: string
-  descricao: string
-  prof_armaduras: string[]
-  prof_armas: string[]
-  prof_pericia?: string
+  name: string
+  description: string
+  armor_profs: string[]
+  weapon_profs: string[]
+  skill_prof?: string
 }
 
-export interface InmigoFavorito {
+export interface FavoredEnemy {
   id: string
-  nome: string
+  name: string
 }
 
-export interface DadosJogo {
-  meta: { fonte: string; traducao: string; versao: string }
-  pericias: Pericia[]
-  idiomas: { comuns: Array<{ id: string; nome: string; origem: string }>; raros: Array<{ id: string; nome: string; origem: string }> }
-  classes: Classe[]
-  especies: Especie[]
-  antecedentes: Antecedente[]
-  atributos_sugeridos_por_classe?: Record<string, AtributoId[]>
-  talentos_de_origem?: Talento[]
-  talentos_gerais?: Talento[]
-  armaduras: Armadura[]
-  estilos_de_luta?: EstiloDeLuta[]
-  ordens_divinas?: OrdemDivina[]
-  ordens_primais?: OrdemPrimal[]
-  inimigos_favoritos?: InmigoFavorito[]
+export interface GameData {
+  meta: { font: string; translation: string; version: string }
+  skills: Skill[]
+  languages: { common: Array<{ id: string; name: string; source: string }>; rare: Array<{ id: string; name: string; source: string }> }
+  classes: CharClass[]
+  species: Species[]
+  backgrounds: Background[]
+  suggested_abilities_by_class?: Record<string, AbilityId[]>
+  origin_feats?: Feat[]
+  general_feats?: Feat[]
+  armors: Armor[]
+  fighting_styles?: FightingStyle[]
+  divine_orders?: DivineOrder[]
+  primal_orders?: PrimalOrder[]
+  favored_enemies?: FavoredEnemy[]
 }

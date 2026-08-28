@@ -51,22 +51,23 @@ npm run build && npx cap sync
 
 ## Architecture
 
-- `src/store/fichaStore.ts` — the single Zustand store (`useFichaStore`) that all character
-  mutations go through. Actions that touch attributes, class, species, level, armor, or spell
-  slots run the result through `recalcular` before returning state, so derived fields are never
+- `src/store/sheetStore.ts` — the single Zustand store (`useSheetStore`) that all character
+  mutations go through. Actions that touch abilities, class, species, level, armor, or spell
+  slots run the result through `recalculate` before returning state, so derived fields are never
   hand-patched.
-- `src/lib/recalcular.ts` — a pipeline of pure functions
-  (`recalcularModificadores → recalcularCombate → recalcularPericias → recalcularMagia`) that
-  compute every derived (`_`-prefixed) field on a `Ficha`.
-- `src/lib/calculos.ts` — the actual D&D rules math (modifiers, proficiency bonus, AC, HP, saves,
-  skills, spell DC) as standalone pure functions.
-- `src/data/dnd_dados.json` — the static rules dataset (classes, species, backgrounds, feats,
-  progression tables, armors), intentionally left untranslated. Items, spells, and backgrounds
-  live in `src/data/{itens,spells,antecedentes}/` with parallel `pt/`/`en/` modules, exposed
-  through `getXxx()` getters that pick a language at call time.
+- `src/lib/recalculate.ts` — a pipeline of pure functions
+  (`recalculateModifiers → recalculateCombat → recalculateSkills → recalculateSpellcasting`) that
+  compute every derived (`_`-prefixed) field on a `CharacterSheet`.
+- `src/lib/calculations.ts` — the actual D&D rules math (modifiers, proficiency bonus, AC, HP,
+  saves, skills, spell DC) as standalone pure functions.
+- `src/data/rules/` — the static rules dataset (classes, species, backgrounds, feats, progression
+  tables, armors). It is canonical in Portuguese and translated whole-string for display by
+  `src/data/rules/translation.ts`. Items, spells, and backgrounds live in
+  `src/data/{items,spells,backgrounds}/` with parallel `pt/`/`en/` modules, exposed through
+  `getXxx()` getters that pick a language at call time.
 - `src/store/configStore.ts` — a second, independent persisted store for user preferences
-  (language, weight/gold tracking, etc.); it never touches `recalcular`.
-- `src/pages/` — `Home` (saved characters), `Wizard` (creation flow), `Ficha` (play sheet),
+  (language, weight/gold tracking, etc.); it never touches `recalculate`.
+- `src/pages/` — `Home` (saved characters), `Wizard` (creation flow), `Sheet` (play sheet),
   routed in `src/App.tsx`.
 
 See `CLAUDE.md` for the full architecture notes, data-model gotchas, and conventions used across
@@ -76,21 +77,21 @@ the codebase.
 
 ```
 src/
-  components/    UI components (wizard steps, ficha panels, shared)
+  components/    UI components (wizard steps, sheet panels, ui)
   constants/     pool sizes, level caps, storage keys, point-buy costs, etc.
-  data/          static rules data + localized items/spells/backgrounds
-  hooks/         useAtributosWizard, useFichaExport, useFichaPdf, ...
+  data/          rules/ (static rules data) + localized items/spells/backgrounds
+  hooks/         useWizardAbilities, useSheetExport, useSheetPdf, ...
   i18n/          UI translation strings (pt/en)
-  lib/           recalcular.ts, calculos.ts (rules math)
+  lib/           recalculate.ts, calculations.ts (rules math)
   lib/pdf/       official-sheet export (generated field map + filler)
-  pages/         Home, Wizard, Ficha
-  services/      fichaStorage.ts (localStorage persistence)
-  store/         fichaStore.ts, configStore.ts
-  types/         Ficha, DadosJogo, and related types
+  pages/         Home, Wizard, Sheet
+  services/      sheetStorage.ts (localStorage persistence)
+  store/         sheetStore.ts, configStore.ts
+  types/         CharacterSheet, GameData, and related types
 android/         Capacitor Android project
 public/          static assets, including the two blank sheet models (~4.5 MB each)
 scripts/         one-off node tools that build those models and generate the field map
 ```
 
-The PDF pipeline (how the blank models and `src/lib/pdf/camposFicha.ts` are produced) is
+The PDF pipeline (how the blank models and `src/lib/pdf/sheetFields.ts` are produced) is
 documented in `scripts/README.md`.

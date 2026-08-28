@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../../store/fichaStore'
+import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
-import { MochilaBusca } from '../ui/MochilaBusca'
-import type { ItemInventario } from '../../types'
-import { dados } from '../../data/dados'
-import { getItens } from '../../data/itens'
-import type { Item } from '../../data/itens'
+import { BackpackSearch } from '../ui/BackpackSearch'
+import type { InventoryItem } from '../../types'
+import { gameData } from '../../data/rules'
+import { getItems } from '../../data/items'
+import type { Item } from '../../data/items'
 
 function normStr(s: string) {
   return s
@@ -17,88 +17,88 @@ function normStr(s: string) {
     .trim()
 }
 
-function buscarNoCatalogo(nome: string, catalogo: Item[]): Item | undefined {
-  const n = normStr(nome)
-  return catalogo.find(it => {
-    const c = normStr(it.nome)
+function searchCatalog(name: string, catalog: Item[]): Item | undefined {
+  const n = normStr(name)
+  return catalog.find(it => {
+    const c = normStr(it.name)
     return c === n || c === n.replace(/s$/, '') || c + 's' === n || c === n + 's'
   })
 }
 
-function parsePO(preco: string): number | null {
-  const m = preco.match(/([\d.,]+)\s*(po|gp)/i)
+function parseGp(price: string): number | null {
+  const m = price.match(/([\d.,]+)\s*(po|gp)/i)
   return m ? parseFloat(m[1].replace(',', '.')) : null
 }
 
-function parsePeso(peso: string | undefined): number | null {
-  if (!peso) return null
-  const m = peso.match(/([\d.,]+)\s*kg/i)
+function parseWeight(weight: string | undefined): number | null {
+  if (!weight) return null
+  const m = weight.match(/([\d.,]+)\s*kg/i)
   return m ? parseFloat(m[1].replace(',', '.')) : null
 }
 
-function parsearEquipamentoA(texto: string, catalogo: Item[]): { itens: ItemInventario[]; ouro: number } {
-  const partes = texto.split(',').map(p => p.trim()).filter(Boolean)
-  const itensParsed: ItemInventario[] = []
-  let ouro = 0
+function parseEquipmentA(text: string, catalog: Item[]): { items: InventoryItem[]; gold: number } {
+  const parts = text.split(',').map(p => p.trim()).filter(Boolean)
+  const parsedItems: InventoryItem[] = []
+  let gold = 0
 
-  for (const parte of partes) {
+  for (const part of parts) {
     // Ouro: "15 PO", "75 PO"
-    const poMatch = parte.match(/^(\d+(?:[.,]\d+)?)\s*PO$/i)
-    if (poMatch) {
-      ouro += parseFloat(poMatch[1].replace(',', '.'))
+    const gpMatch = part.match(/^(\d+(?:[.,]\d+)?)\s*PO$/i)
+    if (gpMatch) {
+      gold += parseFloat(gpMatch[1].replace(',', '.'))
       continue
     }
 
     // Quantidade inicial: "4 Machadinhas", "2 Adagas"
-    const qtyMatch = parte.match(/^(\d+)\s+(.+)$/)
-    const quantidade = qtyMatch ? parseInt(qtyMatch[1]) : 1
-    const nomeRaw = qtyMatch ? qtyMatch[2] : parte
+    const qtyMatch = part.match(/^(\d+)\s+(.+)$/)
+    const quantity = qtyMatch ? parseInt(qtyMatch[1]) : 1
+    const rawName = qtyMatch ? qtyMatch[2] : part
 
-    const found = buscarNoCatalogo(nomeRaw, catalogo)
+    const found = searchCatalog(rawName, catalog)
 
-    itensParsed.push({
-      id_item: found?.id ?? null,
-      nome: found ? null : nomeRaw,
-      categoria: found?.tipo_item ?? null,
-      quantidade,
-      equipado: false,
-      custo_po: found ? parsePO(found.preco) : null,
-      peso_kg: found ? parsePeso((found as { peso?: string }).peso) : null,
-      notas: null,
+    parsedItems.push({
+      item_id: found?.id ?? null,
+      name: found ? null : rawName,
+      category: found?.item_type ?? null,
+      quantity,
+      equipped: false,
+      cost_gp: found ? parseGp(found.price) : null,
+      weight_kg: found ? parseWeight((found as { weight?: string }).weight) : null,
+      notes: null,
     })
   }
 
-  return { itens: itensParsed, ouro }
+  return { items: parsedItems, gold }
 }
 
-function parseOuroInicial(texto: string): number {
-  const m = texto.match(/(\d+)\s*PO/i)
+function parseStartingGold(text: string): number {
+  const m = text.match(/(\d+)\s*PO/i)
   return m ? parseInt(m[1]) : 0
 }
 
-export function Step10Equipamento() {
-  const { ficha, setEquipamento, updateMoedas, setPasso } = useFichaStore()
+export function Step10Equipment() {
+  const { sheet, setEquipment, updateCoins, setStep } = useSheetStore()
   const { t, i18n } = useTranslation()
-  const [opcao, setOpcao] = useState<'A' | 'B'>('A')
+  const [option, setOption] = useState<'A' | 'B'>('A')
 
-  const catalogo = useMemo(() => getItens(), [i18n.language])
+  const catalog = useMemo(() => getItems(), [i18n.language])
 
-  const classeId = ficha.identidade.classe_id
-  const classe = dados.classes.find(c => c.id === classeId)
+  const classId = sheet.identity.class_id
+  const charClass = gameData.classes.find(c => c.id === classId)
 
-  function escolherOpcaoA() {
-    if (!classe) return
-    const { itens, ouro } = parsearEquipamentoA(classe.equipamento_inicial.A, catalogo)
-    setEquipamento('A', itens)
-    if (ouro > 0) updateMoedas({ PO: ouro })
-    setOpcao('A')
+  function chooseOptionA() {
+    if (!charClass) return
+    const { items, gold } = parseEquipmentA(charClass.starting_equipment.A, catalog)
+    setEquipment('A', items)
+    if (gold > 0) updateCoins({ PO: gold })
+    setOption('A')
   }
 
-  function escolherOpcaoB() {
-    const ouro = parseOuroInicial(classe?.equipamento_inicial.B ?? '')
-    setEquipamento('B', [])
-    updateMoedas({ PO: ouro })
-    setOpcao('B')
+  function chooseOptionB() {
+    const gold = parseStartingGold(charClass?.starting_equipment.B ?? '')
+    setEquipment('B', [])
+    updateCoins({ PO: gold })
+    setOption('B')
   }
 
   return (
@@ -111,34 +111,34 @@ export function Step10Equipamento() {
       {/* Opções A / B */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div
-          onClick={escolherOpcaoA}
-          className={`cursor-pointer rounded-lg border p-4 transition-all ${opcao === 'A' ? 'border-[#7B1D1D] bg-[#4D2020]' : 'border-[#B8860B]/30 bg-[#3D332D] hover:border-[#B8860B]/60'}`}
+          onClick={chooseOptionA}
+          className={`cursor-pointer rounded-lg border p-4 transition-all ${option === 'A' ? 'border-[#7B1D1D] bg-[#4D2020]' : 'border-[#B8860B]/30 bg-[#3D332D] hover:border-[#B8860B]/60'}`}
         >
           <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-2">{t('step10.optionA')}</h3>
-          <p className="text-sm text-[#A8A09B] leading-relaxed">{classe?.equipamento_inicial.A ?? '—'}</p>
+          <p className="text-sm text-[#A8A09B] leading-relaxed">{charClass?.starting_equipment.A ?? '—'}</p>
         </div>
 
         <div
-          onClick={escolherOpcaoB}
-          className={`cursor-pointer rounded-lg border p-4 transition-all ${opcao === 'B' ? 'border-[#7B1D1D] bg-[#4D2020]' : 'border-[#B8860B]/30 bg-[#3D332D] hover:border-[#B8860B]/60'}`}
+          onClick={chooseOptionB}
+          className={`cursor-pointer rounded-lg border p-4 transition-all ${option === 'B' ? 'border-[#7B1D1D] bg-[#4D2020]' : 'border-[#B8860B]/30 bg-[#3D332D] hover:border-[#B8860B]/60'}`}
         >
           <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-2">{t('step10.optionB')}</h3>
-          <p className="text-sm text-[#A8A09B] leading-relaxed">{classe?.equipamento_inicial.B ?? '—'}</p>
+          <p className="text-sm text-[#A8A09B] leading-relaxed">{charClass?.starting_equipment.B ?? '—'}</p>
           <p className="text-xs text-[#B8860B] mt-2">{t('step10.optionBHint')}</p>
         </div>
       </div>
 
       {/* Mochila com busca — disponível apenas na Opção B */}
-      {opcao === 'B' && (
+      {option === 'B' && (
         <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4">
           <h3 className="font-cinzel font-semibold text-[#B8860B] text-sm mb-4 pb-2 border-b border-[#B8860B]/20">
             {t('step10.bagHeading')}
           </h3>
-          <MochilaBusca cobrarItem />
+          <BackpackSearch chargeItem />
         </div>
       )}
 
-      <WizardNav onBack={() => setPasso(10)} onNext={() => setPasso(12)} />
+      <WizardNav onBack={() => setStep(10)} onNext={() => setStep(12)} />
     </div>
   )
 }

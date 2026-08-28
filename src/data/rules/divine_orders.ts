@@ -1,21 +1,21 @@
 export default [
   {
     "id": "paladino",
-    "nome": "Paladino",
-    "descricao": "Treinado para o combate, você ganha proficiência com armas marciais e armaduras pesadas.",
-    "prof_armaduras": [
+    "name": "Paladino",
+    "description": "Treinado para o combate, você ganha proficiência com armas marciais e armaduras pesadas.",
+    "armor_profs": [
       "Pesada"
     ],
-    "prof_armas": [
+    "weapon_profs": [
       "Marciais"
     ]
   },
   {
     "id": "taumaturgo",
-    "nome": "Taumaturgo",
-    "descricao": "Você estudou os milagres divinos. Aprende um truque adicional de Clérigo e ganha proficiência em Arcanismo (ou especialização, se já for proficiente).",
-    "prof_armaduras": [],
-    "prof_armas": [],
-    "prof_pericia": "arcanismo"
+    "name": "Taumaturgo",
+    "description": "Você estudou os milagres divinos. Aprende um truque adicional de Clérigo e ganha proficiência em Arcanismo (ou especialização, se já for proficiente).",
+    "armor_profs": [],
+    "weapon_profs": [],
+    "skill_prof": "arcanismo"
   }
 ]

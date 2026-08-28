@@ -1,14 +1,14 @@
-import type { PacoteEquipamento } from '../types'
+import type { EquipmentPack } from '../types'
 
-export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
+export const EQUIPMENT_PACKS: EquipmentPack[] = [
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_explorador',
-    nome: 'Pacote de Explorador',
-    categoria: 'Pacote de Equipamento',
-    preco: '10 po',
-    peso: '29.5 kg',
-    itens_incluidos: [
+    name: 'Pacote de Explorador',
+    category: 'Pacote de Equipamento',
+    price: '10 po',
+    weight: '29.5 kg',
+    included_items: [
       'Mochila',
       'Saco de dormir',
       'Kit de cozinha',
@@ -18,16 +18,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Cantil',
       'Corda de cânhamo (15 m)'
     ],
-    descricao: 'O pacote mais versátil para viagens longas por estradas ou florestas. Garante sobrevivência básica na natureza por até dez dias.'
+    description: 'O pacote mais versátil para viagens longas por estradas ou florestas. Garante sobrevivência básica na natureza por até dez dias.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_masmorrista',
-    nome: 'Pacote de Masmorrista',
-    categoria: 'Pacote de Equipamento',
-    preco: '12 po',
-    peso: '30.5 kg',
-    itens_incluidos: [
+    name: 'Pacote de Masmorrista',
+    category: 'Pacote de Equipamento',
+    price: '12 po',
+    weight: '30.5 kg',
+    included_items: [
       'Mochila',
       'Pé de cabra',
       'Martelo',
@@ -38,16 +38,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Cantil',
       'Corda de cânhamo (15 m)'
     ],
-    descricao: 'Ideal para explorar ruínas subterrâneas. Contém ferramentas para forçar portas, escalar paredes e prender armadilhas.'
+    description: 'Ideal para explorar ruínas subterrâneas. Contém ferramentas para forçar portas, escalar paredes e prender armadilhas.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_artista',
-    nome: 'Pacote de Artista',
-    categoria: 'Pacote de Equipamento',
-    preco: '40 po',
-    peso: '17.0 kg',
-    itens_incluidos: [
+    name: 'Pacote de Artista',
+    category: 'Pacote de Equipamento',
+    price: '40 po',
+    weight: '17.0 kg',
+    included_items: [
       'Mochila',
       'Saco de dormir',
       '2 Trajes de artista',
@@ -56,16 +56,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Cantil',
       'Kit de disfarce'
     ],
-    descricao: 'Excelente para bardos e farsantes. Inclui trajes para apresentações em cortes ou tavernas e recursos para manter a aparência em viagens.'
+    description: 'Excelente para bardos e farsantes. Inclui trajes para apresentações em cortes ou tavernas e recursos para manter a aparência em viagens.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_assaltante',
-    nome: 'Pacote de Assaltante',
-    categoria: 'Pacote de Equipamento',
-    preco: '16 po',
-    peso: '22.0 kg',
-    itens_incluidos: [
+    name: 'Pacote de Assaltante',
+    category: 'Pacote de Equipamento',
+    price: '16 po',
+    weight: '22.0 kg',
+    included_items: [
       'Mochila',
       'Saco de 1.000 esferas de rolamento',
       '10 m de linha de fio',
@@ -78,16 +78,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Cantil',
       'Corda de cânhamo (15 m)'
     ],
-    descricao: 'O kit definitivo para ladinos e infiltrações silenciosas. Focado em criar distrações, arrombar barreiras e detectar armadilhas.'
+    description: 'O kit definitivo para ladinos e infiltrações silenciosas. Focado em criar distrações, arrombar barreiras e detectar armadilhas.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_erudito',
-    nome: 'Pacote de Erudito',
-    categoria: 'Pacote de Equipamento',
-    preco: '40 po',
-    peso: '5.0 kg',
-    itens_incluidos: [
+    name: 'Pacote de Erudito',
+    category: 'Pacote de Equipamento',
+    price: '40 po',
+    weight: '5.0 kg',
+    included_items: [
       'Mochila',
       'Livro de estudo',
       'Tinta (frasco de 30 ml)',
@@ -96,16 +96,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Faca de cortar papel',
       'Vidro de pó de giz'
     ],
-    descricao: 'Perfeito para magos e clérigos focados em registro de conhecimento, deciframento de runas e cópia de pergaminhos mágicos.'
+    description: 'Perfeito para magos e clérigos focados em registro de conhecimento, deciframento de runas e cópia de pergaminhos mágicos.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_sacerdote',
-    nome: 'Pacote de Sacerdote',
-    categoria: 'Pacote de Equipamento',
-    preco: '19 po',
-    peso: '12.0 kg',
-    itens_incluidos: [
+    name: 'Pacote de Sacerdote',
+    category: 'Pacote de Equipamento',
+    price: '19 po',
+    weight: '12.0 kg',
+    included_items: [
       'Mochila',
       'Manta acolchoada',
       '10 Velas',
@@ -117,16 +117,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       '2 dias de Rações de viagem',
       'Cantil'
     ],
-    descricao: 'Para clérigos e paladinos realizarem ritos sagrados, abençoarem locais e conduzirem cerimônias durante as campanhas.'
+    description: 'Para clérigos e paladinos realizarem ritos sagrados, abençoarem locais e conduzirem cerimônias durante as campanhas.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_diplomata',
-    nome: 'Pacote de Diplomata',
-    categoria: 'Pacote de Equipamento',
-    preco: '39 po',
-    peso: '16.5 kg',
-    itens_incluidos: [
+    name: 'Pacote de Diplomata',
+    category: 'Pacote de Equipamento',
+    price: '39 po',
+    weight: '16.5 kg',
+    included_items: [
       'Cofre pequeno',
       '2 caixas de Pergaminhos',
       'Roupas finas',
@@ -139,6 +139,6 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       '2 Frascos de óleo',
       'Frasco de perfume'
     ],
-    descricao: 'Para interações de alta sociedade, negociações políticas e registros oficiais de tratados burocráticos.'
+    description: 'Para interações de alta sociedade, negociações políticas e registros oficiais de tratados burocráticos.'
   }
 ]

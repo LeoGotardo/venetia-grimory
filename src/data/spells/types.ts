@@ -1,18 +1,18 @@
-export interface Magia {
+export interface Spell {
   id: string
-  nome: string
-  circulo: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
-  escola: string
+  name: string
+  level: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+  school: string
   classes: string[]
-  concentracao?: boolean
+  concentration?: boolean
   ritual?: boolean
-  descricao?: string
+  description?: string
   componentes?: Array<'V' | 'S' | 'M'>
   material?: string
-  tempo_conjuracao?: string
-  alcance?: string
-  duracao?: string
-  dano?: string
-  tipo_dano?: string
-  salvaguarda?: string
+  casting_time?: string
+  range?: string
+  duration?: string
+  damage?: string
+  damage_type?: string
+  save?: string
 }

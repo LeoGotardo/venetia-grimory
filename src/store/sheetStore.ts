@@ -1,875 +1,875 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
-import type { Ficha, AtributoId, ItemInventario } from '../types'
-import { criarFichaInicial } from '../lib/fichaInicial'
-import { recalcular } from '../lib/recalcular'
-import { migrarFicha } from '../lib/migrarFicha'
-import { ATRIBUTOS } from '../lib/calculos'
+import type { CharacterSheet, AbilityId, InventoryItem } from '../types'
+import { createInitialSheet } from '../lib/initialSheet'
+import { recalculate } from '../lib/recalculate'
+import { migrateSheet } from '../lib/migrateSheet'
+import { ABILITIES } from '../lib/calculations'
 import {
-  salvarFicha,
-  carregarFicha as carregarFichaStorage,
-  deletarFicha as deletarFichaStorage,
-  listarFichas,
-} from '../services/fichaStorage'
-import { dadosPT as dados } from '../data/dados'
+  saveSheet,
+  loadSheet as loadSheetFromStorage,
+  deleteSheet as deleteSheetFromStorage,
+  listSheets,
+} from '../services/sheetStorage'
+import { gameDataPt as gameData } from '../data/rules'
 import {
   DEBOUNCE_SAVE_MS,
-  MAXIMO_EXAUSTAO,
-  IDIOMAS_FIXOS_POR_CLASSE,
-  PROFICIENCIAS_MULTICLASSE,
-  TIPO_CONJURADOR,
+  MAX_EXHAUSTION,
+  FIXED_LANGUAGES_BY_CLASS,
+  MULTICLASS_PROFICIENCIES,
+  CASTER_TYPE,
 } from '../constants'
 
-export interface FichaListItem {
+export interface SheetListItem {
   id: string
-  nome: string
-  classe: string
-  especie: string
-  nivel: number
+  name: string
+  charClass: string
+  species: string
+  level: number
   updatedAt: string
-  completa?: boolean
+  complete?: boolean
 }
 
-interface FichaStore {
-  ficha: Ficha
-  fichaId: string | null
-  passoAtual: number
-  fichasSalvas: FichaListItem[]
-  fichaCompleta: boolean
-  rolagemAtributos: number[]
-  setRolagemAtributos: (vals: number[]) => void
+interface SheetStore {
+  sheet: CharacterSheet
+  sheetId: string | null
+  currentStep: number
+  savedSheets: SheetListItem[]
+  completeSheet: boolean
+  abilityRolls: number[]
+  setAbilityRolls: (vals: number[]) => void
 
   // Wizard
-  setNivel: (nivel: number) => void
-  setClasse: (classeId: string) => void
-  setSubclasse: (subclasseId: string | null) => void
-  setEspecie: (especieId: string, linhagemId?: string) => void
-  setAntecedenteId: (antecedenteId: string) => void
-  setAntecedente: (antecedenteId: string, distribuicao: Partial<Record<AtributoId, number>>) => void
-  setAtributos: (valores: Partial<Record<AtributoId, number>>, metodo?: string) => void
-  setPericias: (periciaIds: string[]) => void
-  setEscolhasDeClasse: (escolhas: {
-    estilo_de_luta?: string | null
-    ordem_divina?: string | null
-    ordem_primal?: string | null
-    inimigo_favorito?: string | null
+  setLevel: (level: number) => void
+  setCharClass: (classId: string) => void
+  setSubclass: (subclassId: string | null) => void
+  setSpecies: (speciesId: string, lineageId?: string) => void
+  setBackgroundId: (backgroundId: string) => void
+  setBackground: (backgroundId: string, distribution: Partial<Record<AbilityId, number>>) => void
+  setAbilities: (values: Partial<Record<AbilityId, number>>, method?: string) => void
+  setSkills: (skillIds: string[]) => void
+  setClassChoices: (choices: {
+    fighting_style?: string | null
+    divine_order?: string | null
+    primal_order?: string | null
+    favored_enemy?: string | null
   }) => void
-  setEspecializacao: (periciaIds: string[]) => void
-  setIdiomas: (idiomas: string[]) => void
-  setEquipamento: (opcao: 'A' | 'B', itens: ItemInventario[]) => void
-  setPersonalidade: (p: Partial<Ficha['personalidade']>) => void
-  setIdentidade: (id: Partial<Ficha['identidade']>) => void
-  setPasso: (passo: number) => void
+  setExpertise: (skillIds: string[]) => void
+  setLanguages: (languages: string[]) => void
+  setEquipment: (option: 'A' | 'B', items: InventoryItem[]) => void
+  setPersonality: (p: Partial<CharacterSheet['personality']>) => void
+  setIdentity: (id: Partial<CharacterSheet['identity']>) => void
+  setStep: (step: number) => void
 
   // Ficha em jogo
-  atualizarPV: (delta: number) => void
-  atualizarPVTemp: (val: number) => void
-  gastarDadoVida: () => void
-  gastarEspaco: (circulo: keyof Ficha['magia']['espacos_de_magia']) => void
-  restaurarEspaco: (circulo: keyof Ficha['magia']['espacos_de_magia']) => void
-  descansoCurto: () => void
-  descansoLongo: () => void
-  atualizarRecurso: (recurso: string, delta: number) => void
-  toggleCondicao: (condicao: string) => void
-  setExaustao: (n: number) => void
-  setNotas: (notas: string) => void
-  addAtaque: (ataque: Ficha['combate']['ataques'][0]) => void
-  removeAtaque: (idx: number) => void
-  addItem: (item: ItemInventario) => void
+  updateHp: (delta: number) => void
+  updateTempHp: (val: number) => void
+  spendHitDie: () => void
+  spendSlot: (level: keyof CharacterSheet['spellcasting']['spell_slots']) => void
+  restoreSlot: (level: keyof CharacterSheet['spellcasting']['spell_slots']) => void
+  shortRest: () => void
+  longRest: () => void
+  updateResource: (resource: string, delta: number) => void
+  toggleCondition: (condition: string) => void
+  setExhaustion: (n: number) => void
+  setNotes: (notes: string) => void
+  addAttack: (attack: CharacterSheet['combat']['attacks'][0]) => void
+  removeAttack: (idx: number) => void
+  addItem: (item: InventoryItem) => void
   removeItem: (idx: number) => void
-  updateItem: (idx: number, item: Partial<ItemInventario>) => void
-  updateMoedas: (moedas: Partial<Ficha['inventario']['moedas']>) => void
-  toggleEscudo: () => void
-  setArmadura: (armaduraId: string | null) => void
-  atualizarMagia: (parcial: Partial<Pick<Ficha['magia'], 'truques_por_classe' | 'magias_por_classe'>>) => void
+  updateItem: (idx: number, item: Partial<InventoryItem>) => void
+  updateCoins: (coins: Partial<CharacterSheet['inventory']['coins']>) => void
+  toggleShield: () => void
+  setArmor: (armorId: string | null) => void
+  updateSpellcasting: (partial: Partial<Pick<CharacterSheet['spellcasting'], 'cantrips_by_class' | 'spells_by_class'>>) => void
   addXP: (amount: number) => void
-  levelUp: (novoNivel: number, asi?: Partial<Record<AtributoId, number>>, classeIdAlvo?: string, talentoId?: string, especializacoes?: string[]) => void
-  addMulticlasse: (classeId: string) => void
-  removeMulticlasse: (classeId: string) => void
-  setMulticlasseNivel: (classeId: string, nivel: number) => void
-  setSubclasseMulticlasse: (classeId: string, subclasseId: string | null) => void
+  levelUp: (newLevel: number, asi?: Partial<Record<AbilityId, number>>, targetClassId?: string, featId?: string, expertises?: string[]) => void
+  addMulticlass: (classId: string) => void
+  removeMulticlass: (classId: string) => void
+  setMulticlassLevel: (classId: string, level: number) => void
+  setMulticlassSubclass: (classId: string, subclassId: string | null) => void
 
   // Persistência
-  calcularTudo: () => void
-  salvarLocal: () => void
-  exportarJSON: () => string
-  importarJSON: (json: string) => void
-  carregarFicha: (id: string) => void
-  novaFicha: () => void
-  deletarFicha: (id: string) => void
-  resetar: () => void
-  carregarListaSalvas: () => void
+  recalculateAll: () => void
+  saveLocal: () => void
+  exportSheetJson: () => string
+  importSheetJson: (json: string) => void
+  loadSheet: (id: string) => void
+  newSheet: () => void
+  deleteSheet: (id: string) => void
+  reset: () => void
+  loadSavedList: () => void
 }
 
-function atualizarCombate(ficha: Ficha, parcial: Partial<Ficha['combate']>): Ficha {
-  return { ...ficha, combate: { ...ficha.combate, ...parcial } }
+function updateCombat(sheet: CharacterSheet, partial: Partial<CharacterSheet['combat']>): CharacterSheet {
+  return { ...sheet, combat: { ...sheet.combat, ...partial } }
 }
 
-export const useFichaStore = create<FichaStore>((set, get) => ({
-  ficha: criarFichaInicial(),
-  fichaId: null,
-  passoAtual: 1,
-  fichasSalvas: [],
-  fichaCompleta: false,
-  rolagemAtributos: [],
-  setRolagemAtributos: vals => set({ rolagemAtributos: vals }),
+export const useSheetStore = create<SheetStore>((set, get) => ({
+  sheet: createInitialSheet(),
+  sheetId: null,
+  currentStep: 1,
+  savedSheets: [],
+  completeSheet: false,
+  abilityRolls: [],
+  setAbilityRolls: vals => set({ abilityRolls: vals }),
 
-  setNivel: nivel =>
-    set(s => ({ ficha: recalcular({ ...s.ficha, identidade: { ...s.ficha.identidade, nivel } }) })),
+  setLevel: level =>
+    set(s => ({ sheet: recalculate({ ...s.sheet, identity: { ...s.sheet.identity, level } }) })),
 
-  setClasse: classeId =>
+  setCharClass: classId =>
     set(s => {
-      const classe = dados.classes.find(c => c.id === classeId)
-      if (!classe) return s
+      const charClass = gameData.classes.find(c => c.id === classId)
+      if (!charClass) return s
 
-      const idiomasExistentes = s.ficha.proficiencias.idiomas
-      const idiomasClasse = IDIOMAS_FIXOS_POR_CLASSE[classeId] ?? []
-      const idiomas = [
-        ...idiomasExistentes.filter(i => !Object.values(IDIOMAS_FIXOS_POR_CLASSE).flat().includes(i)),
-        ...idiomasClasse,
+      const existingLanguages = s.sheet.proficiencies.languages
+      const classLanguages = FIXED_LANGUAGES_BY_CLASS[classId] ?? []
+      const languages = [
+        ...existingLanguages.filter(i => !Object.values(FIXED_LANGUAGES_BY_CLASS).flat().includes(i)),
+        ...classLanguages,
       ]
 
-      const ante = dados.antecedentes?.find(a => a.id === s.ficha.identidade.antecedente_id)
-      const antePerics = ante?.pericias ?? []
-      const pericias = { ...s.ficha.pericias }
-      Object.keys(pericias).forEach(pid => {
-        if (antePerics.includes(pid)) return
-        pericias[pid] = { ...pericias[pid], proficiente: false }
+      const background = gameData.backgrounds?.find(a => a.id === s.sheet.identity.background_id)
+      const backgroundSkills = background?.skills ?? []
+      const skills = { ...s.sheet.skills }
+      Object.keys(skills).forEach(skillId => {
+        if (backgroundSkills.includes(skillId)) return
+        skills[skillId] = { ...skills[skillId], proficient: false }
       })
 
-      const ficha: Ficha = {
-        ...s.ficha,
-        identidade: { ...s.ficha.identidade, classe_id: classeId, subclasse_id: null, multiclasses: [] },
-        pericias,
-        proficiencias: {
-          ...s.ficha.proficiencias,
-          armaduras: classe.armaduras,
-          armas: classe.armas,
-          ferramentas: classe.ferramentas,
-          idiomas,
+      const sheet: CharacterSheet = {
+        ...s.sheet,
+        identity: { ...s.sheet.identity, class_id: classId, subclass_id: null, multiclasses: [] },
+        skills,
+        proficiencies: {
+          ...s.sheet.proficiencies,
+          armors: charClass.armors,
+          weapons: charClass.weapons,
+          tools: charClass.tools,
+          languages,
         },
-        magia: {
-          ...s.ficha.magia,
-          conjurador: classe.conjurador,
-          atributo_conjuracao: classe.atributo_conjuracao ?? null,
-          truques_por_classe: {},
-          magias_por_classe: {},
+        spellcasting: {
+          ...s.sheet.spellcasting,
+          spellcaster: charClass.spellcaster,
+          spellcasting_ability: charClass.spellcasting_ability ?? null,
+          cantrips_by_class: {},
+          spells_by_class: {},
         },
       }
 
-      return { ficha: recalcular(ficha) }
+      return { sheet: recalculate(sheet) }
     }),
 
-  setSubclasse: subclasseId =>
+  setSubclass: subclassId =>
     set(s => ({
-      ficha: { ...s.ficha, identidade: { ...s.ficha.identidade, subclasse_id: subclasseId } },
+      sheet: { ...s.sheet, identity: { ...s.sheet.identity, subclass_id: subclassId } },
     })),
 
-  setEspecie: (especieId, linhagemId) =>
+  setSpecies: (speciesId, lineageId) =>
     set(s => {
-      const especie = dados.especies?.find(e => e.id === especieId)
-      if (!especie) return s
+      const species = gameData.species?.find(e => e.id === speciesId)
+      if (!species) return s
 
-      const tracosEspecie = especie.tracos.map(t => ({
-        nome: t.nome,
-        descricao: t.descricao,
-        usos_maximos: t.usos_maximos,
-        usos_atuais: typeof t.usos_maximos === 'number' ? t.usos_maximos : undefined,
+      const speciesTraits = species.traits.map(t => ({
+        name: t.name,
+        description: t.description,
+        max_uses: t.max_uses,
+        current_uses: typeof t.max_uses === 'number' ? t.max_uses : undefined,
       }))
 
-      const linhagem = linhagemId
-        ? especie.linhagens?.find(l => l.id === linhagemId)
+      const lineage = lineageId
+        ? species.lineages?.find(l => l.id === lineageId)
         : undefined
 
-      const tracosLinhagem = linhagem?.tracos?.map(t => ({
-        nome: t.nome,
-        descricao: t.descricao,
-        usos_maximos: t.usos_maximos,
-        usos_atuais: typeof t.usos_maximos === 'number' ? t.usos_maximos : undefined,
+      const lineageTraits = lineage?.traits?.map(t => ({
+        name: t.name,
+        description: t.description,
+        max_uses: t.max_uses,
+        current_uses: typeof t.max_uses === 'number' ? t.max_uses : undefined,
       })) ?? []
 
-      const ficha: Ficha = {
-        ...s.ficha,
-        identidade: { ...s.ficha.identidade, especie_id: especieId, linhagem_id: linhagemId ?? null },
-        tracos_de_especie: {
-          visao_no_escuro_metros: especie.visao_no_escuro ?? null,
-          tracos_ativos: [...tracosEspecie, ...tracosLinhagem],
-          escolhas_feitas: {},
+      const sheet: CharacterSheet = {
+        ...s.sheet,
+        identity: { ...s.sheet.identity, species_id: speciesId, lineage_id: lineageId ?? null },
+        species_traits: {
+          darkvision_meters: species.darkvision ?? null,
+          active_traits: [...speciesTraits, ...lineageTraits],
+          choices_made: {},
         },
-        combate: {
-          ...s.ficha.combate,
-          deslocamento: { ...s.ficha.combate.deslocamento, base_metros: especie.deslocamento },
+        combat: {
+          ...s.sheet.combat,
+          speed: { ...s.sheet.combat.speed, base_meters: species.speed },
         },
       }
 
-      return { ficha: recalcular(ficha) }
+      return { sheet: recalculate(sheet) }
     }),
 
-  setAntecedenteId: antecedenteId =>
+  setBackgroundId: backgroundId =>
     set(s => ({
-      ficha: { ...s.ficha, identidade: { ...s.ficha.identidade, antecedente_id: antecedenteId } },
+      sheet: { ...s.sheet, identity: { ...s.sheet.identity, background_id: backgroundId } },
     })),
 
-  setAntecedente: (antecedenteId, distribuicao) =>
+  setBackground: (backgroundId, distribution) =>
     set(s => {
-      const ante = dados.antecedentes?.find(a => a.id === antecedenteId)
-      if (!ante) return s
+      const background = gameData.backgrounds?.find(a => a.id === backgroundId)
+      if (!background) return s
 
       // Clear previous antecedente pericias, then apply new ones
-      const anteAnterior = dados.antecedentes?.find(a => a.id === s.ficha.identidade.antecedente_id)
-      const pericsAnteAnterior = anteAnterior?.pericias ?? []
-      const pericias = { ...s.ficha.pericias }
-      Object.keys(pericias).forEach(pid => {
-        if (pericsAnteAnterior.includes(pid)) pericias[pid] = { ...pericias[pid], proficiente: false }
+      const previousBackground = gameData.backgrounds?.find(a => a.id === s.sheet.identity.background_id)
+      const previousBackgroundSkills = previousBackground?.skills ?? []
+      const skills = { ...s.sheet.skills }
+      Object.keys(skills).forEach(skillId => {
+        if (previousBackgroundSkills.includes(skillId)) skills[skillId] = { ...skills[skillId], proficient: false }
       })
-      ante.pericias.forEach(pid => {
-        if (pericias[pid]) pericias[pid] = { ...pericias[pid], proficiente: true }
+      background.skills.forEach(skillId => {
+        if (skills[skillId]) skills[skillId] = { ...skills[skillId], proficient: true }
       })
 
       // Remove old antecedente talent, add new one
-      const talentoAnteriorId = anteAnterior?.talento
-      const listaBase = s.ficha.talentos.lista.filter(t => t.talento_id !== talentoAnteriorId)
-      const talentoData = dados.talentos_de_origem?.find(
-        t => t.id === ante.talento || t.nome === ante.talento,
+      const previousFeatId = previousBackground?.feat
+      const baseList = s.sheet.feats.list.filter(t => t.feat_id !== previousFeatId)
+      const featData = gameData.origin_feats?.find(
+        t => t.id === background.feat || t.name === background.feat,
       )
-      const talentoJaAdicionado = listaBase.some(t => t.talento_id === ante.talento)
-      const talentos = talentoData && !talentoJaAdicionado
-        ? [...listaBase, { talento_id: ante.talento, nome: talentoData.nome, categoria: 'Origem', origem: 'Antecedente', escolhas: {} }]
-        : listaBase
+      const featAlreadyAdded = baseList.some(t => t.feat_id === background.feat)
+      const feats = featData && !featAlreadyAdded
+        ? [...baseList, { feat_id: background.feat, name: featData.name, category: 'Origem', source: 'Antecedente', choices: {} }]
+        : baseList
 
       // Undo previous attribute distribution, then apply new one
-      const atributos = { ...s.ficha.atributos }
-      const distribAnterior = s.ficha.identidade.distribuicao_antecedente ?? {}
-      Object.entries(distribAnterior).forEach(([attr, bonus]) => {
-        const a = attr as AtributoId
-        atributos[a] = { ...atributos[a], valor: (atributos[a].valor ?? 0) - (bonus ?? 0) }
+      const abilities = { ...s.sheet.abilities }
+      const previousDistribution = s.sheet.identity.background_distribution ?? {}
+      Object.entries(previousDistribution).forEach(([attr, bonus]) => {
+        const a = attr as AbilityId
+        abilities[a] = { ...abilities[a], value: (abilities[a].value ?? 0) - (bonus ?? 0) }
       })
-      Object.entries(distribuicao).forEach(([attr, bonus]) => {
-        const a = attr as AtributoId
-        atributos[a] = { ...atributos[a], valor: (atributos[a].valor ?? 0) + (bonus ?? 0) }
+      Object.entries(distribution).forEach(([attr, bonus]) => {
+        const a = attr as AbilityId
+        abilities[a] = { ...abilities[a], value: (abilities[a].value ?? 0) + (bonus ?? 0) }
       })
 
       return {
-        ficha: recalcular({
-          ...s.ficha,
-          identidade: {
-            ...s.ficha.identidade,
-            antecedente_id: antecedenteId,
-            distribuicao_antecedente: distribuicao,
+        sheet: recalculate({
+          ...s.sheet,
+          identity: {
+            ...s.sheet.identity,
+            background_id: backgroundId,
+            background_distribution: distribution,
           },
-          pericias,
-          talentos: { lista: talentos },
-          atributos,
+          skills,
+          feats: { list: feats },
+          abilities,
         }),
       }
     }),
 
-  setAtributos: (valores, metodo) =>
+  setAbilities: (values, method) =>
     set(s => {
-      const atributos = { ...s.ficha.atributos }
-      ATRIBUTOS.forEach(a => {
-        if (valores[a] !== undefined) {
-          atributos[a] = { ...atributos[a], valor: valores[a]! }
+      const abilities = { ...s.sheet.abilities }
+      ABILITIES.forEach(a => {
+        if (values[a] !== undefined) {
+          abilities[a] = { ...abilities[a], value: values[a]! }
         }
       })
-      if (metodo) atributos.metodo_geracao = metodo
-      return { ficha: recalcular({ ...s.ficha, atributos }) }
+      if (method) abilities.generation_method = method
+      return { sheet: recalculate({ ...s.sheet, abilities }) }
     }),
 
-  setEscolhasDeClasse: escolhas =>
+  setClassChoices: choices =>
     set(s => {
-      const classeId = s.ficha.identidade.classe_id ?? ''
-      const classe = dados.classes.find(c => c.id === classeId)
-      if (!classe) return s
+      const classId = s.sheet.identity.class_id ?? ''
+      const charClass = gameData.classes.find(c => c.id === classId)
+      if (!charClass) return s
 
-      const multiclasses = s.ficha.identidade.multiclasses ?? []
+      const multiclasses = s.sheet.identity.multiclasses ?? []
 
       // Rebuild proficiencias from class base + multiclasse + nova ordem
-      const merge = (arr: string[], novos: string[]) => [...new Set([...arr, ...novos])]
-      let armaduras = [...classe.armaduras]
-      let armas = [...classe.armas]
+      const merge = (arr: string[], newValues: string[]) => [...new Set([...arr, ...newValues])]
+      let armors = [...charClass.armors]
+      let weapons = [...charClass.weapons]
       multiclasses.forEach(m => {
-        const p = PROFICIENCIAS_MULTICLASSE[m.classe_id] ?? {}
-        if (p.armaduras) armaduras = merge(armaduras, p.armaduras)
-        if (p.armas) armas = merge(armas, p.armas)
+        const p = MULTICLASS_PROFICIENCIES[m.class_id] ?? {}
+        if (p.armors) armors = merge(armors, p.armors)
+        if (p.weapons) weapons = merge(weapons, p.weapons)
       })
 
-      const novaOrdemDivina = 'ordem_divina' in escolhas ? escolhas.ordem_divina : s.ficha.caracteristicas_de_classe.ordem_divina
-      const novaOrdemPrimal = 'ordem_primal' in escolhas ? escolhas.ordem_primal : s.ficha.caracteristicas_de_classe.ordem_primal
+      const newDivineOrder = 'divine_order' in choices ? choices.divine_order : s.sheet.class_features.divine_order
+      const newPrimalOrder = 'primal_order' in choices ? choices.primal_order : s.sheet.class_features.primal_order
 
-      const ordemDiv = novaOrdemDivina ? dados.ordens_divinas?.find(o => o.id === novaOrdemDivina) : null
-      const ordemPrim = novaOrdemPrimal ? dados.ordens_primais?.find(o => o.id === novaOrdemPrimal) : null
+      const divineOrder = newDivineOrder ? gameData.divine_orders?.find(o => o.id === newDivineOrder) : null
+      const primalOrder = newPrimalOrder ? gameData.primal_orders?.find(o => o.id === newPrimalOrder) : null
 
-      if (ordemDiv?.prof_armaduras) armaduras = merge(armaduras, ordemDiv.prof_armaduras)
-      if (ordemDiv?.prof_armas) armas = merge(armas, ordemDiv.prof_armas)
-      if (ordemPrim?.prof_armaduras) armaduras = merge(armaduras, ordemPrim.prof_armaduras)
-      if (ordemPrim?.prof_armas) armas = merge(armas, ordemPrim.prof_armas)
+      if (divineOrder?.armor_profs) armors = merge(armors, divineOrder.armor_profs)
+      if (divineOrder?.weapon_profs) weapons = merge(weapons, divineOrder.weapon_profs)
+      if (primalOrder?.armor_profs) armors = merge(armors, primalOrder.armor_profs)
+      if (primalOrder?.weapon_profs) weapons = merge(weapons, primalOrder.weapon_profs)
 
       // Expertise em perícia concedida pela ordem (Arcanismo para taumaturgo/mágico)
-      const pericias = { ...s.ficha.pericias }
-      const profPericiaOrdem = ordemDiv?.prof_pericia ?? ordemPrim?.prof_pericia ?? null
-      if (profPericiaOrdem && pericias[profPericiaOrdem]) {
-        const jaProf = pericias[profPericiaOrdem].proficiente
-        pericias[profPericiaOrdem] = {
-          ...pericias[profPericiaOrdem],
-          proficiente: true,
-          expertise: jaProf,
+      const skills = { ...s.sheet.skills }
+      const orderSkillProf = divineOrder?.skill_prof ?? primalOrder?.skill_prof ?? null
+      if (orderSkillProf && skills[orderSkillProf]) {
+        const alreadyProficient = skills[orderSkillProf].proficient
+        skills[orderSkillProf] = {
+          ...skills[orderSkillProf],
+          proficient: true,
+          expertise: alreadyProficient,
         }
       }
 
       return {
-        ficha: recalcular({
-          ...s.ficha,
-          proficiencias: { ...s.ficha.proficiencias, armaduras, armas },
-          pericias,
-          caracteristicas_de_classe: {
-            ...s.ficha.caracteristicas_de_classe,
-            estilo_de_luta: 'estilo_de_luta' in escolhas ? escolhas.estilo_de_luta ?? null : s.ficha.caracteristicas_de_classe.estilo_de_luta,
-            ordem_divina: novaOrdemDivina ?? null,
-            ordem_primal: novaOrdemPrimal ?? null,
-            inimigo_favorito: 'inimigo_favorito' in escolhas ? escolhas.inimigo_favorito ?? null : s.ficha.caracteristicas_de_classe.inimigo_favorito,
+        sheet: recalculate({
+          ...s.sheet,
+          proficiencies: { ...s.sheet.proficiencies, armors, weapons },
+          skills,
+          class_features: {
+            ...s.sheet.class_features,
+            fighting_style: 'fighting_style' in choices ? choices.fighting_style ?? null : s.sheet.class_features.fighting_style,
+            divine_order: newDivineOrder ?? null,
+            primal_order: newPrimalOrder ?? null,
+            favored_enemy: 'favored_enemy' in choices ? choices.favored_enemy ?? null : s.sheet.class_features.favored_enemy,
           },
         }),
       }
     }),
 
-  setEspecializacao: periciaIds =>
+  setExpertise: skillIds =>
     set(s => {
-      const pericias = { ...s.ficha.pericias }
-      Object.keys(pericias).forEach(pid => {
-        pericias[pid] = { ...pericias[pid], expertise: periciaIds.includes(pid) }
+      const skills = { ...s.sheet.skills }
+      Object.keys(skills).forEach(skillId => {
+        skills[skillId] = { ...skills[skillId], expertise: skillIds.includes(skillId) }
       })
-      return { ficha: recalcular({ ...s.ficha, pericias }) }
+      return { sheet: recalculate({ ...s.sheet, skills }) }
     }),
 
-  setPericias: periciaIds =>
+  setSkills: skillIds =>
     set(s => {
-      const ante = dados.antecedentes?.find(a => a.id === s.ficha.identidade.antecedente_id)
-      const antePerics = ante?.pericias ?? []
-      const pericias = { ...s.ficha.pericias }
+      const background = gameData.backgrounds?.find(a => a.id === s.sheet.identity.background_id)
+      const backgroundSkills = background?.skills ?? []
+      const skills = { ...s.sheet.skills }
 
-      Object.keys(pericias).forEach(pid => {
-        if (antePerics.includes(pid)) return
-        pericias[pid] = { ...pericias[pid], proficiente: periciaIds.includes(pid) }
+      Object.keys(skills).forEach(skillId => {
+        if (backgroundSkills.includes(skillId)) return
+        skills[skillId] = { ...skills[skillId], proficient: skillIds.includes(skillId) }
       })
 
-      return { ficha: recalcular({ ...s.ficha, pericias }) }
+      return { sheet: recalculate({ ...s.sheet, skills }) }
     }),
 
-  setIdiomas: idiomas =>
+  setLanguages: languages =>
     set(s => ({
-      ficha: { ...s.ficha, proficiencias: { ...s.ficha.proficiencias, idiomas } },
+      sheet: { ...s.sheet, proficiencies: { ...s.sheet.proficiencies, languages } },
     })),
 
-  setEquipamento: (_opcao, itens) =>
+  setEquipment: (_option, items) =>
     set(s => ({
-      ficha: { ...s.ficha, inventario: { ...s.ficha.inventario, itens } },
+      sheet: { ...s.sheet, inventory: { ...s.sheet.inventory, items } },
     })),
 
-  setPersonalidade: p =>
+  setPersonality: p =>
     set(s => ({
-      ficha: { ...s.ficha, personalidade: { ...s.ficha.personalidade, ...p } },
+      sheet: { ...s.sheet, personality: { ...s.sheet.personality, ...p } },
     })),
 
-  setIdentidade: id =>
+  setIdentity: id =>
     set(s => ({
-      ficha: recalcular({ ...s.ficha, identidade: { ...s.ficha.identidade, ...id } }),
+      sheet: recalculate({ ...s.sheet, identity: { ...s.sheet.identity, ...id } }),
     })),
 
-  setPasso: passo => set({ passoAtual: passo }),
+  setStep: step => set({ currentStep: step }),
 
-  atualizarPV: delta =>
+  updateHp: delta =>
     set(s => {
-      const { maximo, temporario, atual } = s.ficha.combate.pontos_de_vida
-      const novoAtual = Math.max(0, Math.min((maximo ?? 0) + temporario, atual + delta))
+      const { max, temporary, current } = s.sheet.combat.hit_points
+      const newCurrent = Math.max(0, Math.min((max ?? 0) + temporary, current + delta))
       return {
-        ficha: atualizarCombate(s.ficha, {
-          pontos_de_vida: { ...s.ficha.combate.pontos_de_vida, atual: novoAtual },
+        sheet: updateCombat(s.sheet, {
+          hit_points: { ...s.sheet.combat.hit_points, current: newCurrent },
         }),
       }
     }),
 
-  atualizarPVTemp: val =>
+  updateTempHp: val =>
     set(s => ({
-      ficha: atualizarCombate(s.ficha, {
-        pontos_de_vida: { ...s.ficha.combate.pontos_de_vida, temporario: Math.max(0, val) },
+      sheet: updateCombat(s.sheet, {
+        hit_points: { ...s.sheet.combat.hit_points, temporary: Math.max(0, val) },
       }),
     })),
 
-  gastarDadoVida: () =>
+  spendHitDie: () =>
     set(s => {
-      const dv = s.ficha.combate.dados_de_vida
-      const max_vida = s.ficha.combate.pontos_de_vida.maximo ?? 0
+      const dv = s.sheet.combat.hit_dice
+      const max_hp = s.sheet.combat.hit_points.max ?? 0
 
-      if (!dv.total || dv.gastos >= dv.total || s.ficha.combate.pontos_de_vida.atual >= max_vida) return s
+      if (!dv.total || dv.spent >= dv.total || s.sheet.combat.hit_points.current >= max_hp) return s
       
-      let vida = s.ficha.combate.pontos_de_vida.atual
-      const dados = Number(s.ficha.combate.dados_de_vida.tipo?.split('d')[1])
+      let vida = s.sheet.combat.hit_points.current
+      const gameData = Number(s.sheet.combat.hit_dice.type?.split('d')[1])
 
-      vida = Math.min(Math.floor((vida + Math.random() * (dados - 1 + 1) + 1)), max_vida);
+      vida = Math.min(Math.floor((vida + Math.random() * (gameData - 1 + 1) + 1)), max_hp);
 
       return {
-        ficha: atualizarCombate(s.ficha, {
-          dados_de_vida: { ...dv, gastos: dv.gastos + 1 },
-          pontos_de_vida: { ...s.ficha.combate.pontos_de_vida, atual: vida }
+        sheet: updateCombat(s.sheet, {
+          hit_dice: { ...dv, spent: dv.spent + 1 },
+          hit_points: { ...s.sheet.combat.hit_points, current: vida }
         }),
       }
     }),
 
-  gastarEspaco: circulo =>
+  spendSlot: level =>
     set(s => {
-      const espaco = s.ficha.magia.espacos_de_magia[circulo]
-      if (espaco.gastos >= espaco.maximo) return s
+      const slot = s.sheet.spellcasting.spell_slots[level]
+      if (slot.spent >= slot.max) return s
       return {
-        ficha: {
-          ...s.ficha,
-          magia: {
-            ...s.ficha.magia,
-            espacos_de_magia: {
-              ...s.ficha.magia.espacos_de_magia,
-              [circulo]: { ...espaco, gastos: espaco.gastos + 1 },
+        sheet: {
+          ...s.sheet,
+          spellcasting: {
+            ...s.sheet.spellcasting,
+            spell_slots: {
+              ...s.sheet.spellcasting.spell_slots,
+              [level]: { ...slot, spent: slot.spent + 1 },
             },
           },
         },
       }
     }),
 
-  restaurarEspaco: circulo =>
+  restoreSlot: level =>
     set(s => {
-      const espaco = s.ficha.magia.espacos_de_magia[circulo]
-      if (espaco.gastos <= 0) return s
+      const slot = s.sheet.spellcasting.spell_slots[level]
+      if (slot.spent <= 0) return s
       return {
-        ficha: {
-          ...s.ficha,
-          magia: {
-            ...s.ficha.magia,
-            espacos_de_magia: {
-              ...s.ficha.magia.espacos_de_magia,
-              [circulo]: { ...espaco, gastos: espaco.gastos - 1 },
+        sheet: {
+          ...s.sheet,
+          spellcasting: {
+            ...s.sheet.spellcasting,
+            spell_slots: {
+              ...s.sheet.spellcasting.spell_slots,
+              [level]: { ...slot, spent: slot.spent - 1 },
             },
           },
         },
       }
     }),
 
-  descansoCurto: () =>
+  shortRest: () =>
     set(s => ({
-      ficha: atualizarCombate(s.ficha, {
-        dados_de_vida: { ...s.ficha.combate.dados_de_vida, gastos: 0 },
+      sheet: updateCombat(s.sheet, {
+        hit_dice: { ...s.sheet.combat.hit_dice, spent: 0 },
       }),
     })),
 
-  descansoLongo: () =>
+  longRest: () =>
     set(s => {
-      const pvMax = s.ficha.combate.pontos_de_vida.maximo ?? 0
+      const maxHp = s.sheet.combat.hit_points.max ?? 0
 
-      const espacosRestaurados = Object.fromEntries(
-        Object.entries(s.ficha.magia.espacos_de_magia).map(([k, v]) => [k, { ...v, gastos: 0 }]),
-      ) as Ficha['magia']['espacos_de_magia']
+      const restoredSlots = Object.fromEntries(
+        Object.entries(s.sheet.spellcasting.spell_slots).map(([k, v]) => [k, { ...v, spent: 0 }]),
+      ) as CharacterSheet['spellcasting']['spell_slots']
 
-      const r = { ...s.ficha.caracteristicas_de_classe.recursos_de_classe }
-      if (r.furias.maximo) r.furias = { ...r.furias, atual: r.furias.maximo }
-      if (r.formas_selvagens.maximo) r.formas_selvagens = { ...r.formas_selvagens, atual: r.formas_selvagens.maximo }
-      if (r.canalizar_divindade.maximo) r.canalizar_divindade = { ...r.canalizar_divindade, atual: r.canalizar_divindade.maximo }
-      if (r.imposicao_de_maos.pool_pv) r.imposicao_de_maos = { ...r.imposicao_de_maos, atual: r.imposicao_de_maos.pool_pv }
-      if (r.pontos_de_feiticaria.maximo) r.pontos_de_feiticaria = { ...r.pontos_de_feiticaria, atual: r.pontos_de_feiticaria.maximo }
-      if (r.pontos_de_foco.maximo) r.pontos_de_foco = { ...r.pontos_de_foco, atual: r.pontos_de_foco.maximo }
-      if (r.inspiracao_de_bardo.maximo) r.inspiracao_de_bardo = { ...r.inspiracao_de_bardo, atual: r.inspiracao_de_bardo.maximo }
+      const r = { ...s.sheet.class_features.class_resources }
+      if (r.rages.max) r.rages = { ...r.rages, current: r.rages.max }
+      if (r.wild_shapes.max) r.wild_shapes = { ...r.wild_shapes, current: r.wild_shapes.max }
+      if (r.channel_divinity.max) r.channel_divinity = { ...r.channel_divinity, current: r.channel_divinity.max }
+      if (r.lay_on_hands.hp_pool) r.lay_on_hands = { ...r.lay_on_hands, current: r.lay_on_hands.hp_pool }
+      if (r.sorcery_points.max) r.sorcery_points = { ...r.sorcery_points, current: r.sorcery_points.max }
+      if (r.focus_points.max) r.focus_points = { ...r.focus_points, current: r.focus_points.max }
+      if (r.bardic_inspiration.max) r.bardic_inspiration = { ...r.bardic_inspiration, current: r.bardic_inspiration.max }
 
       return {
-        ficha: {
-          ...s.ficha,
-          combate: {
-            ...s.ficha.combate,
-            pontos_de_vida: { ...s.ficha.combate.pontos_de_vida, atual: pvMax, temporario: 0 },
-            dados_de_vida: { ...s.ficha.combate.dados_de_vida, gastos: 0 },
+        sheet: {
+          ...s.sheet,
+          combat: {
+            ...s.sheet.combat,
+            hit_points: { ...s.sheet.combat.hit_points, current: maxHp, temporary: 0 },
+            hit_dice: { ...s.sheet.combat.hit_dice, spent: 0 },
           },
-          magia: { ...s.ficha.magia, espacos_de_magia: espacosRestaurados },
-          caracteristicas_de_classe: { ...s.ficha.caracteristicas_de_classe, recursos_de_classe: r },
+          spellcasting: { ...s.sheet.spellcasting, spell_slots: restoredSlots },
+          class_features: { ...s.sheet.class_features, class_resources: r },
         },
       }
     }),
 
-  atualizarRecurso: (recurso, delta) =>
+  updateResource: (resource, delta) =>
     set(s => {
-      const r = s.ficha.caracteristicas_de_classe.recursos_de_classe
-      const res = r[recurso as keyof typeof r]
+      const r = s.sheet.class_features.class_resources
+      const res = r[resource as keyof typeof r]
 
-      if (!res || typeof res !== 'object' || !('atual' in res) || res.atual === null) return s
+      if (!res || typeof res !== 'object' || !('current' in res) || res.current === null) return s
 
-      const maxVal = 'maximo' in res ? (res.maximo as number | null) : null
-      const novoAtual = Math.max(0, Math.min(maxVal ?? Infinity, (res.atual as number) + delta))
+      const maxVal = 'max' in res ? (res.max as number | null) : null
+      const newCurrent = Math.max(0, Math.min(maxVal ?? Infinity, (res.current as number) + delta))
 
       return {
-        ficha: {
-          ...s.ficha,
-          caracteristicas_de_classe: {
-            ...s.ficha.caracteristicas_de_classe,
-            recursos_de_classe: {
+        sheet: {
+          ...s.sheet,
+          class_features: {
+            ...s.sheet.class_features,
+            class_resources: {
               ...r,
-              [recurso]: { ...res, atual: novoAtual },
+              [resource]: { ...res, current: newCurrent },
             } as typeof r,
           },
         },
       }
     }),
 
-  toggleCondicao: condicao =>
+  toggleCondition: condition =>
     set(s => {
-      const cs = s.ficha.condicoes_ativas
-      const novasCondicoes = cs.includes(condicao)
-        ? cs.filter(c => c !== condicao)
-        : [...cs, condicao]
-      return { ficha: { ...s.ficha, condicoes_ativas: novasCondicoes } }
+      const cs = s.sheet.active_conditions
+      const newConditions = cs.includes(condition)
+        ? cs.filter(c => c !== condition)
+        : [...cs, condition]
+      return { sheet: { ...s.sheet, active_conditions: newConditions } }
     }),
 
-  setExaustao: n =>
-    set(s => ({ ficha: { ...s.ficha, niveis_de_exaustao: Math.max(0, Math.min(MAXIMO_EXAUSTAO, n)) } })),
+  setExhaustion: n =>
+    set(s => ({ sheet: { ...s.sheet, exhaustion_levels: Math.max(0, Math.min(MAX_EXHAUSTION, n)) } })),
 
-  setNotas: notas =>
-    set(s => ({ ficha: { ...s.ficha, notas } })),
+  setNotes: notes =>
+    set(s => ({ sheet: { ...s.sheet, notes } })),
 
-  addAtaque: ataque =>
+  addAttack: attack =>
     set(s => ({
-      ficha: atualizarCombate(s.ficha, {
-        ataques: [...s.ficha.combate.ataques, ataque],
+      sheet: updateCombat(s.sheet, {
+        attacks: [...s.sheet.combat.attacks, attack],
       }),
     })),
 
-  removeAtaque: idx =>
+  removeAttack: idx =>
     set(s => ({
-      ficha: atualizarCombate(s.ficha, {
-        ataques: s.ficha.combate.ataques.filter((_, i) => i !== idx),
+      sheet: updateCombat(s.sheet, {
+        attacks: s.sheet.combat.attacks.filter((_, i) => i !== idx),
       }),
     })),
 
   addItem: item =>
     set(s => ({
-      ficha: { ...s.ficha, inventario: { ...s.ficha.inventario, itens: [...s.ficha.inventario.itens, item] } },
+      sheet: { ...s.sheet, inventory: { ...s.sheet.inventory, items: [...s.sheet.inventory.items, item] } },
     })),
 
   removeItem: idx =>
     set(s => ({
-      ficha: { ...s.ficha, inventario: { ...s.ficha.inventario, itens: s.ficha.inventario.itens.filter((_, i) => i !== idx) } },
+      sheet: { ...s.sheet, inventory: { ...s.sheet.inventory, items: s.sheet.inventory.items.filter((_, i) => i !== idx) } },
     })),
 
   updateItem: (idx, item) =>
     set(s => ({
-      ficha: {
-        ...s.ficha,
-        inventario: {
-          ...s.ficha.inventario,
-          itens: s.ficha.inventario.itens.map((it, i) => (i === idx ? { ...it, ...item } : it)),
+      sheet: {
+        ...s.sheet,
+        inventory: {
+          ...s.sheet.inventory,
+          items: s.sheet.inventory.items.map((it, i) => (i === idx ? { ...it, ...item } : it)),
         },
       },
     })),
 
-  updateMoedas: moedas =>
+  updateCoins: coins =>
     set(s => ({
-      ficha: { ...s.ficha, inventario: { ...s.ficha.inventario, moedas: { ...s.ficha.inventario.moedas, ...moedas } } },
+      sheet: { ...s.sheet, inventory: { ...s.sheet.inventory, coins: { ...s.sheet.inventory.coins, ...coins } } },
     })),
 
-  toggleEscudo: () =>
+  toggleShield: () =>
     set(s => {
-      const jaEquipado = s.ficha.combate.classe_de_armadura.escudo_equipado
-      if (!jaEquipado) {
-        const temEscudo = s.ficha.inventario.itens.some(i => i.categoria === 'Escudo')
-        if (!temEscudo) return s
+      const alreadyEquipped = s.sheet.combat.armor_class.shield_equipped
+      if (!alreadyEquipped) {
+        const hasShield = s.sheet.inventory.items.some(i => i.category === 'Escudo')
+        if (!hasShield) return s
       }
       return {
-        ficha: recalcular(atualizarCombate(s.ficha, {
-          classe_de_armadura: {
-            ...s.ficha.combate.classe_de_armadura,
-            escudo_equipado: !jaEquipado,
+        sheet: recalculate(updateCombat(s.sheet, {
+          armor_class: {
+            ...s.sheet.combat.armor_class,
+            shield_equipped: !alreadyEquipped,
           },
         })),
       }
     }),
 
-  setArmadura: armaduraId =>
+  setArmor: armorId =>
     set(s => ({
-      ficha: recalcular(atualizarCombate(s.ficha, {
-        classe_de_armadura: { ...s.ficha.combate.classe_de_armadura, armadura_equipada_id: armaduraId },
+      sheet: recalculate(updateCombat(s.sheet, {
+        armor_class: { ...s.sheet.combat.armor_class, equipped_armor_id: armorId },
       })),
     })),
 
-  atualizarMagia: parcial =>
+  updateSpellcasting: partial =>
     set(s => ({
-      ficha: recalcular({ ...s.ficha, magia: { ...s.ficha.magia, ...parcial } }),
+      sheet: recalculate({ ...s.sheet, spellcasting: { ...s.sheet.spellcasting, ...partial } }),
     })),
 
   addXP: amount =>
     set(s => ({
-      ficha: { ...s.ficha, identidade: { ...s.ficha.identidade, xp: s.ficha.identidade.xp + amount } },
+      sheet: { ...s.sheet, identity: { ...s.sheet.identity, xp: s.sheet.identity.xp + amount } },
     })),
 
-  levelUp: (novoNivel, asi, classeIdAlvo, talentoId, especializacoes) =>
+  levelUp: (newLevel, asi, targetClassId, featId, expertises) =>
     set(s => {
-      const multiclasses = s.ficha.identidade.multiclasses ?? []
-      const ehSecundaria = classeIdAlvo ? multiclasses.some(m => m.classe_id === classeIdAlvo) : false
+      const multiclasses = s.sheet.identity.multiclasses ?? []
+      const isSecondary = targetClassId ? multiclasses.some(m => m.class_id === targetClassId) : false
 
       // Incrementa nível da classe alvo
-      const novaMulticlasses = ehSecundaria
+      const newMulticlasses = isSecondary
         ? multiclasses.map(m =>
-            m.classe_id === classeIdAlvo ? { ...m, nivel: m.nivel + 1 } : m,
+            m.class_id === targetClassId ? { ...m, level: m.level + 1 } : m,
           )
         : multiclasses
 
       // Classe e nível relevantes para lookup de progressão
-      const classeAlvoId = classeIdAlvo ?? s.ficha.identidade.classe_id
-      const classeAlvo = dados.classes.find(c => c.id === classeAlvoId)
-      const nivelNaClasse = ehSecundaria
-        ? (novaMulticlasses.find(m => m.classe_id === classeIdAlvo)?.nivel ?? 1)
-        : novoNivel - novaMulticlasses.reduce((sum, m) => sum + m.nivel, 0)
+      const lookupClassId = targetClassId ?? s.sheet.identity.class_id
+      const targetClass = gameData.classes.find(c => c.id === lookupClassId)
+      const levelInClass = isSecondary
+        ? (newMulticlasses.find(m => m.class_id === targetClassId)?.level ?? 1)
+        : newLevel - newMulticlasses.reduce((sum, m) => sum + m.level, 0)
 
-      const progEntry = classeAlvo?.progressao.find(
-        (p: { nivel: number }) => p.nivel === nivelNaClasse,
-      ) as (Record<string, unknown> & { nivel: number }) | undefined
+      const progEntry = targetClass?.progression.find(
+        (p: { level: number }) => p.level === levelInClass,
+      ) as (Record<string, unknown> & { level: number }) | undefined
       void progEntry
 
-      let atributos = s.ficha.atributos
+      let abilities = s.sheet.abilities
       if (asi) {
         Object.entries(asi).forEach(([attr, bonus]) => {
-          const a = attr as AtributoId
-          const atual = atributos[a].valor ?? 10
-          atributos = { ...atributos, [a]: { ...atributos[a], valor: Math.min(20, atual + (bonus ?? 0)) } }
+          const a = attr as AbilityId
+          const current = abilities[a].value ?? 10
+          abilities = { ...abilities, [a]: { ...abilities[a], value: Math.min(20, current + (bonus ?? 0)) } }
         })
       }
 
-      let talentos = s.ficha.talentos
-      if (talentoId) {
-        const talento = dados.talentos_gerais?.find(t => t.id === talentoId)
-        if (talento) {
-          talentos = {
-            lista: [
-              ...s.ficha.talentos.lista,
-              { talento_id: talentoId, nome: talento.nome, categoria: 'Geral', origem: `nivel_${novoNivel}`, escolhas: {} },
+      let feats = s.sheet.feats
+      if (featId) {
+        const feat = gameData.general_feats?.find(t => t.id === featId)
+        if (feat) {
+          feats = {
+            list: [
+              ...s.sheet.feats.list,
+              { feat_id: featId, name: feat.name, category: 'Geral', source: `nivel_${newLevel}`, choices: {} },
             ],
           }
         }
       }
 
-      let pericias = s.ficha.pericias
-      if (especializacoes && especializacoes.length > 0) {
-        especializacoes.forEach(pid => {
-          if (pericias[pid]?.proficiente) {
-            pericias = { ...pericias, [pid]: { ...pericias[pid], expertise: true } }
+      let skills = s.sheet.skills
+      if (expertises && expertises.length > 0) {
+        expertises.forEach(skillId => {
+          if (skills[skillId]?.proficient) {
+            skills = { ...skills, [skillId]: { ...skills[skillId], expertise: true } }
           }
         })
       }
 
       // recalcular já aplica calcSlotsMulticlasse quando há multiclasses
-      const ficha = recalcular({
-        ...s.ficha,
-        identidade: { ...s.ficha.identidade, nivel: novoNivel, multiclasses: novaMulticlasses },
-        atributos,
-        talentos,
-        pericias,
+      const sheet = recalculate({
+        ...s.sheet,
+        identity: { ...s.sheet.identity, level: newLevel, multiclasses: newMulticlasses },
+        abilities,
+        feats,
+        skills,
       })
 
-      return { ficha }
+      return { sheet }
     }),
 
-  addMulticlasse: classeId =>
+  addMulticlass: classId =>
     set(s => {
-      const multi = s.ficha.identidade.multiclasses ?? []
-      if (classeId === s.ficha.identidade.classe_id) return s
-      if (multi.some(m => m.classe_id === classeId)) return s
-      if (s.ficha.identidade.nivel < 2) return s
+      const multi = s.sheet.identity.multiclasses ?? []
+      if (classId === s.sheet.identity.class_id) return s
+      if (multi.some(m => m.class_id === classId)) return s
+      if (s.sheet.identity.level < 2) return s
 
-      const novaClasse = dados.classes.find(c => c.id === classeId)
-      if (!novaClasse) return s
+      const newClass = gameData.classes.find(c => c.id === classId)
+      if (!newClass) return s
 
-      const parcial = PROFICIENCIAS_MULTICLASSE[classeId] ?? {}
-      const prof = s.ficha.proficiencias
-      const merge = (arr: string[], novos?: string[]) =>
-        novos ? [...new Set([...arr, ...novos])] : arr
+      const partial = MULTICLASS_PROFICIENCIES[classId] ?? {}
+      const prof = s.sheet.proficiencies
+      const merge = (arr: string[], newValues?: string[]) =>
+        newValues ? [...new Set([...arr, ...newValues])] : arr
 
       // Conjuração: se a nova classe for conjuradora e a primária não for, atualizar
-      const conjuradorAtual = s.ficha.magia.conjurador
-      const novaEhConjuradora = TIPO_CONJURADOR[classeId] != null
-      const novoConjurador = conjuradorAtual || novaEhConjuradora
-      const novoAtribConj = conjuradorAtual
-        ? s.ficha.magia.atributo_conjuracao
-        : novaEhConjuradora
-          ? ((novaClasse as { atributo_conjuracao?: string })?.atributo_conjuracao as typeof s.ficha.magia.atributo_conjuracao ?? null)
-          : s.ficha.magia.atributo_conjuracao
+      const currentCaster = s.sheet.spellcasting.spellcaster
+      const newIsCaster = CASTER_TYPE[classId] != null
+      const newCaster = currentCaster || newIsCaster
+      const newCastingAbility = currentCaster
+        ? s.sheet.spellcasting.spellcasting_ability
+        : newIsCaster
+          ? ((newClass as { spellcasting_ability?: string })?.spellcasting_ability as typeof s.sheet.spellcasting.spellcasting_ability ?? null)
+          : s.sheet.spellcasting.spellcasting_ability
 
-      const ficha: Ficha = {
-        ...s.ficha,
-        identidade: {
-          ...s.ficha.identidade,
-          multiclasses: [...multi, { classe_id: classeId, subclasse_id: null, nivel: 1 }],
+      const sheet: CharacterSheet = {
+        ...s.sheet,
+        identity: {
+          ...s.sheet.identity,
+          multiclasses: [...multi, { class_id: classId, subclass_id: null, level: 1 }],
         },
-        proficiencias: {
+        proficiencies: {
           ...prof,
-          armaduras: merge(prof.armaduras, parcial.armaduras),
-          armas: merge(prof.armas, parcial.armas),
-          ferramentas: merge(prof.ferramentas, parcial.ferramentas),
+          armors: merge(prof.armors, partial.armors),
+          weapons: merge(prof.weapons, partial.weapons),
+          tools: merge(prof.tools, partial.tools),
         },
-        magia: {
-          ...s.ficha.magia,
-          conjurador: novoConjurador,
-          atributo_conjuracao: novoAtribConj,
+        spellcasting: {
+          ...s.sheet.spellcasting,
+          spellcaster: newCaster,
+          spellcasting_ability: newCastingAbility,
         },
       }
-      return { ficha: recalcular(ficha) }
+      return { sheet: recalculate(sheet) }
     }),
 
-  removeMulticlasse: classeId =>
+  removeMulticlass: classId =>
     set(s => {
-      const multi = s.ficha.identidade.multiclasses ?? []
-      const entrada = multi.find(m => m.classe_id === classeId)
-      if (!entrada) return s
+      const multi = s.sheet.identity.multiclasses ?? []
+      const entry = multi.find(m => m.class_id === classId)
+      if (!entry) return s
 
-      const novaMulti = multi.filter(m => m.classe_id !== classeId)
+      const newMulticlass = multi.filter(m => m.class_id !== classId)
 
       // Reverte proficiências parciais (apenas as que não existem em nenhuma outra classe)
-      const parcial = PROFICIENCIAS_MULTICLASSE[classeId] ?? {}
-      const prof = s.ficha.proficiencias
-      const classePrimaria = dados.classes.find(c => c.id === s.ficha.identidade.classe_id)
-      const outrasMulti = novaMulti.map(m => m.classe_id)
-      const todasProfSobreviventes = [
-        ...(classePrimaria?.armaduras ?? []),
-        ...outrasMulti.flatMap(id => PROFICIENCIAS_MULTICLASSE[id]?.armaduras ?? []),
+      const partial = MULTICLASS_PROFICIENCIES[classId] ?? {}
+      const prof = s.sheet.proficiencies
+      const primaryClass = gameData.classes.find(c => c.id === s.sheet.identity.class_id)
+      const otherMulticlasses = newMulticlass.map(m => m.class_id)
+      const survivingProfs = [
+        ...(primaryClass?.armors ?? []),
+        ...otherMulticlasses.flatMap(id => MULTICLASS_PROFICIENCIES[id]?.armors ?? []),
       ]
-      const todasArmasSobreviventes = [
-        ...(classePrimaria?.armas ?? []),
-        ...outrasMulti.flatMap(id => PROFICIENCIAS_MULTICLASSE[id]?.armas ?? []),
+      const survivingWeapons = [
+        ...(primaryClass?.weapons ?? []),
+        ...otherMulticlasses.flatMap(id => MULTICLASS_PROFICIENCIES[id]?.weapons ?? []),
       ]
 
-      const remover = (arr: string[], rem?: string[], sobrev?: string[]) =>
-        rem ? arr.filter(x => !rem.includes(x) || (sobrev ?? []).includes(x)) : arr
+      const remove = (arr: string[], rem?: string[], surviving?: string[]) =>
+        rem ? arr.filter(x => !rem.includes(x) || (surviving ?? []).includes(x)) : arr
 
       // Recomputa conjurador após remoção
-      const conjuradorPrimaria = TIPO_CONJURADOR[s.ficha.identidade.classe_id ?? ''] != null
-      const conjuradorMulti = novaMulti.some(m => TIPO_CONJURADOR[m.classe_id] != null)
-      const novoConjurador = conjuradorPrimaria || conjuradorMulti
+      const primaryCaster = CASTER_TYPE[s.sheet.identity.class_id ?? ''] != null
+      const multiclassCasterLevel = newMulticlass.some(m => CASTER_TYPE[m.class_id] != null)
+      const newCaster = primaryCaster || multiclassCasterLevel
 
-      const classePrimObj = dados.classes.find(c => c.id === s.ficha.identidade.classe_id)
-      const atribConjPrimaria = (classePrimObj as { atributo_conjuracao?: string } | undefined)?.atributo_conjuracao as typeof s.ficha.magia.atributo_conjuracao ?? null
-      const novoAtribConj = conjuradorPrimaria
-        ? atribConjPrimaria
-        : novaMulti
+      const primaryClassObj = gameData.classes.find(c => c.id === s.sheet.identity.class_id)
+      const primaryCastingAbility = (primaryClassObj as { spellcasting_ability?: string } | undefined)?.spellcasting_ability as typeof s.sheet.spellcasting.spellcasting_ability ?? null
+      const newCastingAbility = primaryCaster
+        ? primaryCastingAbility
+        : newMulticlass
             .map(m => {
-              const c = dados.classes.find(cc => cc.id === m.classe_id)
-              return TIPO_CONJURADOR[m.classe_id] != null
-                ? ((c as { atributo_conjuracao?: string } | undefined)?.atributo_conjuracao as typeof s.ficha.magia.atributo_conjuracao ?? null)
+              const c = gameData.classes.find(cc => cc.id === m.class_id)
+              return CASTER_TYPE[m.class_id] != null
+                ? ((c as { spellcasting_ability?: string } | undefined)?.spellcasting_ability as typeof s.sheet.spellcasting.spellcasting_ability ?? null)
                 : null
             })
             .find(Boolean) ?? null
 
-      const ficha: Ficha = {
-        ...s.ficha,
-        identidade: { ...s.ficha.identidade, multiclasses: novaMulti },
-        proficiencias: {
+      const sheet: CharacterSheet = {
+        ...s.sheet,
+        identity: { ...s.sheet.identity, multiclasses: newMulticlass },
+        proficiencies: {
           ...prof,
-          armaduras: remover(prof.armaduras, parcial.armaduras, todasProfSobreviventes),
-          armas: remover(prof.armas, parcial.armas, todasArmasSobreviventes),
-          ferramentas: prof.ferramentas,
+          armors: remove(prof.armors, partial.armors, survivingProfs),
+          weapons: remove(prof.weapons, partial.weapons, survivingWeapons),
+          tools: prof.tools,
         },
-        magia: {
-          ...s.ficha.magia,
-          conjurador: novoConjurador,
-          atributo_conjuracao: novoAtribConj,
-          truques_por_classe: Object.fromEntries(
-            Object.entries(s.ficha.magia.truques_por_classe).filter(([k]) => k !== classeId),
+        spellcasting: {
+          ...s.sheet.spellcasting,
+          spellcaster: newCaster,
+          spellcasting_ability: newCastingAbility,
+          cantrips_by_class: Object.fromEntries(
+            Object.entries(s.sheet.spellcasting.cantrips_by_class).filter(([k]) => k !== classId),
           ),
-          magias_por_classe: Object.fromEntries(
-            Object.entries(s.ficha.magia.magias_por_classe).filter(([k]) => k !== classeId),
+          spells_by_class: Object.fromEntries(
+            Object.entries(s.sheet.spellcasting.spells_by_class).filter(([k]) => k !== classId),
           ),
         },
       }
-      return { ficha: recalcular(ficha) }
+      return { sheet: recalculate(sheet) }
     }),
 
-  setMulticlasseNivel: (classeId, nivel) =>
+  setMulticlassLevel: (classId, level) =>
     set(s => {
-      const multi = s.ficha.identidade.multiclasses ?? []
-      const totalSecundario = multi.reduce((sum, m) => sum + (m.classe_id === classeId ? 0 : m.nivel), 0)
-      const nivelTotal = s.ficha.identidade.nivel
-      const nivelValidado = Math.max(1, Math.min(nivel, nivelTotal - totalSecundario - 1))
-      const novaMulti = multi.map(m =>
-        m.classe_id === classeId ? { ...m, nivel: nivelValidado } : m,
+      const multi = s.sheet.identity.multiclasses ?? []
+      const totalSecondary = multi.reduce((sum, m) => sum + (m.class_id === classId ? 0 : m.level), 0)
+      const totalLevel = s.sheet.identity.level
+      const validatedLevel = Math.max(1, Math.min(level, totalLevel - totalSecondary - 1))
+      const newMulticlass = multi.map(m =>
+        m.class_id === classId ? { ...m, level: validatedLevel } : m,
       )
-      return { ficha: recalcular({ ...s.ficha, identidade: { ...s.ficha.identidade, multiclasses: novaMulti } }) }
+      return { sheet: recalculate({ ...s.sheet, identity: { ...s.sheet.identity, multiclasses: newMulticlass } }) }
     }),
 
-  setSubclasseMulticlasse: (classeId, subclasseId) =>
+  setMulticlassSubclass: (classId, subclassId) =>
     set(s => {
-      const multi = s.ficha.identidade.multiclasses ?? []
-      const novaMulti = multi.map(m =>
-        m.classe_id === classeId ? { ...m, subclasse_id: subclasseId } : m,
+      const multi = s.sheet.identity.multiclasses ?? []
+      const newMulticlass = multi.map(m =>
+        m.class_id === classId ? { ...m, subclass_id: subclassId } : m,
       )
-      return { ficha: recalcular({ ...s.ficha, identidade: { ...s.ficha.identidade, multiclasses: novaMulti } }) }
+      return { sheet: recalculate({ ...s.sheet, identity: { ...s.sheet.identity, multiclasses: newMulticlass } }) }
     }),
 
-  calcularTudo: () => set(s => ({ ficha: recalcular(s.ficha) })),
+  recalculateAll: () => set(s => ({ sheet: recalculate(s.sheet) })),
 
-  salvarLocal: () => {
-    const { ficha, fichaId, fichaCompleta } = get()
-    const id = fichaId ?? uuidv4()
-    const fichaFinal = !fichaCompleta
+  saveLocal: () => {
+    const { sheet, sheetId, completeSheet } = get()
+    const id = sheetId ?? uuidv4()
+    const finalSheet = !completeSheet
       ? {
-          ...ficha,
-          combate: {
-            ...ficha.combate,
-            pontos_de_vida: {
-              ...ficha.combate.pontos_de_vida,
-              atual: ficha.combate.pontos_de_vida.maximo ?? 0,
+          ...sheet,
+          combat: {
+            ...sheet.combat,
+            hit_points: {
+              ...sheet.combat.hit_points,
+              current: sheet.combat.hit_points.max ?? 0,
             },
           },
         }
-      : ficha
-    salvarFicha(id, fichaFinal, true)
-    set({ ficha: fichaFinal, fichaId: id, fichaCompleta: true })
+      : sheet
+    saveSheet(id, finalSheet, true)
+    set({ sheet: finalSheet, sheetId: id, completeSheet: true })
   },
 
-  exportarJSON: () => JSON.stringify(get().ficha, null, 2),
+  exportSheetJson: () => JSON.stringify(get().sheet, null, 2),
 
-  importarJSON: json => {
+  importSheetJson: json => {
     try {
-      const ficha = migrarFicha(JSON.parse(json) as Ficha)
+      const sheet = migrateSheet(JSON.parse(json) as CharacterSheet)
       const id = uuidv4()
-      salvarFicha(id, ficha)
-      set({ ficha: recalcular(ficha), fichaId: id })
-      get().carregarListaSalvas()
+      saveSheet(id, sheet)
+      set({ sheet: recalculate(sheet), sheetId: id })
+      get().loadSavedList()
     } catch (err) {
       console.error('[fichaStore] Falha ao importar JSON:', err)
     }
   },
 
-  carregarFicha: id => {
-    const ficha = carregarFichaStorage(id)
-    if (!ficha) return
-    const lista = listarFichas()
-    const completa = lista.find(item => item.id === id)?.completa ?? true
-    set({ ficha: recalcular(ficha), fichaId: id, passoAtual: 1, fichaCompleta: completa })
+  loadSheet: id => {
+    const sheet = loadSheetFromStorage(id)
+    if (!sheet) return
+    const list = listSheets()
+    const complete = list.find(item => item.id === id)?.complete ?? true
+    set({ sheet: recalculate(sheet), sheetId: id, currentStep: 1, completeSheet: complete })
   },
 
-  novaFicha: () => {
+  newSheet: () => {
     const id = uuidv4()
-    set({ ficha: criarFichaInicial(), fichaId: id, passoAtual: 1, fichaCompleta: false, rolagemAtributos: [] })
+    set({ sheet: createInitialSheet(), sheetId: id, currentStep: 1, completeSheet: false, abilityRolls: [] })
   },
 
-  deletarFicha: id => {
-    deletarFichaStorage(id)
-    get().carregarListaSalvas()
+  deleteSheet: id => {
+    deleteSheetFromStorage(id)
+    get().loadSavedList()
   },
 
-  resetar: () => set({ ficha: criarFichaInicial(), fichaId: null, passoAtual: 1 }),
+  reset: () => set({ sheet: createInitialSheet(), sheetId: null, currentStep: 1 }),
 
-  carregarListaSalvas: () => set({ fichasSalvas: listarFichas() }),
+  loadSavedList: () => set({ savedSheets: listSheets() }),
 }))
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
 
-useFichaStore.subscribe(state => {
-  if (!state.fichaId) return
+useSheetStore.subscribe(state => {
+  if (!state.sheetId) return
 
   if (saveTimeout) clearTimeout(saveTimeout)
 
   saveTimeout = setTimeout(() => {
-    salvarFicha(state.fichaId!, state.ficha, state.fichaCompleta)
+    saveSheet(state.sheetId!, state.sheet, state.completeSheet)
   }, DEBOUNCE_SAVE_MS)
 })

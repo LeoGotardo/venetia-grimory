@@ -9,13 +9,13 @@
  */
 
 /** Campos que carregam texto de exibição. Os demais são ids ou mecânica. */
-const CHAVES_TRADUZIVEIS = new Set([
-  'nome', 'descricao', 'interesse', 'complexidade', 'destaques', 'talento',
-  'ferramenta', 'ferramentas', 'origem', 'tamanho', 'nota', 'efeito',
-  'armas', 'armaduras', 'categoria', 'A', 'B', 'C', 'fonte', 'traducao',
+const TRANSLATABLE_KEYS = new Set([
+  'name', 'description', 'appeal', 'complexity', 'highlights', 'feat',
+  'tool', 'tools', 'source', 'size', 'note', 'effect',
+  'weapons', 'armors', 'category', 'A', 'B', 'C', 'translation',
 ])
 
-export const DICIONARIO_EN: Record<string, string> = {
+export const EN_DICTIONARY: Record<string, string> = {
   // ─── Meta ────────────────────────────────────────────────────────────────
   'Livro do Jogador D&D 5.5 (2024)': "D&D 5.5 (2024) Player's Handbook",
   'Heróis Anônimos — Erratas Abril 2025': 'Heróis Anônimos — April 2025 Errata',
@@ -881,32 +881,32 @@ export const DICIONARIO_EN: Record<string, string> = {
 }
 
 /** Traduz um termo isolado (nome de proficiência, categoria, condição...). */
-export function traduzirTermo(termo: string, lingua: string): string {
-  if (lingua === 'pt') return termo
-  return DICIONARIO_EN[termo] ?? termo
+export function translateTerm(term: string, language: string): string {
+  if (language === 'pt') return term
+  return EN_DICTIONARY[term] ?? term
 }
 
 const cache = new Map<string, unknown>()
 
-function traduzirValor(valor: unknown, chave: string | undefined, lingua: string): unknown {
-  if (typeof valor === 'string') {
-    return chave && CHAVES_TRADUZIVEIS.has(chave) ? traduzirTermo(valor, lingua) : valor
+function translateValue(value: unknown, key: string | undefined, language: string): unknown {
+  if (typeof value === 'string') {
+    return key && TRANSLATABLE_KEYS.has(key) ? translateTerm(value, language) : value
   }
-  if (Array.isArray(valor)) return valor.map(v => traduzirValor(v, chave, lingua))
-  if (valor && typeof valor === 'object') {
+  if (Array.isArray(value)) return value.map(v => translateValue(v, key, language))
+  if (value && typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(valor).map(([k, v]) => [k, traduzirValor(v, k, lingua)]),
+      Object.entries(value).map(([k, v]) => [k, translateValue(v, k, language)]),
     )
   }
-  return valor
+  return value
 }
 
 /** Versão traduzida (e memoizada) dos dados de jogo para o idioma pedido. */
-export function traduzirDados<T>(dados: T, lingua: string): T {
-  if (lingua === 'pt') return dados
-  const emCache = cache.get(lingua)
-  if (emCache) return emCache as T
-  const traduzido = traduzirValor(dados, undefined, lingua) as T
-  cache.set(lingua, traduzido)
-  return traduzido
+export function translateData<T>(gameData: T, language: string): T {
+  if (language === 'pt') return gameData
+  const cached = cache.get(language)
+  if (cached) return cached as T
+  const translated = translateValue(gameData, undefined, language) as T
+  cache.set(language, translated)
+  return translated
 }

@@ -53,22 +53,22 @@ export function ConfigModal({ open, onClose }: ConfigModalProps) {
     description: string
   }> = [
     {
-      key: 'rastrear_peso',
+      key: 'track_weight',
       label: t('config.weightTracking'),
       description: t('config.weightTrackingDesc'),
     },
     {
-      key: 'gerenciar_ouro',
+      key: 'manage_gold',
       label: t('config.goldManagement'),
       description: t('config.goldManagementDesc'),
     },
     {
-      key: 'reembolso_venda',
+      key: 'sale_refund',
       label: t('config.sellRefund'),
       description: t('config.sellRefundDesc'),
     },
     {
-      key: 'moedas_simples',
+      key: 'simple_coins',
       label: t('config.simpleCoins'),
       description: t('config.simpleCoinsDesc'),
     },
@@ -83,7 +83,7 @@ export function ConfigModal({ open, onClose }: ConfigModalProps) {
             {(['pt', 'en'] as const).map(lang => (
               <button
                 key={lang}
-                onClick={() => { setConfig({ lingua: lang }); i18n.changeLanguage(lang) }}
+                onClick={() => { setConfig({ language: lang }); i18n.changeLanguage(lang) }}
                 className={[
                   'px-3 py-1 text-xs rounded font-medium transition-colors',
                   i18n.language === lang

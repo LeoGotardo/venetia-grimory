@@ -1,44 +1,44 @@
-import type { AtributoId, Armadura } from '../types'
-import { TIPO_CONJURADOR, SUBCLASSES_TERCEIRO_CONJURADOR } from '../constants'
+import type { AbilityId, Armor } from '../types'
+import { CASTER_TYPE, THIRD_CASTER_SUBCLASSES } from '../constants'
 
-export function calcModificador(valor: number): number {
-  return Math.floor((valor - 10) / 2)
+export function calcModifier(value: number): number {
+  return Math.floor((value - 10) / 2)
 }
 
-export function calcBonusProf(nivel: number): number {
-  return Math.ceil(nivel / 4) + 1
+export function calcProfBonus(level: number): number {
+  return Math.ceil(level / 4) + 1
 }
 
-export function calcPVNivel1(dadoVida: number, modCON: number): number {
-  return dadoVida + modCON
+export function calcHpAtLevel1(hitDie: number, conMod: number): number {
+  return hitDie + conMod
 }
 
-export function calcPVPorNivel(dadoVida: number, modCON: number): number {
-  return Math.floor(dadoVida / 2 + 1) + modCON
+export function calcHpPerLevel(hitDie: number, conMod: number): number {
+  return Math.floor(hitDie / 2 + 1) + conMod
 }
 
-export function calcPVTotal(nivel: number, dadoVida: number, modCON: number): number {
-  const pv1 = calcPVNivel1(dadoVida, modCON)
-  if (nivel <= 1) return pv1
-  const extra = (nivel - 1) * calcPVPorNivel(dadoVida, modCON)
-  return pv1 + extra
+export function calcTotalHp(level: number, hitDie: number, conMod: number): number {
+  const hp1 = calcHpAtLevel1(hitDie, conMod)
+  if (level <= 1) return hp1
+  const extra = (level - 1) * calcHpPerLevel(hitDie, conMod)
+  return hp1 + extra
 }
 
-export function calcPVMulticlasse(
-  classes: Array<{ dadoVida: number; nivel: number; isPrimaria: boolean }>,
-  modCON: number,
+export function calcMulticlassHp(
+  classes: Array<{ hitDie: number; level: number; isPrimary: boolean }>,
+  conMod: number,
 ): number {
   return classes.reduce((total, c) => {
-    if (c.nivel <= 0) return total
-    const porNivel = Math.floor(c.dadoVida / 2 + 1) + modCON
-    if (c.isPrimaria) {
-      return total + (c.dadoVida + modCON) + Math.max(0, c.nivel - 1) * porNivel
+    if (c.level <= 0) return total
+    const perLevel = Math.floor(c.hitDie / 2 + 1) + conMod
+    if (c.isPrimary) {
+      return total + (c.hitDie + conMod) + Math.max(0, c.level - 1) * perLevel
     }
-    return total + c.nivel * porNivel
+    return total + c.level * perLevel
   }, 0)
 }
 
-const TABELA_SLOTS_MULTICLASSE: Record<number, Partial<Record<string, number>>> = {
+const MULTICLASS_SLOT_TABLE: Record<number, Partial<Record<string, number>>> = {
   1:  { c1:2 },
   2:  { c1:3 },
   3:  { c1:4, c2:2 },
@@ -61,104 +61,104 @@ const TABELA_SLOTS_MULTICLASSE: Record<number, Partial<Record<string, number>>> 
   20: { c1:4, c2:3, c3:3, c4:3, c5:3, c6:2, c7:2, c8:1, c9:1 },
 }
 
-export function calcNivelConjuradorMulticlasse(
-  classes: Array<{ classeId: string; subclasseId: string | null; nivel: number }>,
+export function calcMulticlassCasterLevel(
+  classes: Array<{ classId: string; subclassId: string | null; level: number }>,
 ): number {
   return classes.reduce((total, c) => {
-    const tipo = TIPO_CONJURADOR[c.classeId]
-    if (tipo === 'completo') return total + c.nivel
-    if (tipo === 'meio') return total + Math.ceil(c.nivel / 2)
-    if (c.subclasseId && SUBCLASSES_TERCEIRO_CONJURADOR.includes(c.subclasseId)) {
-      return total + Math.floor(c.nivel / 3)
+    const type = CASTER_TYPE[c.classId]
+    if (type === 'completo') return total + c.level
+    if (type === 'meio') return total + Math.ceil(c.level / 2)
+    if (c.subclassId && THIRD_CASTER_SUBCLASSES.includes(c.subclassId)) {
+      return total + Math.floor(c.level / 3)
     }
     return total
   }, 0)
 }
 
-export function calcSlotsMulticlasse(nivelConjurador: number): Partial<Record<string, number>> {
-  const nivel = Math.max(0, Math.min(20, nivelConjurador))
-  return TABELA_SLOTS_MULTICLASSE[nivel] ?? {}
+export function calcMulticlassSlots(casterLevel: number): Partial<Record<string, number>> {
+  const level = Math.max(0, Math.min(20, casterLevel))
+  return MULTICLASS_SLOT_TABLE[level] ?? {}
 }
 
-export function calcCA(params: {
-  armadura: Armadura | null
-  modDES: number
-  modCON: number
-  modSAB: number
-  classeIds: string[]
-  escudo: boolean
+export function calcAc(params: {
+  armor: Armor | null
+  dexMod: number
+  conMod: number
+  wisMod: number
+  classIds: string[]
+  shield: boolean
 }): number {
-  const { armadura, modDES, modCON, modSAB, classeIds, escudo } = params
-  const bonusEscudo = escudo ? 2 : 0
+  const { armor, dexMod, conMod, wisMod, classIds, shield } = params
+  const shieldBonus = shield ? 2 : 0
 
-  if (!armadura) {
-    if (classeIds.includes('barbaro')) return 10 + modDES + modCON + bonusEscudo
-    if (classeIds.includes('monge')) return 10 + modDES + modSAB + bonusEscudo
-    return 10 + modDES + bonusEscudo
+  if (!armor) {
+    if (classIds.includes('barbaro')) return 10 + dexMod + conMod + shieldBonus
+    if (classIds.includes('monge')) return 10 + dexMod + wisMod + shieldBonus
+    return 10 + dexMod + shieldBonus
   }
 
-  const caStr = String(armadura.ca)
-  if (armadura.categoria === 'Leve') {
-    const base = parseInt(caStr.split('+')[0])
-    return base + modDES + bonusEscudo
+  const acStr = String(armor.ac)
+  if (armor.category === 'Leve') {
+    const base = parseInt(acStr.split('+')[0])
+    return base + dexMod + shieldBonus
   }
-  if (armadura.categoria === 'Média') {
-    const base = parseInt(caStr.split('+')[0])
-    return base + Math.min(modDES, 2) + bonusEscudo
+  if (armor.category === 'Média') {
+    const base = parseInt(acStr.split('+')[0])
+    return base + Math.min(dexMod, 2) + shieldBonus
   }
-  if (armadura.categoria === 'Pesada') {
-    return parseInt(caStr) + bonusEscudo
+  if (armor.category === 'Pesada') {
+    return parseInt(acStr) + shieldBonus
   }
-  if (armadura.categoria === 'Escudo') {
-    return 10 + modDES + bonusEscudo
+  if (armor.category === 'Escudo') {
+    return 10 + dexMod + shieldBonus
   }
-  return 10 + modDES + bonusEscudo
+  return 10 + dexMod + shieldBonus
 }
 
-export function calcSalvaguarda(modAtributo: number, proficiente: boolean, bonusProf: number): number {
-  return modAtributo + (proficiente ? bonusProf : 0)
+export function calcSave(abilityMod: number, proficient: boolean, profBonus: number): number {
+  return abilityMod + (proficient ? profBonus : 0)
 }
 
-export function calcPericia(modAtributo: number, proficiente: boolean, expertise: boolean, bonusProf: number): number {
-  if (expertise) return modAtributo + bonusProf * 2
-  if (proficiente) return modAtributo + bonusProf
-  return modAtributo
+export function calcSkill(abilityMod: number, proficient: boolean, expertise: boolean, profBonus: number): number {
+  if (expertise) return abilityMod + profBonus * 2
+  if (proficient) return abilityMod + profBonus
+  return abilityMod
 }
 
-export function calcPercepcaoPassiva(valorPercepcao: number): number {
-  return 10 + valorPercepcao
+export function calcPassivePerception(perceptionValue: number): number {
+  return 10 + perceptionValue
 }
 
-export function calcCDMagia(bonusProf: number, modAtributo: number): number {
-  return 8 + bonusProf + modAtributo
+export function calcSpellDc(profBonus: number, abilityMod: number): number {
+  return 8 + profBonus + abilityMod
 }
 
-export function calcBonusAtaqueMagico(bonusProf: number, modAtributo: number): number {
-  return bonusProf + modAtributo
+export function calcSpellAttackBonus(profBonus: number, abilityMod: number): number {
+  return profBonus + abilityMod
 }
 
-export function calcTotalPO(moedas: { PC: number; PP: number; PE: number; PO: number; PL: number }): number {
-  return (moedas.PC / 100) + (moedas.PP / 10) + (moedas.PE / 2) + moedas.PO + (moedas.PL * 10)
+export function calcTotalGp(coins: { PC: number; PP: number; PE: number; PO: number; PL: number }): number {
+  return (coins.PC / 100) + (coins.PP / 10) + (coins.PE / 2) + coins.PO + (coins.PL * 10)
 }
 
-export function calcCargaMaxima(valorFOR: number): number {
-  return valorFOR * 7.5
+export function calcMaxCarry(strValue: number): number {
+  return strValue * 7.5
 }
 
-export function formatModificador(mod: number | null): string {
+export function formatModifier(mod: number | null): string {
   if (mod === null) return '—'
   return mod >= 0 ? `+${mod}` : `${mod}`
 }
 
-export const ATRIBUTOS: AtributoId[] = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR']
+export const ABILITIES: AbilityId[] = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR']
 
 /** Nome do atributo no idioma da interface (recebe o `t` do react-i18next). */
-export function nomeAtributo(attr: AtributoId, t: (chave: string) => string): string {
+export function abilityName(attr: AbilityId, t: (key: string) => string): string {
   return t(`attrs.${attr}`)
 }
 
 /** Nomes em português — fallback para contextos sem i18n. */
-export const ATRIBUTO_NOMES: Record<AtributoId, string> = {
+export const ABILITY_NAMES: Record<AbilityId, string> = {
   FOR: 'Força',
   DES: 'Destreza',
   CON: 'Constituição',
@@ -167,7 +167,7 @@ export const ATRIBUTO_NOMES: Record<AtributoId, string> = {
   CAR: 'Carisma',
 }
 
-export const XP_POR_NIVEL: Record<number, number> = {
+export const XP_PER_LEVEL: Record<number, number> = {
   1: 0, 2: 300, 3: 900, 4: 2700, 5: 6500, 6: 14000, 7: 23000, 8: 34000,
   9: 48000, 10: 64000, 11: 85000, 12: 100000, 13: 120000, 14: 140000,
   15: 165000, 16: 195000, 17: 225000, 18: 260000, 19: 300000, 20: 355000,

@@ -1,42 +1,42 @@
 import { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../store/fichaStore'
-import { useFichaExport } from '../hooks/useFichaExport'
-import type { FichaListItem } from '../store/fichaStore'
+import { useSheetStore } from '../store/sheetStore'
+import { useSheetExport } from '../hooks/useSheetExport'
+import type { SheetListItem } from '../store/sheetStore'
 
 import { ConfigModal } from '../components/ui/ConfigModal'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { useState } from 'react'
-import { dados } from '../data/dados'
+import { gameData } from '../data/rules'
 
 export function Home() {
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { fichasSalvas, novaFicha, carregarFicha, deletarFicha, carregarListaSalvas } = useFichaStore()
-  const { exportarPorId, importar } = useFichaExport()
-  const [configAberta, setConfigAberta] = useState(false)
+  const { savedSheets, newSheet, loadSheet, deleteSheet, loadSavedList } = useSheetStore()
+  const { exportById, importSheet } = useSheetExport()
+  const [configOpen, setConfigOpen] = useState(false)
 
-  useEffect(() => { carregarListaSalvas() }, [carregarListaSalvas])
+  useEffect(() => { loadSavedList() }, [loadSavedList])
 
-  const fichasOrdenadas = useMemo(
-    () => [...fichasSalvas].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
-    [fichasSalvas],
+  const sortedSheets = useMemo(
+    () => [...savedSheets].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()),
+    [savedSheets],
   )
 
-  function handleNova() { novaFicha(); navigate('/novo') }
-  function handleCarregar(f: FichaListItem) {
-    carregarFicha(f.id)
-    if (f.completa === false) {
+  function handleNew() { newSheet(); navigate('/novo') }
+  function handleLoad(f: SheetListItem) {
+    loadSheet(f.id)
+    if (f.complete === false) {
       navigate('/novo')
     } else {
       navigate(`/ficha/${f.id}`)
     }
   }
-  function handleDeletar(f: FichaListItem) {
-    if (!confirm(t('home.deleteConfirm', { name: f.nome }))) return
-    deletarFicha(f.id)
+  function handleDeletar(f: SheetListItem) {
+    if (!confirm(t('home.deleteConfirm', { name: f.name }))) return
+    deleteSheet(f.id)
   }
 
   return (
@@ -48,7 +48,7 @@ export function Home() {
           <span className="font-extrabold tracking-[0.04em] text-sm text-[#E8DFD0]">Venetia</span>
         </div>
         <button
-          onClick={() => setConfigAberta(true)}
+          onClick={() => setConfigOpen(true)}
           aria-label={t('home.settings')}
           className="w-[34px] h-[34px] rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
         >
@@ -56,7 +56,7 @@ export function Home() {
         </button>
       </header>
 
-      <ConfigModal open={configAberta} onClose={() => setConfigAberta(false)} />
+      <ConfigModal open={configOpen} onClose={() => setConfigOpen(false)} />
 
       {/* Main content */}
       <div className="max-w-[920px] mx-auto px-4 sm:px-8 py-10 sm:py-16 pb-20">
@@ -68,21 +68,21 @@ export function Home() {
           </h1>
           <p className="text-[16px] font-semibold text-[#D4A017]">{t('home.subtitle')}</p>
           <p className="text-[13px] text-[#6B6560] mt-1.5">
-            {dados.meta.fonte} · {dados.meta.traducao}
+            {gameData.meta.font} · {gameData.meta.translation}
           </p>
         </div>
 
         {/* Action buttons */}
         <div className="flex gap-3 justify-center mb-[52px]">
           <button
-            onClick={handleNova}
+            onClick={handleNew}
             className="inline-flex items-center gap-[9px] text-[15px] font-bold text-[#131110] bg-[#D4A017] hover:bg-[#E8C25A] border-0 rounded-[11px] px-6 py-[14px] cursor-pointer transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
             {t('home.createChar')}
           </button>
           <button
-            onClick={importar}
+            onClick={importSheet}
             className="inline-flex items-center gap-[9px] text-[15px] font-semibold text-[#E8DFD0] bg-white/5 hover:bg-white/10 border border-[rgba(212,160,23,0.25)] hover:border-[rgba(212,160,23,0.5)] rounded-[11px] px-6 py-[14px] cursor-pointer transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
@@ -96,18 +96,18 @@ export function Home() {
             <span className="w-1 h-[19px] rounded-sm bg-gradient-to-b from-[#E8C25A] to-[#B8860B]" />
             <h2 className="font-extrabold text-[17px] text-[#EAD9B0]">{t('home.savedChars')}</h2>
           </div>
-          <span className="text-xs text-[#6B6560]">{fichasOrdenadas.length}</span>
+          <span className="text-xs text-[#6B6560]">{sortedSheets.length}</span>
         </div>
 
-        {fichasOrdenadas.length > 0 ? (
+        {sortedSheets.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[14px]">
-            {fichasOrdenadas.map(f => (
-              <FichaCard
+            {sortedSheets.map(f => (
+              <SheetCard
                 key={f.id}
-                ficha={f}
-                onCarregar={() => handleCarregar(f)}
-                onExportar={() => exportarPorId(f.id, f.nome)}
-                onDeletar={() => handleDeletar(f)}
+                sheet={f}
+                onLoad={() => handleLoad(f)}
+                onExport={() => exportById(f.id, f.name)}
+                onDelete={() => handleDeletar(f)}
               />
             ))}
           </div>
@@ -122,50 +122,50 @@ export function Home() {
   )
 }
 
-interface FichaCardProps {
-  ficha: FichaListItem
-  onCarregar: () => void
-  onExportar: () => void
-  onDeletar: () => void
+interface SheetCardProps {
+  sheet: SheetListItem
+  onLoad: () => void
+  onExport: () => void
+  onDelete: () => void
 }
 
-function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps) {
+function SheetCard({ sheet, onLoad, onExport, onDelete }: SheetCardProps) {
   const { t } = useTranslation()
-  const classe = dados.classes.find(c => c.id === ficha.classe)
-  const especie = dados.especies?.find(e => e.id === ficha.especie)
-  const dataFormatada = new Date(ficha.updatedAt).toLocaleDateString()
-  const incompleta = ficha.completa === false
+  const charClass = gameData.classes.find(c => c.id === sheet.charClass)
+  const species = gameData.species?.find(e => e.id === sheet.species)
+  const formattedDate = new Date(sheet.updatedAt).toLocaleDateString()
+  const incomplete = sheet.complete === false
 
   return (
-    <div data-testid="ficha-card" className={`vg-card p-[18px_20px] ${incompleta ? 'border-[rgba(212,160,23,0.15)]' : ''}`}>
+    <div data-testid="sheet-card" className={`vg-card p-[18px_20px] ${incomplete ? 'border-[rgba(212,160,23,0.15)]' : ''}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-[14px]">
           <div className="w-12 h-12 rounded-[13px] flex-shrink-0 bg-[#221d18] border border-[rgba(212,160,23,0.3)] overflow-hidden">
-            <CharacterAvatar nome={ficha.nome || null} id={ficha.id} size={48} />
+            <CharacterAvatar name={sheet.name || null} id={sheet.id} size={48} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span data-testid="ficha-card-nome" className="font-bold text-[17px] text-[#F5F0E8]">{ficha.nome || t('home.noName')}</span>
-              {incompleta && (
+              <span data-testid="sheet-card-name" className="font-bold text-[17px] text-[#F5F0E8]">{sheet.name || t('home.noName')}</span>
+              {incomplete && (
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[#B8860B]/20 text-[#D4A017] border border-[#B8860B]/30">
                   {t('home.inCreation')}
                 </span>
               )}
             </div>
             <div className="text-[13px] text-[#8a8278] mt-[3px]">
-              {t('ficha.level')} {ficha.nivel} {classe?.nome ?? ficha.classe} · {especie?.nome ?? ficha.especie}
+              {t('sheet.level')} {sheet.level} {charClass?.name ?? sheet.charClass} · {species?.name ?? sheet.species}
             </div>
           </div>
         </div>
-        <span className="text-xs text-[#6B6560] whitespace-nowrap">{dataFormatada}</span>
+        <span className="text-xs text-[#6B6560] whitespace-nowrap">{formattedDate}</span>
       </div>
 
       <div className="flex gap-2 mt-4">
         <button
-          onClick={onCarregar}
+          onClick={onLoad}
           className="flex-1 inline-flex items-center justify-center gap-[7px] text-[13px] font-bold text-[#131110] bg-[#D4A017] hover:bg-[#E8C25A] border-0 rounded-[9px] py-[9px] cursor-pointer transition-colors"
         >
-          {incompleta ? (
+          {incomplete ? (
             <>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/><circle cx="12" cy="12" r="10"/></svg>
               {t('home.continueCreation')}
@@ -178,15 +178,15 @@ function FichaCard({ ficha, onCarregar, onExportar, onDeletar }: FichaCardProps)
           )}
         </button>
         <button
-          onClick={onExportar}
+          onClick={onExport}
           className="inline-flex items-center gap-[6px] text-[13px] font-semibold text-[#A8A09B] hover:text-[#E8DFD0] bg-white/[0.04] border border-white/[0.08] rounded-[9px] px-[13px] py-[9px] cursor-pointer transition-colors"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 15v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M7 9l5-5 5 5"/><path d="M12 4v12"/></svg>
           {t('home.export')}
         </button>
         <button
-          onClick={onDeletar}
-          aria-label={t('home.deleteAriaLabel', { name: ficha.nome })}
+          onClick={onDelete}
+          aria-label={t('home.deleteAriaLabel', { name: sheet.name })}
           className="inline-flex items-center justify-center text-[#b56a6a] bg-[rgba(181,57,47,0.1)] border border-[rgba(181,57,47,0.28)] hover:bg-[rgba(181,57,47,0.2)] rounded-[9px] px-[11px] py-[9px] cursor-pointer transition-colors"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>

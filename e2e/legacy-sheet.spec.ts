@@ -1,7 +1,15 @@
 import { expect, test } from '@playwright/test'
-import { criarFichaLegadaConjuradora, semearFicha } from './helpers/storage'
+import {
+  createLegacyPtListItem,
+  createLegacyPtSheet,
+  createLegacySpellcasterSheet,
+  seedRaw,
+  seedSheet,
+  setLegacyPtLanguage,
+} from './helpers/storage'
 
-const ID_FICHA = '33333333-3333-4333-8333-333333333333'
+const SHEET_ID = '33333333-3333-4333-8333-333333333333'
+const PT_SHEET_ID = '55555555-5555-4555-8555-555555555555'
 
 /**
  * Fichas salvas antes da separação de magias por classe não têm
@@ -10,50 +18,107 @@ const ID_FICHA = '33333333-3333-4333-8333-333333333333'
  */
 test.describe('Ficha em formato antigo', () => {
   test.beforeEach(async ({ page }) => {
-    await semearFicha(page, { id: ID_FICHA, ficha: criarFichaLegadaConjuradora() })
-    await page.goto(`/ficha/${ID_FICHA}`)
+    await seedSheet(page, { id: SHEET_ID, sheet: createLegacySpellcasterSheet() })
+    await page.goto(`/ficha/${SHEET_ID}`)
     await expect(page.getByRole('heading', { name: 'Elowen Vento-Claro' })).toBeVisible()
   })
 
   test('a aba de magia abre sem quebrar a página', async ({ page }) => {
-    const erros: string[] = []
-    page.on('pageerror', erro => erros.push(erro.message))
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
 
     await page.getByRole('tab', { name: 'Magic' }).click()
 
-    const painel = page.locator('#tabpanel-magia')
-    await expect(painel).toBeVisible()
-    await expect(painel).toContainText('Spell DC')
-    await expect(painel).toContainText('Spell Slots')
-    expect(erros).toEqual([])
+    const panel = page.locator('#tabpanel-spells')
+    await expect(panel).toBeVisible()
+    await expect(panel).toContainText('Spell DC')
+    await expect(panel).toContainText('Spell Slots')
+    expect(errors).toEqual([])
   })
 
   test('truques e magias antigos continuam visíveis', async ({ page }) => {
     await page.getByRole('tab', { name: 'Magic' }).click()
 
-    const painel = page.locator('#tabpanel-magia')
-    await expect(painel).toContainText('Ray of Frost')
-    await expect(painel).toContainText('Magic Missile')
+    const panel = page.locator('#tabpanel-spells')
+    await expect(panel).toContainText('Ray of Frost')
+    await expect(panel).toContainText('Magic Missile')
   })
 
   test('espaços de magia continuam clicáveis', async ({ page }) => {
     await page.getByRole('tab', { name: 'Magic' }).click()
 
-    const primeiroCirculo = page.getByRole('group', { name: /Circle 1/i })
-    await expect(primeiroCirculo).toBeVisible()
-    await primeiroCirculo.getByRole('button').first().click()
+    const firstCircle = page.getByRole('group', { name: /Circle 1/i })
+    await expect(firstCircle).toBeVisible()
+    await firstCircle.getByRole('button').first().click()
 
-    await expect(page.locator('#tabpanel-magia')).toBeVisible()
+    await expect(page.locator('#tabpanel-spells')).toBeVisible()
   })
 
   test('a aba de edição também abre', async ({ page }) => {
-    const erros: string[] = []
-    page.on('pageerror', erro => erros.push(erro.message))
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
 
     await page.getByRole('tab', { name: '✎ Edit' }).click()
 
-    // PainelEditar tem abas próprias, então escopa no painel principal
-    await expect(page.locator('#tabpanel-editar')).toBeVisible()
-    expect(erros).toEqual([])
+    // EditPanel tem abas próprias, então escopa no painel principal
+    await expect(page.locator('#tabpanel-edit')).toBeVisible()
+    expect(errors).toEqual([])
+  })
+})
+
+/**
+ * Fichas salvas antes da renomeação dos campos de PT para EN. As chaves do
+ * localStorage não mudaram, então elas continuam chegando ao app e precisam
+ * passar por `translateLegacyPtSheet` antes de qualquer painel ler os campos.
+ */
+test.describe('Ficha em português (anterior à renomeação)', () => {
+  test.beforeEach(async ({ page }) => {
+    await seedRaw(page, {
+      id: PT_SHEET_ID,
+      sheetJson: JSON.stringify(createLegacyPtSheet()),
+      itemJson: JSON.stringify(createLegacyPtListItem(PT_SHEET_ID, 'Bruenor Battlehammer')),
+    })
+  })
+
+  test('a lista da home mostra nome, nível e classe da ficha antiga', async ({ page }) => {
+    await page.goto('/')
+
+    await expect(page.getByTestId('sheet-card-name')).toHaveText('Bruenor Battlehammer')
+    await expect(page.getByTestId('sheet-card')).toContainText('Level 3 Fighter · Human')
+  })
+
+  test('a ficha abre com identidade, PV e CA migrados', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', error => errors.push(error.message))
+
+    await page.goto(`/ficha/${PT_SHEET_ID}`)
+
+    await expect(page.getByRole('heading', { name: 'Bruenor Battlehammer' })).toBeVisible()
+    await expect(page.getByText('Fighter 3 — Champion')).toBeVisible()
+    await expect(page.getByTestId('hp-current')).toHaveText('21')
+    await expect(page.getByTestId('hp-max')).toHaveText('/ 28')
+    await expect(page.getByTestId('ac-value')).toHaveText('12')
+    expect(errors).toEqual([])
+  })
+
+  test('inventário e anotações migrados continuam legíveis', async ({ page }) => {
+    await page.goto(`/ficha/${PT_SHEET_ID}`)
+
+    await page.getByRole('tab', { name: 'Inventory' }).click()
+    // O item migrado guarda `item_id: 'espada_longa'`; o nome exibido vem do
+    // catálogo no idioma da UI (EN por padrão nos testes).
+    await expect(page.locator('#tabpanel-inventory')).toContainText('Longsword')
+
+    await page.getByRole('tab', { name: '✎ Edit' }).click()
+    await expect(page.locator('#tabpanel-edit')).toBeVisible()
+  })
+
+  test('as preferências antigas (v0) mantêm o idioma escolhido', async ({ page }) => {
+    await setLegacyPtLanguage(page, 'pt')
+    await page.goto('/')
+
+    await expect(page.getByRole('heading', { name: 'Grimório de Venetia' })).toBeVisible()
+    await page.reload()
+    await expect(page.getByRole('heading', { name: 'Grimório de Venetia' })).toBeVisible()
   })
 })

@@ -1,17 +1,17 @@
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../../store/fichaStore'
+import { useSheetStore } from '../../store/sheetStore'
 import { useConfigStore } from '../../store/configStore'
-import { getItens } from '../../data/itens'
-import type { Item } from '../../data/itens'
-import type { ItemInventario } from '../../types'
-import { calcCargaMaxima } from '../../lib/calculos'
+import { getItems } from '../../data/items'
+import type { Item } from '../../data/items'
+import type { InventoryItem } from '../../types'
+import { calcMaxCarry } from '../../lib/calculations'
 
-type FiltroTipo = 'todos' | 'arma' | 'armadura' | 'ferramenta' | 'kit' | 'transporte' | 'item_magico'
+type FilterType = 'todos' | 'arma' | 'armadura' | 'ferramenta' | 'kit' | 'transporte' | 'item_magico'
 
-function parsePreco(preco: string): number | null {
-  if (!preco || preco === '—') return null
-  const m = preco.match(/([\d.,]+)\s*(po|pp|pc)/i)
+function parsePrice(price: string): number | null {
+  if (!price || price === '—') return null
+  const m = price.match(/([\d.,]+)\s*(po|pp|pc)/i)
   if (!m) return null
   const val = parseFloat(m[1].replace(',', '.'))
   const unit = m[2].toLowerCase()
@@ -20,69 +20,69 @@ function parsePreco(preco: string): number | null {
   return val
 }
 
-function parsePeso(item: Item): number | null {
-  const raw = (item as unknown as Record<string, unknown>).peso
+function parseWeight(item: Item): number | null {
+  const raw = (item as unknown as Record<string, unknown>).weight
   if (typeof raw !== 'string') return null
   const m = raw.match(/([\d.,]+)/)
   return m ? parseFloat(m[1].replace(',', '.')) : null
 }
 
-function itemParaInventario(item: Item): ItemInventario {
+function itemToInventory(item: Item): InventoryItem {
   return {
-    id_item: item.id,
-    nome: null,
-    categoria: null,
-    quantidade: 1,
-    equipado: false,
-    custo_po: parsePreco(item.preco),
-    peso_kg: parsePeso(item),
-    notas: null,
+    item_id: item.id,
+    name: null,
+    category: null,
+    quantity: 1,
+    equipped: false,
+    cost_gp: parsePrice(item.price),
+    weight_kg: parseWeight(item),
+    notes: null,
   }
 }
 
-function subtitulo(item: Item, t: (key: string, options?: any) => string): string {
-  switch (item.tipo_item) {
-    case 'arma':        return `${item.categoria} · ${item.tipo} · ${item.dano} ${item.tipo_dano}`
-    case 'armadura':    return `${item.categoria} · CA ${item.ca}`
-    case 'ferramenta':  return item.categoria
-    case 'kit':         return `${t('bag.typeKit')} · ${item.peso}`
-    case 'transporte':  return `${item.categoria}${item.deslocamento ? ` · ${item.deslocamento}` : ''}`
-    case 'item_magico': return `${item.raridade}${item.sintonia ? ' · ' + t('bag.attunement') : ''}`
+function subtitle(item: Item, t: (key: string, options?: any) => string): string {
+  switch (item.item_type) {
+    case 'arma':        return `${item.category} · ${item.type} · ${item.damage} ${item.damage_type}`
+    case 'armadura':    return `${item.category} · CA ${item.ac}`
+    case 'ferramenta':  return item.category
+    case 'kit':         return `${t('bag.typeKit')} · ${item.weight}`
+    case 'transporte':  return `${item.category}${item.speed ? ` · ${item.speed}` : ''}`
+    case 'item_magico': return `${item.rarity}${item.attunement ? ' · ' + t('bag.attunement') : ''}`
     default:            return ''
   }
 }
 
-const BADGE_COR: Record<string, string> = {
-  arma:        'bg-red-900/30 text-red-300 border-red-900/40',
-  armadura:    'bg-blue-900/30 text-blue-300 border-blue-900/40',
-  ferramenta:  'bg-amber-900/30 text-amber-300 border-amber-900/40',
+const BADGE_COLOR: Record<string, string> = {
+  weapon:        'bg-red-900/30 text-red-300 border-red-900/40',
+  armor:    'bg-blue-900/30 text-blue-300 border-blue-900/40',
+  tool:  'bg-amber-900/30 text-amber-300 border-amber-900/40',
   kit:         'bg-green-900/30 text-green-300 border-green-900/40',
-  transporte:  'bg-purple-900/30 text-purple-300 border-purple-900/40',
-  item_magico: 'bg-pink-900/30 text-pink-300 border-pink-900/40',
+  transport:  'bg-purple-900/30 text-purple-300 border-purple-900/40',
+  magic_item: 'bg-pink-900/30 text-pink-300 border-pink-900/40',
 }
 
 
-interface MochilaBuscaProps {
+interface BackpackSearchProps {
   /** Omite a lista de itens da mochila — use quando o pai já exibe o inventário */
-  semLista?: boolean
+  noList?: boolean
   /** Deduz o custo em PO ao adicionar e bloqueia itens inacessíveis */
-  cobrarItem?: boolean
+  chargeItem?: boolean
 }
 
-export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBuscaProps) {
-  const { ficha, addItem, removeItem, updateItem, updateMoedas } = useFichaStore()
+export function BackpackSearch({ noList = false, chargeItem = false }: BackpackSearchProps) {
+  const { sheet, addItem, removeItem, updateItem, updateCoins } = useSheetStore()
   const { config } = useConfigStore()
   const { t, i18n } = useTranslation()
-  const [busca, setBusca] = useState('')
-  const [filtro, setFiltro] = useState<FiltroTipo>('todos')
+  const [search, setSearch] = useState('')
+  const [filtro, setFiltro] = useState<FilterType>('todos')
 
   const itemMap = useMemo(() => {
     const map = new Map<string, Item>()
-    getItens().forEach(i => map.set(i.id, i))
+    getItems().forEach(i => map.set(i.id, i))
     return map
   }, [i18n.language])
 
-  const FILTROS: { id: FiltroTipo; label: string }[] = [
+  const FILTROS: { id: FilterType; label: string }[] = [
     { id: 'todos',       label: t('bag.filterAll') },
     { id: 'arma',        label: t('bag.filterWeapons') },
     { id: 'armadura',    label: t('bag.filterArmors') },
@@ -93,41 +93,41 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
   ]
 
   const TIPO_LABEL: Record<string, string> = {
-    arma: t('bag.typeWeapon'), armadura: t('bag.typeArmor'), ferramenta: t('bag.typeTool'),
-    kit: t('bag.typeKit'), transporte: t('bag.typeTransport'), item_magico: t('bag.typeMagic'),
+    weapon: t('bag.typeWeapon'), armor: t('bag.typeArmor'), tool: t('bag.typeTool'),
+    kit: t('bag.typeKit'), transport: t('bag.typeTransport'), magic_item: t('bag.typeMagic'),
   }
 
-  const efetivoCobrar = cobrarItem && config.gerenciar_ouro
+  const efetivoCobrar = chargeItem && config.manage_gold
 
-  const forVal = ficha.atributos.FOR.valor ?? 10
-  const cargaMax = calcCargaMaxima(forVal)
-  const pesoAtual = ficha.inventario.itens.reduce((a, it) => a + (it.peso_kg ?? 0) * it.quantidade, 0)
-  const porcentCarga = Math.min(100, (pesoAtual / cargaMax) * 100)
+  const strVal = sheet.abilities.FOR.value ?? 10
+  const maxCarry = calcMaxCarry(strVal)
+  const currentWeight = sheet.inventory.items.reduce((a, it) => a + (it.weight_kg ?? 0) * it.quantity, 0)
+  const carryPercent = Math.min(100, (currentWeight / maxCarry) * 100)
 
   const resultados = useMemo(() => {
-    const termo = busca.toLowerCase().trim()
-    return getItens().filter(item => {
-      const tipoOk = filtro === 'todos' || item.tipo_item === filtro
+    const term = search.toLowerCase().trim()
+    return getItems().filter(item => {
+      const tipoOk = filtro === 'todos' || item.item_type === filtro
       if (!tipoOk) return false
-      if (filtro === 'todos' && !termo) return false
-      if (termo) return item.nome.toLowerCase().includes(termo) || item.descricao.toLowerCase().includes(termo)
+      if (filtro === 'todos' && !term) return false
+      if (term) return item.name.toLowerCase().includes(term) || item.description.toLowerCase().includes(term)
       return true
     }).slice(0, 30)
-  }, [busca, filtro, i18n.language])
+  }, [search, filtro, i18n.language])
 
-  const mostrarResultados = busca.trim() !== '' || filtro !== 'todos'
+  const mostrarResultados = search.trim() !== '' || filtro !== 'todos'
 
   function adicionarItem(item: Item) {
     if (efetivoCobrar) {
-      const custo = parsePreco(item.preco) ?? 0
-      if (custo > ficha.inventario.moedas.PO) return
-      updateMoedas({ PO: +(ficha.inventario.moedas.PO - custo).toFixed(4) })
+      const custo = parsePrice(item.price) ?? 0
+      if (custo > sheet.inventory.coins.PO) return
+      updateCoins({ PO: +(sheet.inventory.coins.PO - custo).toFixed(4) })
     }
-    const idx = ficha.inventario.itens.findIndex(it => it.id_item === item.id)
+    const idx = sheet.inventory.items.findIndex(it => it.item_id === item.id)
     if (idx >= 0) {
-      updateItem(idx, { quantidade: ficha.inventario.itens[idx].quantidade + 1 })
+      updateItem(idx, { quantity: sheet.inventory.items[idx].quantity + 1 })
     } else {
-      addItem(itemParaInventario(item))
+      addItem(itemToInventory(item))
     }
   }
 
@@ -135,27 +135,27 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
     <div className="space-y-4">
 
       {/* Barra de carga + saldo PO */}
-      {(config.rastrear_peso || efetivoCobrar) && (
+      {(config.track_weight || efetivoCobrar) && (
         <div className="flex items-center gap-3">
-          {config.rastrear_peso && (
+          {config.track_weight && (
             <>
               <span className="text-xs text-[#A8A09B] shrink-0">{t('bag.load')}</span>
               <div className="flex-1 h-1.5 bg-[#2D2520] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
-                    porcentCarga > 80 ? 'bg-red-500' : porcentCarga > 50 ? 'bg-yellow-500' : 'bg-green-500'
+                    carryPercent > 80 ? 'bg-red-500' : carryPercent > 50 ? 'bg-yellow-500' : 'bg-green-500'
                   }`}
-                  style={{ width: `${porcentCarga}%` }}
+                  style={{ width: `${carryPercent}%` }}
                 />
               </div>
               <span className="text-xs text-[#A8A09B] shrink-0 tabular-nums">
-                {pesoAtual.toFixed(1)}/{cargaMax} {t('bag.kg')}
+                {currentWeight.toFixed(1)}/{maxCarry} {t('bag.kg')}
               </span>
             </>
           )}
           {efetivoCobrar && (
-            <span className={`text-xs font-semibold text-[#B8860B] shrink-0 tabular-nums ${!config.rastrear_peso ? 'ml-auto' : ''}`}>
-              {ficha.inventario.moedas.PO.toFixed(1)} {t('bag.gp')}
+            <span className={`text-xs font-semibold text-[#B8860B] shrink-0 tabular-nums ${!config.track_weight ? 'ml-auto' : ''}`}>
+              {sheet.inventory.coins.PO.toFixed(1)} {t('bag.gp')}
             </span>
           )}
         </div>
@@ -166,8 +166,8 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A8A09B] text-sm pointer-events-none">⌕</span>
         <input
           type="text"
-          value={busca}
-          onChange={e => setBusca(e.target.value)}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
           placeholder={t('bag.searchPlaceholder')}
           className="w-full bg-[#2D2520] border border-[#B8860B]/30 rounded-lg pl-8 pr-3 py-2 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B] focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
           aria-label={t('bag.searchAriaLabel')}
@@ -202,7 +202,7 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
             <p className="text-xs text-[#A8A09B] py-2 text-center">{t('bag.noItems')}</p>
           ) : (
             resultados.map(item => {
-              const semFundos = efetivoCobrar && (parsePreco(item.preco) ?? 0) > ficha.inventario.moedas.PO
+              const insufficientFunds = efetivoCobrar && (parsePrice(item.price) ?? 0) > sheet.inventory.coins.PO
               return (
                 <div
                   key={item.id}
@@ -210,23 +210,23 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className={`text-sm font-medium ${semFundos ? 'text-[#A8A09B]' : 'text-[#F5F0E8]'}`}>{item.nome}</span>
-                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold border ${BADGE_COR[item.tipo_item]}`}>
-                        {TIPO_LABEL[item.tipo_item]}
+                      <span className={`text-sm font-medium ${insufficientFunds ? 'text-[#A8A09B]' : 'text-[#F5F0E8]'}`}>{item.name}</span>
+                      <span className={`inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold border ${BADGE_COLOR[item.item_type]}`}>
+                        {TIPO_LABEL[item.item_type]}
                       </span>
                     </div>
-                    <div className="text-xs text-[#A8A09B] truncate">{subtitulo(item, t)}</div>
-                    <div className={`text-xs ${semFundos ? 'text-red-400/70' : 'text-[#B8860B]'}`}>{item.preco}</div>
+                    <div className="text-xs text-[#A8A09B] truncate">{subtitle(item, t)}</div>
+                    <div className={`text-xs ${insufficientFunds ? 'text-red-400/70' : 'text-[#B8860B]'}`}>{item.price}</div>
                   </div>
                   <button
                     type="button"
                     onClick={() => adicionarItem(item)}
-                    disabled={semFundos}
-                    aria-label={semFundos ? t('bag.insufficientGold', { nome: item.nome }) : t('bag.addItem', { nome: item.nome })}
-                    title={semFundos ? t('bag.insufficientGoldTitle') : undefined}
+                    disabled={insufficientFunds}
+                    aria-label={insufficientFunds ? t('bag.insufficientGold', { name: item.name }) : t('bag.addItem', { name: item.name })}
+                    title={insufficientFunds ? t('bag.insufficientGoldTitle') : undefined}
                     className={[
                       'w-7 h-7 shrink-0 flex items-center justify-center rounded-full border font-bold text-base leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
-                      semFundos
+                      insufficientFunds
                         ? 'bg-[#2D2520] border-[#A8A09B]/20 text-[#A8A09B]/30 cursor-not-allowed'
                         : 'bg-[#B8860B]/10 border-[#B8860B]/30 text-[#D4A017] hover:bg-[#B8860B]/30 hover:border-[#B8860B] cursor-pointer',
                     ].join(' ')}
@@ -241,73 +241,73 @@ export function MochilaBusca({ semLista = false, cobrarItem = false }: MochilaBu
       )}
 
       {/* Mochila atual — omitida quando pai já exibe inventário */}
-      {!semLista && (
+      {!noList && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm text-[#B8860B] font-medium">{t('bag.bagSection')}</span>
             <span className="text-xs text-[#A8A09B]">
-              {ficha.inventario.itens.length === 1
-                ? t('bag.itemCount_one', { n: ficha.inventario.itens.length })
-                : t('bag.itemCount_other', { n: ficha.inventario.itens.length })}
+              {sheet.inventory.items.length === 1
+                ? t('bag.itemCount_one', { n: sheet.inventory.items.length })
+                : t('bag.itemCount_other', { n: sheet.inventory.items.length })}
             </span>
           </div>
 
-          {ficha.inventario.itens.length === 0 ? (
+          {sheet.inventory.items.length === 0 ? (
             <p className="text-xs text-[#A8A09B] py-2">
               {t('bag.emptyBag')}
             </p>
           ) : (
             <div className="space-y-1">
-              {ficha.inventario.itens.map((item, idx) => {
-                const catalogItem = item.id_item ? itemMap.get(item.id_item) : null
-                const nomeExibido = catalogItem?.nome ?? item.nome ?? '—'
-                const tipoLabel = catalogItem ? (TIPO_LABEL[catalogItem.tipo_item] ?? catalogItem.tipo_item) : (TIPO_LABEL[item.categoria ?? ''] ?? item.categoria ?? '')
+              {sheet.inventory.items.map((item, idx) => {
+                const catalogItem = item.item_id ? itemMap.get(item.item_id) : null
+                const displayedName = catalogItem?.name ?? item.name ?? '—'
+                const tipoLabel = catalogItem ? (TIPO_LABEL[catalogItem.item_type] ?? catalogItem.item_type) : (TIPO_LABEL[item.category ?? ''] ?? item.category ?? '')
                 return (
                 <div key={idx} className="flex items-center gap-2 bg-[#2D2520] rounded-lg px-3 py-2">
                   <div className="min-w-0 flex-1">
-                    <div className="text-sm text-[#F5F0E8] font-medium truncate">{nomeExibido}</div>
+                    <div className="text-sm text-[#F5F0E8] font-medium truncate">{displayedName}</div>
                     <div className="text-xs text-[#A8A09B]">
                       {tipoLabel}
-                      {config.rastrear_peso && item.peso_kg ? ` · ${(item.peso_kg * item.quantidade).toFixed(1)} ${t('bag.kg')}` : ''}
-                      {item.custo_po ? ` · ${item.custo_po} ${t('bag.gp')}` : ''}
+                      {config.track_weight && item.weight_kg ? ` · ${(item.weight_kg * item.quantity).toFixed(1)} ${t('bag.kg')}` : ''}
+                      {item.cost_gp ? ` · ${item.cost_gp} ${t('bag.gp')}` : ''}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
                       onClick={() =>
-                        item.quantidade <= 1
+                        item.quantity <= 1
                           ? removeItem(idx)
-                          : updateItem(idx, { quantidade: item.quantidade - 1 })
+                          : updateItem(idx, { quantity: item.quantity - 1 })
                       }
                       aria-label={t('bag.decreaseQty')}
                       className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-[#B8860B]/20 text-[#A8A09B] hover:text-[#F5F0E8] hover:border-[#B8860B]/50 transition-colors cursor-pointer text-sm font-bold"
                     >−</button>
                     <span className="w-5 text-center text-xs text-[#F5F0E8] font-medium tabular-nums">
-                      {item.quantidade}
+                      {item.quantity}
                     </span>
                     <button
                       type="button"
-                      onClick={() => updateItem(idx, { quantidade: item.quantidade + 1 })}
+                      onClick={() => updateItem(idx, { quantity: item.quantity + 1 })}
                       aria-label={t('bag.increaseQty')}
                       className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-[#B8860B]/20 text-[#A8A09B] hover:text-[#F5F0E8] hover:border-[#B8860B]/50 transition-colors cursor-pointer text-sm font-bold"
                     >+</button>
-                    {config.reembolso_venda && item.custo_po !== null && (
+                    {config.sale_refund && item.cost_gp !== null && (
                       <button
                         type="button"
                         onClick={() => {
-                          updateMoedas({ PO: +(ficha.inventario.moedas.PO + item.custo_po! * item.quantidade).toFixed(4) })
+                          updateCoins({ PO: +(sheet.inventory.coins.PO + item.cost_gp! * item.quantity).toFixed(4) })
                           removeItem(idx)
                         }}
-                        title={t('bag.sellFor', { n: (item.custo_po * item.quantidade).toFixed(1) })}
-                        aria-label={t('bag.sellAriaLabel', { nome: nomeExibido, n: (item.custo_po * item.quantidade).toFixed(1) })}
+                        title={t('bag.sellFor', { n: (item.cost_gp * item.quantity).toFixed(1) })}
+                        aria-label={t('bag.sellAriaLabel', { name: displayedName, n: (item.cost_gp * item.quantity).toFixed(1) })}
                         className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-[#B8860B]/30 text-[#B8860B]/60 hover:text-[#B8860B] hover:border-[#B8860B] transition-colors cursor-pointer text-[9px] font-bold ml-1"
                       >{t('bag.sellBtn')}</button>
                     )}
                     <button
                       type="button"
                       onClick={() => removeItem(idx)}
-                      aria-label={t('bag.spendAriaLabel', { nome: nomeExibido })}
+                      aria-label={t('bag.spendAriaLabel', { name: displayedName })}
                       title={t('bag.spendTitle')}
                       className="w-6 h-6 flex items-center justify-center rounded bg-[#3D332D] border border-red-900/20 text-red-500/50 hover:text-red-400 hover:border-red-900/50 transition-colors cursor-pointer text-xs"
                     >✕</button>

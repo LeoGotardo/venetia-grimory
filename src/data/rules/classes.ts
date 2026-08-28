@@ -1,19 +1,19 @@
 export default [
   {
     "id": "barbaro",
-    "nome": "Bárbaro",
-    "descricao": "Um Combatente Feroz da Fúria Primitiva",
-    "interesse": "Batalha",
-    "dado_vida": 12,
-    "atributos_primarios": [
+    "name": "Bárbaro",
+    "description": "Um Combatente Feroz da Fúria Primitiva",
+    "appeal": "Batalha",
+    "hit_die": 12,
+    "primary_abilities": [
       "FOR"
     ],
-    "salvaguardas": [
+    "saves": [
       "FOR",
       "CON"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "atletismo",
       "intimidacao",
       "lidar_com_animais",
@@ -21,318 +21,318 @@ export default [
       "percepcao",
       "sobrevivencia"
     ],
-    "armas": [
+    "weapons": [
       "Simples",
       "Marciais"
     ],
-    "armaduras": [
+    "armors": [
       "Leve",
       "Média",
       "Escudo"
     ],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "tools": [],
+    "starting_equipment": {
       "A": "4 Machadinhas, Machado Grande, Kit de Aventureiro, 15 PO",
       "B": "75 PO"
     },
-    "conjurador": false,
-    "complexidade": "Média",
+    "spellcaster": false,
+    "complexity": "Média",
     "subclasses": [
       {
         "id": "trilha_arvore_mundo",
-        "nome": "Trilha da Árvore do Mundo",
-        "descricao": "Canaliza a Árvore do Mundo: ganha PV temporários ao entrar em Fúria e prende inimigos com raízes espectrais."
+        "name": "Trilha da Árvore do Mundo",
+        "description": "Canaliza a Árvore do Mundo: ganha PV temporários ao entrar em Fúria e prende inimigos com raízes espectrais."
       },
       {
         "id": "trilha_berserker",
-        "nome": "Trilha do Berserker",
-        "descricao": "Fúria brutal e implacável: ataques frenéticos, presença aterrorizante e retaliação a quem o fere."
+        "name": "Trilha do Berserker",
+        "description": "Fúria brutal e implacável: ataques frenéticos, presença aterrorizante e retaliação a quem o fere."
       },
       {
         "id": "trilha_coracao_selvagem",
-        "nome": "Trilha do Coração Selvagem",
-        "descricao": "Comunhão com espíritos animais, ganhando sentidos aguçados, rastreamento e talentos bestiais na Fúria."
+        "name": "Trilha do Coração Selvagem",
+        "description": "Comunhão com espíritos animais, ganhando sentidos aguçados, rastreamento e talentos bestiais na Fúria."
       },
       {
         "id": "trilha_fanatico",
-        "nome": "Trilha do Fanático",
-        "descricao": "Fúria abençoada por um deus: dano necrótico ou radiante extra e resistência sobrenatural à morte."
+        "name": "Trilha do Fanático",
+        "description": "Fúria abençoada por um deus: dano necrótico ou radiante extra e resistência sobrenatural à morte."
       }
     ],
-    "nivel_subclasse": 3,
-    "progressao": [
+    "subclass_level": 3,
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
-        "furias": 2,
-        "dano_furia": 2,
+        "level": 1,
+        "prof_bonus": 2,
+        "rages": 2,
+        "rage_damage": 2,
         "maestria_arma": 2,
-        "destaques": [
+        "highlights": [
           "Defesa sem Armadura",
           "Fúria",
           "Maestria em Arma"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
-        "furias": 2,
-        "dano_furia": 2,
+        "level": 2,
+        "prof_bonus": 2,
+        "rages": 2,
+        "rage_damage": 2,
         "maestria_arma": 2,
-        "destaques": [
+        "highlights": [
           "Ataque Imprudente",
           "Sentido de Perigo"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
-        "furias": 3,
-        "dano_furia": 2,
+        "level": 3,
+        "prof_bonus": 2,
+        "rages": 3,
+        "rage_damage": 2,
         "maestria_arma": 2,
-        "destaques": [
+        "highlights": [
           "Conhecimento Primordial",
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
-        "furias": 3,
-        "dano_furia": 2,
+        "level": 4,
+        "prof_bonus": 2,
+        "rages": 3,
+        "rage_damage": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Aumento no Valor de Atributo"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
-        "furias": 3,
-        "dano_furia": 2,
+        "level": 5,
+        "prof_bonus": 3,
+        "rages": 3,
+        "rage_damage": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Ataque Extra",
           "Movimento Rápido"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
-        "furias": 4,
-        "dano_furia": 2,
+        "level": 6,
+        "prof_bonus": 3,
+        "rages": 4,
+        "rage_damage": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Característica de Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
-        "furias": 4,
-        "dano_furia": 2,
+        "level": 7,
+        "prof_bonus": 3,
+        "rages": 4,
+        "rage_damage": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Bote Instintivo",
           "Instintos Primitivos"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
-        "furias": 4,
-        "dano_furia": 2,
+        "level": 8,
+        "prof_bonus": 3,
+        "rages": 4,
+        "rage_damage": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Aumento no Valor de Atributo"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
-        "furias": 4,
-        "dano_furia": 3,
+        "level": 9,
+        "prof_bonus": 4,
+        "rages": 4,
+        "rage_damage": 3,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Golpe Brutal"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
-        "furias": 4,
-        "dano_furia": 3,
+        "level": 10,
+        "prof_bonus": 4,
+        "rages": 4,
+        "rage_damage": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Característica de Subclasse"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
-        "furias": 4,
-        "dano_furia": 3,
+        "level": 11,
+        "prof_bonus": 4,
+        "rages": 4,
+        "rage_damage": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Fúria Implacável"
         ]
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
-        "furias": 5,
-        "dano_furia": 3,
+        "level": 12,
+        "prof_bonus": 4,
+        "rages": 5,
+        "rage_damage": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Aumento no Valor de Atributo"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
-        "furias": 5,
-        "dano_furia": 3,
+        "level": 13,
+        "prof_bonus": 5,
+        "rages": 5,
+        "rage_damage": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Golpe Brutal Fortalecido"
         ]
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
-        "furias": 5,
-        "dano_furia": 3,
+        "level": 14,
+        "prof_bonus": 5,
+        "rages": 5,
+        "rage_damage": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Característica de Subclasse"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
-        "furias": 5,
-        "dano_furia": 3,
+        "level": 15,
+        "prof_bonus": 5,
+        "rages": 5,
+        "rage_damage": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Fúria Persistente"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
-        "furias": 5,
-        "dano_furia": 4,
+        "level": 16,
+        "prof_bonus": 5,
+        "rages": 5,
+        "rage_damage": 4,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Aumento no Valor de Atributo"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
-        "furias": 6,
-        "dano_furia": 4,
+        "level": 17,
+        "prof_bonus": 6,
+        "rages": 6,
+        "rage_damage": 4,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Golpe Brutal Fortalecido"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
-        "furias": 6,
-        "dano_furia": 4,
+        "level": 18,
+        "prof_bonus": 6,
+        "rages": 6,
+        "rage_damage": 4,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Força Indomável"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
-        "furias": 6,
-        "dano_furia": 4,
+        "level": 19,
+        "prof_bonus": 6,
+        "rages": 6,
+        "rage_damage": 4,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
-        "furias": 6,
-        "dano_furia": 4,
+        "level": 20,
+        "prof_bonus": 6,
+        "rages": 6,
+        "rage_damage": 4,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Campeão Primitivo (FOR/CON +4, máx 25)"
         ]
       }
     ],
-    "idiomas_concedidos": []
+    "granted_languages": []
   },
   {
     "id": "bardo",
-    "nome": "Bardo",
-    "descricao": "Um Mago da Palavra e da Música",
-    "interesse": "Atuação",
-    "dado_vida": 8,
-    "atributos_primarios": [
+    "name": "Bardo",
+    "description": "Um Mago da Palavra e da Música",
+    "appeal": "Atuação",
+    "hit_die": 8,
+    "primary_abilities": [
       "CAR"
     ],
-    "salvaguardas": [
+    "saves": [
       "DES",
       "CAR"
     ],
-    "num_pericias": 3,
-    "pericias_disponiveis": "qualquer",
-    "armas": [
+    "num_skills": 3,
+    "available_skills": "qualquer",
+    "weapons": [
       "Simples"
     ],
-    "armaduras": [
+    "armors": [
       "Leve"
     ],
-    "ferramentas": [
+    "tools": [
       "3 Instrumentos Musicais à escolha"
     ],
-    "equipamento_inicial": {
+    "starting_equipment": {
       "A": "Armadura de Couro, 2 Adagas, Instrumento Musical à escolha, Kit de Artista, 19 PO",
       "B": "90 PO"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "CAR",
-    "complexidade": "Alta",
+    "spellcaster": true,
+    "spellcasting_ability": "CAR",
+    "complexity": "Alta",
     "subclasses": [
       {
         "id": "colegio_bravura",
-        "nome": "Colégio da Bravura",
-        "descricao": "Bardo de batalha: proficiência marcial, armadura média e Inspiração que reforça ataques dos aliados."
+        "name": "Colégio da Bravura",
+        "description": "Bardo de batalha: proficiência marcial, armadura média e Inspiração que reforça ataques dos aliados."
       },
       {
         "id": "colegio_conhecimento",
-        "nome": "Colégio do Conhecimento",
-        "descricao": "Erudito e crítico: Palavras Cortantes atrapalham inimigos e Segredos Mágicos abrem listas de outras classes."
+        "name": "Colégio do Conhecimento",
+        "description": "Erudito e crítico: Palavras Cortantes atrapalham inimigos e Segredos Mágicos abrem listas de outras classes."
       },
       {
         "id": "colegio_danca",
-        "nome": "Colégio da Dança",
-        "descricao": "Dança de batalha: movimento ágil, defesa sem armadura e ataques desarmados guiados pela Inspiração."
+        "name": "Colégio da Dança",
+        "description": "Dança de batalha: movimento ágil, defesa sem armadura e ataques desarmados guiados pela Inspiração."
       },
       {
         "id": "colegio_glamour",
-        "nome": "Colégio do Glamour",
-        "descricao": "Magia feérica de encanto: cativa plateias, protege aliados com esplendor e impõe respeito sobrenatural."
+        "name": "Colégio do Glamour",
+        "description": "Magia feérica de encanto: cativa plateias, protege aliados com esplendor e impõe respeito sobrenatural."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
+        "level": 1,
+        "prof_bonus": 2,
         "dado_inspiracao": "D6",
-        "truques": 2,
-        "magias_preparadas": 4,
-        "espacos": {
+        "cantrips": 2,
+        "prepared_spells": 4,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
@@ -343,18 +343,18 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Inspiração de Bardo",
           "Conjuração"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
+        "level": 2,
+        "prof_bonus": 2,
         "dado_inspiracao": "D6",
-        "truques": 2,
-        "magias_preparadas": 5,
-        "espacos": {
+        "cantrips": 2,
+        "prepared_spells": 5,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
@@ -365,18 +365,18 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Especialista",
           "Pau pra Toda Obra"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
+        "level": 3,
+        "prof_bonus": 2,
         "dado_inspiracao": "D6",
-        "truques": 2,
-        "magias_preparadas": 6,
-        "espacos": {
+        "cantrips": 2,
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
@@ -387,17 +387,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
+        "level": 4,
+        "prof_bonus": 2,
         "dado_inspiracao": "D6",
-        "truques": 3,
-        "magias_preparadas": 7,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
@@ -408,17 +408,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
+        "level": 5,
+        "prof_bonus": 3,
         "dado_inspiracao": "D8",
-        "truques": 3,
-        "magias_preparadas": 9,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
@@ -429,17 +429,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Fonte de Inspiração"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
+        "level": 6,
+        "prof_bonus": 3,
         "dado_inspiracao": "D8",
-        "truques": 3,
-        "magias_preparadas": 10,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -450,17 +450,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
+        "level": 7,
+        "prof_bonus": 3,
         "dado_inspiracao": "D8",
-        "truques": 3,
-        "magias_preparadas": 11,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -471,17 +471,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Contra-Encantamento"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
+        "level": 8,
+        "prof_bonus": 3,
         "dado_inspiracao": "D8",
-        "truques": 3,
-        "magias_preparadas": 12,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -492,17 +492,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
+        "level": 9,
+        "prof_bonus": 4,
         "dado_inspiracao": "D8",
-        "truques": 3,
-        "magias_preparadas": 14,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -513,17 +513,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Especialização"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
+        "level": 10,
+        "prof_bonus": 4,
         "dado_inspiracao": "D10",
-        "truques": 4,
-        "magias_preparadas": 15,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -534,17 +534,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Segredos Mágicos"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
+        "level": 11,
+        "prof_bonus": 4,
         "dado_inspiracao": "D10",
-        "truques": 4,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -555,15 +555,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
+        "level": 12,
+        "prof_bonus": 4,
         "dado_inspiracao": "D10",
-        "truques": 4,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -574,17 +574,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
+        "level": 13,
+        "prof_bonus": 5,
         "dado_inspiracao": "D10",
-        "truques": 4,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -595,15 +595,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
+        "level": 14,
+        "prof_bonus": 5,
         "dado_inspiracao": "D10",
-        "truques": 4,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -614,17 +614,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
+        "level": 15,
+        "prof_bonus": 5,
         "dado_inspiracao": "D12",
-        "truques": 4,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -635,15 +635,15 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
+        "level": 16,
+        "prof_bonus": 5,
         "dado_inspiracao": "D12",
-        "truques": 4,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -654,17 +654,17 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
+        "level": 17,
+        "prof_bonus": 6,
         "dado_inspiracao": "D12",
-        "truques": 4,
-        "magias_preparadas": 19,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 19,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -675,15 +675,15 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
+        "level": 18,
+        "prof_bonus": 6,
         "dado_inspiracao": "D12",
-        "truques": 4,
-        "magias_preparadas": 20,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 20,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -694,17 +694,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Inspiração Superior"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
+        "level": 19,
+        "prof_bonus": 6,
         "dado_inspiracao": "D12",
-        "truques": 4,
-        "magias_preparadas": 21,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 21,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -715,17 +715,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
+        "level": 20,
+        "prof_bonus": 6,
         "dado_inspiracao": "D12",
-        "truques": 4,
-        "magias_preparadas": 22,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 22,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -736,7 +736,7 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Palavras de Criação"
         ]
       }
@@ -744,19 +744,19 @@ export default [
   },
   {
     "id": "bruxo",
-    "nome": "Bruxo",
-    "descricao": "Um Magista do Conhecimento Oculto",
-    "interesse": "Conhecimento Obscuro",
-    "dado_vida": 8,
-    "atributos_primarios": [
+    "name": "Bruxo",
+    "description": "Um Magista do Conhecimento Oculto",
+    "appeal": "Conhecimento Obscuro",
+    "hit_die": 8,
+    "primary_abilities": [
       "CAR"
     ],
-    "salvaguardas": [
+    "saves": [
       "SAB",
       "CAR"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "arcanismo",
       "enganacao",
       "historia",
@@ -765,277 +765,277 @@ export default [
       "natureza",
       "religiao"
     ],
-    "armas": [
+    "weapons": [
       "Simples"
     ],
-    "armaduras": [
+    "armors": [
       "Leve"
     ],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "tools": [],
+    "starting_equipment": {
       "A": "Armadura de Couro, Foice, 2 Adagas, Foco Arcano (orbe), Livro (conhecimento oculto), Kit de Erudito, 15 PO",
       "B": "100 PO"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "CAR",
-    "complexidade": "Alta",
+    "spellcaster": true,
+    "spellcasting_ability": "CAR",
+    "complexity": "Alta",
     "subclasses": [
       {
         "id": "patrono_arquifada",
-        "nome": "Patrono Arquifada",
-        "descricao": "Pacto com um senhor feérico: teleporte curto, encantamentos e passos entre a Faéria."
+        "name": "Patrono Arquifada",
+        "description": "Pacto com um senhor feérico: teleporte curto, encantamentos e passos entre a Faéria."
       },
       {
         "id": "patrono_celestial",
-        "nome": "Patrono Celestial",
-        "descricao": "Pacto com um ser celestial: luz radiante, Dados de Cura para aliados e resistência à morte."
+        "name": "Patrono Celestial",
+        "description": "Pacto com um ser celestial: luz radiante, Dados de Cura para aliados e resistência à morte."
       },
       {
         "id": "patrono_grande_antigo",
-        "nome": "Patrono O Grande Antigo",
-        "descricao": "Pacto com uma entidade alienígena: telepatia, dano psíquico e visões que enlouquecem os inimigos."
+        "name": "Patrono O Grande Antigo",
+        "description": "Pacto com uma entidade alienígena: telepatia, dano psíquico e visões que enlouquecem os inimigos."
       },
       {
         "id": "patrono_infero",
-        "nome": "Patrono Ínfero",
-        "descricao": "Pacto infernal: PV temporários a cada abate, resistência a dano e sorte sombria nas rolagens."
+        "name": "Patrono Ínfero",
+        "description": "Pacto infernal: PV temporários a cada abate, resistência a dano e sorte sombria nas rolagens."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
+        "level": 1,
+        "prof_bonus": 2,
         "invocacoes": 1,
-        "truques": 2,
-        "magias_preparadas": 2,
-        "espacos_de_magia": 1,
-        "circulo_maximo": 1,
-        "destaques": [
+        "cantrips": 2,
+        "prepared_spells": 2,
+        "spell_slots": 1,
+        "max_spell_level": 1,
+        "highlights": [
           "Invocações Místicas",
           "Magia de Pacto"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
+        "level": 2,
+        "prof_bonus": 2,
         "invocacoes": 3,
-        "truques": 2,
-        "magias_preparadas": 3,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 1,
-        "destaques": [
+        "cantrips": 2,
+        "prepared_spells": 3,
+        "spell_slots": 2,
+        "max_spell_level": 1,
+        "highlights": [
           "Astúcia Mágica"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
+        "level": 3,
+        "prof_bonus": 2,
         "invocacoes": 3,
-        "truques": 2,
-        "magias_preparadas": 4,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 2,
-        "destaques": [
+        "cantrips": 2,
+        "prepared_spells": 4,
+        "spell_slots": 2,
+        "max_spell_level": 2,
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
+        "level": 4,
+        "prof_bonus": 2,
         "invocacoes": 3,
-        "truques": 3,
-        "magias_preparadas": 5,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 2,
-        "destaques": [
+        "cantrips": 3,
+        "prepared_spells": 5,
+        "spell_slots": 2,
+        "max_spell_level": 2,
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
+        "level": 5,
+        "prof_bonus": 3,
         "invocacoes": 5,
-        "truques": 3,
-        "magias_preparadas": 6,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 3,
-        "destaques": []
+        "cantrips": 3,
+        "prepared_spells": 6,
+        "spell_slots": 2,
+        "max_spell_level": 3,
+        "highlights": []
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
+        "level": 6,
+        "prof_bonus": 3,
         "invocacoes": 5,
-        "truques": 3,
-        "magias_preparadas": 7,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 3,
-        "destaques": [
+        "cantrips": 3,
+        "prepared_spells": 7,
+        "spell_slots": 2,
+        "max_spell_level": 3,
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
+        "level": 7,
+        "prof_bonus": 3,
         "invocacoes": 6,
-        "truques": 3,
-        "magias_preparadas": 8,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 4,
-        "destaques": []
+        "cantrips": 3,
+        "prepared_spells": 8,
+        "spell_slots": 2,
+        "max_spell_level": 4,
+        "highlights": []
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
+        "level": 8,
+        "prof_bonus": 3,
         "invocacoes": 6,
-        "truques": 3,
-        "magias_preparadas": 9,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 4,
-        "destaques": [
+        "cantrips": 3,
+        "prepared_spells": 9,
+        "spell_slots": 2,
+        "max_spell_level": 4,
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
+        "level": 9,
+        "prof_bonus": 4,
         "invocacoes": 7,
-        "truques": 3,
-        "magias_preparadas": 10,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 3,
+        "prepared_spells": 10,
+        "spell_slots": 2,
+        "max_spell_level": 5,
+        "highlights": [
           "Contatar Patrono"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
+        "level": 10,
+        "prof_bonus": 4,
         "invocacoes": 7,
-        "truques": 4,
-        "magias_preparadas": 10,
-        "espacos_de_magia": 2,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 10,
+        "spell_slots": 2,
+        "max_spell_level": 5,
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
+        "level": 11,
+        "prof_bonus": 4,
         "invocacoes": 7,
-        "truques": 4,
-        "magias_preparadas": 11,
-        "espacos_de_magia": 3,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 11,
+        "spell_slots": 3,
+        "max_spell_level": 5,
+        "highlights": [
           "Arcana Mística (6º)"
         ]
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
+        "level": 12,
+        "prof_bonus": 4,
         "invocacoes": 8,
-        "truques": 4,
-        "magias_preparadas": 11,
-        "espacos_de_magia": 3,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 11,
+        "spell_slots": 3,
+        "max_spell_level": 5,
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
+        "level": 13,
+        "prof_bonus": 5,
         "invocacoes": 8,
-        "truques": 4,
-        "magias_preparadas": 12,
-        "espacos_de_magia": 3,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 12,
+        "spell_slots": 3,
+        "max_spell_level": 5,
+        "highlights": [
           "Arcana Mística (7º)"
         ]
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
+        "level": 14,
+        "prof_bonus": 5,
         "invocacoes": 8,
-        "truques": 4,
-        "magias_preparadas": 12,
-        "espacos_de_magia": 3,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 12,
+        "spell_slots": 3,
+        "max_spell_level": 5,
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
+        "level": 15,
+        "prof_bonus": 5,
         "invocacoes": 9,
-        "truques": 4,
-        "magias_preparadas": 13,
-        "espacos_de_magia": 3,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 13,
+        "spell_slots": 3,
+        "max_spell_level": 5,
+        "highlights": [
           "Arcana Mística (8º)"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
+        "level": 16,
+        "prof_bonus": 5,
         "invocacoes": 9,
-        "truques": 4,
-        "magias_preparadas": 13,
-        "espacos_de_magia": 3,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 13,
+        "spell_slots": 3,
+        "max_spell_level": 5,
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
+        "level": 17,
+        "prof_bonus": 6,
         "invocacoes": 9,
-        "truques": 4,
-        "magias_preparadas": 14,
-        "espacos_de_magia": 4,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 14,
+        "spell_slots": 4,
+        "max_spell_level": 5,
+        "highlights": [
           "Arcana Mística (9º)"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
+        "level": 18,
+        "prof_bonus": 6,
         "invocacoes": 10,
-        "truques": 4,
-        "magias_preparadas": 14,
-        "espacos_de_magia": 4,
-        "circulo_maximo": 5,
-        "destaques": []
+        "cantrips": 4,
+        "prepared_spells": 14,
+        "spell_slots": 4,
+        "max_spell_level": 5,
+        "highlights": []
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
+        "level": 19,
+        "prof_bonus": 6,
         "invocacoes": 10,
-        "truques": 4,
-        "magias_preparadas": 15,
-        "espacos_de_magia": 4,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 15,
+        "spell_slots": 4,
+        "max_spell_level": 5,
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
+        "level": 20,
+        "prof_bonus": 6,
         "invocacoes": 10,
-        "truques": 4,
-        "magias_preparadas": 15,
-        "espacos_de_magia": 4,
-        "circulo_maximo": 5,
-        "destaques": [
+        "cantrips": 4,
+        "prepared_spells": 15,
+        "spell_slots": 4,
+        "max_spell_level": 5,
+        "highlights": [
           "Mestre Místico"
         ]
       }
@@ -1043,73 +1043,73 @@ export default [
   },
   {
     "id": "clerigo",
-    "nome": "Clérigo",
-    "descricao": "Um Sacerdote do Poder Divino",
-    "interesse": "Deuses",
-    "dado_vida": 8,
-    "atributos_primarios": [
+    "name": "Clérigo",
+    "description": "Um Sacerdote do Poder Divino",
+    "appeal": "Deuses",
+    "hit_die": 8,
+    "primary_abilities": [
       "SAB"
     ],
-    "salvaguardas": [
+    "saves": [
       "SAB",
       "CAR"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "historia",
       "intuicao",
       "medicina",
       "persuasao",
       "religiao"
     ],
-    "armas": [
+    "weapons": [
       "Simples"
     ],
-    "armaduras": [
+    "armors": [
       "Leve",
       "Média",
       "Escudo"
     ],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "tools": [],
+    "starting_equipment": {
       "A": "Cota de Malha Parcial, Escudo, Maça, Símbolo Sagrado, Kit de Sacerdote, 7 PO",
       "B": "110 PO"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "SAB",
-    "complexidade": "Média",
+    "spellcaster": true,
+    "spellcasting_ability": "SAB",
+    "complexity": "Média",
     "subclasses": [
       {
         "id": "dominio_guerra",
-        "nome": "Domínio da Guerra",
-        "descricao": "Sacerdote guerreiro: proficiência marcial, ataque divino como Ação Bônus e bênçãos em combate."
+        "name": "Domínio da Guerra",
+        "description": "Sacerdote guerreiro: proficiência marcial, ataque divino como Ação Bônus e bênçãos em combate."
       },
       {
         "id": "dominio_luz",
-        "nome": "Domínio da Luz",
-        "descricao": "Fogo e luz radiante: Chama Protetora atrapalha atacantes e a explosão de luz cega inimigos."
+        "name": "Domínio da Luz",
+        "description": "Fogo e luz radiante: Chama Protetora atrapalha atacantes e a explosão de luz cega inimigos."
       },
       {
         "id": "dominio_trapaca",
-        "nome": "Domínio da Trapaça",
-        "descricao": "Ilusão e furtividade abençoadas: duplicatas ilusórias e bênçãos que escondem o grupo."
+        "name": "Domínio da Trapaça",
+        "description": "Ilusão e furtividade abençoadas: duplicatas ilusórias e bênçãos que escondem o grupo."
       },
       {
         "id": "dominio_vida",
-        "nome": "Domínio da Vida",
-        "descricao": "Cura superior: toda magia de cura rende PV extras e a Canalizar Divindade restaura o grupo."
+        "name": "Domínio da Vida",
+        "description": "Cura superior: toda magia de cura rende PV extras e a Canalizar Divindade restaura o grupo."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
+        "level": 1,
+        "prof_bonus": 2,
         "coluna_extra": 0,
-        "truques": 3,
-        "magias_preparadas": 4,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 4,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
@@ -1120,18 +1120,18 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Conjuração",
           "Ordem Divina"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
+        "level": 2,
+        "prof_bonus": 2,
         "coluna_extra": 2,
-        "truques": 3,
-        "magias_preparadas": 5,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 5,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
@@ -1142,17 +1142,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Canalizar Divindade"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
+        "level": 3,
+        "prof_bonus": 2,
         "coluna_extra": 2,
-        "truques": 3,
-        "magias_preparadas": 6,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
@@ -1163,17 +1163,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
+        "level": 4,
+        "prof_bonus": 2,
         "coluna_extra": 2,
-        "truques": 4,
-        "magias_preparadas": 7,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
@@ -1184,17 +1184,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
+        "level": 5,
+        "prof_bonus": 3,
         "coluna_extra": 2,
-        "truques": 4,
-        "magias_preparadas": 9,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
@@ -1205,17 +1205,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Fulminar Mortos-Vivos"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
+        "level": 6,
+        "prof_bonus": 3,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 10,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1226,17 +1226,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
+        "level": 7,
+        "prof_bonus": 3,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 11,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1247,17 +1247,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Golpes Abençoados"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
+        "level": 8,
+        "prof_bonus": 3,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 12,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1268,17 +1268,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
+        "level": 9,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 14,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1289,15 +1289,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
+        "level": 10,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 15,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1308,17 +1308,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Intervenção Divina"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
+        "level": 11,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1329,15 +1329,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
+        "level": 12,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1348,17 +1348,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
+        "level": 13,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1369,15 +1369,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
+        "level": 14,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1388,17 +1388,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Golpes Abençoados Aprimorado"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
+        "level": 15,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1409,15 +1409,15 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
+        "level": 16,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1428,17 +1428,17 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
+        "level": 17,
+        "prof_bonus": 6,
         "coluna_extra": 3,
-        "truques": 5,
-        "magias_preparadas": 19,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 19,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1449,17 +1449,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
+        "level": 18,
+        "prof_bonus": 6,
         "coluna_extra": 4,
-        "truques": 5,
-        "magias_preparadas": 20,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 20,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1470,15 +1470,15 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
+        "level": 19,
+        "prof_bonus": 6,
         "coluna_extra": 4,
-        "truques": 5,
-        "magias_preparadas": 21,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 21,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1489,17 +1489,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
+        "level": 20,
+        "prof_bonus": 6,
         "coluna_extra": 4,
-        "truques": 5,
-        "magias_preparadas": 22,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 22,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1510,7 +1510,7 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Intervenção Divina Maior"
         ]
       }
@@ -1518,19 +1518,19 @@ export default [
   },
   {
     "id": "druida",
-    "nome": "Druida",
-    "descricao": "Um Sacerdote da Natureza de Poder Primal",
-    "interesse": "Natureza",
-    "dado_vida": 8,
-    "atributos_primarios": [
+    "name": "Druida",
+    "description": "Um Sacerdote da Natureza de Poder Primal",
+    "appeal": "Natureza",
+    "hit_die": 8,
+    "primary_abilities": [
       "SAB"
     ],
-    "salvaguardas": [
+    "saves": [
       "INT",
       "SAB"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "arcanismo",
       "lidar_com_animais",
       "intuicao",
@@ -1540,61 +1540,61 @@ export default [
       "religiao",
       "sobrevivencia"
     ],
-    "armas": [
+    "weapons": [
       "Simples"
     ],
-    "armaduras": [
+    "armors": [
       "Leve",
       "Escudo"
     ],
-    "ferramentas": [
+    "tools": [
       "Kit de Herbalismo"
     ],
-    "equipamento_inicial": {
+    "starting_equipment": {
       "A": "Armadura de Couro, Escudo, Foice, Foco Druídico (Cajado), Kit de Explorador, Kit de Herbalismo, 9 PO",
       "B": "ver livro"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "SAB",
-    "complexidade": "Alta",
+    "spellcaster": true,
+    "spellcasting_ability": "SAB",
+    "complexity": "Alta",
     "subclasses": [
       {
         "id": "circulo_lua",
-        "nome": "Círculo da Lua",
-        "descricao": "Forma Selvagem de combate: assume feras poderosas e conjura magias na forma animal."
+        "name": "Círculo da Lua",
+        "description": "Forma Selvagem de combate: assume feras poderosas e conjura magias na forma animal."
       },
       {
         "id": "circulo_terra",
-        "nome": "Círculo da Terra",
-        "descricao": "Magia ligada ao terreno: magias adicionais por bioma e recuperação de espaços de magia."
+        "name": "Círculo da Terra",
+        "description": "Magia ligada ao terreno: magias adicionais por bioma e recuperação de espaços de magia."
       },
       {
         "id": "circulo_estrelas",
-        "nome": "Círculo das Estrelas",
-        "descricao": "Forma Estelar: assume constelações que curam, atacam à distância ou reforçam a concentração."
+        "name": "Círculo das Estrelas",
+        "description": "Forma Estelar: assume constelações que curam, atacam à distância ou reforçam a concentração."
       },
       {
         "id": "circulo_mar",
-        "nome": "Círculo do Mar",
-        "descricao": "Fúria do mar: uma aura de tempestade e gelo que fere e empurra quem se aproxima."
+        "name": "Círculo do Mar",
+        "description": "Fúria do mar: uma aura de tempestade e gelo que fere e empurra quem se aproxima."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [
+    "subclass_level": 3,
+    "granted_languages": [
       {
         "id": "druidico",
-        "nome": "Druídico",
+        "name": "Druídico",
         "nota": "Idioma secreto dos círculos druídicos. Concedido automaticamente no nível 1."
       }
     ],
-    "progressao": [
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
+        "level": 1,
+        "prof_bonus": 2,
         "coluna_extra": 0,
-        "truques": 2,
-        "magias_preparadas": 4,
-        "espacos": {
+        "cantrips": 2,
+        "prepared_spells": 4,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
@@ -1605,19 +1605,19 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Conjuração",
           "Idioma Druídico",
           "Ordem Primal"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
+        "level": 2,
+        "prof_bonus": 2,
         "coluna_extra": 2,
-        "truques": 2,
-        "magias_preparadas": 5,
-        "espacos": {
+        "cantrips": 2,
+        "prepared_spells": 5,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
@@ -1628,18 +1628,18 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Companheiro Selvagem",
           "Forma Selvagem"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
+        "level": 3,
+        "prof_bonus": 2,
         "coluna_extra": 2,
-        "truques": 2,
-        "magias_preparadas": 6,
-        "espacos": {
+        "cantrips": 2,
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
@@ -1650,17 +1650,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
+        "level": 4,
+        "prof_bonus": 2,
         "coluna_extra": 2,
-        "truques": 3,
-        "magias_preparadas": 7,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
@@ -1671,17 +1671,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
+        "level": 5,
+        "prof_bonus": 3,
         "coluna_extra": 2,
-        "truques": 3,
-        "magias_preparadas": 9,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
@@ -1692,17 +1692,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Ressurgimento Selvagem"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
+        "level": 6,
+        "prof_bonus": 3,
         "coluna_extra": 3,
-        "truques": 3,
-        "magias_preparadas": 10,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1713,17 +1713,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
+        "level": 7,
+        "prof_bonus": 3,
         "coluna_extra": 3,
-        "truques": 3,
-        "magias_preparadas": 11,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1734,17 +1734,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Fúria Elemental"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
+        "level": 8,
+        "prof_bonus": 3,
         "coluna_extra": 3,
-        "truques": 3,
-        "magias_preparadas": 12,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1755,17 +1755,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
+        "level": 9,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 3,
-        "magias_preparadas": 14,
-        "espacos": {
+        "cantrips": 3,
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1776,15 +1776,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
+        "level": 10,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 15,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1795,17 +1795,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
+        "level": 11,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1816,15 +1816,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
+        "level": 12,
+        "prof_bonus": 4,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1835,17 +1835,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
+        "level": 13,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1856,15 +1856,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
+        "level": 14,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1875,17 +1875,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
+        "level": 15,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1896,17 +1896,17 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Fúria Elemental Aprimorada"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
+        "level": 16,
+        "prof_bonus": 5,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1917,17 +1917,17 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
+        "level": 17,
+        "prof_bonus": 6,
         "coluna_extra": 4,
-        "truques": 4,
-        "magias_preparadas": 19,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 19,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1938,15 +1938,15 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
+        "level": 18,
+        "prof_bonus": 6,
         "coluna_extra": 4,
-        "truques": 4,
-        "magias_preparadas": 20,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 20,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1957,17 +1957,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Magias Bestiais"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
+        "level": 19,
+        "prof_bonus": 6,
         "coluna_extra": 4,
-        "truques": 4,
-        "magias_preparadas": 21,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 21,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1978,17 +1978,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
+        "level": 20,
+        "prof_bonus": 6,
         "coluna_extra": 4,
-        "truques": 4,
-        "magias_preparadas": 22,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 22,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -1999,7 +1999,7 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Arquidruida"
         ]
       }
@@ -2007,19 +2007,19 @@ export default [
   },
   {
     "id": "feiticeiro",
-    "nome": "Feiticeiro",
-    "descricao": "Um Magista Deslumbrante Repleto de Magia Inata",
-    "interesse": "Poder",
-    "dado_vida": 6,
-    "atributos_primarios": [
+    "name": "Feiticeiro",
+    "description": "Um Magista Deslumbrante Repleto de Magia Inata",
+    "appeal": "Poder",
+    "hit_die": 6,
+    "primary_abilities": [
       "CAR"
     ],
-    "salvaguardas": [
+    "saves": [
       "CON",
       "CAR"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "arcanismo",
       "enganacao",
       "intimidacao",
@@ -2027,50 +2027,50 @@ export default [
       "persuasao",
       "religiao"
     ],
-    "armas": [
+    "weapons": [
       "Simples"
     ],
-    "armaduras": [],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "armors": [],
+    "tools": [],
+    "starting_equipment": {
       "A": "Lança, 2 Adagas, Foco Arcano (cristal), Kit de Explorador de Masmorras, 28 PO",
       "B": "50 PO"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "CAR",
-    "complexidade": "Alta",
+    "spellcaster": true,
+    "spellcasting_ability": "CAR",
+    "complexity": "Alta",
     "subclasses": [
       {
         "id": "feiticaria_aberrante",
-        "nome": "Feitiçaria Aberrante",
-        "descricao": "Magia psiônica de origem alienígena: telepatia, magias psíquicas e transformação do próprio corpo."
+        "name": "Feitiçaria Aberrante",
+        "description": "Magia psiônica de origem alienígena: telepatia, magias psíquicas e transformação do próprio corpo."
       },
       {
         "id": "feiticaria_draconica",
-        "nome": "Feitiçaria Dracônica",
-        "descricao": "Sangue de dragão: PV extras, escamas que servem de armadura, resistência elemental e asas."
+        "name": "Feitiçaria Dracônica",
+        "description": "Sangue de dragão: PV extras, escamas que servem de armadura, resistência elemental e asas."
       },
       {
         "id": "feiticaria_mecanica",
-        "nome": "Feitiçaria Mecânica",
-        "descricao": "Ordem de Mecanus: anula vantagem e desvantagem, restaura o equilíbrio e protege contra o caos."
+        "name": "Feitiçaria Mecânica",
+        "description": "Ordem de Mecanus: anula vantagem e desvantagem, restaura o equilíbrio e protege contra o caos."
       },
       {
         "id": "feiticaria_selvagem",
-        "nome": "Feitiçaria Selvagem",
-        "descricao": "Magia instável: surtos aleatórios, Marés do Caos e capacidade de dobrar a sorte do grupo."
+        "name": "Feitiçaria Selvagem",
+        "description": "Magia instável: surtos aleatórios, Marés do Caos e capacidade de dobrar a sorte do grupo."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
+        "level": 1,
+        "prof_bonus": 2,
         "coluna_extra": 0,
-        "truques": 4,
-        "magias_preparadas": 2,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 2,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
@@ -2081,18 +2081,18 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Conjuração",
           "Feitiçaria Inata"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
+        "level": 2,
+        "prof_bonus": 2,
         "coluna_extra": 2,
-        "truques": 4,
-        "magias_preparadas": 4,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 4,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
@@ -2103,18 +2103,18 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Fonte de Magia",
           "Metamagia"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
+        "level": 3,
+        "prof_bonus": 2,
         "coluna_extra": 3,
-        "truques": 4,
-        "magias_preparadas": 6,
-        "espacos": {
+        "cantrips": 4,
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
@@ -2125,17 +2125,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
+        "level": 4,
+        "prof_bonus": 2,
         "coluna_extra": 4,
-        "truques": 5,
-        "magias_preparadas": 7,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
@@ -2146,17 +2146,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
+        "level": 5,
+        "prof_bonus": 3,
         "coluna_extra": 5,
-        "truques": 5,
-        "magias_preparadas": 9,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
@@ -2167,17 +2167,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Restauração Feiticeira"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
+        "level": 6,
+        "prof_bonus": 3,
         "coluna_extra": 6,
-        "truques": 5,
-        "magias_preparadas": 10,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2188,17 +2188,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
+        "level": 7,
+        "prof_bonus": 3,
         "coluna_extra": 7,
-        "truques": 5,
-        "magias_preparadas": 11,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2209,17 +2209,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Feitiçaria Encarnada"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
+        "level": 8,
+        "prof_bonus": 3,
         "coluna_extra": 8,
-        "truques": 5,
-        "magias_preparadas": 12,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2230,17 +2230,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
+        "level": 9,
+        "prof_bonus": 4,
         "coluna_extra": 9,
-        "truques": 5,
-        "magias_preparadas": 14,
-        "espacos": {
+        "cantrips": 5,
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2251,15 +2251,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
+        "level": 10,
+        "prof_bonus": 4,
         "coluna_extra": 10,
-        "truques": 6,
-        "magias_preparadas": 15,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2270,17 +2270,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Metamagia"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
+        "level": 11,
+        "prof_bonus": 4,
         "coluna_extra": 11,
-        "truques": 6,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2291,15 +2291,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
+        "level": 12,
+        "prof_bonus": 4,
         "coluna_extra": 12,
-        "truques": 6,
-        "magias_preparadas": 16,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2310,17 +2310,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
+        "level": 13,
+        "prof_bonus": 5,
         "coluna_extra": 13,
-        "truques": 6,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2331,15 +2331,15 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
+        "level": 14,
+        "prof_bonus": 5,
         "coluna_extra": 14,
-        "truques": 6,
-        "magias_preparadas": 17,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2350,17 +2350,17 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
+        "level": 15,
+        "prof_bonus": 5,
         "coluna_extra": 15,
-        "truques": 6,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2371,15 +2371,15 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
+        "level": 16,
+        "prof_bonus": 5,
         "coluna_extra": 16,
-        "truques": 6,
-        "magias_preparadas": 18,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2390,17 +2390,17 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
+        "level": 17,
+        "prof_bonus": 6,
         "coluna_extra": 17,
-        "truques": 6,
-        "magias_preparadas": 19,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 19,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2411,17 +2411,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Metamagia"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
+        "level": 18,
+        "prof_bonus": 6,
         "coluna_extra": 18,
-        "truques": 6,
-        "magias_preparadas": 20,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 20,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2432,17 +2432,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
+        "level": 19,
+        "prof_bonus": 6,
         "coluna_extra": 19,
-        "truques": 6,
-        "magias_preparadas": 21,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 21,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2453,17 +2453,17 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
+        "level": 20,
+        "prof_bonus": 6,
         "coluna_extra": 20,
-        "truques": 6,
-        "magias_preparadas": 22,
-        "espacos": {
+        "cantrips": 6,
+        "prepared_spells": 22,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -2474,7 +2474,7 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Apoteose Arcana"
         ]
       }
@@ -2482,20 +2482,20 @@ export default [
   },
   {
     "id": "guardiao",
-    "nome": "Guardião",
-    "descricao": "Um Combatente Errante Imbuído de Magia Primitiva",
-    "interesse": "Sobrevivência",
-    "dado_vida": 10,
-    "atributos_primarios": [
+    "name": "Guardião",
+    "description": "Um Combatente Errante Imbuído de Magia Primitiva",
+    "appeal": "Sobrevivência",
+    "hit_die": 10,
+    "primary_abilities": [
       "DES",
       "SAB"
     ],
-    "salvaguardas": [
+    "saves": [
       "FOR",
       "DES"
     ],
-    "num_pericias": 3,
-    "pericias_disponiveis": [
+    "num_skills": 3,
+    "available_skills": [
       "atletismo",
       "furtividade",
       "intuicao",
@@ -2505,368 +2505,368 @@ export default [
       "percepcao",
       "sobrevivencia"
     ],
-    "armas": [
+    "weapons": [
       "Simples",
       "Marciais"
     ],
-    "armaduras": [
+    "armors": [
       "Leve",
       "Média",
       "Escudo"
     ],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "tools": [],
+    "starting_equipment": {
       "A": "Armadura de Couro Batido, Cimitarra, Espada Curta, Arco Longo, 20 Flechas, Aljava, Foco Druídico (ramo de visco), Kit de Aventureiro, 7 PO",
       "B": "150 PO"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "SAB",
-    "complexidade": "Média",
+    "spellcaster": true,
+    "spellcasting_ability": "SAB",
+    "complexity": "Média",
     "subclasses": [
       {
         "id": "andarilho_feerico",
-        "nome": "Andarilho Feérico",
-        "descricao": "Toque da Faéria: dano psíquico nos ataques, encantos, e resistência a medo e enfeitiçamento."
+        "name": "Andarilho Feérico",
+        "description": "Toque da Faéria: dano psíquico nos ataques, encantos, e resistência a medo e enfeitiçamento."
       },
       {
         "id": "cacador",
-        "nome": "Caçador",
-        "descricao": "Técnicas de caça sob medida: escolhe golpes contra hordas ou contra ameaças únicas e poderosas."
+        "name": "Caçador",
+        "description": "Técnicas de caça sob medida: escolhe golpes contra hordas ou contra ameaças únicas e poderosas."
       },
       {
         "id": "senhor_das_feras",
-        "nome": "Senhor das Feras",
-        "descricao": "Um companheiro primal luta ao seu lado, agindo em conjunto com seus próprios ataques."
+        "name": "Senhor das Feras",
+        "description": "Um companheiro primal luta ao seu lado, agindo em conjunto com seus próprios ataques."
       },
       {
         "id": "vigilante_das_sombras",
-        "nome": "Vigilante das Sombras",
-        "descricao": "Emboscada na escuridão: iniciativa e ataque extra no primeiro turno, visão às cegas e invisibilidade."
+        "name": "Vigilante das Sombras",
+        "description": "Emboscada na escuridão: iniciativa e ataque extra no primeiro turno, visão às cegas e invisibilidade."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
+        "level": 1,
+        "prof_bonus": 2,
         "usos_inimigo_favorito": 2,
-        "magias_preparadas": 2,
-        "espacos": {
+        "prepared_spells": 2,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Conjuração",
           "Inimigo Favorito",
           "Maestria em Arma"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
+        "level": 2,
+        "prof_bonus": 2,
         "usos_inimigo_favorito": 2,
-        "magias_preparadas": 3,
-        "espacos": {
+        "prepared_spells": 3,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Estilo de Luta",
           "Explorador Hábil"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
+        "level": 3,
+        "prof_bonus": 2,
         "usos_inimigo_favorito": 2,
-        "magias_preparadas": 4,
-        "espacos": {
+        "prepared_spells": 4,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
+        "level": 4,
+        "prof_bonus": 2,
         "usos_inimigo_favorito": 2,
-        "magias_preparadas": 5,
-        "espacos": {
+        "prepared_spells": 5,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
+        "level": 5,
+        "prof_bonus": 3,
         "usos_inimigo_favorito": 3,
-        "magias_preparadas": 6,
-        "espacos": {
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Ataque Extra"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
+        "level": 6,
+        "prof_bonus": 3,
         "usos_inimigo_favorito": 3,
-        "magias_preparadas": 6,
-        "espacos": {
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Errante"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
+        "level": 7,
+        "prof_bonus": 3,
         "usos_inimigo_favorito": 3,
-        "magias_preparadas": 7,
-        "espacos": {
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
+        "level": 8,
+        "prof_bonus": 3,
         "usos_inimigo_favorito": 3,
-        "magias_preparadas": 7,
-        "espacos": {
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
+        "level": 9,
+        "prof_bonus": 4,
         "usos_inimigo_favorito": 4,
-        "magias_preparadas": 9,
-        "espacos": {
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Especialista"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
+        "level": 10,
+        "prof_bonus": 4,
         "usos_inimigo_favorito": 4,
-        "magias_preparadas": 9,
-        "espacos": {
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Incansável"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
+        "level": 11,
+        "prof_bonus": 4,
         "usos_inimigo_favorito": 4,
-        "magias_preparadas": 10,
-        "espacos": {
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
+        "level": 12,
+        "prof_bonus": 4,
         "usos_inimigo_favorito": 4,
-        "magias_preparadas": 10,
-        "espacos": {
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
+        "level": 13,
+        "prof_bonus": 5,
         "usos_inimigo_favorito": 5,
-        "magias_preparadas": 11,
-        "espacos": {
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 1,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Predador Implacável"
         ]
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
+        "level": 14,
+        "prof_bonus": 5,
         "usos_inimigo_favorito": 5,
-        "magias_preparadas": 11,
-        "espacos": {
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 1,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Véu da Natureza"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
+        "level": 15,
+        "prof_bonus": 5,
         "usos_inimigo_favorito": 5,
-        "magias_preparadas": 12,
-        "espacos": {
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 2,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
+        "level": 16,
+        "prof_bonus": 5,
         "usos_inimigo_favorito": 5,
-        "magias_preparadas": 12,
-        "espacos": {
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 2,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
+        "level": 17,
+        "prof_bonus": 6,
         "usos_inimigo_favorito": 6,
-        "magias_preparadas": 14,
-        "espacos": {
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 1
         },
-        "destaques": [
+        "highlights": [
           "Caçador Preciso"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
+        "level": 18,
+        "prof_bonus": 6,
         "usos_inimigo_favorito": 6,
-        "magias_preparadas": 14,
-        "espacos": {
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 1
         },
-        "destaques": [
+        "highlights": [
           "Sentidos Selvagens"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
+        "level": 19,
+        "prof_bonus": 6,
         "usos_inimigo_favorito": 6,
-        "magias_preparadas": 15,
-        "espacos": {
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 2
         },
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
+        "level": 20,
+        "prof_bonus": 6,
         "usos_inimigo_favorito": 6,
-        "magias_preparadas": 15,
-        "espacos": {
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 2
         },
-        "destaques": [
+        "highlights": [
           "Matador de Inimigos Favoritos"
         ]
       }
@@ -2874,20 +2874,20 @@ export default [
   },
   {
     "id": "guerreiro",
-    "nome": "Guerreiro",
-    "descricao": "Um Mestre de Todas as Armas e Armaduras",
-    "interesse": "Armas",
-    "dado_vida": 10,
-    "atributos_primarios": [
+    "name": "Guerreiro",
+    "description": "Um Mestre de Todas as Armas e Armaduras",
+    "appeal": "Armas",
+    "hit_die": 10,
+    "primary_abilities": [
       "FOR",
       "DES"
     ],
-    "salvaguardas": [
+    "saves": [
       "FOR",
       "CON"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "acrobacia",
       "atletismo",
       "historia",
@@ -2898,233 +2898,233 @@ export default [
       "persuasao",
       "sobrevivencia"
     ],
-    "armas": [
+    "weapons": [
       "Simples",
       "Marciais"
     ],
-    "armaduras": [
+    "armors": [
       "Leve",
       "Média",
       "Pesada",
       "Escudo"
     ],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "tools": [],
+    "starting_equipment": {
       "A": "Cota de Malha, Espada Grande, Mangual, 8 Azagaias, Kit de Explorador de Masmorras, 4 PO",
       "B": "Armadura de Couro Batido, Cimitarra, Espada Curta, Arco Longo, 20 Flechas, Aljava, Kit de Explorador de Masmorras",
       "C": "155 PO"
     },
-    "conjurador": false,
-    "complexidade": "Baixa",
+    "spellcaster": false,
+    "complexity": "Baixa",
     "subclasses": [
       {
         "id": "campeao",
-        "nome": "Campeão",
-        "descricao": "Perfeição marcial simples e direta: crítico ampliado, atletismo aprimorado e recuperação constante."
+        "name": "Campeão",
+        "description": "Perfeição marcial simples e direta: crítico ampliado, atletismo aprimorado e recuperação constante."
       },
       {
         "id": "cavaleiro_mistico",
-        "nome": "Cavaleiro Místico",
-        "descricao": "Guerreiro-mago: magias de Abjuração e Evocação, vínculo com a arma e golpe mágico combinado."
+        "name": "Cavaleiro Místico",
+        "description": "Guerreiro-mago: magias de Abjuração e Evocação, vínculo com a arma e golpe mágico combinado."
       },
       {
         "id": "combatente_psiquico",
-        "nome": "Combatente Psíquico",
-        "descricao": "Energia psiônica canalizada para proteger aliados, empurrar inimigos e potencializar ataques."
+        "name": "Combatente Psíquico",
+        "description": "Energia psiônica canalizada para proteger aliados, empurrar inimigos e potencializar ataques."
       },
       {
         "id": "mestre_da_batalha",
-        "nome": "Mestre da Batalha",
-        "descricao": "Manobras táticas com Dados de Superioridade: desarmar, derrubar, provocar e comandar o campo."
+        "name": "Mestre da Batalha",
+        "description": "Manobras táticas com Dados de Superioridade: desarmar, derrubar, provocar e comandar o campo."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
-        "recuperar_folego": 2,
+        "level": 1,
+        "prof_bonus": 2,
+        "second_wind": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Estilo de Luta",
           "Maestria em Arma",
           "Recuperar Fôlego"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
-        "recuperar_folego": 2,
+        "level": 2,
+        "prof_bonus": 2,
+        "second_wind": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Mente Tática",
           "Surto de Ação"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
-        "recuperar_folego": 2,
+        "level": 3,
+        "prof_bonus": 2,
+        "second_wind": 2,
         "maestria_arma": 3,
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
-        "recuperar_folego": 3,
+        "level": 4,
+        "prof_bonus": 2,
+        "second_wind": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
-        "recuperar_folego": 3,
+        "level": 5,
+        "prof_bonus": 3,
+        "second_wind": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Ajuste Tático",
           "Ataque Extra"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
-        "recuperar_folego": 3,
+        "level": 6,
+        "prof_bonus": 3,
+        "second_wind": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
-        "recuperar_folego": 3,
+        "level": 7,
+        "prof_bonus": 3,
+        "second_wind": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
-        "recuperar_folego": 3,
+        "level": 8,
+        "prof_bonus": 3,
+        "second_wind": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
-        "recuperar_folego": 3,
+        "level": 9,
+        "prof_bonus": 4,
+        "second_wind": 3,
         "maestria_arma": 4,
-        "destaques": [
+        "highlights": [
           "Indomável",
           "Mestre Tático"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
-        "recuperar_folego": 4,
+        "level": 10,
+        "prof_bonus": 4,
+        "second_wind": 4,
         "maestria_arma": 5,
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
-        "recuperar_folego": 4,
+        "level": 11,
+        "prof_bonus": 4,
+        "second_wind": 4,
         "maestria_arma": 5,
-        "destaques": [
+        "highlights": [
           "Dois Ataques Extras"
         ]
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
-        "recuperar_folego": 4,
+        "level": 12,
+        "prof_bonus": 4,
+        "second_wind": 4,
         "maestria_arma": 5,
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
-        "recuperar_folego": 4,
+        "level": 13,
+        "prof_bonus": 5,
+        "second_wind": 4,
         "maestria_arma": 5,
-        "destaques": [
+        "highlights": [
           "Ataques Estudados",
           "Indomável"
         ]
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
-        "recuperar_folego": 4,
+        "level": 14,
+        "prof_bonus": 5,
+        "second_wind": 4,
         "maestria_arma": 5,
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
-        "recuperar_folego": 4,
+        "level": 15,
+        "prof_bonus": 5,
+        "second_wind": 4,
         "maestria_arma": 5,
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
-        "recuperar_folego": 4,
+        "level": 16,
+        "prof_bonus": 5,
+        "second_wind": 4,
         "maestria_arma": 6,
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
-        "recuperar_folego": 4,
+        "level": 17,
+        "prof_bonus": 6,
+        "second_wind": 4,
         "maestria_arma": 6,
-        "destaques": [
+        "highlights": [
           "Indomável",
           "Surto de Ação"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
-        "recuperar_folego": 4,
+        "level": 18,
+        "prof_bonus": 6,
+        "second_wind": 4,
         "maestria_arma": 6,
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
-        "recuperar_folego": 4,
+        "level": 19,
+        "prof_bonus": 6,
+        "second_wind": 4,
         "maestria_arma": 6,
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
-        "recuperar_folego": 4,
+        "level": 20,
+        "prof_bonus": 6,
+        "second_wind": 4,
         "maestria_arma": 6,
-        "destaques": [
+        "highlights": [
           "Três Ataques Extras"
         ]
       }
@@ -3132,19 +3132,19 @@ export default [
   },
   {
     "id": "ladino",
-    "nome": "Ladino",
-    "descricao": "Um Especialista em Furtividade e Subterfúgio",
-    "interesse": "Furtividade",
-    "dado_vida": 8,
-    "atributos_primarios": [
+    "name": "Ladino",
+    "description": "Um Especialista em Furtividade e Subterfúgio",
+    "appeal": "Furtividade",
+    "hit_die": 8,
+    "primary_abilities": [
       "DES"
     ],
-    "salvaguardas": [
+    "saves": [
       "DES",
       "INT"
     ],
-    "num_pericias": 4,
-    "pericias_disponiveis": [
+    "num_skills": 4,
+    "available_skills": [
       "acrobacia",
       "atletismo",
       "enganacao",
@@ -3156,58 +3156,58 @@ export default [
       "persuasao",
       "prestidigitacao"
     ],
-    "armas": [
+    "weapons": [
       "Simples",
       "Marciais com Acuidade ou Leve"
     ],
-    "armaduras": [
+    "armors": [
       "Leve"
     ],
-    "ferramentas": [
+    "tools": [
       "Ferramentas de Ladrão"
     ],
-    "equipamento_inicial": {
+    "starting_equipment": {
       "A": "Armadura de Couro, 2 Adagas, Espada Curta, Arco Curto, 20 Flechas, Aljava, Ferramentas de Ladrão, Kit de Assaltante, 8 PO",
       "B": "100 PO"
     },
-    "conjurador": false,
-    "complexidade": "Baixa",
+    "spellcaster": false,
+    "complexity": "Baixa",
     "subclasses": [
       {
         "id": "adaga_espiritual",
-        "nome": "Adaga Espiritual",
-        "descricao": "Lâminas psiônicas manifestas: ataca com a mente, comunica-se em segredo e teleporta-se em silêncio."
+        "name": "Adaga Espiritual",
+        "description": "Lâminas psiônicas manifestas: ataca com a mente, comunica-se em segredo e teleporta-se em silêncio."
       },
       {
         "id": "assassino",
-        "nome": "Assassino",
-        "descricao": "Especialista em emboscada: vantagem no primeiro turno, dano brutal contra surpreendidos e disfarces."
+        "name": "Assassino",
+        "description": "Especialista em emboscada: vantagem no primeiro turno, dano brutal contra surpreendidos e disfarces."
       },
       {
         "id": "ladrao",
-        "nome": "Ladrão",
-        "descricao": "Ofício clássico: mãos rápidas como Ação Bônus, escalada veloz e uso de itens mágicos alheios."
+        "name": "Ladrão",
+        "description": "Ofício clássico: mãos rápidas como Ação Bônus, escalada veloz e uso de itens mágicos alheios."
       },
       {
         "id": "trapaceiro_arcano",
-        "nome": "Trapaceiro Arcano",
-        "descricao": "Magia de Ilusão e Encantamento a serviço do furto, com Mão Mágica aprimorada e truques à distância."
+        "name": "Trapaceiro Arcano",
+        "description": "Magia de Ilusão e Encantamento a serviço do furto, com Mão Mágica aprimorada e truques à distância."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [
+    "subclass_level": 3,
+    "granted_languages": [
       {
         "id": "giria_dos_ladroes",
-        "nome": "Gíria dos Ladrões",
+        "name": "Gíria dos Ladrões",
         "nota": "Idioma secreto das guildas criminosas. Concedido automaticamente no nível 1."
       }
     ],
-    "progressao": [
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
-        "ataque_furtivo": "1d6",
-        "destaques": [
+        "level": 1,
+        "prof_bonus": 2,
+        "sneak_attack": "1d6",
+        "highlights": [
           "Ataque Furtivo",
           "Especialização",
           "Gíria dos Ladrões",
@@ -3215,157 +3215,157 @@ export default [
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
-        "ataque_furtivo": "1d6",
-        "destaques": [
+        "level": 2,
+        "prof_bonus": 2,
+        "sneak_attack": "1d6",
+        "highlights": [
           "Ação Ardilosa"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
-        "ataque_furtivo": "2d6",
-        "destaques": [
+        "level": 3,
+        "prof_bonus": 2,
+        "sneak_attack": "2d6",
+        "highlights": [
           "Mira Firme",
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
-        "ataque_furtivo": "2d6",
-        "destaques": [
+        "level": 4,
+        "prof_bonus": 2,
+        "sneak_attack": "2d6",
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
-        "ataque_furtivo": "3d6",
-        "destaques": [
+        "level": 5,
+        "prof_bonus": 3,
+        "sneak_attack": "3d6",
+        "highlights": [
           "Esquiva Sobrenatural",
           "Golpe Astuto"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
-        "ataque_furtivo": "3d6",
-        "destaques": [
+        "level": 6,
+        "prof_bonus": 3,
+        "sneak_attack": "3d6",
+        "highlights": [
           "Especialista"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
-        "ataque_furtivo": "4d6",
-        "destaques": [
+        "level": 7,
+        "prof_bonus": 3,
+        "sneak_attack": "4d6",
+        "highlights": [
           "Evasão",
           "Talento Confiável"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
-        "ataque_furtivo": "4d6",
-        "destaques": [
+        "level": 8,
+        "prof_bonus": 3,
+        "sneak_attack": "4d6",
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
-        "ataque_furtivo": "5d6",
-        "destaques": [
+        "level": 9,
+        "prof_bonus": 4,
+        "sneak_attack": "5d6",
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
-        "ataque_furtivo": "5d6",
-        "destaques": [
+        "level": 10,
+        "prof_bonus": 4,
+        "sneak_attack": "5d6",
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
-        "ataque_furtivo": "6d6",
-        "destaques": [
+        "level": 11,
+        "prof_bonus": 4,
+        "sneak_attack": "6d6",
+        "highlights": [
           "Golpe Astuto Aprimorado"
         ]
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
-        "ataque_furtivo": "6d6",
-        "destaques": [
+        "level": 12,
+        "prof_bonus": 4,
+        "sneak_attack": "6d6",
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
-        "ataque_furtivo": "7d6",
-        "destaques": [
+        "level": 13,
+        "prof_bonus": 5,
+        "sneak_attack": "7d6",
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
-        "ataque_furtivo": "7d6",
-        "destaques": [
+        "level": 14,
+        "prof_bonus": 5,
+        "sneak_attack": "7d6",
+        "highlights": [
           "Golpes Sujos"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
-        "ataque_furtivo": "8d6",
-        "destaques": [
+        "level": 15,
+        "prof_bonus": 5,
+        "sneak_attack": "8d6",
+        "highlights": [
           "Mente Escorregadia"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
-        "ataque_furtivo": "8d6",
-        "destaques": [
+        "level": 16,
+        "prof_bonus": 5,
+        "sneak_attack": "8d6",
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
-        "ataque_furtivo": "9d6",
-        "destaques": [
+        "level": 17,
+        "prof_bonus": 6,
+        "sneak_attack": "9d6",
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
-        "ataque_furtivo": "9d6",
-        "destaques": [
+        "level": 18,
+        "prof_bonus": 6,
+        "sneak_attack": "9d6",
+        "highlights": [
           "Elusivo"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
-        "ataque_furtivo": "10d6",
-        "destaques": [
+        "level": 19,
+        "prof_bonus": 6,
+        "sneak_attack": "10d6",
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
-        "ataque_furtivo": "10d6",
-        "destaques": [
+        "level": 20,
+        "prof_bonus": 6,
+        "sneak_attack": "10d6",
+        "highlights": [
           "Golpe de Sorte"
         ]
       }
@@ -3373,19 +3373,19 @@ export default [
   },
   {
     "id": "mago",
-    "nome": "Mago",
-    "descricao": "Um Estudioso Usuário de Magia Arcana",
-    "interesse": "Livros de Magia",
-    "dado_vida": 6,
-    "atributos_primarios": [
+    "name": "Mago",
+    "description": "Um Estudioso Usuário de Magia Arcana",
+    "appeal": "Livros de Magia",
+    "hit_die": 6,
+    "primary_abilities": [
       "INT"
     ],
-    "salvaguardas": [
+    "saves": [
       "INT",
       "SAB"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "arcanismo",
       "historia",
       "intuicao",
@@ -3394,49 +3394,49 @@ export default [
       "natureza",
       "religiao"
     ],
-    "armas": [
+    "weapons": [
       "Simples"
     ],
-    "armaduras": [],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "armors": [],
+    "tools": [],
+    "starting_equipment": {
       "A": "2 Adagas, Foco Arcano (Cajado), Kit de Erudito, Livro de Magias, Túnica, 5 PO",
       "B": "55 PO"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "INT",
-    "complexidade": "Média",
+    "spellcaster": true,
+    "spellcasting_ability": "INT",
+    "complexity": "Média",
     "subclasses": [
       {
         "id": "abjurador",
-        "nome": "Abjurador",
-        "descricao": "Proteção Arcana absorve dano por você e pelos aliados, e a defesa contra magia melhora com o nível."
+        "name": "Abjurador",
+        "description": "Proteção Arcana absorve dano por você e pelos aliados, e a defesa contra magia melhora com o nível."
       },
       {
         "id": "adivinhador",
-        "nome": "Adivinhador",
-        "descricao": "Presságio: rolagens guardadas de antemão substituem resultados seus ou dos inimigos."
+        "name": "Adivinhador",
+        "description": "Presságio: rolagens guardadas de antemão substituem resultados seus ou dos inimigos."
       },
       {
         "id": "evocador",
-        "nome": "Evocador",
-        "descricao": "Molda a explosão para poupar aliados e, no auge, garante dano máximo nas magias de dano."
+        "name": "Evocador",
+        "description": "Molda a explosão para poupar aliados e, no auge, garante dano máximo nas magias de dano."
       },
       {
         "id": "ilusionista",
-        "nome": "Ilusionista",
-        "descricao": "Ilusões maleáveis que mudam de forma em tempo real e, no fim, tornam-se parcialmente reais."
+        "name": "Ilusionista",
+        "description": "Ilusões maleáveis que mudam de forma em tempo real e, no fim, tornam-se parcialmente reais."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
-        "truques": 3,
-        "magias_preparadas": 4,
-        "espacos": {
+        "level": 1,
+        "prof_bonus": 2,
+        "cantrips": 3,
+        "prepared_spells": 4,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
@@ -3447,18 +3447,18 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Adepto de Ritual",
           "Conjuração",
           "Recuperação Arcana"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
-        "truques": 3,
-        "magias_preparadas": 5,
-        "espacos": {
+        "level": 2,
+        "prof_bonus": 2,
+        "cantrips": 3,
+        "prepared_spells": 5,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
@@ -3469,16 +3469,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Acadêmico"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
-        "truques": 3,
-        "magias_preparadas": 6,
-        "espacos": {
+        "level": 3,
+        "prof_bonus": 2,
+        "cantrips": 3,
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
@@ -3489,16 +3489,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
-        "truques": 4,
-        "magias_preparadas": 7,
-        "espacos": {
+        "level": 4,
+        "prof_bonus": 2,
+        "cantrips": 4,
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
@@ -3509,16 +3509,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
-        "truques": 4,
-        "magias_preparadas": 9,
-        "espacos": {
+        "level": 5,
+        "prof_bonus": 3,
+        "cantrips": 4,
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
@@ -3529,16 +3529,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Memorizar Magia"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
-        "truques": 4,
-        "magias_preparadas": 10,
-        "espacos": {
+        "level": 6,
+        "prof_bonus": 3,
+        "cantrips": 4,
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3549,16 +3549,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
-        "truques": 4,
-        "magias_preparadas": 11,
-        "espacos": {
+        "level": 7,
+        "prof_bonus": 3,
+        "cantrips": 4,
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3569,14 +3569,14 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
-        "truques": 4,
-        "magias_preparadas": 12,
-        "espacos": {
+        "level": 8,
+        "prof_bonus": 3,
+        "cantrips": 4,
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3587,16 +3587,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
-        "truques": 4,
-        "magias_preparadas": 14,
-        "espacos": {
+        "level": 9,
+        "prof_bonus": 4,
+        "cantrips": 4,
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3607,14 +3607,14 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
-        "truques": 5,
-        "magias_preparadas": 15,
-        "espacos": {
+        "level": 10,
+        "prof_bonus": 4,
+        "cantrips": 5,
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3625,16 +3625,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
-        "truques": 5,
-        "magias_preparadas": 16,
-        "espacos": {
+        "level": 11,
+        "prof_bonus": 4,
+        "cantrips": 5,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3645,14 +3645,14 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
-        "truques": 5,
-        "magias_preparadas": 16,
-        "espacos": {
+        "level": 12,
+        "prof_bonus": 4,
+        "cantrips": 5,
+        "prepared_spells": 16,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3663,16 +3663,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
-        "truques": 5,
-        "magias_preparadas": 17,
-        "espacos": {
+        "level": 13,
+        "prof_bonus": 5,
+        "cantrips": 5,
+        "prepared_spells": 17,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3683,14 +3683,14 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
-        "truques": 5,
-        "magias_preparadas": 18,
-        "espacos": {
+        "level": 14,
+        "prof_bonus": 5,
+        "cantrips": 5,
+        "prepared_spells": 18,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3701,16 +3701,16 @@ export default [
           "c8": 0,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
-        "truques": 5,
-        "magias_preparadas": 19,
-        "espacos": {
+        "level": 15,
+        "prof_bonus": 5,
+        "cantrips": 5,
+        "prepared_spells": 19,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3721,14 +3721,14 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
-        "truques": 5,
-        "magias_preparadas": 21,
-        "espacos": {
+        "level": 16,
+        "prof_bonus": 5,
+        "cantrips": 5,
+        "prepared_spells": 21,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3739,16 +3739,16 @@ export default [
           "c8": 1,
           "c9": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
-        "truques": 5,
-        "magias_preparadas": 22,
-        "espacos": {
+        "level": 17,
+        "prof_bonus": 6,
+        "cantrips": 5,
+        "prepared_spells": 22,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3759,14 +3759,14 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
-        "truques": 5,
-        "magias_preparadas": 23,
-        "espacos": {
+        "level": 18,
+        "prof_bonus": 6,
+        "cantrips": 5,
+        "prepared_spells": 23,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3777,16 +3777,16 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Maestria de Magias"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
-        "truques": 5,
-        "magias_preparadas": 24,
-        "espacos": {
+        "level": 19,
+        "prof_bonus": 6,
+        "cantrips": 5,
+        "prepared_spells": 24,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3797,16 +3797,16 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
-        "truques": 5,
-        "magias_preparadas": 25,
-        "espacos": {
+        "level": 20,
+        "prof_bonus": 6,
+        "cantrips": 5,
+        "prepared_spells": 25,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
@@ -3817,7 +3817,7 @@ export default [
           "c8": 1,
           "c9": 1
         },
-        "destaques": [
+        "highlights": [
           "Assinatura Mágica"
         ]
       }
@@ -3825,20 +3825,20 @@ export default [
   },
   {
     "id": "monge",
-    "nome": "Monge",
-    "descricao": "Um Artista Marcial com um Foco Sobrenatural",
-    "interesse": "Combate Desarmado",
-    "dado_vida": 8,
-    "atributos_primarios": [
+    "name": "Monge",
+    "description": "Um Artista Marcial com um Foco Sobrenatural",
+    "appeal": "Combate Desarmado",
+    "hit_die": 8,
+    "primary_abilities": [
       "DES",
       "SAB"
     ],
-    "salvaguardas": [
+    "saves": [
       "FOR",
       "DES"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "acrobacia",
       "atletismo",
       "furtividade",
@@ -3846,250 +3846,250 @@ export default [
       "intuicao",
       "religiao"
     ],
-    "armas": [
+    "weapons": [
       "Simples",
       "Marciais com propriedade Leve"
     ],
-    "armaduras": [],
-    "ferramentas": [
+    "armors": [],
+    "tools": [
       "1 Ferramenta de Artesão ou Instrumento Musical à escolha"
     ],
-    "equipamento_inicial": {
+    "starting_equipment": {
       "A": "Lança, 5 Adagas, Ferramentas de Artesão ou Instrumento Musical (escolhido para proficiência), Kit de Aventureiro, 11 PO",
       "B": "50 PO"
     },
-    "conjurador": false,
-    "complexidade": "Alta",
+    "spellcaster": false,
+    "complexity": "Alta",
     "subclasses": [
       {
         "id": "combatente_elementos",
-        "nome": "Combatente dos Elementos",
-        "descricao": "Golpes elementais: alcance ampliado, empurrões e dano de fogo, gelo, relâmpago ou trovão."
+        "name": "Combatente dos Elementos",
+        "description": "Golpes elementais: alcance ampliado, empurrões e dano de fogo, gelo, relâmpago ou trovão."
       },
       {
         "id": "combatente_mao_espalmada",
-        "nome": "Combatente da Mão Espalmada",
-        "descricao": "Técnica clássica: empurra, derruba ou atordoa com ataques desarmados, e cura a si mesmo."
+        "name": "Combatente da Mão Espalmada",
+        "description": "Técnica clássica: empurra, derruba ou atordoa com ataques desarmados, e cura a si mesmo."
       },
       {
         "id": "combatente_misericordia",
-        "nome": "Combatente da Misericórdia",
-        "descricao": "Mãos que curam e matam: transfere vida ou inflige dano necrótico com um toque."
+        "name": "Combatente da Misericórdia",
+        "description": "Mãos que curam e matam: transfere vida ou inflige dano necrótico com um toque."
       },
       {
         "id": "combatente_sombras",
-        "nome": "Combatente das Sombras",
-        "descricao": "Discípulo das trevas: cria escuridão, enxerga através dela e teleporta-se entre sombras."
+        "name": "Combatente das Sombras",
+        "description": "Discípulo das trevas: cria escuridão, enxerga através dela e teleporta-se entre sombras."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
+        "level": 1,
+        "prof_bonus": 2,
         "dado_artes_marciais": "1d6",
         "pontos_foco": 0,
         "movimento_bonus": 0,
-        "destaques": [
+        "highlights": [
           "Artes Marciais",
           "Defesa sem Armadura"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
+        "level": 2,
+        "prof_bonus": 2,
         "dado_artes_marciais": "1d6",
         "pontos_foco": 2,
         "movimento_bonus": "+3m",
-        "destaques": [
+        "highlights": [
           "Foco do Monge",
           "Movimento sem Armadura",
           "Metabolismo Incomum"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
+        "level": 3,
+        "prof_bonus": 2,
         "dado_artes_marciais": "1d6",
         "pontos_foco": 3,
         "movimento_bonus": "+3m",
-        "destaques": [
+        "highlights": [
           "Defletir Ataques",
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
+        "level": 4,
+        "prof_bonus": 2,
         "dado_artes_marciais": "1d6",
         "pontos_foco": 4,
         "movimento_bonus": "+3m",
-        "destaques": [
+        "highlights": [
           "AVA",
           "Queda Lenta"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
+        "level": 5,
+        "prof_bonus": 3,
         "dado_artes_marciais": "1d8",
         "pontos_foco": 5,
         "movimento_bonus": "+3m",
-        "destaques": [
+        "highlights": [
           "Ataque Extra",
           "Golpe Atordoante"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
+        "level": 6,
+        "prof_bonus": 3,
         "dado_artes_marciais": "1d8",
         "pontos_foco": 6,
         "movimento_bonus": "+4,5m",
-        "destaques": [
+        "highlights": [
           "Ataques Potencializados",
           "Subclasse"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
+        "level": 7,
+        "prof_bonus": 3,
         "dado_artes_marciais": "1d8",
         "pontos_foco": 7,
         "movimento_bonus": "+4,5m",
-        "destaques": [
+        "highlights": [
           "Evasão"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
+        "level": 8,
+        "prof_bonus": 3,
         "dado_artes_marciais": "1d8",
         "pontos_foco": 8,
         "movimento_bonus": "+4,5m",
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
+        "level": 9,
+        "prof_bonus": 4,
         "dado_artes_marciais": "1d8",
         "pontos_foco": 9,
         "movimento_bonus": "+4,5m",
-        "destaques": [
+        "highlights": [
           "Movimento Acrobático"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
+        "level": 10,
+        "prof_bonus": 4,
         "dado_artes_marciais": "1d8",
         "pontos_foco": 10,
         "movimento_bonus": "+6m",
-        "destaques": [
+        "highlights": [
           "Autocura",
           "Foco Aprimorado"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
+        "level": 11,
+        "prof_bonus": 4,
         "dado_artes_marciais": "1d10",
         "pontos_foco": 11,
         "movimento_bonus": "+6m",
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
+        "level": 12,
+        "prof_bonus": 4,
         "dado_artes_marciais": "1d10",
         "pontos_foco": 12,
         "movimento_bonus": "+6m",
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
+        "level": 13,
+        "prof_bonus": 5,
         "dado_artes_marciais": "1d10",
         "pontos_foco": 13,
         "movimento_bonus": "+6m",
-        "destaques": [
+        "highlights": [
           "Defletir Energia"
         ]
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
+        "level": 14,
+        "prof_bonus": 5,
         "dado_artes_marciais": "1d10",
         "pontos_foco": 14,
         "movimento_bonus": "+7,5m",
-        "destaques": [
+        "highlights": [
           "Sobrevivente Disciplinado"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
+        "level": 15,
+        "prof_bonus": 5,
         "dado_artes_marciais": "1d10",
         "pontos_foco": 15,
         "movimento_bonus": "+7,5m",
-        "destaques": [
+        "highlights": [
           "Foco Perfeito"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
+        "level": 16,
+        "prof_bonus": 5,
         "dado_artes_marciais": "1d10",
         "pontos_foco": 16,
         "movimento_bonus": "+7,5m",
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
+        "level": 17,
+        "prof_bonus": 6,
         "dado_artes_marciais": "1d12",
         "pontos_foco": 17,
         "movimento_bonus": "+7,5m",
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
+        "level": 18,
+        "prof_bonus": 6,
         "dado_artes_marciais": "1d12",
         "pontos_foco": 18,
         "movimento_bonus": "+9m",
-        "destaques": [
+        "highlights": [
           "Defesa Superior"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
+        "level": 19,
+        "prof_bonus": 6,
         "dado_artes_marciais": "1d12",
         "pontos_foco": 19,
         "movimento_bonus": "+9m",
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
+        "level": 20,
+        "prof_bonus": 6,
         "dado_artes_marciais": "1d12",
         "pontos_foco": 20,
         "movimento_bonus": "+9m",
-        "destaques": [
+        "highlights": [
           "Corpo e Mente"
         ]
       }
@@ -4097,20 +4097,20 @@ export default [
   },
   {
     "id": "paladino",
-    "nome": "Paladino",
-    "descricao": "Um Combatente Devotado com Juramentos Sagrados",
-    "interesse": "Proteção",
-    "dado_vida": 10,
-    "atributos_primarios": [
+    "name": "Paladino",
+    "description": "Um Combatente Devotado com Juramentos Sagrados",
+    "appeal": "Proteção",
+    "hit_die": 10,
+    "primary_abilities": [
       "FOR",
       "CAR"
     ],
-    "salvaguardas": [
+    "saves": [
       "SAB",
       "CAR"
     ],
-    "num_pericias": 2,
-    "pericias_disponiveis": [
+    "num_skills": 2,
+    "available_skills": [
       "atletismo",
       "intimidacao",
       "intuicao",
@@ -4118,367 +4118,367 @@ export default [
       "persuasao",
       "religiao"
     ],
-    "armas": [
+    "weapons": [
       "Simples",
       "Marciais"
     ],
-    "armaduras": [
+    "armors": [
       "Leve",
       "Média",
       "Pesada",
       "Escudo"
     ],
-    "ferramentas": [],
-    "equipamento_inicial": {
+    "tools": [],
+    "starting_equipment": {
       "A": "Cota de Malha, Escudo, Espada Longa, 6 Azagaias, Símbolo Sagrado, Kit de Sacerdote, 9 PO",
       "B": "150 PO"
     },
-    "conjurador": true,
-    "atributo_conjuracao": "CAR",
-    "complexidade": "Média",
+    "spellcaster": true,
+    "spellcasting_ability": "CAR",
+    "complexity": "Média",
     "subclasses": [
       {
         "id": "juramento_anciaos",
-        "nome": "Juramento dos Anciões",
-        "descricao": "Defensor da luz e da vida: aura que reduz dano mágico, encantos feéricos e longevidade."
+        "name": "Juramento dos Anciões",
+        "description": "Defensor da luz e da vida: aura que reduz dano mágico, encantos feéricos e longevidade."
       },
       {
         "id": "juramento_devocao",
-        "nome": "Juramento da Devoção",
-        "descricao": "Cavaleiro exemplar: arma sagrada, proteção contra medo e enfeitiçamento para todo o grupo."
+        "name": "Juramento da Devoção",
+        "description": "Cavaleiro exemplar: arma sagrada, proteção contra medo e enfeitiçamento para todo o grupo."
       },
       {
         "id": "juramento_gloria",
-        "nome": "Juramento da Glória",
-        "descricao": "Herói lendário: atletismo sobrenatural, velocidade extra para aliados e inspiração em combate."
+        "name": "Juramento da Glória",
+        "description": "Herói lendário: atletismo sobrenatural, velocidade extra para aliados e inspiração em combate."
       },
       {
         "id": "juramento_vinganca",
-        "nome": "Juramento da Vingança",
-        "descricao": "Caçador implacável: marca um inimigo jurado, persegue-o e ataca com vantagem até o fim."
+        "name": "Juramento da Vingança",
+        "description": "Caçador implacável: marca um inimigo jurado, persegue-o e ataca com vantagem até o fim."
       }
     ],
-    "nivel_subclasse": 3,
-    "idiomas_concedidos": [],
-    "progressao": [
+    "subclass_level": 3,
+    "granted_languages": [],
+    "progression": [
       {
-        "nivel": 1,
-        "bonus_prof": 2,
-        "canalizar_divindade": 0,
-        "magias_preparadas": 2,
-        "espacos": {
+        "level": 1,
+        "prof_bonus": 2,
+        "channel_divinity": 0,
+        "prepared_spells": 2,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Conjuração",
           "Maestria em Arma",
           "Mãos Consagradas"
         ]
       },
       {
-        "nivel": 2,
-        "bonus_prof": 2,
-        "canalizar_divindade": 0,
-        "magias_preparadas": 3,
-        "espacos": {
+        "level": 2,
+        "prof_bonus": 2,
+        "channel_divinity": 0,
+        "prepared_spells": 3,
+        "slots": {
           "c1": 2,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Destruição do Paladino",
           "Estilo de Luta"
         ]
       },
       {
-        "nivel": 3,
-        "bonus_prof": 2,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 4,
-        "espacos": {
+        "level": 3,
+        "prof_bonus": 2,
+        "channel_divinity": 2,
+        "prepared_spells": 4,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Canalizar Divindade",
           "Subclasse"
         ]
       },
       {
-        "nivel": 4,
-        "bonus_prof": 2,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 5,
-        "espacos": {
+        "level": 4,
+        "prof_bonus": 2,
+        "channel_divinity": 2,
+        "prepared_spells": 5,
+        "slots": {
           "c1": 3,
           "c2": 0,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 5,
-        "bonus_prof": 3,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 6,
-        "espacos": {
+        "level": 5,
+        "prof_bonus": 3,
+        "channel_divinity": 2,
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Ataque Extra",
           "Montaria Fiel"
         ]
       },
       {
-        "nivel": 6,
-        "bonus_prof": 3,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 6,
-        "espacos": {
+        "level": 6,
+        "prof_bonus": 3,
+        "channel_divinity": 2,
+        "prepared_spells": 6,
+        "slots": {
           "c1": 4,
           "c2": 2,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Aura de Proteção"
         ]
       },
       {
-        "nivel": 7,
-        "bonus_prof": 3,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 7,
-        "espacos": {
+        "level": 7,
+        "prof_bonus": 3,
+        "channel_divinity": 2,
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 8,
-        "bonus_prof": 3,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 7,
-        "espacos": {
+        "level": 8,
+        "prof_bonus": 3,
+        "channel_divinity": 2,
+        "prepared_spells": 7,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 0,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 9,
-        "bonus_prof": 4,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 9,
-        "espacos": {
+        "level": 9,
+        "prof_bonus": 4,
+        "channel_divinity": 2,
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Repudiar Inimigos"
         ]
       },
       {
-        "nivel": 10,
-        "bonus_prof": 4,
-        "canalizar_divindade": 2,
-        "magias_preparadas": 9,
-        "espacos": {
+        "level": 10,
+        "prof_bonus": 4,
+        "channel_divinity": 2,
+        "prepared_spells": 9,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 2,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Aura de Coragem"
         ]
       },
       {
-        "nivel": 11,
-        "bonus_prof": 4,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 10,
-        "espacos": {
+        "level": 11,
+        "prof_bonus": 4,
+        "channel_divinity": 3,
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Golpes Radiantes"
         ]
       },
       {
-        "nivel": 12,
-        "bonus_prof": 4,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 10,
-        "espacos": {
+        "level": 12,
+        "prof_bonus": 4,
+        "channel_divinity": 3,
+        "prepared_spells": 10,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 0,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 13,
-        "bonus_prof": 5,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 11,
-        "espacos": {
+        "level": 13,
+        "prof_bonus": 5,
+        "channel_divinity": 3,
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 1,
           "c5": 0
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 14,
-        "bonus_prof": 5,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 11,
-        "espacos": {
+        "level": 14,
+        "prof_bonus": 5,
+        "channel_divinity": 3,
+        "prepared_spells": 11,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 1,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Toque Restaurador"
         ]
       },
       {
-        "nivel": 15,
-        "bonus_prof": 5,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 12,
-        "espacos": {
+        "level": 15,
+        "prof_bonus": 5,
+        "channel_divinity": 3,
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 2,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       },
       {
-        "nivel": 16,
-        "bonus_prof": 5,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 12,
-        "espacos": {
+        "level": 16,
+        "prof_bonus": 5,
+        "channel_divinity": 3,
+        "prepared_spells": 12,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 2,
           "c5": 0
         },
-        "destaques": [
+        "highlights": [
           "AVA"
         ]
       },
       {
-        "nivel": 17,
-        "bonus_prof": 6,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 14,
-        "espacos": {
+        "level": 17,
+        "prof_bonus": 6,
+        "channel_divinity": 3,
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 1
         },
-        "destaques": []
+        "highlights": []
       },
       {
-        "nivel": 18,
-        "bonus_prof": 6,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 14,
-        "espacos": {
+        "level": 18,
+        "prof_bonus": 6,
+        "channel_divinity": 3,
+        "prepared_spells": 14,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 1
         },
-        "destaques": [
+        "highlights": [
           "Aura Expandida"
         ]
       },
       {
-        "nivel": 19,
-        "bonus_prof": 6,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 15,
-        "espacos": {
+        "level": 19,
+        "prof_bonus": 6,
+        "channel_divinity": 3,
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 2
         },
-        "destaques": [
+        "highlights": [
           "Dádiva Épica"
         ]
       },
       {
-        "nivel": 20,
-        "bonus_prof": 6,
-        "canalizar_divindade": 3,
-        "magias_preparadas": 15,
-        "espacos": {
+        "level": 20,
+        "prof_bonus": 6,
+        "channel_divinity": 3,
+        "prepared_spells": 15,
+        "slots": {
           "c1": 4,
           "c2": 3,
           "c3": 3,
           "c4": 3,
           "c5": 2
         },
-        "destaques": [
+        "highlights": [
           "Subclasse"
         ]
       }

@@ -1,41 +1,41 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useFichaStore } from '../store/fichaStore'
+import { useSheetStore } from '../store/sheetStore'
 
-function downloadBlob(conteudo: string, nomeArquivo: string, tipo: string) {
-  const blob = new Blob([conteudo], { type: tipo })
+function downloadBlob(content: string, fileName: string, type: string) {
+  const blob = new Blob([content], { type: type })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = nomeArquivo
+  link.download = fileName
   link.click()
   URL.revokeObjectURL(url)
 }
 
-export function useFichaExport() {
+export function useSheetExport() {
   const navigate = useNavigate()
-  const { exportarJSON, importarJSON, carregarListaSalvas } = useFichaStore()
+  const { exportSheetJson, importSheetJson, loadSavedList } = useSheetStore()
 
   const exportar = useCallback(
-    (nomePersonagem: string | null) => {
-      const json = exportarJSON()
-      const nome = nomePersonagem?.replace(/\s+/g, '_') ?? 'personagem'
-      downloadBlob(json, `${nome}.json`, 'application/json')
+    (characterName: string | null) => {
+      const json = exportSheetJson()
+      const name = characterName?.replace(/\s+/g, '_') ?? 'personagem'
+      downloadBlob(json, `${name}.json`, 'application/json')
     },
-    [exportarJSON],
+    [exportSheetJson],
   )
 
-  const exportarPorId = useCallback(
-    (id: string, nomePersonagem: string) => {
+  const exportById = useCallback(
+    (id: string, characterName: string) => {
       const raw = localStorage.getItem(`dnd_ficha_${id}`)
       if (!raw) return
-      const nome = nomePersonagem.replace(/\s+/g, '_')
-      downloadBlob(raw, `${nome}.json`, 'application/json')
+      const name = characterName.replace(/\s+/g, '_')
+      downloadBlob(raw, `${name}.json`, 'application/json')
     },
     [],
   )
 
-  const importar = useCallback(() => {
+  const importSheet = useCallback(() => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.json'
@@ -49,9 +49,9 @@ export function useFichaExport() {
         const json = loadEvent.target?.result as string
 
         try {
-          importarJSON(json)
-          carregarListaSalvas()
-          const newId = useFichaStore.getState().fichaId
+          importSheetJson(json)
+          loadSavedList()
+          const newId = useSheetStore.getState().sheetId
           if (newId) navigate(`/ficha/${newId}`)
         } catch (err) {
           console.error('[useFichaExport] JSON inválido:', err)
@@ -62,7 +62,7 @@ export function useFichaExport() {
     }
 
     input.click()
-  }, [importarJSON, carregarListaSalvas, navigate])
+  }, [importSheetJson, loadSavedList, navigate])
 
-  return { exportar, exportarPorId, importar }
+  return { exportar, exportById, importSheet }
 }

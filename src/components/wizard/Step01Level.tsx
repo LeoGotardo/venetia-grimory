@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../../store/fichaStore'
+import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
-import { XP_POR_NIVEL } from '../../lib/calculos'
+import { XP_PER_LEVEL } from '../../lib/calculations'
 
-export function Step01Nivel() {
-  const { ficha, setNivel, setPasso } = useFichaStore()
+export function Step01Level() {
+  const { sheet, setLevel, setStep } = useSheetStore()
   const { t } = useTranslation()
-  const nivel = ficha.identidade.nivel
+  const level = sheet.identity.level
 
   return (
     <div className="space-y-6">
@@ -19,18 +19,18 @@ export function Step01Nivel() {
       <div className="vg-card flex flex-col sm:flex-row items-center gap-4 sm:gap-5 px-5 sm:px-8 py-5 sm:py-7">
         <div className="flex items-center gap-5 shrink-0">
           <button
-            onClick={() => setNivel(Math.max(1, nivel - 1))}
+            onClick={() => setLevel(Math.max(1, level - 1))}
             aria-label={t('step01.decreaseLevel')}
             className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center"
           >−</button>
 
           <div className="text-center min-w-[72px]">
-            <div data-testid="nivel-valor" className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{nivel}</div>
+            <div data-testid="level-value" className="font-extrabold text-[56px] leading-none text-[#F5F0E8]">{level}</div>
             <div className="text-xs tracking-[0.1em] uppercase text-[#6B6560] mt-1">{t('step01.levelLabel')}</div>
           </div>
 
           <button
-            onClick={() => setNivel(Math.min(20, nivel + 1))}
+            onClick={() => setLevel(Math.min(20, level + 1))}
             aria-label={t('step01.increaseLevel')}
             className="w-11 h-11 rounded-[11px] bg-white/5 border border-[rgba(212,160,23,0.25)] text-[#D4A017] text-2xl font-bold cursor-pointer hover:bg-white/10 transition-colors flex items-center justify-center"
           >+</button>
@@ -56,19 +56,19 @@ export function Step01Nivel() {
               {Array.from({ length: 20 }, (_, i) => i + 1).map(n => (
                 <tr
                   key={n}
-                  onClick={() => setNivel(n)}
+                  onClick={() => setLevel(n)}
                   className={[
                     'cursor-pointer border-b border-white/[0.04] transition-colors',
-                    n === nivel
+                    n === level
                       ? 'bg-[rgba(212,160,23,0.12)]'
                       : 'hover:bg-white/[0.03]',
                   ].join(' ')}
                 >
-                  <td className={`py-2 px-4 font-semibold ${n === nivel ? 'text-[#D4A017]' : 'text-[#F5F0E8]'}`}>{n}</td>
+                  <td className={`py-2 px-4 font-semibold ${n === level ? 'text-[#D4A017]' : 'text-[#F5F0E8]'}`}>{n}</td>
                   <td className="py-2 px-4 text-right text-[#8a8278]">
-                    {n === 1 ? '—' : (XP_POR_NIVEL[n] ?? '—').toLocaleString()}
+                    {n === 1 ? '—' : (XP_PER_LEVEL[n] ?? '—').toLocaleString()}
                   </td>
-                  <td className={`py-2 px-4 text-right font-bold ${n === nivel ? 'text-[#D4A017]' : 'text-[#A8A09B]'}`}>
+                  <td className={`py-2 px-4 text-right font-bold ${n === level ? 'text-[#D4A017]' : 'text-[#A8A09B]'}`}>
                     +{Math.ceil(n / 4) + 1}
                   </td>
                 </tr>
@@ -78,7 +78,7 @@ export function Step01Nivel() {
         </div>
       </div>
 
-      <WizardNav onNext={() => setPasso(2)} />
+      <WizardNav onNext={() => setStep(2)} />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
-import type { Magia } from '../../data/magias'
+import type { Spell } from '../../data/spells'
 
 function Tag({ children }: { children: React.ReactNode }) {
   return (
@@ -20,39 +20,39 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 interface SpellCardProps {
-  magia: Magia | null
+  spellcasting: Spell | null
   onClose: () => void
 }
 
-export function SpellCard({ magia, onClose }: SpellCardProps) {
+export function SpellCard({ spellcasting, onClose }: SpellCardProps) {
   const { t } = useTranslation()
-  if (!magia) return null
+  if (!spellcasting) return null
 
-  const getCircleLabel = (circulo: number) => {
-    if (circulo === 0) return t('magic.level_0')
-    return t('magic.level_n', { n: circulo })
+  const getCircleLabel = (level: number) => {
+    if (level === 0) return t('magic.level_0')
+    return t('magic.level_n', { n: level })
   }
 
   const hasDetails =
-    magia.descricao ||
-    magia.componentes ||
-    magia.tempo_conjuracao ||
-    magia.alcance ||
-    magia.duracao
+    spellcasting.description ||
+    spellcasting.componentes ||
+    spellcasting.casting_time ||
+    spellcasting.range ||
+    spellcasting.duration
 
   return (
-    <Modal open={!!magia} onClose={onClose}>
+    <Modal open={!!spellcasting} onClose={onClose}>
       <div className="space-y-4">
         {/* Header */}
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h3 className="font-cinzel font-bold text-xl text-[#F5F0E8]">{magia.nome}</h3>
+            <h3 className="font-cinzel font-bold text-xl text-[#F5F0E8]">{spellcasting.name}</h3>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <Tag>{getCircleLabel(magia.circulo)}</Tag>
-            <Tag>{magia.escola}</Tag>
-            {magia.concentracao && <Tag>{t('magic.concentration')}</Tag>}
-            {magia.ritual && <Tag>{t('magic.ritual')}</Tag>}
+            <Tag>{getCircleLabel(spellcasting.level)}</Tag>
+            <Tag>{spellcasting.school}</Tag>
+            {spellcasting.concentration && <Tag>{t('magic.concentration')}</Tag>}
+            {spellcasting.ritual && <Tag>{t('magic.ritual')}</Tag>}
           </div>
         </div>
 
@@ -61,18 +61,18 @@ export function SpellCard({ magia, onClose }: SpellCardProps) {
         {/* Stats grid */}
         {hasDetails ? (
           <div className="space-y-2">
-            {magia.tempo_conjuracao && (
-              <Row label={t('magic.castingTime')} value={magia.tempo_conjuracao} />
+            {spellcasting.casting_time && (
+              <Row label={t('magic.castingTime')} value={spellcasting.casting_time} />
             )}
-            {magia.alcance && (
-              <Row label={t('magic.range')} value={magia.alcance} />
+            {spellcasting.range && (
+              <Row label={t('magic.range')} value={spellcasting.range} />
             )}
-            {magia.componentes && (
+            {spellcasting.componentes && (
               <Row
                 label={t('magic.components')}
                 value={
                   <span className="flex flex-wrap gap-1">
-                    {magia.componentes.map(c => (
+                    {spellcasting.componentes.map(c => (
                       <span
                         key={c}
                         className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-[#2D2520] border border-[#B8860B]/30 text-[#B8860B] text-[10px] font-bold"
@@ -80,45 +80,45 @@ export function SpellCard({ magia, onClose }: SpellCardProps) {
                         {c}
                       </span>
                     ))}
-                    {magia.material && (
-                      <span className="text-[#A8A09B] text-xs italic ml-1">({magia.material})</span>
+                    {spellcasting.material && (
+                      <span className="text-[#A8A09B] text-xs italic ml-1">({spellcasting.material})</span>
                     )}
                   </span>
                 }
               />
             )}
-            {magia.duracao && (
-              <Row label={t('magic.duration')} value={magia.duracao} />
+            {spellcasting.duration && (
+              <Row label={t('magic.duration')} value={spellcasting.duration} />
             )}
-            {magia.dano && (
+            {spellcasting.damage && (
               <Row
                 label={t('magic.damage')}
                 value={
                   <span>
-                    <span className="font-bold text-[#D4A017]">{magia.dano}</span>
-                    {magia.tipo_dano && (
-                      <span className="text-[#A8A09B] ml-1">{magia.tipo_dano}</span>
+                    <span className="font-bold text-[#D4A017]">{spellcasting.damage}</span>
+                    {spellcasting.damage_type && (
+                      <span className="text-[#A8A09B] ml-1">{spellcasting.damage_type}</span>
                     )}
                   </span>
                 }
               />
             )}
-            {magia.salvaguarda && (
-              <Row label={t('magic.save')} value={magia.salvaguarda} />
+            {spellcasting.save && (
+              <Row label={t('magic.save')} value={spellcasting.save} />
             )}
           </div>
         ) : (
           <div className="space-y-2">
-            <Row label={t('magic.school')} value={magia.escola} />
-            <Row label={t('magic.circle')} value={getCircleLabel(magia.circulo)} />
+            <Row label={t('magic.school')} value={spellcasting.school} />
+            <Row label={t('magic.circle')} value={getCircleLabel(spellcasting.level)} />
           </div>
         )}
 
         {/* Description */}
-        {magia.descricao && (
+        {spellcasting.description && (
           <>
             <hr className="border-[#B8860B]/20" />
-            <p className="text-sm text-[#C8C0BA] leading-relaxed">{magia.descricao}</p>
+            <p className="text-sm text-[#C8C0BA] leading-relaxed">{spellcasting.description}</p>
           </>
         )}
 
@@ -131,7 +131,7 @@ export function SpellCard({ magia, onClose }: SpellCardProps) {
         <div>
           <p className="text-xs text-[#A8A09B] mb-1.5">{t('magic.classes')}</p>
           <div className="flex flex-wrap gap-1">
-            {magia.classes.map(c => (
+            {spellcasting.classes.map(c => (
               <span
                 key={c}
                 className="text-xs px-2 py-0.5 rounded bg-[#2D2520] border border-[#B8860B]/20 text-[#A8A09B] capitalize"

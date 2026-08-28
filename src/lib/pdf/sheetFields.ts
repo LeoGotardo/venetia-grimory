@@ -1,29 +1,29 @@
-// GERADO por scripts/gerar-mapa-campos.mjs — não editar à mão.
+// GERADO por scripts/generate-field-map.mjs — não editar à mão.
 // Cada chave semântica aponta para o nome do campo AcroForm correspondente na
 // "Ficha Dnd 5.5.pdf" (nomes originais são gerados por máquina e não têm significado).
 
-export const CAMPOS = {
-  "identidade": {
-    "nome": "text_1aoob",
-    "origem": "text_2flth",
-    "classe": "text_3nuh",
-    "especie": "text_4wwck",
-    "subclasse": "text_5jrjt",
-    "nivel": "text_6zece",
+export const FIELDS = {
+  "identity": {
+    "name": "text_1aoob",
+    "source": "text_2flth",
+    "charClass": "text_3nuh",
+    "species": "text_4wwck",
+    "subclass": "text_5jrjt",
+    "level": "text_6zece",
     "exp": "text_7rwjo"
   },
-  "combate": {
+  "combat": {
     "classe_armadura": "text_8izmy",
-    "escudo": "checkbox_148cprb",
+    "shield": "checkbox_148cprb",
     "pv_atual": "text_9dyuu",
     "pv_temporario": "text_10iwcm",
     "pv_maximo": "text_11jfgo",
     "dados_vida_gastos": "text_12ssbr",
     "dados_vida_maximo": "text_13kgoy",
     "bonus_proficiencia": "text_14hfyo",
-    "iniciativa": "text_21mpbm",
-    "deslocamento": "text_22zico",
-    "tamanho": "text_23izdr",
+    "initiative": "text_21mpbm",
+    "speed": "text_22zico",
+    "size": "text_23izdr",
     "percepcao_passiva": "text_24dqfn",
     "inspiracao_heroica": "checkbox_174cik"
   },
@@ -39,45 +39,45 @@ export const CAMPOS = {
       "checkbox_154pzrz"
     ]
   },
-  "atributos": {
+  "abilities": {
     "FOR": {
       "modificador": "text_16ljqm",
-      "valor": "text_50jovf",
-      "salvaguarda": "text_31muji",
+      "value": "text_50jovf",
+      "save": "text_31muji",
       "salvaguarda_proficiencia": "checkbox_161uxhr"
     },
     "DES": {
       "modificador": "text_18ewiu",
-      "valor": "text_52nepg",
-      "salvaguarda": "text_33zoxn",
+      "value": "text_52nepg",
+      "save": "text_33zoxn",
       "salvaguarda_proficiencia": "checkbox_163psjp"
     },
     "CON": {
       "modificador": "text_20wsze",
-      "valor": "text_53xwyj",
-      "salvaguarda": "text_43noxw",
+      "value": "text_53xwyj",
+      "save": "text_43noxw",
       "salvaguarda_proficiencia": "checkbox_173fypr"
     },
     "INT": {
       "modificador": "text_15bxvo",
-      "valor": "text_49swbc",
-      "salvaguarda": "text_25jyjb",
+      "value": "text_49swbc",
+      "save": "text_25jyjb",
       "salvaguarda_proficiencia": "checkbox_155clsx"
     },
     "SAB": {
       "modificador": "text_17fyyp",
-      "valor": "text_51jzpy",
-      "salvaguarda": "text_37hqrf",
+      "value": "text_51jzpy",
+      "save": "text_37hqrf",
       "salvaguarda_proficiencia": "checkbox_167kfjh"
     },
     "CAR": {
       "modificador": "text_19eccb",
-      "valor": "text_54jmfy",
-      "salvaguarda": "text_44inbx",
+      "value": "text_54jmfy",
+      "save": "text_44inbx",
       "salvaguarda_proficiencia": "checkbox_175sftt"
     }
   },
-  "pericias": {
+  "skills": {
     "atletismo": {
       "bonus": "text_32gkcr",
       "proficiencia": "checkbox_162oonu"
@@ -98,7 +98,7 @@ export const CAMPOS = {
       "bonus": "text_26tliz",
       "proficiencia": "checkbox_156ajbg"
     },
-    "historia": {
+    "backstory": {
       "bonus": "text_27bqtw",
       "proficiencia": "checkbox_157ldxn"
     },
@@ -151,68 +151,68 @@ export const CAMPOS = {
       "proficiencia": "checkbox_179mjzi"
     }
   },
-  "ataques": [
+  "attacks": [
     {
-      "nome": "text_57zdom",
+      "name": "text_57zdom",
       "bonus": "text_75pqzn",
-      "dano": "text_69bfge",
+      "damage": "text_69bfge",
       "anotacoes": "text_63looj"
     },
     {
-      "nome": "text_58ylyp",
+      "name": "text_58ylyp",
       "bonus": "text_76mqyg",
-      "dano": "text_70cros",
+      "damage": "text_70cros",
       "anotacoes": "text_64syxl"
     },
     {
-      "nome": "text_59pvyl",
+      "name": "text_59pvyl",
       "bonus": "text_77wjft",
-      "dano": "text_71zqff",
+      "damage": "text_71zqff",
       "anotacoes": "text_65byds"
     },
     {
-      "nome": "text_60puik",
+      "name": "text_60puik",
       "bonus": "text_78mhak",
-      "dano": "text_72qncu",
+      "damage": "text_72qncu",
       "anotacoes": "text_66mtkj"
     },
     {
-      "nome": "text_61fskk",
+      "name": "text_61fskk",
       "bonus": "text_79sqgq",
-      "dano": "text_73sgjc",
+      "damage": "text_73sgjc",
       "anotacoes": "text_67rdkj"
     },
     {
-      "nome": "text_62znay",
+      "name": "text_62znay",
       "bonus": "text_80mqng",
-      "dano": "text_74oyar",
+      "damage": "text_74oyar",
       "anotacoes": "text_68ecij"
     }
   ],
-  "textos": {
+  "texts": {
     "caracteristicas_classe_esquerda": "textarea_118xiuy",
     "caracteristicas_classe_direita": "textarea_119wweb",
     "caracteristicas_especie": "textarea_120zvmx",
-    "talentos": "textarea_121oryi",
+    "feats": "textarea_121oryi",
     "proficiencia_armas": "textarea_55cuqv",
     "proficiencia_ferramentas": "textarea_56maty"
   },
-  "treino_armadura": {
+  "armor_training": {
     "leve": "checkbox_180jnac",
     "media": "checkbox_181kvqx",
     "pesada": "checkbox_182glwy",
-    "escudos": "checkbox_183ootk"
+    "shields": "checkbox_183ootk"
   },
-  "magia": {
-    "atributo_conjuracao": "text_209qhmj",
+  "spellcasting": {
+    "spellcasting_ability": "text_209qhmj",
     "modificador_conjuracao": "text_122huay",
     "cd_magia": "text_123sqib",
     "bonus_ataque_magia": "text_124ceqd"
   },
-  "espacos_de_magia": [
+  "spell_slots": [
     {
       "total": "text_434fmhi",
-      "gastos": [
+      "spent": [
         "checkbox_184sshn",
         "checkbox_185jkhg",
         "checkbox_186ypok",
@@ -221,7 +221,7 @@ export const CAMPOS = {
     },
     {
       "total": "text_435bazu",
-      "gastos": [
+      "spent": [
         "checkbox_188vycj",
         "checkbox_189nwar",
         "checkbox_190btbo"
@@ -229,7 +229,7 @@ export const CAMPOS = {
     },
     {
       "total": "text_436difh",
-      "gastos": [
+      "spent": [
         "checkbox_191elmz",
         "checkbox_192jidj",
         "checkbox_193ayje"
@@ -237,7 +237,7 @@ export const CAMPOS = {
     },
     {
       "total": "text_437sndm",
-      "gastos": [
+      "spent": [
         "checkbox_194xyio",
         "checkbox_195xarg",
         "checkbox_196nxdd"
@@ -245,7 +245,7 @@ export const CAMPOS = {
     },
     {
       "total": "text_438idcz",
-      "gastos": [
+      "spent": [
         "checkbox_197jmsb",
         "checkbox_198laax",
         "checkbox_199czvw"
@@ -253,328 +253,328 @@ export const CAMPOS = {
     },
     {
       "total": "text_439duno",
-      "gastos": [
+      "spent": [
         "checkbox_200xfvj",
         "checkbox_201sycx"
       ]
     },
     {
       "total": "text_440txei",
-      "gastos": [
+      "spent": [
         "checkbox_202vkfn",
         "checkbox_203qcvu"
       ]
     },
     {
       "total": "text_441koa",
-      "gastos": [
+      "spent": [
         "checkbox_204oiqs"
       ]
     },
     {
       "total": "text_442jqio",
-      "gastos": [
+      "spent": [
         "checkbox_205imig"
       ]
     }
   ],
-  "magias": [
+  "spells": [
     {
-      "nivel": "text_318anec",
-      "nome": "text_288qujt",
-      "tempo_conjuracao": "text_357kgvr",
-      "alcance": "text_404mdly",
-      "concentracao": "checkbox_206oxpl",
+      "level": "text_318anec",
+      "name": "text_288qujt",
+      "casting_time": "text_357kgvr",
+      "range": "text_404mdly",
+      "concentration": "checkbox_206oxpl",
       "ritual": "checkbox_207rxuq",
       "material": "checkbox_208etdw",
       "anotacoes": "text_443feqr"
     },
     {
-      "nivel": "text_319zemp",
-      "nome": "text_289axhd",
-      "tempo_conjuracao": "text_358uuoz",
-      "alcance": "text_405udro",
-      "concentracao": "checkbox_211lqvi",
+      "level": "text_319zemp",
+      "name": "text_289axhd",
+      "casting_time": "text_358uuoz",
+      "range": "text_405udro",
+      "concentration": "checkbox_211lqvi",
       "ritual": "checkbox_212rcfn",
       "material": "checkbox_213yhlf",
       "anotacoes": "text_444rbsd"
     },
     {
-      "nivel": "text_320achd",
-      "nome": "text_290lmio",
-      "tempo_conjuracao": "text_359mowm",
-      "alcance": "text_406ybgs",
-      "concentracao": "checkbox_216gmow",
+      "level": "text_320achd",
+      "name": "text_290lmio",
+      "casting_time": "text_359mowm",
+      "range": "text_406ybgs",
+      "concentration": "checkbox_216gmow",
       "ritual": "checkbox_215cpdg",
       "material": "checkbox_214uxrl",
       "anotacoes": "text_445jykv"
     },
     {
-      "nivel": "text_321nfkr",
-      "nome": "text_291ljgr",
-      "tempo_conjuracao": "text_360frxp",
-      "alcance": "text_407uigd",
-      "concentracao": "checkbox_217xqun",
+      "level": "text_321nfkr",
+      "name": "text_291ljgr",
+      "casting_time": "text_360frxp",
+      "range": "text_407uigd",
+      "concentration": "checkbox_217xqun",
       "ritual": "checkbox_218puos",
       "material": "checkbox_219eyon",
       "anotacoes": "text_446vcmy"
     },
     {
-      "nivel": "text_322wzbx",
-      "nome": "text_292upnd",
-      "tempo_conjuracao": "text_361nyas",
-      "alcance": "text_408uvhe",
-      "concentracao": "checkbox_220kfzx",
+      "level": "text_322wzbx",
+      "name": "text_292upnd",
+      "casting_time": "text_361nyas",
+      "range": "text_408uvhe",
+      "concentration": "checkbox_220kfzx",
       "ritual": "checkbox_221oxhn",
       "material": "checkbox_222zdas",
       "anotacoes": "text_447ykxt"
     },
     {
-      "nivel": "text_323prpm",
-      "nome": "text_293zwds",
-      "tempo_conjuracao": "text_362irmn",
-      "alcance": "text_409lgal",
-      "concentracao": "checkbox_223vfon",
+      "level": "text_323prpm",
+      "name": "text_293zwds",
+      "casting_time": "text_362irmn",
+      "range": "text_409lgal",
+      "concentration": "checkbox_223vfon",
       "ritual": "checkbox_224pscn",
       "material": "checkbox_225xteb",
       "anotacoes": "text_448ymgm"
     },
     {
-      "nivel": "text_324eazm",
-      "nome": "text_294pxhc",
-      "tempo_conjuracao": "text_364wufj",
-      "alcance": "text_410xkad",
-      "concentracao": "checkbox_228zflc",
+      "level": "text_324eazm",
+      "name": "text_294pxhc",
+      "casting_time": "text_364wufj",
+      "range": "text_410xkad",
+      "concentration": "checkbox_228zflc",
       "ritual": "checkbox_227xut",
       "material": "checkbox_226lrgq",
       "anotacoes": "text_449jx"
     },
     {
-      "nivel": "text_325ijwg",
-      "nome": "text_295cvzt",
-      "tempo_conjuracao": "text_365blgq",
-      "alcance": "text_411mscu",
-      "concentracao": "checkbox_229bnn",
+      "level": "text_325ijwg",
+      "name": "text_295cvzt",
+      "casting_time": "text_365blgq",
+      "range": "text_411mscu",
+      "concentration": "checkbox_229bnn",
       "ritual": "checkbox_230parc",
       "material": "checkbox_231puyq",
       "anotacoes": "text_450erxn"
     },
     {
-      "nivel": "text_326bfre",
-      "nome": "text_296luha",
-      "tempo_conjuracao": "text_366thgx",
-      "alcance": "text_412tnax",
-      "concentracao": "checkbox_234dqwb",
+      "level": "text_326bfre",
+      "name": "text_296luha",
+      "casting_time": "text_366thgx",
+      "range": "text_412tnax",
+      "concentration": "checkbox_234dqwb",
       "ritual": "checkbox_233gfan",
       "material": "checkbox_232ushd",
       "anotacoes": "text_451fczs"
     },
     {
-      "nivel": "text_327htfm",
-      "nome": "text_297htaz",
-      "tempo_conjuracao": "text_367rrph",
-      "alcance": "text_413mqcz",
-      "concentracao": "checkbox_235l",
+      "level": "text_327htfm",
+      "name": "text_297htaz",
+      "casting_time": "text_367rrph",
+      "range": "text_413mqcz",
+      "concentration": "checkbox_235l",
       "ritual": "checkbox_236sgtt",
       "material": "checkbox_237tyxi",
       "anotacoes": "text_452zthf"
     },
     {
-      "nivel": "text_329ogxi",
-      "nome": "text_298wbzm",
-      "tempo_conjuracao": "text_368zt",
-      "alcance": "text_414krn",
-      "concentracao": "checkbox_238yhpg",
+      "level": "text_329ogxi",
+      "name": "text_298wbzm",
+      "casting_time": "text_368zt",
+      "range": "text_414krn",
+      "concentration": "checkbox_238yhpg",
       "ritual": "checkbox_239qwui",
       "material": "checkbox_240cxsc",
       "anotacoes": "text_453vfvy"
     },
     {
-      "nivel": "text_330vrso",
-      "nome": "text_299sigr",
-      "tempo_conjuracao": "text_369raip",
-      "alcance": "text_415lqlz",
-      "concentracao": "checkbox_241zkxw",
+      "level": "text_330vrso",
+      "name": "text_299sigr",
+      "casting_time": "text_369raip",
+      "range": "text_415lqlz",
+      "concentration": "checkbox_241zkxw",
       "ritual": "checkbox_242hkec",
       "material": "checkbox_243eqmc",
       "anotacoes": "text_454wndj"
     },
     {
-      "nivel": "text_331bz",
-      "nome": "text_300ahxk",
-      "tempo_conjuracao": "text_370jbwc",
-      "alcance": "text_416aczh",
-      "concentracao": "checkbox_246jqok",
+      "level": "text_331bz",
+      "name": "text_300ahxk",
+      "casting_time": "text_370jbwc",
+      "range": "text_416aczh",
+      "concentration": "checkbox_246jqok",
       "ritual": "checkbox_245iujz",
       "material": "checkbox_244umvn",
       "anotacoes": "text_455lnnp"
     },
     {
-      "nivel": "text_332hynk",
-      "nome": "text_301cwbz",
-      "tempo_conjuracao": "text_371qoav",
-      "alcance": "text_417rymg",
-      "concentracao": "checkbox_247znbt",
+      "level": "text_332hynk",
+      "name": "text_301cwbz",
+      "casting_time": "text_371qoav",
+      "range": "text_417rymg",
+      "concentration": "checkbox_247znbt",
       "ritual": "checkbox_403jjwm",
       "material": "checkbox_402spwa",
       "anotacoes": "text_456vfx"
     },
     {
-      "nivel": "text_333cuyl",
-      "nome": "text_302ewwp",
-      "tempo_conjuracao": "text_372icub",
-      "alcance": "text_418zwhg",
-      "concentracao": "checkbox_248yjrz",
+      "level": "text_333cuyl",
+      "name": "text_302ewwp",
+      "casting_time": "text_372icub",
+      "range": "text_418zwhg",
+      "concentration": "checkbox_248yjrz",
       "ritual": "checkbox_399puja",
       "material": "checkbox_400bcfd",
       "anotacoes": "text_457dmpj"
     },
     {
-      "nivel": "text_334ntcq",
-      "nome": "text_303cuix",
-      "tempo_conjuracao": "text_373ortg",
-      "alcance": "text_419tful",
-      "concentracao": "checkbox_249tplf",
+      "level": "text_334ntcq",
+      "name": "text_303cuix",
+      "casting_time": "text_373ortg",
+      "range": "text_419tful",
+      "concentration": "checkbox_249tplf",
       "ritual": "checkbox_395cmyc",
       "material": "checkbox_398ukum",
       "anotacoes": "text_458rlgp"
     },
     {
-      "nivel": "text_335auux",
-      "nome": "text_304xskb",
-      "tempo_conjuracao": "text_374idrr",
-      "alcance": "text_420aybs",
-      "concentracao": "checkbox_250wqqy",
+      "level": "text_335auux",
+      "name": "text_304xskb",
+      "casting_time": "text_374idrr",
+      "range": "text_420aybs",
+      "concentration": "checkbox_250wqqy",
       "ritual": "checkbox_394vyhd",
       "material": "checkbox_397aecs",
       "anotacoes": "text_459izzc"
     },
     {
-      "nivel": "text_336edfl",
-      "nome": "text_305gwig",
-      "tempo_conjuracao": "text_375ro",
-      "alcance": "text_421qlje",
-      "concentracao": "checkbox_251qotd",
+      "level": "text_336edfl",
+      "name": "text_305gwig",
+      "casting_time": "text_375ro",
+      "range": "text_421qlje",
+      "concentration": "checkbox_251qotd",
       "ritual": "checkbox_393lhrs",
       "material": "checkbox_396yxtx",
       "anotacoes": "text_460vdsq"
     },
     {
-      "nivel": "text_337bkcl",
-      "nome": "text_306sorf",
-      "tempo_conjuracao": "text_376maeb",
-      "alcance": "text_422phcl",
-      "concentracao": "checkbox_252toiv",
+      "level": "text_337bkcl",
+      "name": "text_306sorf",
+      "casting_time": "text_376maeb",
+      "range": "text_422phcl",
+      "concentration": "checkbox_252toiv",
       "ritual": "checkbox_390hjem",
       "material": "checkbox_392glfj",
       "anotacoes": "text_461ktek"
     },
     {
-      "nivel": "text_338cxow",
-      "nome": "text_307ykqn",
-      "tempo_conjuracao": "text_377mswu",
-      "alcance": "text_423msyf",
-      "concentracao": "checkbox_253bfkr",
+      "level": "text_338cxow",
+      "name": "text_307ykqn",
+      "casting_time": "text_377mswu",
+      "range": "text_423msyf",
+      "concentration": "checkbox_253bfkr",
       "ritual": "checkbox_388xvfu",
       "material": "checkbox_389taoe",
       "anotacoes": "text_462btzt"
     },
     {
-      "nivel": "text_339wwdm",
-      "nome": "text_308wwhe",
-      "tempo_conjuracao": "text_378tgsm",
-      "alcance": "text_424ziee",
-      "concentracao": "checkbox_254cefe",
+      "level": "text_339wwdm",
+      "name": "text_308wwhe",
+      "casting_time": "text_378tgsm",
+      "range": "text_424ziee",
+      "concentration": "checkbox_254cefe",
       "ritual": "checkbox_264vkzj",
       "material": "checkbox_265yjq",
       "anotacoes": "text_463vmvl"
     },
     {
-      "nivel": "text_340tcz",
-      "nome": "text_309enjs",
-      "tempo_conjuracao": "text_379kpkj",
-      "alcance": "text_425acls",
-      "concentracao": "checkbox_255bqjh",
+      "level": "text_340tcz",
+      "name": "text_309enjs",
+      "casting_time": "text_379kpkj",
+      "range": "text_425acls",
+      "concentration": "checkbox_255bqjh",
       "ritual": "checkbox_266cvnz",
       "material": "checkbox_267yyjj",
       "anotacoes": "text_464dg"
     },
     {
-      "nivel": "text_341atzt",
-      "nome": "text_310jdm",
-      "tempo_conjuracao": "text_380qipb",
-      "alcance": "text_426mdta",
-      "concentracao": "checkbox_256cvcf",
+      "level": "text_341atzt",
+      "name": "text_310jdm",
+      "casting_time": "text_380qipb",
+      "range": "text_426mdta",
+      "concentration": "checkbox_256cvcf",
       "ritual": "checkbox_268uqjs",
       "material": "checkbox_269biot",
       "anotacoes": "text_465asee"
     },
     {
-      "nivel": "text_342ksij",
-      "nome": "text_311ghoq",
-      "tempo_conjuracao": "text_381iphd",
-      "alcance": "text_427fhan",
-      "concentracao": "checkbox_257fbxk",
+      "level": "text_342ksij",
+      "name": "text_311ghoq",
+      "casting_time": "text_381iphd",
+      "range": "text_427fhan",
+      "concentration": "checkbox_257fbxk",
       "ritual": "checkbox_270dlx",
       "material": "checkbox_271bauq",
       "anotacoes": "text_466xdmn"
     },
     {
-      "nivel": "text_343fmhw",
-      "nome": "text_312llsw",
-      "tempo_conjuracao": "text_382ghpc",
-      "alcance": "text_428nfjy",
-      "concentracao": "checkbox_258rxhb",
+      "level": "text_343fmhw",
+      "name": "text_312llsw",
+      "casting_time": "text_382ghpc",
+      "range": "text_428nfjy",
+      "concentration": "checkbox_258rxhb",
       "ritual": "checkbox_272rwmv",
       "material": "checkbox_273khxl",
       "anotacoes": "text_467bjap"
     },
     {
-      "nivel": "text_344ddyl",
-      "nome": "text_313pcur",
-      "tempo_conjuracao": "text_383hzpz",
-      "alcance": "text_429fgpb",
-      "concentracao": "checkbox_259ewlq",
+      "level": "text_344ddyl",
+      "name": "text_313pcur",
+      "casting_time": "text_383hzpz",
+      "range": "text_429fgpb",
+      "concentration": "checkbox_259ewlq",
       "ritual": "checkbox_274taza",
       "material": "checkbox_275mhyf",
       "anotacoes": "text_468xpmq"
     },
     {
-      "nivel": "text_345lnzn",
-      "nome": "text_314hhga",
-      "tempo_conjuracao": "text_384wszw",
-      "alcance": "text_430djh",
-      "concentracao": "checkbox_260cgys",
+      "level": "text_345lnzn",
+      "name": "text_314hhga",
+      "casting_time": "text_384wszw",
+      "range": "text_430djh",
+      "concentration": "checkbox_260cgys",
       "ritual": "checkbox_277nfwm",
       "material": "checkbox_276yyjz",
       "anotacoes": "text_469jrpc"
     },
     {
-      "nivel": "text_346ekxu",
-      "nome": "text_315enji",
-      "tempo_conjuracao": "text_385lquj",
-      "alcance": "text_431hixa",
-      "concentracao": "checkbox_261vhmn",
+      "level": "text_346ekxu",
+      "name": "text_315enji",
+      "casting_time": "text_385lquj",
+      "range": "text_431hixa",
+      "concentration": "checkbox_261vhmn",
       "ritual": "checkbox_278ojqa",
       "material": "checkbox_279zdzj",
       "anotacoes": "text_470hxrc"
     },
     {
-      "nivel": "text_347hqlw",
-      "nome": "text_316bkoo",
-      "tempo_conjuracao": "text_386bzlm",
-      "alcance": "text_432vrah",
-      "concentracao": "checkbox_262xkon",
+      "level": "text_347hqlw",
+      "name": "text_316bkoo",
+      "casting_time": "text_386bzlm",
+      "range": "text_432vrah",
+      "concentration": "checkbox_262xkon",
       "ritual": "checkbox_281tscv",
       "material": "checkbox_280rxqc",
       "anotacoes": "text_471yekd"
     },
     {
-      "nivel": "text_348onem",
-      "nome": "text_317qlqa",
-      "tempo_conjuracao": "text_387lpjj",
-      "alcance": "text_433labc",
-      "concentracao": "checkbox_263hguk",
+      "level": "text_348onem",
+      "name": "text_317qlqa",
+      "casting_time": "text_387lpjj",
+      "range": "text_433labc",
+      "concentration": "checkbox_263hguk",
       "ritual": "checkbox_282rgtr",
       "material": "checkbox_283bfnq",
       "anotacoes": "text_472tbdo"
@@ -594,20 +594,20 @@ export const CAMPOS = {
       "marcado": "checkbox_286prae"
     }
   ],
-  "moedas": {
+  "coins": {
     "PC": "text_352gosh",
     "PP": "text_353gznv",
     "PE": "text_354lgve",
     "PO": "text_355kiok",
     "PL": "text_356djsp"
   },
-  "perfil": {
-    "aparencia": "textarea_125avaq",
-    "historia_personalidade": "textarea_126gxsf",
-    "alinhamento": "text_287hdss",
-    "idiomas": "textarea_128qxfn",
-    "equipamento": "textarea_127svto"
+  "profile": {
+    "appearance": "textarea_125avaq",
+    "personality_backstory": "textarea_126gxsf",
+    "alignment": "text_287hdss",
+    "languages": "textarea_128qxfn",
+    "equipment": "textarea_127svto"
   }
 } as const
 
-export type MapaCampos = typeof CAMPOS
+export type FieldMap = typeof FIELDS

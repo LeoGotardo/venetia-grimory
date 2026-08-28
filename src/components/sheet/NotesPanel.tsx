@@ -1,22 +1,22 @@
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../../store/fichaStore'
+import { useSheetStore } from '../../store/sheetStore'
 import { Textarea } from '../ui/Input'
 import { Badge } from '../ui/Badge'
-import { CONDICOES_DISPONIVEIS, EXAUSTAO_EFEITOS, MAXIMO_EXAUSTAO } from '../../constants'
-import { traduzirTermo } from '../../data/dados/traducao'
+import { AVAILABLE_CONDITIONS, EXHAUSTION_EFFECTS, MAX_EXHAUSTION } from '../../constants'
+import { translateTerm } from '../../data/rules/translation'
 
-export function PainelAnotacoes() {
-  const { ficha, toggleCondicao, setExaustao, setNotas } = useFichaStore()
+export function NotesPanel() {
+  const { sheet, toggleCondition, setExhaustion, setNotes } = useSheetStore()
   const { t, i18n } = useTranslation()
   // As condições são guardadas na ficha em português (valor canônico das regras).
-  const traduzir = (termo: string) => traduzirTermo(termo, i18n.language)
-  const p = ficha.personalidade
+  const translate = (term: string) => translateTerm(term, i18n.language)
+  const p = sheet.personality
 
   const traitsMap = [
-    { label: t('notes.traits'), items: p.tracos },
-    { label: t('notes.ideals'), items: p.ideais },
-    { label: t('notes.bonds'), items: p.vinculos },
-    { label: t('notes.flaws'), items: p.fraquezas },
+    { label: t('notes.traits'), items: p.traits },
+    { label: t('notes.ideals'), items: p.ideals },
+    { label: t('notes.bonds'), items: p.bonds },
+    { label: t('notes.flaws'), items: p.flaws },
   ]
 
   return (
@@ -33,10 +33,10 @@ export function PainelAnotacoes() {
         ))}
       </div>
 
-      {p.historia && (
+      {p.backstory && (
         <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3">
           <div className="text-xs text-[#B8860B] font-semibold mb-1">{t('notes.backstory')}</div>
-          <p className="text-sm text-[#F5F0E8] whitespace-pre-wrap">{p.historia}</p>
+          <p className="text-sm text-[#F5F0E8] whitespace-pre-wrap">{p.backstory}</p>
         </div>
       )}
 
@@ -44,29 +44,29 @@ export function PainelAnotacoes() {
       <section aria-label={t('notes.activeConditions')}>
         <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('notes.activeConditions')}</h4>
         <div className="flex flex-wrap gap-2 mb-2" role="group" aria-label={t('notes.removeCondition')}>
-          {ficha.condicoes_ativas.map(c => (
+          {sheet.active_conditions.map(c => (
             <button
               key={c}
-              onClick={() => toggleCondicao(c)}
-              aria-label={t('notes.removeConditionAriaLabel', { c: traduzir(c) })}
+              onClick={() => toggleCondition(c)}
+              aria-label={t('notes.removeConditionAriaLabel', { c: translate(c) })}
               className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded"
             >
-              <Badge variant="red">{traduzir(c)} ×</Badge>
+              <Badge variant="red">{translate(c)} ×</Badge>
             </button>
           ))}
-          {ficha.condicoes_ativas.length === 0 && (
+          {sheet.active_conditions.length === 0 && (
             <span className="text-xs text-[#A8A09B]">{t('notes.noConditions')}</span>
           )}
         </div>
         <div className="flex flex-wrap gap-1" role="group" aria-label={t('notes.addCondition')}>
-          {(CONDICOES_DISPONIVEIS as readonly string[]).filter(c => !ficha.condicoes_ativas.includes(c)).map(c => (
+          {(AVAILABLE_CONDITIONS as readonly string[]).filter(c => !sheet.active_conditions.includes(c)).map(c => (
             <button
               key={c}
-              onClick={() => toggleCondicao(c)}
-              aria-label={t('notes.applyCondition', { c: traduzir(c) })}
+              onClick={() => toggleCondition(c)}
+              aria-label={t('notes.applyCondition', { c: translate(c) })}
               className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] rounded"
             >
-              <Badge variant="default" className="hover:border-[#7B1D1D]/60">{traduzir(c)}</Badge>
+              <Badge variant="default" className="hover:border-[#7B1D1D]/60">{translate(c)}</Badge>
             </button>
           ))}
         </div>
@@ -75,18 +75,18 @@ export function PainelAnotacoes() {
       {/* Exaustão */}
       <section aria-label={t('notes.exhaustionAriaLabel')}>
         <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">
-          {t('notes.exhaustionHeading', { n: ficha.niveis_de_exaustao, max: MAXIMO_EXAUSTAO })}
+          {t('notes.exhaustionHeading', { n: sheet.exhaustion_levels, max: MAX_EXHAUSTION })}
         </h4>
         <div className="flex gap-1 mb-1" role="group" aria-label={t('notes.selectExhaustion')}>
-          {Array.from({ length: MAXIMO_EXAUSTAO }, (_, i) => (
+          {Array.from({ length: MAX_EXHAUSTION }, (_, i) => (
             <button
               key={i}
-              onClick={() => setExaustao(i + 1 === ficha.niveis_de_exaustao ? i : i + 1)}
-              aria-pressed={i < ficha.niveis_de_exaustao}
+              onClick={() => setExhaustion(i + 1 === sheet.exhaustion_levels ? i : i + 1)}
+              aria-pressed={i < sheet.exhaustion_levels}
               aria-label={t('notes.exhaustionLevelAriaLabel', { n: i + 1 })}
               className={`w-8 h-8 rounded border text-sm font-bold cursor-pointer transition-colors
                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]
-                ${i < ficha.niveis_de_exaustao
+                ${i < sheet.exhaustion_levels
                   ? 'bg-red-800 border-red-600 text-white'
                   : 'border-[#A8A09B]/40 text-[#A8A09B] hover:border-red-600 hover:text-red-400'}`}
             >
@@ -95,14 +95,14 @@ export function PainelAnotacoes() {
           ))}
         </div>
         <p className="text-xs text-[#A8A09B]">
-          {traduzir((EXAUSTAO_EFEITOS as readonly string[])[ficha.niveis_de_exaustao])}
+          {translate((EXHAUSTION_EFFECTS as readonly string[])[sheet.exhaustion_levels])}
         </p>
       </section>
 
       <Textarea
         label={t('notes.freeNotes')}
-        value={ficha.notas ?? ''}
-        onChange={e => setNotas(e.target.value)}
+        value={sheet.notes ?? ''}
+        onChange={e => setNotes(e.target.value)}
         placeholder={t('notes.notesPlaceholder')}
         className="min-h-[150px]"
       />

@@ -1,45 +1,45 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../../store/fichaStore'
+import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
 
-import { MULTICLASSE_PREREQUISITOS } from '../../constants'
-import { dados } from '../../data/dados'
+import { MULTICLASS_PREREQUISITES } from '../../constants'
+import { gameData } from '../../data/rules'
 
-export function StepMulticlasse() {
+export function StepMulticlass() {
   const {
-    ficha, setPasso,
-    addMulticlasse, removeMulticlasse, setMulticlasseNivel, setSubclasseMulticlasse,
-  } = useFichaStore()
+    sheet, setStep,
+    addMulticlass, removeMulticlass, setMulticlassLevel, setMulticlassSubclass,
+  } = useSheetStore()
   const { t } = useTranslation()
 
-  const nivel = ficha.identidade.nivel
-  const classeId = ficha.identidade.classe_id
-  const multiclasses = ficha.identidade.multiclasses ?? []
-  const atributos = ficha.atributos
-  const nivelPrimaria = nivel - multiclasses.reduce((s, m) => s + m.nivel, 0)
+  const level = sheet.identity.level
+  const classId = sheet.identity.class_id
+  const multiclasses = sheet.identity.multiclasses ?? []
+  const abilities = sheet.abilities
+  const primaryLevel = level - multiclasses.reduce((s, m) => s + m.level, 0)
 
-  const classesDisponiveis = dados.classes.filter(c =>
-    c.id !== classeId && !multiclasses.some(m => m.classe_id === c.id)
+  const availableClasses = gameData.classes.filter(c =>
+    c.id !== classId && !multiclasses.some(m => m.class_id === c.id)
   )
 
   useEffect(() => {
     for (const m of multiclasses) {
-      if (m.nivel >= 3 && !m.subclasse_id) {
-        const firstSub = dados.classes.find(c => c.id === m.classe_id)?.subclasses[0]
-        if (firstSub) setSubclasseMulticlasse(m.classe_id, firstSub.id)
+      if (m.level >= 3 && !m.subclass_id) {
+        const firstSub = gameData.classes.find(c => c.id === m.class_id)?.subclasses[0]
+        if (firstSub) setMulticlassSubclass(m.class_id, firstSub.id)
       }
     }
   }, [multiclasses])
 
-  const multiclasseOk = multiclasses.every(m => m.nivel < 3 || !!m.subclasse_id)
+  const multiclassOk = multiclasses.every(m => m.level < 3 || !!m.subclass_id)
 
-  function checarPrerequisito(cId: string): boolean {
-    const prereq = MULTICLASSE_PREREQUISITOS[cId]
+  function checkPrerequisite(classId: string): boolean {
+    const prereq = MULTICLASS_PREREQUISITES[classId]
     if (!prereq) return true
-    const vals = prereq.atributos.map(a => atributos[a]?.valor)
+    const vals = prereq.abilities.map(a => abilities[a]?.value)
     if (vals.some(v => v === null || v === undefined)) return true
-    return prereq.modo === 'ou'
+    return prereq.mode === 'ou'
       ? vals.some(v => (v as number) >= 13)
       : vals.every(v => (v as number) >= 13)
   }
@@ -54,33 +54,33 @@ export function StepMulticlasse() {
       <div className="bg-[#3D332D] border border-[#B8860B]/20 rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">
           <span className="text-xs text-[#A8A09B] uppercase tracking-wide">{t('multiclass.primaryClass')}</span>
-          <span className="font-cinzel font-bold text-[#B8860B]">{t('multiclass.levelIn', { n: nivelPrimaria })}</span>
+          <span className="font-cinzel font-bold text-[#B8860B]">{t('multiclass.levelIn', { n: primaryLevel })}</span>
         </div>
         <p className="font-cinzel font-semibold text-[#F5F0E8]">
-          {dados.classes.find(c => c.id === classeId)?.nome ?? '—'}
+          {gameData.classes.find(c => c.id === classId)?.name ?? '—'}
         </p>
 
         {multiclasses.map(m => {
-          const c = dados.classes.find(cc => cc.id === m.classe_id)
-          const maxN = nivel - multiclasses.filter(x => x.classe_id !== m.classe_id).reduce((s, x) => s + x.nivel, 0) - 1
+          const c = gameData.classes.find(cc => cc.id === m.class_id)
+          const maxN = level - multiclasses.filter(x => x.class_id !== m.class_id).reduce((s, x) => s + x.level, 0) - 1
           return (
-            <div key={m.classe_id} className="border-t border-[#B8860B]/10 pt-3 space-y-2">
+            <div key={m.class_id} className="border-t border-[#B8860B]/10 pt-3 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="flex-1 text-sm text-[#F5F0E8] font-medium">{c?.nome ?? m.classe_id}</span>
+                <span className="flex-1 text-sm text-[#F5F0E8] font-medium">{c?.name ?? m.class_id}</span>
                 <div className="flex items-center gap-1">
-                  <button type="button" onClick={() => setMulticlasseNivel(m.classe_id, m.nivel - 1)} disabled={m.nivel <= 1}
+                  <button type="button" onClick={() => setMulticlassLevel(m.class_id, m.level - 1)} disabled={m.level <= 1}
                     className="w-6 h-6 rounded bg-[#2D2520] border border-[#B8860B]/20 text-[#F5F0E8] text-xs disabled:opacity-30 cursor-pointer disabled:cursor-default hover:bg-[#4D4037]">−</button>
-                  <span className="w-6 text-center font-cinzel font-bold text-[#F5F0E8] text-sm">{m.nivel}</span>
-                  <button type="button" onClick={() => setMulticlasseNivel(m.classe_id, m.nivel + 1)} disabled={m.nivel >= maxN}
+                  <span className="w-6 text-center font-cinzel font-bold text-[#F5F0E8] text-sm">{m.level}</span>
+                  <button type="button" onClick={() => setMulticlassLevel(m.class_id, m.level + 1)} disabled={m.level >= maxN}
                     className="w-6 h-6 rounded bg-[#2D2520] border border-[#B8860B]/20 text-[#F5F0E8] text-xs disabled:opacity-30 cursor-pointer disabled:cursor-default hover:bg-[#4D4037]">+</button>
                 </div>
-                <button type="button" onClick={() => removeMulticlasse(m.classe_id)}
+                <button type="button" onClick={() => removeMulticlass(m.class_id)}
                   className="text-[#A8A09B] hover:text-red-400 px-1 text-sm cursor-pointer transition-colors">×</button>
               </div>
-              {m.nivel >= 3 && (
-                <select value={m.subclasse_id ?? ''} onChange={e => setSubclasseMulticlasse(m.classe_id, e.target.value)}
+              {m.level >= 3 && (
+                <select value={m.subclass_id ?? ''} onChange={e => setMulticlassSubclass(m.class_id, e.target.value)}
                   className="w-full bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1.5 text-[#F5F0E8] text-xs focus:outline-none focus:ring-1 focus:ring-[#B8860B]">
-                  {c?.subclasses.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
+                  {c?.subclasses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>
               )}
             </div>
@@ -90,15 +90,15 @@ export function StepMulticlasse() {
         <div className="border-t border-[#B8860B]/10 pt-3">
           <p className="text-xs text-[#A8A09B] mb-2">{t('multiclass.addClass')}</p>
           <div className="flex flex-wrap gap-2">
-            {classesDisponiveis.map(c => {
-              const ok = checarPrerequisito(c.id)
-              const prereq = MULTICLASSE_PREREQUISITOS[c.id]
+            {availableClasses.map(c => {
+              const ok = checkPrerequisite(c.id)
+              const prereq = MULTICLASS_PREREQUISITES[c.id]
               return (
                 <div key={c.id} className="flex flex-col items-center gap-0.5">
                   <button
                     type="button"
-                    disabled={nivelPrimaria <= 1 || !ok}
-                    onClick={() => addMulticlasse(c.id)}
+                    disabled={primaryLevel <= 1 || !ok}
+                    onClick={() => addMulticlass(c.id)}
                     className={[
                       'px-2 py-1 rounded border text-xs transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-40',
                       ok
@@ -106,11 +106,11 @@ export function StepMulticlasse() {
                         : 'border-red-800/40 text-[#A8A09B]',
                     ].join(' ')}
                   >
-                    {c.nome}
+                    {c.name}
                   </button>
                   {!ok && prereq && (
                     <span className="text-[9px] text-red-400">
-                      {prereq.atributos.join(prereq.modo === 'ou' ? '/' : '+')} 13+
+                      {prereq.abilities.join(prereq.mode === 'ou' ? '/' : '+')} 13+
                     </span>
                   )}
                 </div>
@@ -124,7 +124,7 @@ export function StepMulticlasse() {
         {t('multiclass.prereqNote')}
       </p>
 
-      <WizardNav onBack={() => setPasso(6)} onNext={() => setPasso(8)} nextDisabled={!multiclasseOk} />
+      <WizardNav onBack={() => setStep(6)} onNext={() => setStep(8)} nextDisabled={!multiclassOk} />
     </div>
   )
 }

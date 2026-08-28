@@ -23,7 +23,7 @@ export function NotFound() {
           {t('notfound.title')}
         </h1>
         <p className="text-[#6B6560] text-[15px] leading-relaxed mb-8">
-          {t('notfound.desc')}
+          {t('notfound.description')}
         </p>
 
         <div className="flex gap-3 justify-center">

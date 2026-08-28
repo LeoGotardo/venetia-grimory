@@ -1,17 +1,17 @@
 import { PDFDocument, PDFName, StandardFonts, rgb } from 'pdf-lib'
 import type { PDFFont, PDFPage, PDFTextField } from 'pdf-lib'
 import i18n from '../../i18n'
-import { CAMPOS } from './camposFicha'
-import { dados } from '../../data/dados'
-import { getAntecedentes } from '../../data/antecedentes'
-import { getItens } from '../../data/itens'
-import { resolverMagia } from '../../data/magias'
-import { ATRIBUTOS, calcPercepcaoPassiva, formatModificador } from '../calculos'
-import type { Ficha, ItemInventario } from '../../types'
+import { FIELDS } from './sheetFields'
+import { gameData } from '../../data/rules'
+import { getBackgrounds } from '../../data/backgrounds'
+import { getItems } from '../../data/items'
+import { resolveSpell } from '../../data/spells'
+import { ABILITIES, calcPassivePerception, formatModifier } from '../calculations'
+import type { CharacterSheet, InventoryItem } from '../../types'
 
 /**
- * `exportar` preenche tudo e achata o resultado (PDF final, não editável).
- * `imprimir` deixa em branco o que muda em jogo, para ser escrito a lápis, e
+ * `export` preenche tudo e achata o resultado (PDF final, não editável).
+ * `print` deixa em branco o que muda em jogo, para ser escrito a lápis, e
  * mantém o formulário editável.
  *
  * O que é "muda em jogo" foi cruzado com três fontes:
@@ -26,7 +26,7 @@ import type { Ficha, ItemInventario } from '../../types'
  *    `atualizarPV`, `gastarDadoVida`, `gastarEspaco`, `updateMoedas` e `addXP`
  *    alteram fora do wizard.
  *
- * Resultado: ficam em branco no modo `imprimir` os PV atual e temporário, os
+ * Resultado: ficam em branco no modo `print` os PV atual e temporário, os
  * dados de vida gastos, o XP, os espaços de magia gastos e as moedas.
  *
  * Nunca são preenchidos, em modo nenhum, por não existirem no modelo de dados:
@@ -35,257 +35,257 @@ import type { Ficha, ItemInventario } from '../../types'
  * Dos recursos de classe (fúrias, pontos de foco, …) sai só o **máximo**, que é
  * derivado do nível; o valor atual é gasto em jogo e fica de fora.
  */
-export type ModoFichaPdf = 'imprimir' | 'exportar'
+export type SheetPdfMode = 'print' | 'export'
 
-interface Preenchimento {
-  textos: Array<{ campo: string; valor: string }>
-  marcas: string[]
+interface FillValues {
+  texts: Array<{ field: string; value: string }>
+  marks: string[]
 }
 
-const TAMANHO_FONTE = 8
-const TAMANHO_FONTE_MINIMO = 5
+const FONT_SIZE = 8
+const MIN_FONT_SIZE = 5
 
-const CATEGORIAS_ARMADURA: Record<keyof typeof CAMPOS.treino_armadura, string[]> = {
+const ARMOR_CATEGORIES: Record<keyof typeof FIELDS.armor_training, string[]> = {
   leve: ['leve', 'light'],
   media: ['média', 'media', 'medium'],
   pesada: ['pesada', 'heavy'],
-  escudos: ['escudo', 'escudos', 'shield', 'shields'],
+  shields: ['escudo', 'escudos', 'shield', 'shields'],
 }
 
 /** Recursos de classe: só o máximo entra na ficha — o atual muda a cada descanso. */
-const RECURSOS_DE_CLASSE: Array<[keyof Recursos, string, (r: Recursos) => number | null]> = [
-  ['furias', 'resources.furias', r => r.furias.maximo],
-  ['inspiracao_de_bardo', 'resources.inspiracaoBardo', r => r.inspiracao_de_bardo.maximo],
-  ['canalizar_divindade', 'resources.canalizarDivindade', r => r.canalizar_divindade.maximo],
-  ['formas_selvagens', 'resources.formasSelvagens', r => r.formas_selvagens.maximo],
-  ['pontos_de_feiticaria', 'resources.pontosFeiticaria', r => r.pontos_de_feiticaria.maximo],
-  ['pontos_de_foco', 'resources.pontosFoco', r => r.pontos_de_foco.maximo],
-  ['surto_de_acao', 'resources.surtoAcao', r => r.surto_de_acao.usos],
-  ['recuperar_folego', 'resources.recuperarFolego', r => r.recuperar_folego.maximo],
-  ['imposicao_de_maos', 'resources.imposicaoMaos', r => r.imposicao_de_maos.pool_pv],
+const CLASS_RESOURCES: Array<[keyof ClassResources, string, (r: ClassResources) => number | null]> = [
+  ['rages', 'resources.rages', r => r.rages.max],
+  ['bardic_inspiration', 'resources.bardicInspiration', r => r.bardic_inspiration.max],
+  ['channel_divinity', 'resources.channelDivinity', r => r.channel_divinity.max],
+  ['wild_shapes', 'resources.wildShapes', r => r.wild_shapes.max],
+  ['sorcery_points', 'resources.sorceryPoints', r => r.sorcery_points.max],
+  ['focus_points', 'resources.focusPoints', r => r.focus_points.max],
+  ['action_surge', 'resources.actionSurge', r => r.action_surge.uses],
+  ['second_wind', 'resources.secondWind', r => r.second_wind.max],
+  ['lay_on_hands', 'resources.layOnHands', r => r.lay_on_hands.hp_pool],
 ]
 
-type Recursos = Ficha['caracteristicas_de_classe']['recursos_de_classe']
+type ClassResources = CharacterSheet['class_features']['class_resources']
 
-function nomeDoItem(item: ItemInventario): string {
-  if (item.nome) return item.nome
-  const catalogo = getItens().find(i => i.id === item.id_item)
-  return catalogo?.nome ?? item.id_item ?? '?'
+function itemName(item: InventoryItem): string {
+  if (item.name) return item.name
+  const catalog = getItems().find(i => i.id === item.item_id)
+  return catalog?.name ?? item.item_id ?? '?'
 }
 
-function montarPreenchimento(ficha: Ficha, modo: ModoFichaPdf): Preenchimento {
-  const textos: Preenchimento['textos'] = []
-  const marcas: Preenchimento['marcas'] = []
-  const completo = modo === 'exportar'
+function buildFillValues(sheet: CharacterSheet, mode: SheetPdfMode): FillValues {
+  const texts: FillValues['texts'] = []
+  const marks: FillValues['marks'] = []
+  const completo = mode === 'export'
 
-  const texto = (campo: string, valor: unknown) => {
-    if (valor === null || valor === undefined || valor === '') return
-    textos.push({ campo, valor: String(valor) })
+  const text = (field: string, value: unknown) => {
+    if (value === null || value === undefined || value === '') return
+    texts.push({ field, value: String(value) })
   }
-  /** Só sai no modo `exportar`; no modo `imprimir` fica em branco. */
-  const volatil = (campo: string, valor: unknown) => {
-    if (completo) texto(campo, valor)
+  /** Só sai no modo `export`; no modo `print` fica em branco. */
+  const volatile = (field: string, value: unknown) => {
+    if (completo) text(field, value)
   }
-  const marca = (campo: string, ligado: boolean | null | undefined) => {
-    if (ligado) marcas.push(campo)
+  const mark = (field: string, on: boolean | null | undefined) => {
+    if (on) marks.push(field)
   }
-  const marcaVolatil = (campos: readonly string[], quantidade: number) => {
+  const volatileMark = (fields: readonly string[], quantity: number) => {
     if (!completo) return
-    for (const campo of campos.slice(0, quantidade)) marcas.push(campo)
+    for (const field of fields.slice(0, quantity)) marks.push(field)
   }
-  const lista = (itens: Array<string | null | undefined>) =>
-    itens.filter(Boolean).join('\n')
+  const list = (items: Array<string | null | undefined>) =>
+    items.filter(Boolean).join('\n')
 
-  const { identidade, combate, magia, inventario, personalidade, proficiencias } = ficha
+  const { identity, combat, spellcasting, inventory, personality, proficiencies } = sheet
 
   // ---- identidade
-  const multiclasses = identidade.multiclasses ?? []
-  const classe = dados.classes.find(c => c.id === identidade.classe_id)
-  const especie = dados.especies?.find(e => e.id === identidade.especie_id)
-  const antecedente = getAntecedentes().find(a => a.id === identidade.antecedente_id)
-  const subclasse = classe?.subclasses.find(s => s.id === identidade.subclasse_id)
-  const nivelPrimaria = identidade.nivel - multiclasses.reduce((soma, m) => soma + m.nivel, 0)
-  const classesSecundarias = multiclasses.map(m => ({
-    classe: dados.classes.find(c => c.id === m.classe_id),
-    nivel: m.nivel,
+  const multiclasses = identity.multiclasses ?? []
+  const charClass = gameData.classes.find(c => c.id === identity.class_id)
+  const species = gameData.species?.find(e => e.id === identity.species_id)
+  const background = getBackgrounds().find(a => a.id === identity.background_id)
+  const subclass = charClass?.subclasses.find(s => s.id === identity.subclass_id)
+  const primaryLevel = identity.level - multiclasses.reduce((sum, m) => sum + m.level, 0)
+  const secondaryClasses = multiclasses.map(m => ({
+    charClass: gameData.classes.find(c => c.id === m.class_id),
+    level: m.level,
   }))
 
-  texto(CAMPOS.identidade.nome, identidade.nome_personagem)
-  texto(CAMPOS.identidade.origem, antecedente?.nome)
-  texto(
-    CAMPOS.identidade.classe,
+  text(FIELDS.identity.name, identity.character_name)
+  text(FIELDS.identity.source, background?.name)
+  text(
+    FIELDS.identity.charClass,
     multiclasses.length === 0
-      ? classe?.nome
+      ? charClass?.name
       : [
-          `${classe?.nome ?? '?'} ${nivelPrimaria}`,
-          ...classesSecundarias.map(m => `${m.classe?.nome ?? '?'} ${m.nivel}`),
+          `${charClass?.name ?? '?'} ${primaryLevel}`,
+          ...secondaryClasses.map(m => `${m.charClass?.name ?? '?'} ${m.level}`),
         ].join(' / '),
   )
-  const linhagem = especie?.linhagens?.find(l => l.id === identidade.linhagem_id)
-  texto(CAMPOS.identidade.especie, linhagem ? `${especie?.nome} (${linhagem.nome})` : especie?.nome)
-  texto(
-    CAMPOS.identidade.subclasse,
+  const lineage = species?.lineages?.find(l => l.id === identity.lineage_id)
+  text(FIELDS.identity.species, lineage ? `${species?.name} (${lineage.name})` : species?.name)
+  text(
+    FIELDS.identity.subclass,
     [
-      subclasse?.nome,
+      subclass?.name,
       ...multiclasses.map(m => {
-        const mc = dados.classes.find(c => c.id === m.classe_id)
-        return mc?.subclasses.find(s => s.id === m.subclasse_id)?.nome
+        const mc = gameData.classes.find(c => c.id === m.class_id)
+        return mc?.subclasses.find(s => s.id === m.subclass_id)?.name
       }),
     ]
       .filter(Boolean)
       .join(' / '),
   )
-  texto(CAMPOS.identidade.nivel, identidade.nivel)
-  volatil(CAMPOS.identidade.exp, identidade.xp)
+  text(FIELDS.identity.level, identity.level)
+  volatile(FIELDS.identity.exp, identity.xp)
 
   // ---- combate
-  const dadosDeVida = combate.dados_de_vida
-  texto(CAMPOS.combate.classe_armadura, combate.classe_de_armadura.valor)
-  marca(CAMPOS.combate.escudo, combate.classe_de_armadura.escudo_equipado)
-  texto(CAMPOS.combate.pv_maximo, combate.pontos_de_vida.maximo)
-  volatil(CAMPOS.combate.pv_atual, combate.pontos_de_vida.atual)
-  volatil(CAMPOS.combate.pv_temporario, combate.pontos_de_vida.temporario || null)
-  texto(
-    CAMPOS.combate.dados_vida_maximo,
-    dadosDeVida.total ? `${dadosDeVida.total}${dadosDeVida.tipo ?? ''}` : null,
+  const hitDice = combat.hit_dice
+  text(FIELDS.combat.classe_armadura, combat.armor_class.value)
+  mark(FIELDS.combat.shield, combat.armor_class.shield_equipped)
+  text(FIELDS.combat.pv_maximo, combat.hit_points.max)
+  volatile(FIELDS.combat.pv_atual, combat.hit_points.current)
+  volatile(FIELDS.combat.pv_temporario, combat.hit_points.temporary || null)
+  text(
+    FIELDS.combat.dados_vida_maximo,
+    hitDice.total ? `${hitDice.total}${hitDice.type ?? ''}` : null,
   )
-  volatil(CAMPOS.combate.dados_vida_gastos, dadosDeVida.gastos || null)
-  texto(CAMPOS.combate.bonus_proficiencia, formatModificador(combate._bonus_proficiencia))
-  texto(CAMPOS.combate.iniciativa, formatModificador(combate.iniciativa._valor))
-  texto(
-    CAMPOS.combate.deslocamento,
-    combate.deslocamento._total_metros ? `${combate.deslocamento._total_metros} m` : null,
+  volatile(FIELDS.combat.dados_vida_gastos, hitDice.spent || null)
+  text(FIELDS.combat.bonus_proficiencia, formatModifier(combat._proficiency_bonus))
+  text(FIELDS.combat.initiative, formatModifier(combat.initiative._value))
+  text(
+    FIELDS.combat.speed,
+    combat.speed._total_meters ? `${combat.speed._total_meters} m` : null,
   )
-  texto(CAMPOS.combate.tamanho, especie?.tamanho)
-  texto(
-    CAMPOS.combate.percepcao_passiva,
-    calcPercepcaoPassiva(ficha.pericias.percepcao?._valor ?? 0),
+  text(FIELDS.combat.size, species?.size)
+  text(
+    FIELDS.combat.percepcao_passiva,
+    calcPassivePerception(sheet.skills.percepcao?._value ?? 0),
   )
 
   // ---- atributos, salvaguardas e perícias
-  for (const atributo of ATRIBUTOS) {
-    const campos = CAMPOS.atributos[atributo]
-    const salvaguarda = combate.salvaguardas[atributo]
-    texto(campos.modificador, formatModificador(ficha.atributos[atributo]._modificador))
-    texto(campos.valor, ficha.atributos[atributo].valor)
-    texto(campos.salvaguarda, formatModificador(salvaguarda?._valor ?? null))
-    marca(campos.salvaguarda_proficiencia, salvaguarda?.proficiente)
+  for (const ability of ABILITIES) {
+    const fields = FIELDS.abilities[ability]
+    const save = combat.saves[ability]
+    text(fields.modificador, formatModifier(sheet.abilities[ability]._modifier))
+    text(fields.value, sheet.abilities[ability].value)
+    text(fields.save, formatModifier(save?._value ?? null))
+    mark(fields.salvaguarda_proficiencia, save?.proficient)
   }
 
-  for (const [id, campos] of Object.entries(CAMPOS.pericias)) {
-    const pericia = ficha.pericias[id]
-    if (!pericia) continue
-    texto(campos.bonus, formatModificador(pericia._valor))
-    marca(campos.proficiencia, pericia.proficiente || pericia.expertise)
+  for (const [id, fields] of Object.entries(FIELDS.skills)) {
+    const skill = sheet.skills[id]
+    if (!skill) continue
+    text(fields.bonus, formatModifier(skill._value))
+    mark(fields.proficiencia, skill.proficient || skill.expertise)
   }
 
   // ---- ataques (a ficha tem 6 linhas)
-  combate.ataques.slice(0, CAMPOS.ataques.length).forEach((ataque, i) => {
-    const linha = CAMPOS.ataques[i]
-    texto(linha.nome, ataque.nome)
-    texto(linha.bonus, formatModificador(ataque._bonus_ataque))
-    texto(linha.dano, [ataque._dano, ataque.tipo_dano].filter(Boolean).join(' '))
-    texto(linha.anotacoes, ataque.notas)
+  combat.attacks.slice(0, FIELDS.attacks.length).forEach((attack, i) => {
+    const linha = FIELDS.attacks[i]
+    text(linha.name, attack.name)
+    text(linha.bonus, formatModifier(attack._attack_bonus))
+    text(linha.damage, [attack._damage, attack.damage_type].filter(Boolean).join(' '))
+    text(linha.anotacoes, attack.notes)
   })
 
   // ---- características, talentos e proficiências
-  const recursos = ficha.caracteristicas_de_classe.recursos_de_classe
+  const resources = sheet.class_features.class_resources
   const caracteristicas = [
-    ...ficha.caracteristicas_de_classe.ativas.map(c => c.nome),
-    ...RECURSOS_DE_CLASSE.flatMap(([, chave, maximo]) => {
-      const total = maximo(recursos)
-      return total ? [`${i18n.t(chave)}: ${total}`] : []
+    ...sheet.class_features.active.map(c => c.name),
+    ...CLASS_RESOURCES.flatMap(([, key, max]) => {
+      const total = max(resources)
+      return total ? [`${i18n.t(key)}: ${total}`] : []
     }),
   ]
   const meio = Math.ceil(caracteristicas.length / 2)
-  texto(CAMPOS.textos.caracteristicas_classe_esquerda, lista(caracteristicas.slice(0, meio)))
-  texto(CAMPOS.textos.caracteristicas_classe_direita, lista(caracteristicas.slice(meio)))
-  texto(
-    CAMPOS.textos.caracteristicas_especie,
-    lista(ficha.tracos_de_especie.tracos_ativos.map(t => t.nome)),
+  text(FIELDS.texts.caracteristicas_classe_esquerda, list(caracteristicas.slice(0, meio)))
+  text(FIELDS.texts.caracteristicas_classe_direita, list(caracteristicas.slice(meio)))
+  text(
+    FIELDS.texts.caracteristicas_especie,
+    list(sheet.species_traits.active_traits.map(t => t.name)),
   )
-  texto(CAMPOS.textos.talentos, lista(ficha.talentos.lista.map(t => t.nome)))
-  texto(CAMPOS.textos.proficiencia_armas, proficiencias.armas.join(', '))
-  texto(CAMPOS.textos.proficiencia_ferramentas, proficiencias.ferramentas.join(', '))
+  text(FIELDS.texts.feats, list(sheet.feats.list.map(t => t.name)))
+  text(FIELDS.texts.proficiencia_armas, proficiencies.weapons.join(', '))
+  text(FIELDS.texts.proficiencia_ferramentas, proficiencies.tools.join(', '))
 
-  const armaduras = proficiencias.armaduras.map(a => a.toLowerCase())
-  for (const [categoria, campo] of Object.entries(CAMPOS.treino_armadura)) {
-    const nomes = CATEGORIAS_ARMADURA[categoria as keyof typeof CAMPOS.treino_armadura]
-    marca(campo, armaduras.some(a => nomes.includes(a)))
+  const armors = proficiencies.armors.map(a => a.toLowerCase())
+  for (const [category, field] of Object.entries(FIELDS.armor_training)) {
+    const nomes = ARMOR_CATEGORIES[category as keyof typeof FIELDS.armor_training]
+    mark(field, armors.some(a => nomes.includes(a)))
   }
 
   // ---- magia
-  if (magia.conjurador) {
-    const atributo = magia.atributo_conjuracao
+  if (spellcasting.spellcaster) {
+    const ability = spellcasting.spellcasting_ability
     // no idioma da interface, para casar com o modelo escolhido
-    texto(CAMPOS.magia.atributo_conjuracao, atributo ? i18n.t(`attrs.${atributo}`) : null)
-    texto(
-      CAMPOS.magia.modificador_conjuracao,
-      atributo ? formatModificador(ficha.atributos[atributo]._modificador) : null,
+    text(FIELDS.spellcasting.spellcasting_ability, ability ? i18n.t(`attrs.${ability}`) : null)
+    text(
+      FIELDS.spellcasting.modificador_conjuracao,
+      ability ? formatModifier(sheet.abilities[ability]._modifier) : null,
     )
-    texto(CAMPOS.magia.cd_magia, magia._cd_magia)
-    texto(CAMPOS.magia.bonus_ataque_magia, formatModificador(magia._bonus_ataque_magia))
+    text(FIELDS.spellcasting.cd_magia, spellcasting._spell_dc)
+    text(FIELDS.spellcasting.bonus_ataque_magia, formatModifier(spellcasting._spell_attack_bonus))
 
-    CAMPOS.espacos_de_magia.forEach((celula, i) => {
-      const espaco = magia.espacos_de_magia[`c${i + 1}` as keyof typeof magia.espacos_de_magia]
-      if (!espaco?.maximo) return
-      texto(celula.total, espaco.maximo)
-      marcaVolatil(celula.gastos, espaco.gastos)
+    FIELDS.spell_slots.forEach((celula, i) => {
+      const slot = spellcasting.spell_slots[`c${i + 1}` as keyof typeof spellcasting.spell_slots]
+      if (!slot?.max) return
+      text(celula.total, slot.max)
+      volatileMark(celula.spent, slot.spent)
     })
 
     const nomesDeMagias = [
-      ...Object.values(magia.truques_por_classe).flat(),
-      ...Object.values(magia.magias_por_classe).flat(),
+      ...Object.values(spellcasting.cantrips_by_class).flat(),
+      ...Object.values(spellcasting.spells_by_class).flat(),
     ]
     const preparadas = [...new Set(nomesDeMagias)]
-      .map(nome => resolverMagia(nome))
+      .map(name => resolveSpell(name))
       .filter((m): m is NonNullable<typeof m> => m !== null)
-      .sort((a, b) => a.circulo - b.circulo || a.nome.localeCompare(b.nome))
+      .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
 
-    preparadas.slice(0, CAMPOS.magias.length).forEach((m, i) => {
-      const linha = CAMPOS.magias[i]
-      texto(linha.nivel, m.circulo)
-      texto(linha.nome, m.nome)
-      texto(linha.tempo_conjuracao, m.tempo_conjuracao)
-      texto(linha.alcance, m.alcance)
-      marca(linha.concentracao, m.concentracao)
-      marca(linha.ritual, m.ritual)
-      marca(linha.material, m.componentes?.includes('M'))
-      texto(linha.anotacoes, [m.dano, m.tipo_dano].filter(Boolean).join(' ') || m.duracao)
+    preparadas.slice(0, FIELDS.spells.length).forEach((m, i) => {
+      const linha = FIELDS.spells[i]
+      text(linha.level, m.level)
+      text(linha.name, m.name)
+      text(linha.casting_time, m.casting_time)
+      text(linha.range, m.range)
+      mark(linha.concentration, m.concentration)
+      mark(linha.ritual, m.ritual)
+      mark(linha.material, m.componentes?.includes('M'))
+      text(linha.anotacoes, [m.damage, m.damage_type].filter(Boolean).join(' ') || m.duration)
     })
   }
 
   // ---- inventário e perfil
-  texto(
-    CAMPOS.perfil.equipamento,
-    lista(
-      inventario.itens.map(item =>
-        item.quantidade > 1 ? `${item.quantidade}× ${nomeDoItem(item)}` : nomeDoItem(item),
+  text(
+    FIELDS.profile.equipment,
+    list(
+      inventory.items.map(item =>
+        item.quantity > 1 ? `${item.quantity}× ${itemName(item)}` : itemName(item),
       ),
     ),
   )
-  for (const [moeda, campo] of Object.entries(CAMPOS.moedas)) {
-    volatil(campo, inventario.moedas[moeda as keyof typeof inventario.moedas] || null)
+  for (const [coin, field] of Object.entries(FIELDS.coins)) {
+    volatile(field, inventory.coins[coin as keyof typeof inventory.coins] || null)
   }
 
-  texto(CAMPOS.perfil.aparencia, personalidade.aparencia_descricao)
-  texto(
-    CAMPOS.perfil.historia_personalidade,
-    lista([
-      personalidade.historia,
-      ...personalidade.tracos,
-      ...personalidade.ideais,
-      ...personalidade.vinculos,
-      ...personalidade.fraquezas,
+  text(FIELDS.profile.appearance, personality.appearance_description)
+  text(
+    FIELDS.profile.personality_backstory,
+    list([
+      personality.backstory,
+      ...personality.traits,
+      ...personality.ideals,
+      ...personality.bonds,
+      ...personality.flaws,
     ]),
   )
-  texto(
-    CAMPOS.perfil.alinhamento,
-    [identidade.alinhamento.etico, identidade.alinhamento.moral].filter(Boolean).join(' '),
+  text(
+    FIELDS.profile.alignment,
+    [identity.alignment.ethical, identity.alignment.moral].filter(Boolean).join(' '),
   )
-  texto(CAMPOS.perfil.idiomas, proficiencias.idiomas.join(', '))
+  text(FIELDS.profile.languages, proficiencies.languages.join(', '))
 
-  return { textos, marcas }
+  return { texts, marks }
 }
 
 /**
@@ -293,22 +293,22 @@ function montarPreenchimento(ficha: Ficha, modo: ModoFichaPdf): Preenchimento {
  * desenha um glifo numa fonte que o widget não declara), então o ponto é
  * desenhado direto na página em vez de usar `check()`.
  */
-function desenharMarcas(pdf: PDFDocument, marcas: string[], achatar: boolean) {
+function drawMarks(pdf: PDFDocument, marks: string[], flatten: boolean) {
   const form = pdf.getForm()
-  const paginas = pdf.getPages()
-  const paginaDoWidget = new Map<string, PDFPage>()
-  paginas.forEach(pagina => {
-    const annots = pagina.node.Annots()
+  const pages = pdf.getPages()
+  const widgetPage = new Map<string, PDFPage>()
+  pages.forEach(page => {
+    const annots = page.node.Annots()
     if (!annots) return
-    for (let i = 0; i < annots.size(); i++) paginaDoWidget.set(annots.get(i).toString(), pagina)
+    for (let i = 0; i < annots.size(); i++) widgetPage.set(annots.get(i).toString(), page)
   })
 
-  for (const nome of marcas) {
-    const caixa = form.getCheckBox(nome)
-    for (const widget of caixa.acroField.getWidgets()) {
+  for (const name of marks) {
+    const checkbox = form.getCheckBox(name)
+    for (const widget of checkbox.acroField.getWidgets()) {
       const rect = widget.getRectangle()
-      const pagina = paginaDoWidget.get(pdf.context.getObjectRef(widget.dict)?.toString() ?? '')
-      pagina?.drawCircle({
+      const page = widgetPage.get(pdf.context.getObjectRef(widget.dict)?.toString() ?? '')
+      page?.drawCircle({
         x: rect.x + rect.width / 2,
         y: rect.y + rect.height / 2,
         size: Math.min(rect.width, rect.height) * 0.38,
@@ -319,47 +319,47 @@ function desenharMarcas(pdf: PDFDocument, marcas: string[], achatar: boolean) {
 
   // O achatamento herda a aparência quebrada das caixas; como as marcas já
   // foram desenhadas, os campos podem sair do documento.
-  if (achatar) {
-    for (const campo of form.getFields()) {
-      if (campo.constructor.name === 'PDFCheckBox') form.removeField(campo)
+  if (flatten) {
+    for (const field of form.getFields()) {
+      if (field.constructor.name === 'PDFCheckBox') form.removeField(field)
     }
   }
 }
 
 /** O modelo fixa 8pt; em campo estreito o texto é reduzido para não sair cortado. */
-function ajustarTamanhoDaFonte(campo: PDFTextField, valor: string, fonte: PDFFont) {
-  const widget = campo.acroField.getWidgets()[0]
+function fitFontSize(field: PDFTextField, value: string, font: PDFFont) {
+  const widget = field.acroField.getWidgets()[0]
   if (!widget) return
-  const disponivel = widget.getRectangle().width - 4
-  const necessario = fonte.widthOfTextAtSize(valor, TAMANHO_FONTE)
-  if (necessario <= disponivel) return
-  const proporcional = (TAMANHO_FONTE * disponivel) / necessario
-  campo.setFontSize(Math.max(TAMANHO_FONTE_MINIMO, Math.floor(proporcional * 10) / 10))
+  const available = widget.getRectangle().width - 4
+  const required = font.widthOfTextAtSize(value, FONT_SIZE)
+  if (required <= available) return
+  const proporcional = (FONT_SIZE * available) / required
+  field.setFontSize(Math.max(MIN_FONT_SIZE, Math.floor(proporcional * 10) / 10))
   // Cada widget do modelo traz um /DA próprio, que venceria o do campo.
-  for (const w of campo.acroField.getWidgets()) w.dict.delete(PDFName.of('DA'))
+  for (const w of field.acroField.getWidgets()) w.dict.delete(PDFName.of('DA'))
 }
 
 /** Preenche o modelo oficial com os dados da ficha e devolve o PDF resultante. */
-export async function preencherFichaPdf(
-  ficha: Ficha,
-  modo: ModoFichaPdf,
-  modelo: ArrayBuffer,
+export async function fillSheetPdf(
+  sheet: CharacterSheet,
+  mode: SheetPdfMode,
+  template: ArrayBuffer,
 ): Promise<Uint8Array> {
-  const pdf = await PDFDocument.load(modelo)
+  const pdf = await PDFDocument.load(template)
   const form = pdf.getForm()
-  const fonte = await pdf.embedFont(StandardFonts.Helvetica)
-  const { textos, marcas } = montarPreenchimento(ficha, modo)
+  const font = await pdf.embedFont(StandardFonts.Helvetica)
+  const { texts, marks } = buildFillValues(sheet, mode)
 
-  for (const { campo, valor } of textos) {
-    const campoTexto = form.getTextField(campo)
-    campoTexto.setText(valor)
-    if (!campoTexto.isMultiline()) ajustarTamanhoDaFonte(campoTexto, valor, fonte)
+  for (const { field, value } of texts) {
+    const textField = form.getTextField(field)
+    textField.setText(value)
+    if (!textField.isMultiline()) fitFontSize(textField, value, font)
   }
-  form.updateFieldAppearances(fonte)
+  form.updateFieldAppearances(font)
 
-  const achatar = modo === 'exportar'
-  desenharMarcas(pdf, marcas, achatar)
-  if (achatar) form.flatten()
+  const flatten = mode === 'export'
+  drawMarks(pdf, marks, flatten)
+  if (flatten) form.flatten()
 
   return pdf.save()
 }

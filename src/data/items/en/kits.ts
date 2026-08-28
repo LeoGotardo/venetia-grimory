@@ -1,14 +1,14 @@
-import type { PacoteEquipamento } from '../types'
+import type { EquipmentPack } from '../types'
 
-export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
+export const EQUIPMENT_PACKS: EquipmentPack[] = [
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_explorador',
-    nome: "Explorer's Pack",
-    categoria: 'Equipment Pack',
-    preco: '10 po',
-    peso: '29.5 kg',
-    itens_incluidos: [
+    name: "Explorer's Pack",
+    category: 'Equipment Pack',
+    price: '10 po',
+    weight: '29.5 kg',
+    included_items: [
       'Backpack',
       'Bedroll',
       'Mess kit',
@@ -18,16 +18,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Waterskin',
       "Hemp Rope (50 ft)"
     ],
-    descricao: 'The most versatile pack for long journeys through roads or forests. Provides basic survival in the wild for up to ten days.'
+    description: 'The most versatile pack for long journeys through roads or forests. Provides basic survival in the wild for up to ten days.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_masmorrista',
-    nome: "Dungeoneer's Pack",
-    categoria: 'Equipment Pack',
-    preco: '12 po',
-    peso: '30.5 kg',
-    itens_incluidos: [
+    name: "Dungeoneer's Pack",
+    category: 'Equipment Pack',
+    price: '12 po',
+    weight: '30.5 kg',
+    included_items: [
       'Backpack',
       'Crowbar',
       'Hammer',
@@ -38,16 +38,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Waterskin',
       "Hemp Rope (50 ft)"
     ],
-    descricao: 'Ideal for exploring underground ruins. Contains tools to force doors, climb walls, and secure traps.'
+    description: 'Ideal for exploring underground ruins. Contains tools to force doors, climb walls, and secure traps.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_artista',
-    nome: "Entertainer's Pack",
-    categoria: 'Equipment Pack',
-    preco: '40 po',
-    peso: '17.0 kg',
-    itens_incluidos: [
+    name: "Entertainer's Pack",
+    category: 'Equipment Pack',
+    price: '40 po',
+    weight: '17.0 kg',
+    included_items: [
       'Backpack',
       'Bedroll',
       '2 Costumes',
@@ -56,16 +56,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Waterskin',
       'Disguise Kit'
     ],
-    descricao: 'Excellent for bards and performers. Includes costumes for court or tavern performances and resources to maintain appearance while traveling.'
+    description: 'Excellent for bards and performers. Includes costumes for court or tavern performances and resources to maintain appearance while traveling.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_assaltante',
-    nome: "Burglar's Pack",
-    categoria: 'Equipment Pack',
-    preco: '16 po',
-    peso: '22.0 kg',
-    itens_incluidos: [
+    name: "Burglar's Pack",
+    category: 'Equipment Pack',
+    price: '16 po',
+    weight: '22.0 kg',
+    included_items: [
       'Backpack',
       'Bag of 1,000 ball bearings',
       '10 ft of string',
@@ -78,16 +78,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Waterskin',
       "Hemp Rope (50 ft)"
     ],
-    descricao: 'The ultimate kit for rogues and silent infiltrations. Focused on creating distractions, breaking barriers, and detecting traps.'
+    description: 'The ultimate kit for rogues and silent infiltrations. Focused on creating distractions, breaking barriers, and detecting traps.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_erudito',
-    nome: "Scholar's Pack",
-    categoria: 'Equipment Pack',
-    preco: '40 po',
-    peso: '5.0 kg',
-    itens_incluidos: [
+    name: "Scholar's Pack",
+    category: 'Equipment Pack',
+    price: '40 po',
+    weight: '5.0 kg',
+    included_items: [
       'Backpack',
       'Book of lore',
       'Ink (1 oz bottle)',
@@ -96,16 +96,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       'Little bag of sand',
       'Small knife'
     ],
-    descricao: 'Perfect for wizards and clerics focused on recording knowledge, deciphering runes, and copying spell scrolls.'
+    description: 'Perfect for wizards and clerics focused on recording knowledge, deciphering runes, and copying spell scrolls.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_sacerdote',
-    nome: "Priest's Pack",
-    categoria: 'Equipment Pack',
-    preco: '19 po',
-    peso: '12.0 kg',
-    itens_incluidos: [
+    name: "Priest's Pack",
+    category: 'Equipment Pack',
+    price: '19 po',
+    weight: '12.0 kg',
+    included_items: [
       'Backpack',
       'Blanket',
       '10 Candles',
@@ -117,16 +117,16 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       '2 days of Rations',
       'Waterskin'
     ],
-    descricao: 'For clerics and paladins to conduct sacred rites, bless locations, and hold ceremonies during campaigns.'
+    description: 'For clerics and paladins to conduct sacred rites, bless locations, and hold ceremonies during campaigns.'
   },
   {
-    tipo_item: 'kit',
+    item_type: 'kit',
     id: 'pacote_de_diplomata',
-    nome: "Diplomat's Pack",
-    categoria: 'Equipment Pack',
-    preco: '39 po',
-    peso: '16.5 kg',
-    itens_incluidos: [
+    name: "Diplomat's Pack",
+    category: 'Equipment Pack',
+    price: '39 po',
+    weight: '16.5 kg',
+    included_items: [
       'Chest',
       '2 cases for maps and scrolls',
       'Fine clothes',
@@ -139,6 +139,6 @@ export const PACOTES_DE_EQUIPAMENTO: PacoteEquipamento[] = [
       '2 flasks of Oil',
       'Perfume'
     ],
-    descricao: 'For high-society interactions, political negotiations, and official records of bureaucratic treaties.'
+    description: 'For high-society interactions, political negotiations, and official records of bureaucratic treaties.'
   }
 ]

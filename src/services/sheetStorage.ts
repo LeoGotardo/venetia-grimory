@@ -1,72 +1,73 @@
-import type { Ficha } from '../types'
-import type { FichaListItem } from '../store/fichaStore'
-import { migrarFicha } from '../lib/migrarFicha'
-import { STORAGE_KEY_FICHA_PREFIX, STORAGE_KEY_LISTA } from '../constants'
+import type { CharacterSheet } from '../types'
+import type { SheetListItem } from '../store/sheetStore'
+import { migrateSheet } from '../lib/migrateSheet'
+import { translateLegacyPtListItem } from '../lib/migrateLegacyPt'
+import { STORAGE_KEY_SHEET_PREFIX, STORAGE_KEY_LIST } from '../constants'
 
-function buildListItem(id: string, ficha: Ficha, completa: boolean): FichaListItem {
+function buildListItem(id: string, sheet: CharacterSheet, complete: boolean): SheetListItem {
   return {
     id,
-    nome: ficha.identidade.nome_personagem ?? '',
-    classe: ficha.identidade.classe_id ?? '—',
-    especie: ficha.identidade.especie_id ?? '—',
-    nivel: ficha.identidade.nivel,
+    name: sheet.identity.character_name ?? '',
+    charClass: sheet.identity.class_id ?? '—',
+    species: sheet.identity.species_id ?? '—',
+    level: sheet.identity.level,
     updatedAt: new Date().toISOString(),
-    completa,
+    complete,
   }
 }
 
-function lerLista(): FichaListItem[] {
-  const raw = localStorage.getItem(STORAGE_KEY_LISTA)
+function readList(): SheetListItem[] {
+  const raw = localStorage.getItem(STORAGE_KEY_LIST)
   if (!raw) return []
 
   try {
-    return JSON.parse(raw) as FichaListItem[]
+    return (JSON.parse(raw) as unknown[]).map(translateLegacyPtListItem)
   } catch {
     console.error('[fichaStorage] Lista corrompida, reiniciando.')
     return []
   }
 }
 
-function salvarLista(lista: FichaListItem[]): void {
-  localStorage.setItem(STORAGE_KEY_LISTA, JSON.stringify(lista))
+function saveList(list: SheetListItem[]): void {
+  localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(list))
 }
 
-export function salvarFicha(id: string, ficha: Ficha, completa = false): void {
-  localStorage.setItem(`${STORAGE_KEY_FICHA_PREFIX}${id}`, JSON.stringify(ficha))
+export function saveSheet(id: string, sheet: CharacterSheet, complete = false): void {
+  localStorage.setItem(`${STORAGE_KEY_SHEET_PREFIX}${id}`, JSON.stringify(sheet))
 
-  const lista = lerLista()
-  const idx = lista.findIndex(item => item.id === id)
-  const novoItem = buildListItem(id, ficha, completa)
+  const list = readList()
+  const idx = list.findIndex(item => item.id === id)
+  const novoItem = buildListItem(id, sheet, complete)
 
   if (idx >= 0) {
     // Never downgrade from complete to incomplete
-    const jaCompleta = lista[idx].completa === true
-    lista[idx] = { ...novoItem, completa: jaCompleta || completa }
+    const alreadyComplete = list[idx].complete === true
+    list[idx] = { ...novoItem, complete: alreadyComplete || complete }
   } else {
-    lista.push(novoItem)
+    list.push(novoItem)
   }
 
-  salvarLista(lista)
+  saveList(list)
 }
 
-export function carregarFicha(id: string): Ficha | null {
-  const raw = localStorage.getItem(`${STORAGE_KEY_FICHA_PREFIX}${id}`)
+export function loadSheet(id: string): CharacterSheet | null {
+  const raw = localStorage.getItem(`${STORAGE_KEY_SHEET_PREFIX}${id}`)
   if (!raw) return null
 
   try {
-    return migrarFicha(JSON.parse(raw) as Ficha)
+    return migrateSheet(JSON.parse(raw) as CharacterSheet)
   } catch {
     console.error(`[fichaStorage] Ficha ${id} corrompida.`)
     return null
   }
 }
 
-export function deletarFicha(id: string): void {
-  localStorage.removeItem(`${STORAGE_KEY_FICHA_PREFIX}${id}`)
-  const lista = lerLista().filter(item => item.id !== id)
-  salvarLista(lista)
+export function deleteSheet(id: string): void {
+  localStorage.removeItem(`${STORAGE_KEY_SHEET_PREFIX}${id}`)
+  const list = readList().filter(item => item.id !== id)
+  saveList(list)
 }
 
-export function listarFichas(): FichaListItem[] {
-  return lerLista()
+export function listSheets(): SheetListItem[] {
+  return readList()
 }

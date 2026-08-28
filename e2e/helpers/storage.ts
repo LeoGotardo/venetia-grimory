@@ -1,182 +1,304 @@
 import type { Page } from '@playwright/test'
-import { criarFichaInicial } from '../../src/lib/fichaInicial'
-import type { Ficha } from '../../src/types'
+import { createInitialSheet } from '../../src/lib/initialSheet'
+import type { CharacterSheet } from '../../src/types'
 
-export const STORAGE_KEY_LISTA = 'dnd_fichas_lista'
-export const STORAGE_KEY_FICHA_PREFIX = 'dnd_ficha_'
+export const STORAGE_KEY_LIST = 'dnd_fichas_lista'
+export const STORAGE_KEY_SHEET_PREFIX = 'dnd_ficha_'
 export const STORAGE_KEY_CONFIG = 'venetia-config'
 
-export interface FichaListItem {
+export interface SheetListItem {
   id: string
-  nome: string
-  classe: string
-  especie: string
-  nivel: number
+  name: string
+  charClass: string
+  species: string
+  level: number
   updatedAt: string
-  completa?: boolean
+  complete?: boolean
 }
 
 /**
  * Guerreiro Campeão nível 3, humano, soldado.
  * Valores derivados calculados à mão para manter a fixture independente
- * de `recalcular()` (que importa os módulos de dados do app).
+ * de `recalculate()` (que importa os módulos de dados do app).
  *
  * FOR 16 (+3) · DES 14 (+2) · CON 14 (+2) · INT 10 (0) · SAB 12 (+1) · CAR 8 (-1)
  * Bônus de proficiência nível 3 = +2
  * PV = (10 + 2) + 2 × (6 + 2) = 28 · CA sem armadura = 10 + 2 = 12
  */
-export function criarFichaCompleta(overrides: Partial<Ficha['identidade']> = {}): Ficha {
-  const f = criarFichaInicial()
+export function createCompleteSheet(overrides: Partial<CharacterSheet['identity']> = {}): CharacterSheet {
+  const s = createInitialSheet()
 
-  f.identidade = {
-    ...f.identidade,
-    nome_personagem: 'Aria Sombravéu',
-    nome_jogador: 'Jogador E2E',
-    classe_id: 'guerreiro',
-    subclasse_id: 'campeao',
-    especie_id: 'humano',
-    antecedente_id: 'soldado',
-    nivel: 3,
+  s.identity = {
+    ...s.identity,
+    character_name: 'Aria Sombravéu',
+    player_name: 'Jogador E2E',
+    class_id: 'guerreiro',
+    subclass_id: 'campeao',
+    species_id: 'humano',
+    background_id: 'soldado',
+    level: 3,
     xp: 900,
-    alinhamento: { etico: 'Leal', moral: 'Bom' },
+    alignment: { ethical: 'Leal', moral: 'Bom' },
     ...overrides,
   }
 
-  const valores: Record<string, number> = { FOR: 16, DES: 14, CON: 14, INT: 10, SAB: 12, CAR: 8 }
-  for (const [attr, valor] of Object.entries(valores)) {
-    f.atributos[attr as 'FOR'] = { valor, _modificador: Math.floor((valor - 10) / 2) }
+  const values: Record<string, number> = { FOR: 16, DES: 14, CON: 14, INT: 10, SAB: 12, CAR: 8 }
+  for (const [attr, value] of Object.entries(values)) {
+    s.abilities[attr as 'FOR'] = { value, _modifier: Math.floor((value - 10) / 2) }
   }
-  f.atributos.metodo_geracao = 'padrao'
+  s.abilities.generation_method = 'standard'
 
-  f.combate._bonus_proficiencia = 2
-  f.combate.pontos_de_vida = { maximo: 28, atual: 28, temporario: 0 }
-  f.combate.dados_de_vida = { tipo: 'd10', total: 3, gastos: 0 }
-  f.combate.classe_de_armadura = { valor: 12, origem: null, escudo_equipado: false, armadura_equipada_id: null }
-  f.combate.iniciativa = { _valor: 2 }
-  f.combate.deslocamento = { base_metros: 9, bonus_metros: 0, _total_metros: 9 }
-  f.combate.salvaguardas.FOR = { proficiente: true, _valor: 5 }
-  f.combate.salvaguardas.CON = { proficiente: true, _valor: 4 }
-  f.combate.salvaguardas.DES = { proficiente: false, _valor: 2 }
-  f.combate.salvaguardas.INT = { proficiente: false, _valor: 0 }
-  f.combate.salvaguardas.SAB = { proficiente: false, _valor: 1 }
-  f.combate.salvaguardas.CAR = { proficiente: false, _valor: -1 }
+  s.combat._proficiency_bonus = 2
+  s.combat.hit_points = { max: 28, current: 28, temporary: 0 }
+  s.combat.hit_dice = { type: 'd10', total: 3, spent: 0 }
+  s.combat.armor_class = { value: 12, source: null, shield_equipped: false, equipped_armor_id: null }
+  s.combat.initiative = { _value: 2 }
+  s.combat.speed = { base_meters: 9, bonus_meters: 0, _total_meters: 9 }
+  s.combat.saves.FOR = { proficient: true, _value: 5 }
+  s.combat.saves.CON = { proficient: true, _value: 4 }
+  s.combat.saves.DES = { proficient: false, _value: 2 }
+  s.combat.saves.INT = { proficient: false, _value: 0 }
+  s.combat.saves.SAB = { proficient: false, _value: 1 }
+  s.combat.saves.CAR = { proficient: false, _value: -1 }
 
   // Perícias do antecedente Soldado + duas de classe
-  for (const pid of ['atletismo', 'intimidacao', 'acrobacia', 'historia']) {
-    f.pericias[pid] = { ...f.pericias[pid], proficiente: true }
+  for (const skillId of ['atletismo', 'intimidacao', 'acrobacia', 'historia']) {
+    s.skills[skillId] = { ...s.skills[skillId], proficient: true }
   }
-  const modPorAtributo: Record<string, number> = { FOR: 3, DES: 2, CON: 2, INT: 0, SAB: 1, CAR: -1 }
-  for (const pid of Object.keys(f.pericias)) {
-    const p = f.pericias[pid]
-    p._valor = modPorAtributo[p.atributo] + (p.proficiente ? 2 : 0)
+  const modByAbility: Record<string, number> = { FOR: 3, DES: 2, CON: 2, INT: 0, SAB: 1, CAR: -1 }
+  for (const skillId of Object.keys(s.skills)) {
+    const skill = s.skills[skillId]
+    skill._value = modByAbility[skill.ability] + (skill.proficient ? 2 : 0)
   }
 
-  f.proficiencias.idiomas = ['comum', 'draconico', 'elfico']
-  f.inventario.moedas = { PC: 0, PP: 0, PE: 0, PO: 25, PL: 0 }
-  f.inventario.itens = [
+  s.proficiencies.languages = ['comum', 'draconico', 'elfico']
+  s.inventory.coins = { PC: 0, PP: 0, PE: 0, PO: 25, PL: 0 }
+  s.inventory.items = [
     {
-      id_item: 'kit_opcao_a',
-      nome: 'Cota de Malha, Espada Grande, Mangual',
-      categoria: 'kit',
-      quantidade: 1,
-      equipado: false,
-      custo_po: null,
-      peso_kg: null,
-      notas: null,
+      item_id: 'kit_opcao_a',
+      name: 'Cota de Malha, Espada Grande, Mangual',
+      category: 'kit',
+      quantity: 1,
+      equipped: false,
+      cost_gp: null,
+      weight_kg: null,
+      notes: null,
     },
   ]
 
-  return f
+  return s
 }
 
 /**
  * Ficha de conjurador no formato anterior ao split de magias por classe
- * (`truques_conhecidos` / `magias_preparadas`, sem os campos `*_por_classe`).
+ * (`known_cantrips` / `prepared_spells`, sem os campos `*_by_class`).
  * Serve para cobrir a migração de fichas antigas do localStorage.
  */
-export function criarFichaLegadaConjuradora(): Ficha {
-  const f = criarFichaCompleta({
-    nome_personagem: 'Elowen Vento-Claro',
-    classe_id: 'mago',
-    subclasse_id: 'abjurador',
+export function createLegacySpellcasterSheet(): CharacterSheet {
+  const s = createCompleteSheet({
+    character_name: 'Elowen Vento-Claro',
+    class_id: 'mago',
+    subclass_id: 'abjurador',
   })
 
-  const magiaLegada = {
-    conjurador: true,
-    atributo_conjuracao: 'INT',
-    _cd_magia: 13,
-    _bonus_ataque_magia: 5,
-    truques_conhecidos: ['Raio Gélido', 'Luz'],
-    magias_preparadas: ['Mísseis Mágicos', 'Escudo'],
-    livro_de_magias: [],
-    espacos_de_magia: {
-      c1: { maximo: 4, gastos: 1 }, c2: { maximo: 2, gastos: 0 }, c3: { maximo: 0, gastos: 0 },
-      c4: { maximo: 0, gastos: 0 }, c5: { maximo: 0, gastos: 0 }, c6: { maximo: 0, gastos: 0 },
-      c7: { maximo: 0, gastos: 0 }, c8: { maximo: 0, gastos: 0 }, c9: { maximo: 0, gastos: 0 },
+  const legacySpellcasting = {
+    spellcaster: true,
+    spellcasting_ability: 'INT',
+    _spell_dc: 13,
+    _spell_attack_bonus: 5,
+    known_cantrips: ['Raio Gélido', 'Luz'],
+    prepared_spells: ['Mísseis Mágicos', 'Escudo'],
+    spellbook: [],
+    spell_slots: {
+      c1: { max: 4, spent: 1 }, c2: { max: 2, spent: 0 }, c3: { max: 0, spent: 0 },
+      c4: { max: 0, spent: 0 }, c5: { max: 0, spent: 0 }, c6: { max: 0, spent: 0 },
+      c7: { max: 0, spent: 0 }, c8: { max: 0, spent: 0 }, c9: { max: 0, spent: 0 },
     },
-    espacos_pacto_bruxo: { circulo: null, maximo: 0, gastos: 0 },
+    pact_slots: { level: null, max: 0, spent: 0 },
   }
 
-  const legada = f as unknown as Record<string, unknown>
-  legada.magia = magiaLegada
-  delete (legada.identidade as Record<string, unknown>).multiclasses
-  delete (legada.identidade as Record<string, unknown>).distribuicao_antecedente
+  const legacy = s as unknown as Record<string, unknown>
+  legacy.spellcasting = legacySpellcasting
+  delete (legacy.identity as Record<string, unknown>).multiclasses
+  delete (legacy.identity as Record<string, unknown>).background_distribution
 
-  return f
+  return s
 }
 
-export function criarItemDaLista(id: string, ficha: Ficha, completa = true): FichaListItem {
+/**
+ * A mesma ficha, mas no formato salvo antes da renomeação dos campos de PT para
+ * EN — as chaves do localStorage não mudaram, então fichas assim ainda chegam ao
+ * app e passam por `translateLegacyPtSheet`.
+ */
+export function createLegacyPtSheet(): Record<string, unknown> {
+  return {
+    identidade: {
+      nome_personagem: 'Bruenor Battlehammer',
+      nome_jogador: 'Jogador E2E',
+      classe_id: 'guerreiro',
+      subclasse_id: 'campeao',
+      especie_id: 'humano',
+      antecedente_id: 'soldado',
+      nivel: 3,
+      xp: 900,
+      alinhamento: { etico: 'Leal', moral: 'Bom' },
+    },
+    atributos: {
+      FOR: { valor: 16, _modificador: 3 },
+      DES: { valor: 14, _modificador: 2 },
+      CON: { valor: 14, _modificador: 2 },
+      INT: { valor: 10, _modificador: 0 },
+      SAB: { valor: 12, _modificador: 1 },
+      CAR: { valor: 8, _modificador: -1 },
+      metodo_geracao: 'padrao',
+    },
+    combate: {
+      _bonus_proficiencia: 2,
+      pontos_de_vida: { maximo: 28, atual: 21, temporario: 0 },
+      dados_de_vida: { tipo: 'd10', total: 3, gastos: 0 },
+      classe_de_armadura: { valor: 12, origem: null, escudo_equipado: false, armadura_equipada_id: null },
+      iniciativa: { _valor: 2 },
+      deslocamento: { base_metros: 9, bonus_metros: 0, _total_metros: 9 },
+      ataques: [],
+      salvaguardas: {
+        FOR: { proficiente: true, _valor: 5 },
+        DES: { proficiente: false, _valor: 2 },
+        CON: { proficiente: true, _valor: 4 },
+        INT: { proficiente: false, _valor: 0 },
+        SAB: { proficiente: false, _valor: 1 },
+        CAR: { proficiente: false, _valor: -1 },
+      },
+    },
+    pericias: {
+      atletismo: { atributo: 'FOR', proficiente: true, expertise: false, _valor: 5 },
+      historia: { atributo: 'INT', proficiente: true, expertise: false, _valor: 2 },
+    },
+    proficiencias: { armaduras: [], armas: [], ferramentas: [], idiomas: ['comum', 'draconico'] },
+    inventario: {
+      moedas: { PC: 0, PP: 0, PE: 0, PO: 25, PL: 0 },
+      itens: [
+        {
+          id_item: 'espada_longa',
+          nome: 'Espada Longa',
+          categoria: 'arma',
+          quantidade: 1,
+          equipado: true,
+          custo_po: 15,
+          peso_kg: 1.5,
+          notas: null,
+        },
+      ],
+    },
+    personalidade: {
+      tracos: ['Encaro os problemas de frente.'],
+      ideais: ['Liberdade.'],
+      vinculos: [],
+      fraquezas: [],
+      historia: 'Veterano de mil batalhas.',
+      aparencia_descricao: null,
+      aliados_e_organizacoes: null,
+      simbolo_ou_tesouro: null,
+    },
+    condicoes_ativas: [],
+    niveis_de_exaustao: 0,
+    notas: null,
+  }
+}
+
+/** Item da lista de fichas no formato antigo, em português. */
+export function createLegacyPtListItem(id: string, name: string): Record<string, unknown> {
   return {
     id,
-    nome: ficha.identidade.nome_personagem ?? '',
-    classe: ficha.identidade.classe_id ?? '—',
-    especie: ficha.identidade.especie_id ?? '—',
-    nivel: ficha.identidade.nivel,
+    nome: name,
+    classe: 'guerreiro',
+    especie: 'humano',
+    nivel: 3,
     updatedAt: new Date().toISOString(),
-    completa,
+    completa: true,
+  }
+}
+
+export function createListItem(id: string, sheet: CharacterSheet, complete = true): SheetListItem {
+  return {
+    id,
+    name: sheet.identity.character_name ?? '',
+    charClass: sheet.identity.class_id ?? '—',
+    species: sheet.identity.species_id ?? '—',
+    level: sheet.identity.level,
+    updatedAt: new Date().toISOString(),
+    complete,
   }
 }
 
 /** Grava uma ficha no localStorage antes de qualquer script da página rodar. */
-export async function semearFicha(
+export async function seedSheet(
   page: Page,
-  { id, ficha, completa = true }: { id: string; ficha: Ficha; completa?: boolean },
+  { id, sheet, complete = true }: { id: string; sheet: CharacterSheet; complete?: boolean },
 ): Promise<void> {
-  const item = criarItemDaLista(id, ficha, completa)
+  await seedRaw(page, { id, sheetJson: JSON.stringify(sheet), itemJson: JSON.stringify(createListItem(id, sheet, complete)) })
+}
+
+/** Mesma semeadura, mas com JSON cru — usada pelas fichas em formato antigo. */
+export async function seedRaw(
+  page: Page,
+  { id, sheetJson, itemJson }: { id: string; sheetJson: string; itemJson: string },
+): Promise<void> {
   await page.addInitScript(
-    ({ chaveFicha, chaveLista, fichaJson, itemJson }) => {
+    ({ sheetKey, listKey, sheetValue, itemValue }) => {
       // roda a cada navegação: só semeia na primeira vez, senão desfaz
       // as alterações que o próprio app salvou.
-      if (window.localStorage.getItem(chaveFicha)) return
-      window.localStorage.setItem(chaveFicha, fichaJson)
-      const brutoLista = window.localStorage.getItem(chaveLista)
-      const lista = brutoLista ? JSON.parse(brutoLista) : []
-      lista.push(JSON.parse(itemJson))
-      window.localStorage.setItem(chaveLista, JSON.stringify(lista))
+      if (window.localStorage.getItem(sheetKey)) return
+      window.localStorage.setItem(sheetKey, sheetValue)
+      const rawList = window.localStorage.getItem(listKey)
+      const list = rawList ? JSON.parse(rawList) : []
+      list.push(JSON.parse(itemValue))
+      window.localStorage.setItem(listKey, JSON.stringify(list))
     },
     {
-      chaveFicha: `${STORAGE_KEY_FICHA_PREFIX}${id}`,
-      chaveLista: STORAGE_KEY_LISTA,
-      fichaJson: JSON.stringify(ficha),
-      itemJson: JSON.stringify(item),
+      sheetKey: `${STORAGE_KEY_SHEET_PREFIX}${id}`,
+      listKey: STORAGE_KEY_LIST,
+      sheetValue: sheetJson,
+      itemValue: itemJson,
     },
   )
 }
 
 /** Fixa o idioma da interface antes do carregamento (o i18n lê no boot). */
-export async function definirIdioma(page: Page, lingua: 'pt' | 'en'): Promise<void> {
+export async function setLanguage(page: Page, language: 'pt' | 'en'): Promise<void> {
   await page.addInitScript(
-    ({ chave, valor }) => window.localStorage.setItem(chave, valor),
+    ({ key, value }) => window.localStorage.setItem(key, value),
     {
-      chave: STORAGE_KEY_CONFIG,
-      valor: JSON.stringify({
+      key: STORAGE_KEY_CONFIG,
+      value: JSON.stringify({
+        state: {
+          config: {
+            track_weight: true,
+            manage_gold: true,
+            sale_refund: true,
+            simple_coins: false,
+            language,
+          },
+        },
+        version: 1,
+      }),
+    },
+  )
+}
+
+/** Preferências no formato antigo (v0, campos em português). */
+export async function setLegacyPtLanguage(page: Page, language: 'pt' | 'en'): Promise<void> {
+  await page.addInitScript(
+    ({ key, value }) => window.localStorage.setItem(key, value),
+    {
+      key: STORAGE_KEY_CONFIG,
+      value: JSON.stringify({
         state: {
           config: {
             rastrear_peso: true,
             gerenciar_ouro: true,
             reembolso_venda: true,
             moedas_simples: false,
-            lingua,
+            lingua: language,
           },
         },
         version: 0,
@@ -185,7 +307,7 @@ export async function definirIdioma(page: Page, lingua: 'pt' | 'en'): Promise<vo
   )
 }
 
-export async function lerLista(page: Page): Promise<FichaListItem[]> {
-  const bruto = await page.evaluate(chave => window.localStorage.getItem(chave), STORAGE_KEY_LISTA)
-  return bruto ? (JSON.parse(bruto) as FichaListItem[]) : []
+export async function readList(page: Page): Promise<SheetListItem[]> {
+  const raw = await page.evaluate(key => window.localStorage.getItem(key), STORAGE_KEY_LIST)
+  return raw ? (JSON.parse(raw) as SheetListItem[]) : []
 }

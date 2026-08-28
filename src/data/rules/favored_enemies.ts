@@ -1,58 +1,58 @@
 export default [
   {
     "id": "aberracao",
-    "nome": "Aberração"
+    "name": "Aberração"
   },
   {
     "id": "besta",
-    "nome": "Besta"
+    "name": "Besta"
   },
   {
     "id": "celestial",
-    "nome": "Celestial"
+    "name": "Celestial"
   },
   {
     "id": "construto",
-    "nome": "Construto"
+    "name": "Construto"
   },
   {
     "id": "dragao",
-    "nome": "Dragão"
+    "name": "Dragão"
   },
   {
     "id": "elemental",
-    "nome": "Elemental"
+    "name": "Elemental"
   },
   {
     "id": "fada",
-    "nome": "Fada"
+    "name": "Fada"
   },
   {
     "id": "demonio",
-    "nome": "Demônio"
+    "name": "Demônio"
   },
   {
     "id": "gigante",
-    "nome": "Gigante"
+    "name": "Gigante"
   },
   {
     "id": "humanoide",
-    "nome": "Humanoide"
+    "name": "Humanoide"
   },
   {
     "id": "monstruosidade",
-    "nome": "Monstruosidade"
+    "name": "Monstruosidade"
   },
   {
     "id": "gosma",
-    "nome": "Gosma"
+    "name": "Gosma"
   },
   {
     "id": "planta",
-    "nome": "Planta"
+    "name": "Planta"
   },
   {
     "id": "morto_vivo",
-    "nome": "Morto-Vivo"
+    "name": "Morto-Vivo"
   }
 ]

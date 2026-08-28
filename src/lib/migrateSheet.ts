@@ -1,75 +1,77 @@
-import type { Ficha } from '../types'
-import { criarFichaInicial } from './fichaInicial'
+import type { CharacterSheet } from '../types'
+import { createInitialSheet } from './initialSheet'
+import { isLegacyPtSheet, translateLegacyPtSheet } from './migrateLegacyPt'
 
 /**
  * Formato anterior à separação de magias por classe (multiclasse).
  * Fichas salvas antes dessa mudança guardam truques e magias em listas únicas.
  */
-type FichaLegada = Ficha & {
-  magia: Ficha['magia'] & {
-    truques_conhecidos?: string[]
-    magias_preparadas?: string[]
+type LegacySheet = CharacterSheet & {
+  spellcasting: CharacterSheet['spellcasting'] & {
+    known_cantrips?: string[]
+    prepared_spells?: string[]
   }
 }
 
-function agruparPorClasse(classeId: string, lista: string[] | undefined): Record<string, string[]> {
-  if (!lista?.length) return {}
-  return { [classeId]: lista }
+function groupByClass(classId: string, list: string[] | undefined): Record<string, string[]> {
+  if (!list?.length) return {}
+  return { [classId]: list }
 }
 
 /**
  * Normaliza uma ficha vinda do localStorage ou de um JSON importado, preenchendo
  * campos adicionados depois que ela foi salva. Sem isso, painéis que leem esses
- * campos quebram a página inteira (ex.: `Object.values(truques_por_classe)`).
+ * campos quebram a página inteira (ex.: `Object.values(cantrips_by_class)`).
  */
-export function migrarFicha(ficha: Ficha): Ficha {
-  const base = criarFichaInicial()
-  const legada = ficha as FichaLegada
-  const classeId = ficha.identidade?.classe_id ?? 'classe'
+export function migrateSheet(saved: CharacterSheet): CharacterSheet {
+  const sheet = isLegacyPtSheet(saved) ? translateLegacyPtSheet(saved) : saved
+  const base = createInitialSheet()
+  const legacy = sheet as LegacySheet
+  const classId = sheet.identity?.class_id ?? 'classe'
 
-  const { truques_conhecidos, magias_preparadas, ...magiaSalva } = legada.magia ?? base.magia
+  const { known_cantrips, prepared_spells, ...savedSpellcasting } = legacy.spellcasting ?? base.spellcasting
 
   return {
     ...base,
-    ...ficha,
-    identidade: {
-      ...base.identidade,
-      ...ficha.identidade,
-      multiclasses: ficha.identidade?.multiclasses ?? base.identidade.multiclasses,
-      distribuicao_antecedente:
-        ficha.identidade?.distribuicao_antecedente ?? base.identidade.distribuicao_antecedente,
+    ...sheet,
+    identity: {
+      ...base.identity,
+      ...sheet.identity,
+      multiclasses: sheet.identity?.multiclasses ?? base.identity.multiclasses,
+      background_distribution:
+        sheet.identity?.background_distribution ?? base.identity.background_distribution,
     },
-    atributos: { ...base.atributos, ...ficha.atributos },
-    combate: {
-      ...base.combate,
-      ...ficha.combate,
-      salvaguardas: { ...base.combate.salvaguardas, ...ficha.combate?.salvaguardas },
+    abilities: { ...base.abilities, ...sheet.abilities },
+    combat: {
+      ...base.combat,
+      ...sheet.combat,
+      saves: { ...base.combat.saves, ...sheet.combat?.saves },
     },
-    pericias: { ...base.pericias, ...ficha.pericias },
-    proficiencias: { ...base.proficiencias, ...ficha.proficiencias },
-    tracos_de_especie: { ...base.tracos_de_especie, ...ficha.tracos_de_especie },
-    caracteristicas_de_classe: {
-      ...base.caracteristicas_de_classe,
-      ...ficha.caracteristicas_de_classe,
-      recursos_de_classe: {
-        ...base.caracteristicas_de_classe.recursos_de_classe,
-        ...ficha.caracteristicas_de_classe?.recursos_de_classe,
+    skills: { ...base.skills, ...sheet.skills },
+    proficiencies: { ...base.proficiencies, ...sheet.proficiencies },
+    species_traits: { ...base.species_traits, ...sheet.species_traits },
+    class_features: {
+      ...base.class_features,
+      ...sheet.class_features,
+      class_resources: {
+        ...base.class_features.class_resources,
+        ...sheet.class_features?.class_resources,
       },
     },
-    magia: {
-      ...base.magia,
-      ...magiaSalva,
-      truques_por_classe: magiaSalva.truques_por_classe ?? agruparPorClasse(classeId, truques_conhecidos),
-      magias_por_classe: magiaSalva.magias_por_classe ?? agruparPorClasse(classeId, magias_preparadas),
-      espacos_de_magia: { ...base.magia.espacos_de_magia, ...magiaSalva.espacos_de_magia },
-      espacos_pacto_bruxo: magiaSalva.espacos_pacto_bruxo ?? base.magia.espacos_pacto_bruxo,
+    spellcasting: {
+      ...base.spellcasting,
+      ...savedSpellcasting,
+      cantrips_by_class: savedSpellcasting.cantrips_by_class ?? groupByClass(classId, known_cantrips),
+      spells_by_class: savedSpellcasting.spells_by_class ?? groupByClass(classId, prepared_spells),
+      spell_slots: { ...base.spellcasting.spell_slots, ...savedSpellcasting.spell_slots },
+      pact_slots: savedSpellcasting.pact_slots ?? base.spellcasting.pact_slots,
     },
-    inventario: {
-      ...base.inventario,
-      ...ficha.inventario,
-      moedas: { ...base.inventario.moedas, ...ficha.inventario?.moedas },
+    inventory: {
+      ...base.inventory,
+      ...sheet.inventory,
+      coins: { ...base.inventory.coins, ...sheet.inventory?.coins },
     },
-    talentos: { ...base.talentos, ...ficha.talentos },
-    personalidade: { ...base.personalidade, ...ficha.personalidade },
+    feats: { ...base.feats, ...sheet.feats },
+    personality: { ...base.personality, ...sheet.personality },
   }
 }

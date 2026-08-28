@@ -1,96 +1,96 @@
-export type { Magia } from './spells/types'
-import type { Magia } from './spells/types'
+export type { Spell } from './spells/types'
+import type { Spell } from './spells/types'
 import i18n from '../i18n'
 
-import { MAGIAS0 as MAGIAS0_PT } from './spells/pt/spell_lvl0'
-import { MAGIAS1 as MAGIAS1_PT } from './spells/pt/spell_lvl1'
-import { MAGIAS2 as MAGIAS2_PT } from './spells/pt/spell_lvl2'
-import { MAGIAS3 as MAGIAS3_PT } from './spells/pt/spell_lvl3'
-import { MAGIAS4 as MAGIAS4_PT } from './spells/pt/spell_lvl4'
-import { MAGIAS5 as MAGIAS5_PT } from './spells/pt/spell_lvl5'
-import { MAGIAS6 as MAGIAS6_PT } from './spells/pt/spell_lvl6'
-import { MAGIAS7 as MAGIAS7_PT } from './spells/pt/spell_lvl7'
-import { MAGIAS8 as MAGIAS8_PT } from './spells/pt/spell_lvl8'
-import { MAGIAS9 as MAGIAS9_PT } from './spells/pt/spell_lvl9'
+import { SPELLS0 as SPELLS0_PT } from './spells/pt/spell_lvl0'
+import { SPELLS1 as SPELLS1_PT } from './spells/pt/spell_lvl1'
+import { SPELLS2 as SPELLS2_PT } from './spells/pt/spell_lvl2'
+import { SPELLS3 as SPELLS3_PT } from './spells/pt/spell_lvl3'
+import { SPELLS4 as SPELLS4_PT } from './spells/pt/spell_lvl4'
+import { SPELLS5 as SPELLS5_PT } from './spells/pt/spell_lvl5'
+import { SPELLS6 as SPELLS6_PT } from './spells/pt/spell_lvl6'
+import { SPELLS7 as SPELLS7_PT } from './spells/pt/spell_lvl7'
+import { SPELLS8 as SPELLS8_PT } from './spells/pt/spell_lvl8'
+import { SPELLS9 as SPELLS9_PT } from './spells/pt/spell_lvl9'
 
-import { MAGIAS0 as MAGIAS0_EN } from './spells/en/spell_lvl0'
-import { MAGIAS1 as MAGIAS1_EN } from './spells/en/spell_lvl1'
-import { MAGIAS2 as MAGIAS2_EN } from './spells/en/spell_lvl2'
-import { MAGIAS3 as MAGIAS3_EN } from './spells/en/spell_lvl3'
-import { MAGIAS4 as MAGIAS4_EN } from './spells/en/spell_lvl4'
-import { MAGIAS5 as MAGIAS5_EN } from './spells/en/spell_lvl5'
-import { MAGIAS6 as MAGIAS6_EN } from './spells/en/spell_lvl6'
-import { MAGIAS7 as MAGIAS7_EN } from './spells/en/spell_lvl7'
-import { MAGIAS8 as MAGIAS8_EN } from './spells/en/spell_lvl8'
-import { MAGIAS9 as MAGIAS9_EN } from './spells/en/spell_lvl9'
+import { SPELLS0 as SPELLS0_EN } from './spells/en/spell_lvl0'
+import { SPELLS1 as SPELLS1_EN } from './spells/en/spell_lvl1'
+import { SPELLS2 as SPELLS2_EN } from './spells/en/spell_lvl2'
+import { SPELLS3 as SPELLS3_EN } from './spells/en/spell_lvl3'
+import { SPELLS4 as SPELLS4_EN } from './spells/en/spell_lvl4'
+import { SPELLS5 as SPELLS5_EN } from './spells/en/spell_lvl5'
+import { SPELLS6 as SPELLS6_EN } from './spells/en/spell_lvl6'
+import { SPELLS7 as SPELLS7_EN } from './spells/en/spell_lvl7'
+import { SPELLS8 as SPELLS8_EN } from './spells/en/spell_lvl8'
+import { SPELLS9 as SPELLS9_EN } from './spells/en/spell_lvl9'
 
-const TODAS_MAGIAS_PT: Magia[] = [
-  ...MAGIAS0_PT,
-  ...MAGIAS1_PT,
-  ...MAGIAS2_PT,
-  ...MAGIAS3_PT,
-  ...MAGIAS4_PT,
-  ...MAGIAS5_PT,
-  ...MAGIAS6_PT,
-  ...MAGIAS7_PT,
-  ...MAGIAS8_PT,
-  ...MAGIAS9_PT,
+const ALL_SPELLS_PT: Spell[] = [
+  ...SPELLS0_PT,
+  ...SPELLS1_PT,
+  ...SPELLS2_PT,
+  ...SPELLS3_PT,
+  ...SPELLS4_PT,
+  ...SPELLS5_PT,
+  ...SPELLS6_PT,
+  ...SPELLS7_PT,
+  ...SPELLS8_PT,
+  ...SPELLS9_PT,
 ]
 
-const TODAS_MAGIAS_EN: Magia[] = [
-  ...MAGIAS0_EN,
-  ...MAGIAS1_EN,
-  ...MAGIAS2_EN,
-  ...MAGIAS3_EN,
-  ...MAGIAS4_EN,
-  ...MAGIAS5_EN,
-  ...MAGIAS6_EN,
-  ...MAGIAS7_EN,
-  ...MAGIAS8_EN,
-  ...MAGIAS9_EN,
+const ALL_SPELLS_EN: Spell[] = [
+  ...SPELLS0_EN,
+  ...SPELLS1_EN,
+  ...SPELLS2_EN,
+  ...SPELLS3_EN,
+  ...SPELLS4_EN,
+  ...SPELLS5_EN,
+  ...SPELLS6_EN,
+  ...SPELLS7_EN,
+  ...SPELLS8_EN,
+  ...SPELLS9_EN,
 ]
 
-export function getMagias(): Magia[] {
-  return i18n.language === 'pt' ? TODAS_MAGIAS_PT : TODAS_MAGIAS_EN
+export function getSpells(): Spell[] {
+  return i18n.language === 'pt' ? ALL_SPELLS_PT : ALL_SPELLS_EN
 }
 
-export function getMagiasPorClasse(classeId: string): Magia[] {
-  return getMagias().filter(m => m.classes.includes(classeId))
+export function getSpellsByClass(classId: string): Spell[] {
+  return getSpells().filter(m => m.classes.includes(classId))
 }
 
-export function getTruquesPorClasse(classeId: string): Magia[] {
-  return getMagias().filter(m => m.circulo === 0 && m.classes.includes(classeId))
+export function getCantripsByClass(classId: string): Spell[] {
+  return getSpells().filter(m => m.level === 0 && m.classes.includes(classId))
 }
 
-export function getMagiasPorClasseECirculo(classeId: string, circuloMax: number): Magia[] {
-  return getMagias().filter(m => m.circulo > 0 && m.circulo <= circuloMax && m.classes.includes(classeId))
+export function getSpellsByClassAndLevel(classId: string, maxSpellLevel: number): Spell[] {
+  return getSpells().filter(m => m.level > 0 && m.level <= maxSpellLevel && m.classes.includes(classId))
 }
 
 // Multi-class variants: deduplication is implicit since each Magia has one entry with all its classes listed
-export function getTruquesPorClasses(classeIds: string[]): Magia[] {
-  if (classeIds.length === 0) return []
-  return getMagias().filter(m => m.circulo === 0 && m.classes.some(c => classeIds.includes(c)))
+export function getCantripsByClasses(classIds: string[]): Spell[] {
+  if (classIds.length === 0) return []
+  return getSpells().filter(m => m.level === 0 && m.classes.some(c => classIds.includes(c)))
 }
 
-export function getMagiasPorClassesECirculos(
-  classes: Array<{ classeId: string; maxCirculo: number }>,
-): Magia[] {
+export function getSpellsByClassesAndLevels(
+  classes: Array<{ classId: string; maxSpellLevel: number }>,
+): Spell[] {
   if (classes.length === 0) return []
-  return getMagias().filter(m =>
-    m.circulo > 0 &&
-    classes.some(c => m.classes.includes(c.classeId) && m.circulo <= c.maxCirculo),
+  return getSpells().filter(m =>
+    m.level > 0 &&
+    classes.some(c => m.classes.includes(c.classId) && m.level <= c.maxSpellLevel),
   )
 }
 // As magias são gravadas na ficha pelo nome, no idioma em que foram escolhidas.
 // Este índice permite reencontrá-las depois de uma troca de idioma.
-const INDICE_POR_NOME = new Map<string, string>()
-for (const lista of [TODAS_MAGIAS_PT, TODAS_MAGIAS_EN]) {
-  for (const m of lista) INDICE_POR_NOME.set(m.nome.toLowerCase(), m.id)
+const INDEX_BY_NAME = new Map<string, string>()
+for (const list of [ALL_SPELLS_PT, ALL_SPELLS_EN]) {
+  for (const m of list) INDEX_BY_NAME.set(m.name.toLowerCase(), m.id)
 }
 
 /** Resolve uma magia salva (nome em qualquer idioma, ou id) para o idioma atual. */
-export function resolverMagia(nomeOuId: string): Magia | null {
-  const magias = getMagias()
-  const id = INDICE_POR_NOME.get(nomeOuId.toLowerCase()) ?? nomeOuId
-  return magias.find(m => m.id === id) ?? null
+export function resolveSpell(nameOrId: string): Spell | null {
+  const spells = getSpells()
+  const id = INDEX_BY_NAME.get(nameOrId.toLowerCase()) ?? nameOrId
+  return spells.find(m => m.id === id) ?? null
 }

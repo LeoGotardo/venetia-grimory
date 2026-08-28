@@ -1,29 +1,29 @@
 import { useTranslation } from 'react-i18next'
 
 interface Props {
-  atual: number
-  onJump?: (passo: number) => void
+  current: number
+  onJump?: (step: number) => void
 }
 
-export function WizardProgressBar({ atual, onJump }: Props) {
+export function WizardProgressBar({ current, onJump }: Props) {
   const { t } = useTranslation()
 
-  const PASSOS = [
-    { id: 1,  titulo: t('wizard.steps.nivel') },
-    { id: 2,  titulo: t('wizard.steps.classe') },
-    { id: 3,  titulo: t('wizard.steps.subclasse') },
-    { id: 4,  titulo: t('wizard.steps.especie') },
-    { id: 5,  titulo: t('wizard.steps.antecedente') },
-    { id: 6,  titulo: t('wizard.steps.atributos') },
-    { id: 7,  titulo: t('wizard.steps.pericias') },
-    { id: 8,  titulo: t('wizard.steps.magias') },
-    { id: 9,  titulo: t('wizard.steps.idiomas') },
-    { id: 10, titulo: t('wizard.steps.equipamento') },
-    { id: 11, titulo: t('wizard.steps.personalidade') },
-    { id: 12, titulo: t('wizard.steps.revisar') },
+  const STEPS = [
+    { id: 1,  title: t('wizard.steps.level') },
+    { id: 2,  title: t('wizard.steps.charClass') },
+    { id: 3,  title: t('wizard.steps.subclass') },
+    { id: 4,  title: t('wizard.steps.species') },
+    { id: 5,  title: t('wizard.steps.background') },
+    { id: 6,  title: t('wizard.steps.abilities') },
+    { id: 7,  title: t('wizard.steps.skills') },
+    { id: 8,  title: t('wizard.steps.spells') },
+    { id: 9,  title: t('wizard.steps.languages') },
+    { id: 10, title: t('wizard.steps.equipment') },
+    { id: 11, title: t('wizard.steps.personality') },
+    { id: 12, title: t('wizard.steps.review') },
   ]
 
-  const progresso = Math.round(((atual - 1) / (PASSOS.length - 1)) * 100)
+  const progress = Math.round(((current - 1) / (STEPS.length - 1)) * 100)
 
   return (
     <nav
@@ -34,33 +34,33 @@ export function WizardProgressBar({ atual, onJump }: Props) {
         {/* Barra de progresso contínua — visible em todos viewports */}
         <div className="flex items-center gap-2 mb-2">
           <span className="text-xs text-[#A8A09B] flex-shrink-0">
-            {t('wizard.step', { n: atual })}
+            {t('wizard.step', { n: current })}
           </span>
-          <div className="flex-1 h-1 bg-[#3D332D] rounded-full overflow-hidden" role="progressbar" aria-valuenow={atual} aria-valuemin={1} aria-valuemax={PASSOS.length} aria-label={t('wizard.step', { n: atual })}>
+          <div className="flex-1 h-1 bg-[#3D332D] rounded-full overflow-hidden" role="progressbar" aria-valuenow={current} aria-valuemin={1} aria-valuemax={STEPS.length} aria-label={t('wizard.step', { n: current })}>
             <div
               className="h-full bg-[#B8860B] rounded-full transition-all duration-300"
-              style={{ width: `${progresso}%` }}
+              style={{ width: `${progress}%` }}
             />
           </div>
           <span className="text-xs text-[#B8860B] flex-shrink-0 font-medium">
-            {PASSOS[atual - 1]?.titulo}
+            {STEPS[current - 1]?.title}
           </span>
         </div>
 
         {/* Step dots — só em sm+ */}
         <div className="hidden sm:flex gap-1 items-center overflow-x-auto pb-1">
-          {PASSOS.map((p, idx) => {
-            const concluido = p.id < atual
-            const ativo = p.id === atual
-            const futuro = p.id > atual
+          {STEPS.map((p, idx) => {
+            const concluido = p.id < current
+            const ativo = p.id === current
+            const futuro = p.id > current
 
             return (
               <div key={p.id} className="flex items-center gap-1 flex-shrink-0">
                 <button
                   onClick={() => onJump?.(p.id)}
                   disabled={futuro}
-                  title={p.titulo}
-                  aria-label={p.titulo}
+                  title={p.title}
+                  aria-label={p.title}
                   aria-current={ativo ? 'step' : undefined}
                   className={[
                     'flex flex-col items-center gap-0.5 px-2 py-1.5 rounded transition-all',
@@ -85,12 +85,12 @@ export function WizardProgressBar({ atual, onJump }: Props) {
                     concluido ? 'text-[#B8860B]' : '',
                     futuro    ? 'text-[#A8A09B]' : '',
                   ].join(' ')}>
-                    {p.titulo}
+                    {p.title}
                   </span>
                 </button>
 
-                {idx < PASSOS.length - 1 && (
-                  <div className={`w-3 h-0.5 flex-shrink-0 ${idx < atual - 1 ? 'bg-[#B8860B]' : 'bg-[#3D332D]'}`} aria-hidden="true" />
+                {idx < STEPS.length - 1 && (
+                  <div className={`w-3 h-0.5 flex-shrink-0 ${idx < current - 1 ? 'bg-[#B8860B]' : 'bg-[#3D332D]'}`} aria-hidden="true" />
                 )}
               </div>
             )

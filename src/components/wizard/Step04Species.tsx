@@ -1,16 +1,16 @@
 import { useTranslation } from 'react-i18next'
-import { useFichaStore } from '../../store/fichaStore'
+import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
-import { dados } from '../../data/dados'
+import { gameData } from '../../data/rules'
 
-export function Step04Especie() {
-  const { ficha, setEspecie, setPasso } = useFichaStore()
+export function Step04Species() {
+  const { sheet, setSpecies, setStep } = useSheetStore()
   const { t } = useTranslation()
-  const especieId = ficha.identidade.especie_id
-  const linhagemId = ficha.identidade.linhagem_id
-  const especie = dados.especies?.find(e => e.id === especieId)
+  const speciesId = sheet.identity.species_id
+  const lineageId = sheet.identity.lineage_id
+  const species = gameData.species?.find(e => e.id === speciesId)
 
   return (
     <div className="space-y-6">
@@ -20,46 +20,46 @@ export function Step04Especie() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {dados.especies?.map(esp => (
+        {gameData.species?.map(species => (
           <Card
-            key={esp.id}
-            selected={especieId === esp.id}
+            key={species.id}
+            selected={speciesId === species.id}
             hoverable
-            onClick={() => setEspecie(esp.id)}
+            onClick={() => setSpecies(species.id)}
           >
-            <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-1">{esp.nome}</h3>
+            <h3 className="font-cinzel font-bold text-[#F5F0E8] mb-1">{species.name}</h3>
             <div className="flex flex-wrap gap-1 mb-2">
-              <Badge variant="default">{esp.tamanho}</Badge>
-              <Badge variant="default">{esp.deslocamento}{t('ficha.mUnit')}</Badge>
-              {esp.visao_no_escuro && <Badge variant="blue">{t('step04.darkvision', { n: esp.visao_no_escuro })}</Badge>}
+              <Badge variant="default">{species.size}</Badge>
+              <Badge variant="default">{species.speed}{t('sheet.mUnit')}</Badge>
+              {species.darkvision && <Badge variant="blue">{t('step04.darkvision', { n: species.darkvision })}</Badge>}
             </div>
             <div className="space-y-1">
-              {esp.tracos.slice(0, 3).map(tr => (
-                <p key={tr.nome} className="text-xs text-[#A8A09B]">• {tr.nome}</p>
+              {species.traits.slice(0, 3).map(tr => (
+                <p key={tr.name} className="text-xs text-[#A8A09B]">• {tr.name}</p>
               ))}
-              {esp.tracos.length > 3 && <p className="text-xs text-[#B8860B]">{t('step04.moreTraits', { n: esp.tracos.length - 3 })}</p>}
+              {species.traits.length > 3 && <p className="text-xs text-[#B8860B]">{t('step04.moreTraits', { n: species.traits.length - 3 })}</p>}
             </div>
           </Card>
         ))}
       </div>
 
-      {especie?.linhagens && especie.linhagens.length > 0 && (
+      {species?.lineages && species.lineages.length > 0 && (
         <div className="space-y-3">
-          <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step04.lineageHeading', { nome: especie.nome })}</h3>
+          <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step04.lineageHeading', { name: species.name })}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {especie.linhagens.map(lin => (
+            {species.lineages.map(lineage => (
               <Card
-                key={lin.id}
-                selected={linhagemId === lin.id}
+                key={lineage.id}
+                selected={lineageId === lineage.id}
                 hoverable
-                onClick={() => setEspecie(especieId!, lin.id)}
+                onClick={() => setSpecies(speciesId!, lineage.id)}
               >
-                <h4 className="font-cinzel font-semibold text-[#F5F0E8] mb-1">{lin.nome}</h4>
-                <p className="text-xs text-[#A8A09B]">{lin.descricao ?? `${t('edit.lineage')} ${lin.nome}`}</p>
-                {lin.tracos && (
+                <h4 className="font-cinzel font-semibold text-[#F5F0E8] mb-1">{lineage.name}</h4>
+                <p className="text-xs text-[#A8A09B]">{lineage.description ?? `${t('edit.lineage')} ${lineage.name}`}</p>
+                {lineage.traits && (
                   <div className="mt-2 space-y-1">
-                    {lin.tracos.slice(0, 2).map(tr => (
-                      <p key={tr.nome} className="text-xs text-[#B8860B]">• {tr.nome}</p>
+                    {lineage.traits.slice(0, 2).map(tr => (
+                      <p key={tr.name} className="text-xs text-[#B8860B]">• {tr.name}</p>
                     ))}
                   </div>
                 )}
@@ -70,9 +70,9 @@ export function Step04Especie() {
       )}
 
       <WizardNav
-        onBack={() => setPasso(3)}
-        onNext={() => setPasso(5)}
-        nextDisabled={!especieId || (!!especie?.linhagens?.length && !linhagemId)}
+        onBack={() => setStep(3)}
+        onNext={() => setStep(5)}
+        nextDisabled={!speciesId || (!!species?.lineages?.length && !lineageId)}
       />
     </div>
   )

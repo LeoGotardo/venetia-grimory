@@ -1,150 +1,150 @@
-import type { AtributoId } from './dados'
+import type { AbilityId } from './gameData'
 
-export interface AtributoFicha {
-  valor: number | null
-  _modificador: number | null
+export interface SheetAbility {
+  value: number | null
+  _modifier: number | null
 }
 
-export interface ItemInventario {
-  id_item: string | null
-  nome: string | null      // null for catalog items — resolved dynamically via id_item
-  categoria: string | null // null for catalog items
-  quantidade: number
-  equipado: boolean
-  custo_po: number | null
-  peso_kg: number | null
-  notas: string | null
+export interface InventoryItem {
+  item_id: string | null
+  name: string | null      // null for catalog items — resolved dynamically via id_item
+  category: string | null // null for catalog items
+  quantity: number
+  equipped: boolean
+  cost_gp: number | null
+  weight_kg: number | null
+  notes: string | null
 }
 
-export interface Ataque {
-  nome: string
-  arma_id: string | null
-  tipo: 'Corpo a Corpo' | 'À Distância' | 'Magia'
-  atributo_usado: AtributoId | null
-  _bonus_ataque: number | null
-  _dano: string | null
-  tipo_dano: string | null
-  propriedades: string[]
-  notas: string | null
+export interface Attack {
+  name: string
+  weapon_id: string | null
+  type: 'Corpo a Corpo' | 'À Distância' | 'Magia'
+  ability_used: AbilityId | null
+  _attack_bonus: number | null
+  _damage: string | null
+  damage_type: string | null
+  properties: string[]
+  notes: string | null
 }
 
-export interface TalentoAdquirido {
-  talento_id: string
-  nome: string
-  categoria: string
-  origem: string
-  escolhas: Record<string, unknown>
+export interface AcquiredFeat {
+  feat_id: string
+  name: string
+  category: string
+  source: string
+  choices: Record<string, unknown>
 }
 
-export interface EspacoMagia {
-  maximo: number
-  gastos: number
+export interface SpellSlot {
+  max: number
+  spent: number
 }
 
-export interface Ficha {
-  identidade: {
-    nome_personagem: string | null
-    nome_jogador: string | null
-    campanha: string | null
-    classe_id: string | null
-    subclasse_id: string | null
-    nivel: number
-    multiclasses: Array<{ classe_id: string; subclasse_id: string | null; nivel: number }>
-    especie_id: string | null
-    linhagem_id: string | null
-    antecedente_id: string | null
-    distribuicao_antecedente: Partial<Record<AtributoId, number>>
-    alinhamento: { etico: string | null; moral: string | null }
-    idade: string | null
-    altura: string | null
-    peso: string | null
-    olhos: string | null
-    pele: string | null
-    cabelo: string | null
+export interface CharacterSheet {
+  identity: {
+    character_name: string | null
+    player_name: string | null
+    campaign: string | null
+    class_id: string | null
+    subclass_id: string | null
+    level: number
+    multiclasses: Array<{ class_id: string; subclass_id: string | null; level: number }>
+    species_id: string | null
+    lineage_id: string | null
+    background_id: string | null
+    background_distribution: Partial<Record<AbilityId, number>>
+    alignment: { ethical: string | null; moral: string | null }
+    age: string | null
+    height: string | null
+    weight: string | null
+    eyes: string | null
+    skin: string | null
+    hair: string | null
     xp: number
   }
-  atributos: {
-    FOR: AtributoFicha
-    DES: AtributoFicha
-    CON: AtributoFicha
-    INT: AtributoFicha
-    SAB: AtributoFicha
-    CAR: AtributoFicha
-    metodo_geracao: string | null
+  abilities: {
+    FOR: SheetAbility
+    DES: SheetAbility
+    CON: SheetAbility
+    INT: SheetAbility
+    SAB: SheetAbility
+    CAR: SheetAbility
+    generation_method: string | null
   }
-  combate: {
-    _bonus_proficiencia: number | null
-    pontos_de_vida: { maximo: number | null; atual: number; temporario: number }
-    dados_de_vida: { tipo: string | null; total: number | null; gastos: number }
-    classe_de_armadura: {
-      valor: number | null
-      origem: string | null
-      escudo_equipado: boolean
-      armadura_equipada_id: string | null
+  combat: {
+    _proficiency_bonus: number | null
+    hit_points: { max: number | null; current: number; temporary: number }
+    hit_dice: { type: string | null; total: number | null; spent: number }
+    armor_class: {
+      value: number | null
+      source: string | null
+      shield_equipped: boolean
+      equipped_armor_id: string | null
     }
-    iniciativa: { _valor: number | null }
-    deslocamento: { base_metros: number | null; bonus_metros: number; _total_metros: number | null }
-    ataques: Ataque[]
-    salvaguardas: Record<AtributoId, { proficiente: boolean; _valor: number | null }>
+    initiative: { _value: number | null }
+    speed: { base_meters: number | null; bonus_meters: number; _total_meters: number | null }
+    attacks: Attack[]
+    saves: Record<AbilityId, { proficient: boolean; _value: number | null }>
   }
-  pericias: Record<string, { atributo: AtributoId; proficiente: boolean; expertise: boolean; _valor: number | null }>
-  proficiencias: { armaduras: string[]; armas: string[]; ferramentas: string[]; idiomas: string[] }
-  tracos_de_especie: {
-    visao_no_escuro_metros: number | null
-    tracos_ativos: Array<{ nome: string; descricao: string; usos_maximos?: number | string; usos_atuais?: number }>
-    escolhas_feitas: Record<string, unknown>
+  skills: Record<string, { ability: AbilityId; proficient: boolean; expertise: boolean; _value: number | null }>
+  proficiencies: { armors: string[]; weapons: string[]; tools: string[]; languages: string[] }
+  species_traits: {
+    darkvision_meters: number | null
+    active_traits: Array<{ name: string; description: string; max_uses?: number | string; current_uses?: number }>
+    choices_made: Record<string, unknown>
   }
-  caracteristicas_de_classe: {
-    ativas: Array<{ nome: string; descricao?: string; nivel_obtido?: number }>
-    escolhas_feitas: Record<string, unknown>
-    recursos_de_classe: {
-      furias: { maximo: number | null; atual: number | null }
-      inspiracao_de_bardo: { dado: string | null; maximo: number | null; atual: number | null }
-      canalizar_divindade: { maximo: number | null; atual: number | null }
-      formas_selvagens: { maximo: number | null; atual: number | null }
-      pontos_de_feiticaria: { maximo: number | null; atual: number | null }
-      imposicao_de_maos: { pool_pv: number | null; atual: number | null }
-      pontos_de_foco: { maximo: number | null; atual: number | null }
-      surto_de_acao: { usos: number | null; atual: number | null }
-      recuperar_folego: { maximo: number | null; atual: number | null }
-      ataque_furtivo: { dado: string | null }
-      recuperacao_arcana: { circulos_recuperaveis: number | null }
+  class_features: {
+    active: Array<{ name: string; description?: string; level_gained?: number }>
+    choices_made: Record<string, unknown>
+    class_resources: {
+      rages: { max: number | null; current: number | null }
+      bardic_inspiration: { die: string | null; max: number | null; current: number | null }
+      channel_divinity: { max: number | null; current: number | null }
+      wild_shapes: { max: number | null; current: number | null }
+      sorcery_points: { max: number | null; current: number | null }
+      lay_on_hands: { hp_pool: number | null; current: number | null }
+      focus_points: { max: number | null; current: number | null }
+      action_surge: { uses: number | null; current: number | null }
+      second_wind: { max: number | null; current: number | null }
+      sneak_attack: { die: string | null }
+      arcane_recovery: { recoverable_slot_levels: number | null }
     }
-    ordem_divina: string | null
-    ordem_primal: string | null
-    estilo_de_luta: string | null
-    inimigo_favorito: string | null
-    juramento: string | null
+    divine_order: string | null
+    primal_order: string | null
+    fighting_style: string | null
+    favored_enemy: string | null
+    oath: string | null
   }
-  magia: {
-    conjurador: boolean
-    atributo_conjuracao: AtributoId | null
-    _cd_magia: number | null
-    _bonus_ataque_magia: number | null
-    truques_por_classe: Record<string, string[]>
-    magias_por_classe: Record<string, string[]>
-    livro_de_magias: string[]
-    espacos_de_magia: Record<'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6' | 'c7' | 'c8' | 'c9', EspacoMagia>
-    espacos_pacto_bruxo: { circulo: number | null; maximo: number; gastos: number }
+  spellcasting: {
+    spellcaster: boolean
+    spellcasting_ability: AbilityId | null
+    _spell_dc: number | null
+    _spell_attack_bonus: number | null
+    cantrips_by_class: Record<string, string[]>
+    spells_by_class: Record<string, string[]>
+    spellbook: string[]
+    spell_slots: Record<'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6' | 'c7' | 'c8' | 'c9', SpellSlot>
+    pact_slots: { level: number | null; max: number; spent: number }
   }
-  inventario: {
-    moedas: { PC: number; PP: number; PE: number; PO: number; PL: number }
-    itens: ItemInventario[]
+  inventory: {
+    coins: { PC: number; PP: number; PE: number; PO: number; PL: number }
+    items: InventoryItem[]
   }
-  talentos: { lista: TalentoAdquirido[] }
-  personalidade: {
-    tracos: string[]
-    ideais: string[]
-    vinculos: string[]
-    fraquezas: string[]
-    historia: string | null
-    aparencia_descricao: string | null
-    aliados_e_organizacoes: string | null
-    simbolo_ou_tesouro: string | null
+  feats: { list: AcquiredFeat[] }
+  personality: {
+    traits: string[]
+    ideals: string[]
+    bonds: string[]
+    flaws: string[]
+    backstory: string | null
+    appearance_description: string | null
+    allies_and_organizations: string | null
+    symbol_or_treasure: string | null
   }
-  condicoes_ativas: string[]
-  niveis_de_exaustao: number
-  notas: string | null
+  active_conditions: string[]
+  exhaustion_levels: number
+  notes: string | null
 }
 
-export type FichaPartial = Partial<Ficha>
+export type PartialCharacterSheet = Partial<CharacterSheet>

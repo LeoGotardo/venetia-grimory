@@ -9,7 +9,8 @@ const getInitialLanguage = (): string => {
   if (stored) {
     try {
       const parsed = JSON.parse(stored)
-      return parsed.state?.config?.lingua ?? 'en'
+      // `lingua` é o nome antigo, de antes da renomeação PT → EN dos campos.
+      return parsed.state?.config?.language ?? parsed.state?.config?.lingua ?? 'en'
     } catch (error) {
       return 'en'
     }
@@ -27,9 +28,9 @@ i18n.use(initReactI18next).init({
 type ConfigState = ReturnType<typeof useConfigStore.getState>
 
 useConfigStore.subscribe((state: ConfigState) => {
-  const linguaAtual = state.config?.lingua
-  if (linguaAtual && i18n.language !== linguaAtual) {
-    i18n.changeLanguage(linguaAtual)
+  const currentLanguage = state.config?.language
+  if (currentLanguage && i18n.language !== currentLanguage) {
+    i18n.changeLanguage(currentLanguage)
   }
 })
 

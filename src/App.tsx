@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })))
 const Wizard = lazy(() => import('./pages/Wizard').then(m => ({ default: m.Wizard })))
-const Ficha = lazy(() => import('./pages/Ficha').then(m => ({ default: m.Ficha })))
+const CharacterSheet = lazy(() => import('./pages/Sheet').then(m => ({ default: m.CharacterSheet })))
 
 function PageLoader() {
   const { t } = useTranslation()
@@ -25,7 +25,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/novo" element={<Wizard />} />
-            <Route path="/ficha/:id" element={<Ficha />} />
+            <Route path="/ficha/:id" element={<CharacterSheet />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

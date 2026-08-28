@@ -1,2 +1,2 @@
-export * from './dados'
-export * from './ficha'
+export * from './gameData'
+export * from './sheet'

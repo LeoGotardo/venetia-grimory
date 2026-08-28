@@ -1,11 +1,11 @@
 import { Capacitor } from '@capacitor/core'
 
 /** Rodando dentro do app Android (WebView do Capacitor), não no navegador. */
-export function ehApp(): boolean {
+export function isApp(): boolean {
   return Capacitor.isNativePlatform()
 }
 
-export function ehTelaDeToque(): boolean {
+export function isTouchScreen(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches
 }
 
@@ -14,6 +14,6 @@ export function ehTelaDeToque(): boolean {
  * WebView ignora `<a download>`, e no celular a folha é o caminho normal para
  * salvar, imprimir ou mandar o PDF para outro aplicativo.
  */
-export function entregaPorCompartilhamento(): boolean {
-  return ehApp() || (ehTelaDeToque() && typeof navigator.canShare === 'function')
+export function deliverViaShare(): boolean {
+  return isApp() || (isTouchScreen() && typeof navigator.canShare === 'function')
 }

@@ -1,119 +1,119 @@
 import { useState } from 'react'
-import type { AtributoId } from '../types'
+import type { AbilityId } from '../types'
 import {
-  CONJUNTO_PADRAO_VALORES,
-  CUSTO_PONTOS_COMPRA,
-  POOL_PONTOS_COMPRA,
-  ATRIBUTO_MINIMO_COMPRA,
-  ATRIBUTO_MAXIMO_COMPRA,
+  STANDARD_ARRAY_VALUES,
+  POINT_BUY_COSTS,
+  POINT_BUY_POOL,
+  POINT_BUY_ABILITY_MIN,
+  POINT_BUY_ABILITY_MAX,
 } from '../constants'
-import { ATRIBUTOS } from '../lib/calculos'
+import { ABILITIES } from '../lib/calculations'
 
-export type MetodoAtributos = 'padrao' | 'aleatorio' | 'compra'
+export type AbilityMethod = 'standard' | 'random' | 'pointBuy'
 
-type ValoresAtributos = Record<AtributoId, number | null>
-type ValoresCompra = Record<AtributoId, number>
+type AbilityValues = Record<AbilityId, number | null>
+type PointBuyValues = Record<AbilityId, number>
 
-const VALORES_NULOS: ValoresAtributos = {
+const NULL_VALUES: AbilityValues = {
   FOR: null, DES: null, CON: null, INT: null, SAB: null, CAR: null,
 }
 
-const VALORES_COMPRA_INICIAIS: ValoresCompra = {
+const INITIAL_POINT_BUY_VALUES: PointBuyValues = {
   FOR: 8, DES: 8, CON: 8, INT: 8, SAB: 8, CAR: 8,
 }
 
-export function rolar4d6(): number {
+export function roll4d6(): number {
   const rolls = Array.from({ length: 4 }, () => Math.ceil(Math.random() * 6))
   return rolls.reduce((a, b) => a + b, 0) - Math.min(...rolls)
 }
 
-const INDICES_NULOS: Record<AtributoId, number | null> = {
+const NULL_INDICES: Record<AbilityId, number | null> = {
   FOR: null, DES: null, CON: null, INT: null, SAB: null, CAR: null,
 }
 
-export function useAtributosWizard(opts?: {
+export function useWizardAbilities(opts?: {
   initialRoll?: number[]
   onRoll?: (vals: number[]) => void
 }) {
-  const [metodo, setMetodo] = useState<MetodoAtributos>('padrao')
-  const [padrao, setPadrao] = useState<ValoresAtributos>(VALORES_NULOS)
-  const [rolagemValores, setRolagemValores] = useState<number[]>(() => opts?.initialRoll ?? [])
-  const [aleatorioIndices, setAleatorioIndices] = useState<Record<AtributoId, number | null>>(INDICES_NULOS)
-  const [compra, setCompra] = useState<ValoresCompra>(VALORES_COMPRA_INICIAIS)
+  const [method, setMethod] = useState<AbilityMethod>('standard')
+  const [standard, setStandard] = useState<AbilityValues>(NULL_VALUES)
+  const [rollValues, setRollValues] = useState<number[]>(() => opts?.initialRoll ?? [])
+  const [randomIndices, setRandomIndices] = useState<Record<AbilityId, number | null>>(NULL_INDICES)
+  const [pointBuy, setPointBuy] = useState<PointBuyValues>(INITIAL_POINT_BUY_VALUES)
 
-  const poolGasto = Object.values(compra).reduce(
-    (acc, v) => acc + (CUSTO_PONTOS_COMPRA[v] ?? 0),
+  const spentPool = Object.values(pointBuy).reduce(
+    (acc, v) => acc + (POINT_BUY_COSTS[v] ?? 0),
     0,
   )
-  const poolRestante = POOL_PONTOS_COMPRA - poolGasto
+  const remainingPool = POINT_BUY_POOL - spentPool
 
-  const aleatorio: ValoresAtributos = ATRIBUTOS.reduce((acc, a) => {
-    const idx = aleatorioIndices[a]
-    return { ...acc, [a]: idx !== null && rolagemValores[idx] !== undefined ? rolagemValores[idx] : null }
-  }, {} as ValoresAtributos)
+  const random: AbilityValues = ABILITIES.reduce((acc, a) => {
+    const idx = randomIndices[a]
+    return { ...acc, [a]: idx !== null && rollValues[idx] !== undefined ? rollValues[idx] : null }
+  }, {} as AbilityValues)
 
-  function isDieAvailable(dieIndex: number, forAttr: AtributoId): boolean {
-    return !ATRIBUTOS.some(a => a !== forAttr && aleatorioIndices[a] === dieIndex)
+  function isDieAvailable(dieIndex: number, strAttr: AbilityId): boolean {
+    return !ABILITIES.some(a => a !== strAttr && randomIndices[a] === dieIndex)
   }
 
-  function getAtributosAtuais(): ValoresAtributos {
-    if (metodo === 'padrao') return padrao
-    if (metodo === 'aleatorio') return aleatorio
-    return compra
+  function getCurrentAbilities(): AbilityValues {
+    if (method === 'standard') return standard
+    if (method === 'random') return random
+    return pointBuy
   }
 
-  const atributosAtuais = getAtributosAtuais()
-  const estaCompleto = metodo === 'aleatorio'
-    ? rolagemValores.length === 6 && ATRIBUTOS.every(a => aleatorioIndices[a] !== null)
-    : ATRIBUTOS.every(a => atributosAtuais[a] !== null && (atributosAtuais[a] ?? 0) > 0)
+  const currentAbilities = getCurrentAbilities()
+  const isComplete = method === 'random'
+    ? rollValues.length === 6 && ABILITIES.every(a => randomIndices[a] !== null)
+    : ABILITIES.every(a => currentAbilities[a] !== null && (currentAbilities[a] ?? 0) > 0)
 
-  function isValorDisponivelNoPadrao(valor: number, attrAtual: AtributoId): boolean {
-    return !Object.entries(padrao).some(([a, v]) => a !== attrAtual && v === valor)
+  function isValueAvailableInStandardArray(value: number, currentAttr: AbilityId): boolean {
+    return !Object.entries(standard).some(([a, v]) => a !== currentAttr && v === value)
   }
 
-  function setPadraoAttr(attr: AtributoId, valor: number | null) {
-    setPadrao(prev => ({ ...prev, [attr]: valor }))
+  function setStandardAttr(attr: AbilityId, value: number | null) {
+    setStandard(prev => ({ ...prev, [attr]: value }))
   }
 
-  function rolarAleatorio() {
-    const vals = Array.from({ length: 6 }, rolar4d6)
-    setRolagemValores(vals)
-    setAleatorioIndices(INDICES_NULOS)
+  function rollRandom() {
+    const vals = Array.from({ length: 6 }, roll4d6)
+    setRollValues(vals)
+    setRandomIndices(NULL_INDICES)
     opts?.onRoll?.(vals)
   }
 
-  function setAleatorioAttr(attr: AtributoId, novoIndice: number | null) {
-    setAleatorioIndices(prev => ({ ...prev, [attr]: novoIndice }))
+  function setRandomAttr(attr: AbilityId, newIndex: number | null) {
+    setRandomIndices(prev => ({ ...prev, [attr]: newIndex }))
   }
 
-  function setCompraAttr(attr: AtributoId, novoVal: number) {
-    const val = Math.max(ATRIBUTO_MINIMO_COMPRA, Math.min(ATRIBUTO_MAXIMO_COMPRA, novoVal))
-    const custoDiff = (CUSTO_PONTOS_COMPRA[val] ?? 0) - (CUSTO_PONTOS_COMPRA[compra[attr]] ?? 0)
-    if (custoDiff > poolRestante) return
-    setCompra(prev => ({ ...prev, [attr]: val }))
+  function setPointBuyAttr(attr: AbilityId, newVal: number) {
+    const val = Math.max(POINT_BUY_ABILITY_MIN, Math.min(POINT_BUY_ABILITY_MAX, newVal))
+    const costDiff = (POINT_BUY_COSTS[val] ?? 0) - (POINT_BUY_COSTS[pointBuy[attr]] ?? 0)
+    if (costDiff > remainingPool) return
+    setPointBuy(prev => ({ ...prev, [attr]: val }))
   }
 
-  function trocarMetodo(novoMetodo: MetodoAtributos) {
-    setMetodo(novoMetodo)
+  function switchMethod(newMethod: AbilityMethod) {
+    setMethod(newMethod)
   }
 
   return {
-    metodo,
-    trocarMetodo,
-    padrao,
-    setPadraoAttr,
-    isValorDisponivelNoPadrao,
-    conjuntoPadrao: CONJUNTO_PADRAO_VALORES,
-    aleatorio,
-    aleatorioIndices,
+    method,
+    switchMethod,
+    standard,
+    setStandardAttr,
+    isValueAvailableInStandardArray,
+    standardArray: STANDARD_ARRAY_VALUES,
+    random,
+    randomIndices,
     isDieAvailable,
-    rolagemValores,
-    rolarAleatorio,
-    setAleatorioAttr,
-    compra,
-    setCompraAttr,
-    poolRestante,
-    atributosAtuais,
-    estaCompleto,
+    rollValues,
+    rollRandom,
+    setRandomAttr,
+    pointBuy,
+    setPointBuyAttr,
+    remainingPool,
+    currentAbilities,
+    isComplete,
   }
 }

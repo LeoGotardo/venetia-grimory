@@ -1,27 +1,27 @@
-import { ehApp, ehTelaDeToque } from '../plataforma'
+import { isApp, isTouchScreen } from '../platform'
 
-const MS_ATE_LIMPAR_IMPRESSAO = 60_000
-const TAMANHO_PEDACO_BASE64 = 0x8000
+const MS_UNTIL_PRINT_CLEANUP = 60_000
+const BASE64_CHUNK_SIZE = 0x8000
 
 /** Como o arquivo chegou até a pessoa — o rótulo muda conforme a plataforma. */
-export type EntregaPdf = 'baixado' | 'compartilhado' | 'impresso'
+export type PdfDelivery = 'baixado' | 'compartilhado' | 'impresso'
 
-function blobDoPdf(bytes: Uint8Array): Blob {
+function pdfBlob(bytes: Uint8Array): Blob {
   return new Blob([bytes as unknown as BlobPart], { type: 'application/pdf' })
 }
 
-function baixar(bytes: Uint8Array, nomeArquivo: string): EntregaPdf {
-  const url = URL.createObjectURL(blobDoPdf(bytes))
+function downloadFile(bytes: Uint8Array, fileName: string): PdfDelivery {
+  const url = URL.createObjectURL(pdfBlob(bytes))
   const link = document.createElement('a')
   link.href = url
-  link.download = nomeArquivo
+  link.download = fileName
   link.click()
   URL.revokeObjectURL(url)
   return 'baixado'
 }
 
-function imprimirNoNavegador(bytes: Uint8Array): EntregaPdf {
-  const url = URL.createObjectURL(blobDoPdf(bytes))
+function printInBrowser(bytes: Uint8Array): PdfDelivery {
+  const url = URL.createObjectURL(pdfBlob(bytes))
   const iframe = document.createElement('iframe')
   iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
   iframe.src = url
@@ -42,18 +42,18 @@ function imprimirNoNavegador(bytes: Uint8Array): EntregaPdf {
   window.setTimeout(() => {
     URL.revokeObjectURL(url)
     iframe.remove()
-  }, MS_ATE_LIMPAR_IMPRESSAO)
+  }, MS_UNTIL_PRINT_CLEANUP)
 
   return 'impresso'
 }
 
 /** Web Share API: no celular é ela que dá "Salvar em Arquivos", "Imprimir" e o resto. */
-async function compartilharNaWeb(bytes: Uint8Array, nomeArquivo: string): Promise<boolean> {
-  const arquivo = new File([blobDoPdf(bytes)], nomeArquivo, { type: 'application/pdf' })
-  if (!navigator.canShare?.({ files: [arquivo] })) return false
+async function shareOnWeb(bytes: Uint8Array, fileName: string): Promise<boolean> {
+  const file = new File([pdfBlob(bytes)], fileName, { type: 'application/pdf' })
+  if (!navigator.canShare?.({ files: [file] })) return false
 
   try {
-    await navigator.share({ files: [arquivo], title: nomeArquivo })
+    await navigator.share({ files: [file], title: fileName })
     return true
   } catch (err) {
     // Cancelar a folha de compartilhamento não é erro — e não deve virar um download.
@@ -61,12 +61,12 @@ async function compartilharNaWeb(bytes: Uint8Array, nomeArquivo: string): Promis
   }
 }
 
-function paraBase64(bytes: Uint8Array): string {
-  let binario = ''
-  for (let i = 0; i < bytes.length; i += TAMANHO_PEDACO_BASE64) {
-    binario += String.fromCharCode(...bytes.subarray(i, i + TAMANHO_PEDACO_BASE64))
+function toBase64(bytes: Uint8Array): string {
+  let binary = ''
+  for (let i = 0; i < bytes.length; i += BASE64_CHUNK_SIZE) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + BASE64_CHUNK_SIZE))
   }
-  return btoa(binario)
+  return btoa(binary)
 }
 
 /**
@@ -74,31 +74,31 @@ function paraBase64(bytes: Uint8Array): string {
  * gravado no cache e entregue à folha de compartilhamento do sistema, de onde dá
  * para salvar, imprimir ou mandar para outro app.
  */
-async function compartilharNoApp(bytes: Uint8Array, nomeArquivo: string): Promise<EntregaPdf> {
+async function shareInApp(bytes: Uint8Array, fileName: string): Promise<PdfDelivery> {
   const [{ Filesystem, Directory }, { Share }] = await Promise.all([
     import('@capacitor/filesystem'),
     import('@capacitor/share'),
   ])
 
   const { uri } = await Filesystem.writeFile({
-    path: nomeArquivo,
-    data: paraBase64(bytes),
+    path: fileName,
+    data: toBase64(bytes),
     directory: Directory.Cache,
   })
 
-  await Share.share({ title: nomeArquivo, files: [uri] })
+  await Share.share({ title: fileName, files: [uri] })
   return 'compartilhado'
 }
 
 /** Entrega o PDF pelo caminho que a plataforma atual suporta. */
-export async function entregarPdf(
+export async function deliverPdf(
   bytes: Uint8Array,
-  nomeArquivo: string,
-  acao: 'baixar' | 'imprimir',
-): Promise<EntregaPdf> {
-  if (ehApp()) return compartilharNoApp(bytes, nomeArquivo)
+  fileName: string,
+  action: 'download' | 'print',
+): Promise<PdfDelivery> {
+  if (isApp()) return shareInApp(bytes, fileName)
 
-  if (ehTelaDeToque() && (await compartilharNaWeb(bytes, nomeArquivo))) return 'compartilhado'
+  if (isTouchScreen() && (await shareOnWeb(bytes, fileName))) return 'compartilhado'
 
-  return acao === 'imprimir' ? imprimirNoNavegador(bytes) : baixar(bytes, nomeArquivo)
+  return action === 'print' ? printInBrowser(bytes) : downloadFile(bytes, fileName)
 }
