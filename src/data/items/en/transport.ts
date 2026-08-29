@@ -39,7 +39,7 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     category: 'Land Mount',
     price: '50 po',
     speed: '50 ft',
-    carry_capacity: '240 kg',
+    carry_capacity: '225 kg',
     description: 'A resilient mount for arid climates and deserts. Can go several days without water and carries heavy loads over long distances.'
   },
   {
@@ -63,6 +63,26 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     description: 'Sturdy, stubborn animals with excellent carrying capacity. Slow but resilient on steep paths and difficult terrain.'
   },
 
+  {
+    item_type: 'transporte',
+    id: 'cavalo_de_carga',
+    name: 'Draft Horse',
+    category: 'Pack Animal',
+    price: '50 po',
+    speed: '60 ft',
+    carry_capacity: '270 kg',
+    description: 'A heavy horse bred to pull ploughs and wagons. Slow in combat, but hauls loads no riding mount can manage.'
+  },
+  {
+    item_type: 'transporte',
+    id: 'mastim',
+    name: 'Mastiff',
+    category: 'Land Mount',
+    price: '25 po',
+    speed: '40 ft',
+    carry_capacity: '97.5 kg',
+    description: 'A war dog large enough to serve as a mount for Small creatures. Also used as a tracker and camp guard.'
+  },
   // ─── TACK AND ACCESSORIES ─────────────────────────────────────────────────
   {
     item_type: 'transporte',
@@ -92,6 +112,15 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     description: "Two leather pouches connected across the mount's back. Allows the animal to carry up to 30 kg of extra equipment."
   },
 
+  {
+    item_type: 'transporte',
+    id: 'sela_exotica',
+    name: 'Exotic Saddle',
+    category: 'Tack',
+    price: '60 po',
+    weight: '20.0 kg',
+    description: 'A saddle fitted for aquatic or flying mounts. Required to ride creatures outside the usual land shape.'
+  },
   // ─── LAND VEHICLES ────────────────────────────────────────────────────────
   {
     item_type: 'transporte',
@@ -107,11 +136,29 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     id: 'carruagem',
     name: 'Carriage',
     category: 'Land Vehicle',
-    price: '250 po',
+    price: '100 po',
     weight: '300.0 kg',
     description: 'A luxurious, comfortable closed four-wheeled vehicle for transporting noble passengers. Usually pulled by two or four horses.'
   },
 
+  {
+    item_type: 'transporte',
+    id: 'biga',
+    name: 'Chariot',
+    category: 'Land Vehicle',
+    price: '250 po',
+    weight: '50.0 kg',
+    description: 'A light two-wheeled war car pulled by one or two horses. Fast, but unstable off level ground.'
+  },
+  {
+    item_type: 'transporte',
+    id: 'vagao',
+    name: 'Wagon',
+    category: 'Land Vehicle',
+    price: '35 po',
+    weight: '200.0 kg',
+    description: 'A large four-wheeled cart, covered or open. The standard for merchant caravans and long hauls.'
+  },
   // ─── WATER VEHICLES ───────────────────────────────────────────────────────
   {
     item_type: 'transporte',

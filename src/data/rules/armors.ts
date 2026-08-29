@@ -55,7 +55,7 @@ export default [
     "category": "Média",
     "ac": "14 + mod_DES (máx +2)",
     "stealth_penalty": true,
-    "weight_kg": 22,
+    "weight_kg": 22.5,
     "cost_gp": 50,
     "str_requirement": null
   },
@@ -95,7 +95,7 @@ export default [
     "category": "Pesada",
     "ac": "16",
     "stealth_penalty": true,
-    "weight_kg": 27,
+    "weight_kg": 27.5,
     "cost_gp": 75,
     "str_requirement": 13
   },
@@ -115,7 +115,7 @@ export default [
     "category": "Pesada",
     "ac": "18",
     "stealth_penalty": true,
-    "weight_kg": 32,
+    "weight_kg": 32.5,
     "cost_gp": 1500,
     "str_requirement": 15
   },

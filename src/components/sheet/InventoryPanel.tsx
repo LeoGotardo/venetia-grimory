@@ -5,12 +5,16 @@ import { useConfigStore } from '../../store/configStore'
 import { calcMaxCarry, calcTotalGp } from '../../lib/calculations'
 import { BackpackSearch } from '../ui/BackpackSearch'
 import { InventoryItemRow } from './InventoryItemRow'
-import { getItems } from '../../data/items'
-import type { Item } from '../../data/items'
+import { ItemCard } from '../ui/ItemCard'
+import { getItems, itemRarityKey, RARITY_KEYS } from '../../data/items'
+import type { Item, RarityKey } from '../../data/items'
 import type { InventoryItem } from '../../types'
 
 const ALL_COINS = ['PC', 'PP', 'PE', 'PO', 'PL'] as const
 const SIMPLE_COINS = ['PO'] as const
+
+/** `all` = sem filtro; `none` = itens sem raridade (tudo que não é mágico). */
+type RarityFilter = 'all' | 'none' | RarityKey
 
 export function InventoryPanel() {
   const { sheet, updateCoins, removeItem, updateItem } = useSheetStore()
@@ -26,6 +30,8 @@ export function InventoryPanel() {
   const resolveName = (it: InventoryItem): string =>
     (it.item_id ? itemMap.get(it.item_id)?.name : null) ?? it.name ?? '—'
   const [pointBuyMode, setPointBuyMode] = useState(false)
+  const [detailItem, setDetailItem] = useState<Item | null>(null)
+  const [rarityFilter, setRarityFilter] = useState<RarityFilter>('all')
   const { coins, items } = sheet.inventory
   const COINS = config.simple_coins ? SIMPLE_COINS : ALL_COINS
   const strVal = sheet.abilities.FOR.value ?? 10
@@ -33,6 +39,20 @@ export function InventoryPanel() {
   const currentWeight = items.reduce((a, it) => a + (it.weight_kg ?? 0) * it.quantity, 0)
   const carryPercent = Math.min(100, (currentWeight / maxCarry) * 100)
   const totalGp = calcTotalGp(coins)
+
+  // A raridade vem do catálogo: itens avulsos e não-mágicos caem em `none`.
+  const itemRarities = items.map(it => itemRarityKey(it.item_id ? itemMap.get(it.item_id) : undefined))
+  const presentRarities = new Set(itemRarities.map(r => r ?? 'none'))
+  const rarityOptions: RarityFilter[] = [
+    'all',
+    ...RARITY_KEYS.filter(r => presentRarities.has(r)),
+    ...(presentRarities.has('none') ? (['none'] as RarityFilter[]) : []),
+  ]
+  // Só vale mostrar o filtro quando ele consegue separar alguma coisa.
+  const showRarityFilter = rarityOptions.length > 2
+  const visibleItems = items
+    .map((it, idx) => ({ it, idx, rarity: itemRarities[idx] ?? 'none' }))
+    .filter(e => rarityFilter === 'all' || e.rarity === rarityFilter)
 
   return (
     <div className="space-y-4">
@@ -86,13 +106,40 @@ export function InventoryPanel() {
       {/* Itens */}
       <section aria-label={t('inventory.items')}>
         <h4 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('inventory.items')}</h4>
+        {showRarityFilter && (
+          <div className="flex gap-1 overflow-x-auto pb-0.5 mb-2" role="tablist" aria-label={t('inventory.rarityFilterAriaLabel')}>
+            {rarityOptions.map(r => (
+              <button
+                key={r}
+                role="tab"
+                aria-selected={rarityFilter === r}
+                onClick={() => setRarityFilter(r)}
+                className={[
+                  'px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap cursor-pointer',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                  rarityFilter === r
+                    ? 'bg-[#B8860B] text-[#1A1612]'
+                    : 'bg-[#2D2520] text-[#A8A09B] hover:text-[#F5F0E8]',
+                ].join(' ')}
+              >
+                {r === 'all' ? t('inventory.rarityAll') : t(`inventory.rarity_${r}`)}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className="space-y-2 mb-3">
           {items.length === 0 && (
             <p className="text-xs text-[#A8A09B] text-center py-4 border border-dashed border-[#B8860B]/20 rounded-lg">
               {t('inventory.noItems')}
             </p>
           )}
-          {items.map((it, idx) => {
+          {items.length > 0 && visibleItems.length === 0 && (
+            <p className="text-xs text-[#A8A09B] text-center py-4 border border-dashed border-[#B8860B]/20 rounded-lg">
+              {t('inventory.noItemsForRarity')}
+            </p>
+          )}
+          {visibleItems.map(({ it, idx }) => {
             const displayedName = resolveName(it)
             const catalogItem = it.item_id ? itemMap.get(it.item_id) : undefined
             return (
@@ -109,8 +156,8 @@ export function InventoryPanel() {
                   updateCoins({ PO: +(coins.PO + it.cost_gp! * it.quantity).toFixed(4) })
                   removeItem(idx)
                 } : undefined}
-
                 onRemove={() => removeItem(idx)}
+                onShowDetails={catalogItem ? () => setDetailItem(catalogItem) : undefined}
               />
             )
           })}
@@ -147,6 +194,8 @@ export function InventoryPanel() {
           <BackpackSearch noList chargeItem={pointBuyMode} />
         </div>
       </section>
+
+      <ItemCard item={detailItem} onClose={() => setDetailItem(null)} />
     </div>
   )
 }

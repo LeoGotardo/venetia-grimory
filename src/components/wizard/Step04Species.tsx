@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { Badge } from '../ui/Badge'
+import { SpeciesCard } from '../ui/SpeciesCard'
+import type { Species } from '../../types'
 import { gameData } from '../../data/rules'
 
 export function Step04Species() {
@@ -11,6 +14,7 @@ export function Step04Species() {
   const speciesId = sheet.identity.species_id
   const lineageId = sheet.identity.lineage_id
   const species = gameData.species?.find(e => e.id === speciesId)
+  const [speciesModal, setSpeciesModal] = useState<Species | null>(null)
 
   return (
     <div className="space-y-6">
@@ -38,6 +42,14 @@ export function Step04Species() {
                 <p key={tr.name} className="text-xs text-[#A8A09B]">• {tr.name}</p>
               ))}
               {species.traits.length > 3 && <p className="text-xs text-[#B8860B]">{t('step04.moreTraits', { n: species.traits.length - 3 })}</p>}
+            </div>
+            <div className="flex justify-end mt-3">
+              <button
+                onClick={e => { e.stopPropagation(); setSpeciesModal(species) }}
+                className="text-xs text-[#B8860B] hover:text-[#D4A017] underline cursor-pointer"
+              >
+                {t('step02.details')}
+              </button>
             </div>
           </Card>
         ))}
@@ -68,6 +80,12 @@ export function Step04Species() {
           </div>
         </div>
       )}
+
+      <SpeciesCard
+        species={speciesModal}
+        lineageId={speciesModal?.id === speciesId ? lineageId : null}
+        onClose={() => setSpeciesModal(null)}
+      />
 
       <WizardNav
         onBack={() => setStep(3)}

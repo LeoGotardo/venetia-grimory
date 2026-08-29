@@ -80,7 +80,7 @@ export const TOOLS: Tool[] = [
     name: 'Ferramentas de Joalheiro',
     category: 'Ferramentas de Artesão',
     price: '25 po',
-    weight: '2.0 kg',
+    weight: '1.0 kg',
     description: 'Lupa, pinças de precisão, limas finas e moldes de cera. Para avaliar, lapidار e engastar gemas preciosas em joias e amuletos.'
   },
   {
@@ -89,7 +89,7 @@ export const TOOLS: Tool[] = [
     name: 'Ferramentas de Oleiro',
     category: 'Ferramentas de Artesão',
     price: '10 po',
-    weight: '2.5 kg',
+    weight: '1.5 kg',
     description: 'Roda de mão portátil, ferramentas de modelagem e pigmentos. Usadas para criar recipientes de cerâmica, vasos e urnas funcionais.'
   },
   {
@@ -146,7 +146,15 @@ export const TOOLS: Tool[] = [
     weight: '2.5 kg',
     description: 'Formões de precisão, lixas e cera de acabamento. Permite entalhar madeira em itens funcionais, peças decorativas e cabos de armas.'
   },
-
+  {
+    item_type: 'ferramenta',
+    id: 'ferramentas_de_funileiro',
+    name: 'Ferramentas de Funileiro',
+    category: 'Ferramentas de Artesão',
+    price: '50 po',
+    weight: '5.0 kg',
+    description: 'Rebites, latão, ferro em barra e ferramentas de precisão. Permitem consertar objetos mecânicos e montar dispositivos improvisados.'
+  },
   // ─── UTILITÁRIO ────────────────────────────────────────────────────────────
   {
     item_type: 'ferramenta',
@@ -200,7 +208,7 @@ export const TOOLS: Tool[] = [
     name: 'Ferramentas de Navegador',
     category: 'Utilitário',
     price: '25 po',
-    weight: '2.0 kg',
+    weight: '1.0 kg',
     description: 'Sextante, bússola, tabelas de estrelas e cartas náuticas. Permite navegar por oceanos e terrenos desconhecidos sem perder a orientação.'
   },
 
@@ -232,7 +240,15 @@ export const TOOLS: Tool[] = [
     weight: '0.5 kg',
     description: 'Jogo de estratégia com peças entalhadas representando criaturas fantásticas. Popular entre nobres, táticos e aventureiros intelectuais.'
   },
-
+  {
+    item_type: 'ferramenta',
+    id: 'aposta_dos_tres_dragoes',
+    name: 'Aposta dos Três Dragões',
+    category: 'Jogos',
+    price: '1 po',
+    weight: '0.0 kg',
+    description: 'Jogo de cartas de apostas popular em tavernas e salões nobres. Recompensa blefe tanto quanto cálculo.'
+  },
   // ─── INSTRUMENTOS MUSICAIS ────────────────────────────────────────────────
   {
     item_type: 'ferramenta',
@@ -281,11 +297,11 @@ export const TOOLS: Tool[] = [
   },
   {
     item_type: 'ferramenta',
-    id: 'harpa',
-    name: 'Harpa',
+    id: 'salterio',
+    name: 'Saltério',
     category: 'Instrumento Musical',
     price: '25 po',
-    weight: '2.5 kg',
+    weight: '5.0 kg',
     description: 'Instrumento de cordas com moldura em arco e som etéreo. Associado a fadas, elfos e músicos de habilidade excepcional.'
   },
   {
@@ -312,7 +328,16 @@ export const TOOLS: Tool[] = [
     name: 'Viola',
     category: 'Instrumento Musical',
     price: '30 po',
-    weight: '1.5 kg',
+    weight: '0.5 kg',
     description: 'Instrumento de cordas friccionadas com arco, de som rico e ressonante. Preferido por bardos clássicos em apresentações formais e banquetes nobres.'
+  },
+  {
+    item_type: 'ferramenta',
+    id: 'charamela',
+    name: 'Charamela',
+    category: 'Instrumento Musical',
+    price: '2 po',
+    weight: '0.5 kg',
+    description: 'Instrumento de sopro de palheta dupla, de som estridente. Comum em festas populares e cortejos militares.'
   }
 ]

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { calcModifier, formatModifier, ABILITIES, abilityName, calcPrimaryClassLevel, canChooseSubclass } from '../../lib/calculations'
-import { Input } from '../ui/Input'
+import { Input, Textarea } from '../ui/Input'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import type { AbilityId } from '../../types'
@@ -13,8 +13,10 @@ import type { Spell } from '../../data/spells'
 import { SpellCard } from '../ui/SpellCard'
 import { ItemCard } from '../ui/ItemCard'
 import type { ItemDetail } from '../ui/ItemCard'
+import { ClassCard } from '../ui/ClassCard'
+import { SpeciesCard } from '../ui/SpeciesCard'
 import { BackpackSearch } from '../ui/BackpackSearch'
-import { gameData } from '../../data/rules'
+import { gameData, gameDataPt } from '../../data/rules'
 
 const ETHICAL_ALIGNMENTS = ['Lawful', 'Neutral', 'Chaotic'] as const
 const MORAL_ALIGNMENTS = ['Good', 'Neutral', 'Evil'] as const
@@ -33,12 +35,16 @@ export function EditPanel() {
         {t('edit.autoSave')}
       </p>
       <InfoSection />
+      <AppearanceSection />
       <ProgressionSection />
       <MulticlassSection />
       <AbilitiesSection />
+      <MovementSection />
       <ArmorSection />
       <SkillsSection />
+      <ProficienciesSection />
       <SpellSection />
+      <PersonalitySection />
       <BackpackSection />
     </div>
   )
@@ -120,6 +126,8 @@ function ProgressionSection() {
   const subclassUnlocked = canChooseSubclass(primaryLevel)
   const charClass = gameData.classes.find(c => c.id === id.class_id)
   const species = gameData.species?.find(e => e.id === id.species_id)
+  const [showClass, setShowClass] = useState(false)
+  const [showSpecies, setShowSpecies] = useState(false)
 
   return (
     <section aria-label={t('edit.progression')} className={SECTION_CARD}>
@@ -170,14 +178,26 @@ function ProgressionSection() {
         {/* Classe */}
         <div className="flex flex-col gap-1">
           <label className="text-sm text-[#B8860B] font-medium">{t('edit.class')}</label>
-          <select
-            value={id.class_id ?? ''}
-            onChange={e => setCharClass(e.target.value)}
-            className={SELECT_BASE}
-          >
-            <option value="">{t('edit.selectClass')}</option>
-            {gameData.classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={id.class_id ?? ''}
+              onChange={e => setCharClass(e.target.value)}
+              className={SELECT_BASE}
+            >
+              <option value="">{t('edit.selectClass')}</option>
+              {gameData.classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            {charClass && (
+              <button
+                type="button"
+                onClick={() => setShowClass(true)}
+                aria-label={t('edit.viewDetails', { name: charClass.name })}
+                className={DETAIL_BUTTON}
+              >
+                ℹ
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Subclasse (somente nível ≥ 3) */}
@@ -199,14 +219,26 @@ function ProgressionSection() {
         {/* Espécie */}
         <div className="flex flex-col gap-1">
           <label className="text-sm text-[#B8860B] font-medium">{t('edit.species')}</label>
-          <select
-            value={id.species_id ?? ''}
-            onChange={e => setSpecies(e.target.value)}
-            className={SELECT_BASE}
-          >
-            <option value="">{t('edit.selectClass')}</option>
-            {gameData.species?.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={id.species_id ?? ''}
+              onChange={e => setSpecies(e.target.value)}
+              className={SELECT_BASE}
+            >
+              <option value="">{t('edit.selectClass')}</option>
+              {gameData.species?.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
+            </select>
+            {species && (
+              <button
+                type="button"
+                onClick={() => setShowSpecies(true)}
+                aria-label={t('edit.viewDetails', { name: species.name })}
+                className={DETAIL_BUTTON}
+              >
+                ℹ
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Linhagem (se espécie tem linhagens) */}
@@ -237,6 +269,13 @@ function ProgressionSection() {
           </select>
         </div>
       </div>
+
+      <ClassCard charClass={showClass ? (charClass ?? null) : null} level={level} onClose={() => setShowClass(false)} />
+      <SpeciesCard
+        species={showSpecies ? (species ?? null) : null}
+        lineageId={id.lineage_id}
+        onClose={() => setShowSpecies(false)}
+      />
     </section>
   )
 }
@@ -873,3 +912,277 @@ function BackpackSection() {
   )
 }
 
+const DETAIL_BUTTON =
+  'w-9 h-9 shrink-0 flex items-center justify-center text-xs text-[#A8A09B] hover:text-[#F5F0E8] ' +
+  'border border-[#B8860B]/20 hover:border-[#B8860B]/50 rounded-full transition-colors cursor-pointer ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]'
+
+interface StringListEditorProps {
+  label: string
+  values: string[]
+  placeholder: string
+  onChange: (values: string[]) => void
+  /**
+   * Catálogo para listas guardadas por id (idiomas). Os chips mostram o nome,
+   * o datalist oferece nomes e o que é digitado volta a ser id ao ser gravado —
+   * o resto do app compara ids, não rótulos traduzidos.
+   */
+  catalog?: Array<{ id: string; name: string }>
+  /** Entradas concedidas por classe/antecedente: exibidas, mas não removíveis. */
+  locked?: string[]
+}
+
+/**
+ * Editor genérico para os campos da ficha guardados como lista de textos
+ * (traços, idiomas, proficiências). Adiciona por Enter e remove por chip.
+ */
+function StringListEditor({ label, values, placeholder, onChange, catalog, locked = [] }: StringListEditorProps) {
+  const { t } = useTranslation()
+  const [draft, setDraft] = useState('')
+  const listId = `list-${label.replace(/\s+/g, '-').toLowerCase()}`
+
+  const displayOf = (value: string) =>
+    catalog?.find(o => o.id === value)?.name ?? value
+
+  function add() {
+    const typed = draft.trim()
+    if (!typed) { setDraft(''); return }
+    // Aceita o nome exibido e grava o id correspondente; sem catálogo, texto livre.
+    const match = catalog?.find(o => o.name.toLowerCase() === typed.toLowerCase() || o.id === typed)
+    const value = match?.id ?? typed
+    if (values.includes(value)) { setDraft(''); return }
+    onChange([...values, value])
+    setDraft('')
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-sm text-[#B8860B] font-medium">{label}</span>
+
+      <div className="flex flex-wrap gap-1.5">
+        {values.length === 0 && <span className="text-xs text-[#A8A09B]">{t('edit.emptyList')}</span>}
+        {values.map(v => {
+          const isLocked = locked.includes(v)
+          return (
+            <span
+              key={v}
+              className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded border ${
+                isLocked
+                  ? 'bg-[#2D2520] border-[#B8860B]/40 text-[#D4A017]'
+                  : 'bg-[#2D2520] border-[#B8860B]/20 text-[#F5F0E8]'
+              }`}
+            >
+              {displayOf(v)}
+              {isLocked ? (
+                <span className="text-[9px] text-[#A8A09B]">{t('edit.granted')}</span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onChange(values.filter(x => x !== v))}
+                  aria-label={t('edit.removeEntry', { name: displayOf(v) })}
+                  className="text-red-400/70 hover:text-red-300 cursor-pointer focus-visible:outline-none"
+                >
+                  ×
+                </button>
+              )}
+            </span>
+          )
+        })}
+      </div>
+
+      <div className="flex gap-2">
+        <input
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() } }}
+          placeholder={placeholder}
+          list={catalog ? listId : undefined}
+          aria-label={label}
+          className="flex-1 bg-[#2D2520] border border-[#B8860B]/30 rounded px-3 py-2 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B] focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
+        />
+        {catalog && (
+          <datalist id={listId}>
+            {catalog.map(o => <option key={o.id} value={o.name} />)}
+          </datalist>
+        )}
+        <Button size="sm" variant="secondary" onClick={add} disabled={!draft.trim()}>
+          {t('edit.addEntry')}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+/** Detalhes físicos — só editáveis no assistente até agora. */
+function AppearanceSection() {
+  const { sheet, setIdentity, setPersonality } = useSheetStore()
+  const { t } = useTranslation()
+  const id = sheet.identity
+
+  return (
+    <section aria-label={t('edit.appearance')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.appearance')}</h3>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <Input label={t('step11.age')} value={id.age ?? ''} onChange={e => setIdentity({ age: e.target.value })} placeholder={t('step11.agePlaceholder')} />
+        <Input label={t('step11.height')} value={id.height ?? ''} onChange={e => setIdentity({ height: e.target.value })} placeholder={t('step11.heightPlaceholder')} />
+        <Input label={t('step11.weight')} value={id.weight ?? ''} onChange={e => setIdentity({ weight: e.target.value })} placeholder={t('step11.weightPlaceholder')} />
+        <Input label={t('step11.eyes')} value={id.eyes ?? ''} onChange={e => setIdentity({ eyes: e.target.value })} placeholder={t('step11.eyesPlaceholder')} />
+        <Input label={t('step11.skin')} value={id.skin ?? ''} onChange={e => setIdentity({ skin: e.target.value })} placeholder={t('step11.skinPlaceholder')} />
+        <Input label={t('step11.hair')} value={id.hair ?? ''} onChange={e => setIdentity({ hair: e.target.value })} placeholder={t('step11.hairPlaceholder')} />
+      </div>
+
+      <Textarea
+        label={t('edit.appearanceDescription')}
+        value={sheet.personality.appearance_description ?? ''}
+        onChange={e => setPersonality({ appearance_description: e.target.value })}
+        placeholder={t('edit.appearanceDescriptionPlaceholder')}
+      />
+    </section>
+  )
+}
+
+/**
+ * Deslocamento: a base vem da espécie e o bônus de itens ou talentos. O total
+ * é derivado, então só estes dois campos são editáveis.
+ */
+function MovementSection() {
+  const { sheet, setSpeed } = useSheetStore()
+  const { t } = useTranslation()
+  const speed = sheet.combat.speed
+
+  return (
+    <section aria-label={t('edit.movement')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.movement')}</h3>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 items-end">
+        <Input
+          label={t('edit.baseSpeed')}
+          type="number"
+          min={0}
+          step={0.5}
+          value={speed.base_meters ?? ''}
+          onChange={e => setSpeed({ base_meters: e.target.value === '' ? null : Math.max(0, Number(e.target.value)) })}
+        />
+        <Input
+          label={t('edit.bonusSpeed')}
+          type="number"
+          step={0.5}
+          value={speed.bonus_meters}
+          onChange={e => setSpeed({ bonus_meters: Number(e.target.value) || 0 })}
+        />
+        <div className="flex flex-col gap-1">
+          <span className="text-sm text-[#B8860B] font-medium">{t('combat.speed')}</span>
+          <span className="font-cinzel font-bold text-2xl text-[#F5F0E8]">
+            {speed._total_meters ?? 0}{t('sheet.mUnit')}
+          </span>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/** Idiomas e proficiências de armadura, arma e ferramenta. */
+function ProficienciesSection() {
+  const { sheet, setProficiencies, setLanguages } = useSheetStore()
+  const { t } = useTranslation()
+  const prof = sheet.proficiencies
+  const languageCatalog = [
+    ...(gameData.languages?.common ?? []),
+    ...(gameData.languages?.rare ?? []),
+  ].map(l => ({ id: l.id, name: l.name }))
+  // As proficiências são gravadas com as strings canônicas em português
+  // (`gameDataPt`), então a trava tem de comparar com elas, não com a tradução.
+  const charClassPt = gameDataPt.classes.find(c => c.id === sheet.identity.class_id)
+
+  return (
+    <section aria-label={t('edit.proficiencies')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.proficiencies')}</h3>
+
+      <StringListEditor
+        label={t('step09.heading')}
+        values={prof.languages}
+        placeholder={t('edit.addLanguagePlaceholder')}
+        catalog={languageCatalog}
+        onChange={setLanguages}
+      />
+      <StringListEditor
+        label={t('step02.armors')}
+        values={prof.armors}
+        placeholder={t('edit.addProficiencyPlaceholder')}
+        locked={charClassPt?.armors ?? []}
+        onChange={armors => setProficiencies({ armors })}
+      />
+      <StringListEditor
+        label={t('edit.weapons')}
+        values={prof.weapons}
+        placeholder={t('edit.addProficiencyPlaceholder')}
+        locked={charClassPt?.weapons ?? []}
+        onChange={weapons => setProficiencies({ weapons })}
+      />
+      <StringListEditor
+        label={t('edit.tools')}
+        values={prof.tools}
+        placeholder={t('edit.addProficiencyPlaceholder')}
+        onChange={tools => setProficiencies({ tools })}
+      />
+    </section>
+  )
+}
+
+/** Personalidade e história — antes só editáveis no assistente, ou nem isso. */
+function PersonalitySection() {
+  const { sheet, setPersonality } = useSheetStore()
+  const { t } = useTranslation()
+  const p = sheet.personality
+
+  return (
+    <section aria-label={t('edit.personality')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.personality')}</h3>
+
+      <StringListEditor
+        label={t('notes.traits')}
+        values={p.traits}
+        placeholder={t('step11.trait1Placeholder')}
+        onChange={traits => setPersonality({ traits })}
+      />
+      <StringListEditor
+        label={t('notes.ideals')}
+        values={p.ideals}
+        placeholder={t('step11.idealsPlaceholder')}
+        onChange={ideals => setPersonality({ ideals })}
+      />
+      <StringListEditor
+        label={t('notes.bonds')}
+        values={p.bonds}
+        placeholder={t('step11.bondsPlaceholder')}
+        onChange={bonds => setPersonality({ bonds })}
+      />
+      <StringListEditor
+        label={t('notes.flaws')}
+        values={p.flaws}
+        placeholder={t('step11.flawsPlaceholder')}
+        onChange={flaws => setPersonality({ flaws })}
+      />
+
+      <Textarea
+        label={t('notes.backstory')}
+        value={p.backstory ?? ''}
+        onChange={e => setPersonality({ backstory: e.target.value })}
+        placeholder={t('step11.backstoryPlaceholder')}
+      />
+      <Textarea
+        label={t('edit.allies')}
+        value={p.allies_and_organizations ?? ''}
+        onChange={e => setPersonality({ allies_and_organizations: e.target.value })}
+        placeholder={t('edit.alliesPlaceholder')}
+      />
+      <Textarea
+        label={t('edit.symbol')}
+        value={p.symbol_or_treasure ?? ''}
+        onChange={e => setPersonality({ symbol_or_treasure: e.target.value })}
+        placeholder={t('edit.symbolPlaceholder')}
+      />
+    </section>
+  )
+}

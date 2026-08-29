@@ -39,7 +39,7 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     category: 'Montaria Terrestre',
     price: '50 po',
     speed: '15 m',
-    carry_capacity: '240 kg',
+    carry_capacity: '225 kg',
     description: 'Montaria resistente para climas áridos e desertos. Pode passar vários dias sem água e carrega carga pesada por longas distâncias.'
   },
   {
@@ -63,6 +63,26 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     description: 'Animais firmes e obstinados com excelente capacidade de carga. Lentos mas resistentes em trilhas íngremes e terrenos difíceis.'
   },
 
+  {
+    item_type: 'transporte',
+    id: 'cavalo_de_carga',
+    name: 'Cavalo de Carga',
+    category: 'Animal de Carga',
+    price: '50 po',
+    speed: '18 m',
+    carry_capacity: '270 kg',
+    description: 'Cavalo pesado criado para puxar arados e carroças. Lento em combate, mas move cargas que nenhuma montaria comum aguenta.'
+  },
+  {
+    item_type: 'transporte',
+    id: 'mastim',
+    name: 'Mastim',
+    category: 'Montaria Terrestre',
+    price: '25 po',
+    speed: '12 m',
+    carry_capacity: '97.5 kg',
+    description: 'Cão de guerra grande o bastante para servir de montaria a Pequenos. Também usado como farejador e guarda de acampamento.'
+  },
   // ─── ARREIOS E ACESSÓRIOS ─────────────────────────────────────────────────
   {
     item_type: 'transporte',
@@ -92,6 +112,15 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     description: 'Duas bolsas de couro interligadas pelas costas da montaria. Permite que o animal carregue até 30 kg de equipamento extra.'
   },
 
+  {
+    item_type: 'transporte',
+    id: 'sela_exotica',
+    name: 'Sela Exótica',
+    category: 'Arreio',
+    price: '60 po',
+    weight: '20.0 kg',
+    description: 'Sela sob medida para montarias aquáticas ou voadoras. Obrigatória para cavalgar criaturas fora do padrão terrestre.'
+  },
   // ─── VEÍCULOS TERRESTRES ──────────────────────────────────────────────────
   {
     item_type: 'transporte',
@@ -107,11 +136,29 @@ export const MOUNTS_AND_VEHICLES: Transport[] = [
     id: 'carruagem',
     name: 'Carruagem',
     category: 'Veículo Terrestre',
-    price: '250 po',
+    price: '100 po',
     weight: '300.0 kg',
     description: 'Veículo fechado de quatro rodas luxuoso e confortável, para transporte de passageiros nobres. Geralmente puxada por dois ou quatro cavalos.'
   },
 
+  {
+    item_type: 'transporte',
+    id: 'biga',
+    name: 'Biga',
+    category: 'Veículo Terrestre',
+    price: '250 po',
+    weight: '50.0 kg',
+    description: 'Carro de guerra leve de duas rodas, puxado por um ou dois cavalos. Rápido, mas instável fora de terreno plano.'
+  },
+  {
+    item_type: 'transporte',
+    id: 'vagao',
+    name: 'Vagão',
+    category: 'Veículo Terrestre',
+    price: '35 po',
+    weight: '200.0 kg',
+    description: 'Carroça grande de quatro rodas, coberta ou aberta. O padrão de caravanas mercantes e mudanças longas.'
+  },
   // ─── VEÍCULOS AQUÁTICOS ───────────────────────────────────────────────────
   {
     item_type: 'transporte',

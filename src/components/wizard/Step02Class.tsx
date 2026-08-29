@@ -4,7 +4,8 @@ import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { Badge, DieBadge } from '../ui/Badge'
-import { Modal } from '../ui/Modal'
+import { ClassCard } from '../ui/ClassCard'
+import { LockIcon } from '../ui/LockIcon'
 import type { CharClass } from '../../types'
 import { gameData } from '../../data/rules'
 
@@ -81,73 +82,11 @@ export function Step02Class() {
         )
       })()}
 
-      <Modal
-        open={!!classModal}
+      <ClassCard
+        charClass={classModal}
+        level={sheet.identity.level}
         onClose={() => setClassModal(null)}
-        title={classModal?.name}
-        wide
-      >
-        {classModal && (
-          <div className="space-y-4 text-sm">
-            <p className="text-[#A8A09B]">{classModal.description}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-[#2D2520] rounded p-3">
-                <div className="text-[#B8860B] font-semibold mb-1">{t('step02.hitDieSection')}</div>
-                <DieBadge type={`d${classModal.hit_die}`} />
-              </div>
-              <div className="bg-[#2D2520] rounded p-3">
-                <div className="text-[#B8860B] font-semibold mb-1">{t('step02.primaryAttrs')}</div>
-                <div className="text-[#F5F0E8]">{classModal.primary_abilities.join(', ')}</div>
-              </div>
-              <div className="bg-[#2D2520] rounded p-3">
-                <div className="text-[#B8860B] font-semibold mb-1">{t('step02.savesSection')}</div>
-                <div className="text-[#F5F0E8]">{classModal.saves.join(', ')}</div>
-              </div>
-              <div className="bg-[#2D2520] rounded p-3">
-                <div className="text-[#B8860B] font-semibold mb-1">{t('step02.profs')}</div>
-                <div className="text-[#F5F0E8]">{[...classModal.armors, ...classModal.weapons].join(', ')}</div>
-              </div>
-            </div>
-            <div>
-              <div className="text-[#B8860B] font-semibold mb-2">{t('step02.subclassesSection')}</div>
-              <div className="grid grid-cols-2 gap-2">
-                {classModal.subclasses.map(s => (
-                  <div key={s.id} className="bg-[#2D2520] rounded p-2">
-                    <div className="text-[#F5F0E8] text-sm font-semibold">{s.name}</div>
-                    {s.description && <p className="text-[#A8A09B] text-xs mt-0.5 leading-relaxed">{s.description}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div className="text-[#B8860B] font-semibold mb-2">{t('step02.progressionSection')}</div>
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-[#B8860B]/20">
-                    <th className="py-1 px-2 text-left text-[#B8860B]">{t('step02.colLevel')}</th>
-                    <th className="py-1 px-2 text-left text-[#B8860B]">{t('step02.colProfBonus')}</th>
-                    <th className="py-1 px-2 text-left text-[#B8860B]">{t('step02.colHighlights')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {classModal.progression.map(p => {
-                    const locked = p.level > sheet.identity.level
-                    return (
-                      <tr key={p.level} className={`border-b border-[#3D332D] ${locked ? 'opacity-45' : ''}`}>
-                        <td className="py-1 px-2 text-[#F5F0E8] whitespace-nowrap">
-                          {locked && <LockIcon />} {p.level}
-                        </td>
-                        <td className="py-1 px-2 text-[#F5F0E8]">+{p.prof_bonus}</td>
-                        <td className="py-1 px-2 text-[#A8A09B]">{p.highlights.join(', ')}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-      </Modal>
+      />
 
       <WizardNav onBack={() => setStep(1)} onNext={() => setStep(3)} nextDisabled={!classId} />
     </div>
@@ -216,19 +155,5 @@ function ClassFeatures({ charClass, level }: ClassFeaturesProps) {
         })}
       </div>
     </div>
-  )
-}
-
-function LockIcon() {
-  return (
-    <svg
-      width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-      className="inline-block shrink-0 opacity-70"
-      aria-hidden="true"
-    >
-      <rect x="4" y="11" width="16" height="10" rx="2" />
-      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-    </svg>
   )
 }

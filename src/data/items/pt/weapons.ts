@@ -1,7 +1,7 @@
 import type { Weapon } from '../types'
 
 export const WEAPONS: Weapon[] = [
-  // ─── ARMAS SIMPLES CORPO A CORPO ──────────────────────────────────────────
+  // ─── ARMAS SIMPLES CORPO A CORPO ───────────────────────────────────────────
   {
     item_type: 'arma',
     id: 'clava',
@@ -13,6 +13,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Concussão',
     weight: '1.0 kg',
     properties: ['Leve'],
+    mastery: 'Slow',
     description: 'Peça de madeira resistente usada como arma improvisada. Barata e acessível a qualquer aventureiro sem treinamento formal.'
   },
   {
@@ -26,6 +27,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '0.5 kg',
     properties: ['Acuidade', 'Leve', 'Arremesso (6/18 m)'],
+    mastery: 'Nick',
     description: 'Lâmina curta e discreta, indispensável em qualquer aventureiro. Pode ser empunhada ou arremessada com igual eficácia.'
   },
   {
@@ -39,6 +41,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '1.0 kg',
     properties: ['Leve'],
+    mastery: 'Nick',
     description: 'Lâmina curva originalmente usada para colheita. Leve e afiada, perigosa em mãos habilidosas.'
   },
   {
@@ -52,6 +55,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '1.5 kg',
     properties: ['Arremesso (6/18 m)', 'Versátil (1d8)'],
+    mastery: 'Sap',
     description: 'Haste longa com ponta de metal. Padrão da infantaria, funciona bem com uma ou duas mãos e pode ser arremessada.'
   },
   {
@@ -65,6 +69,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '1.0 kg',
     properties: ['Arremesso (9/36 m)'],
+    mastery: 'Slow',
     description: 'Lança leve projetada para arremesso de média distância. Mais precisa que uma lança comum quando arremessada.'
   },
   {
@@ -78,6 +83,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Concussão',
     weight: '2.0 kg',
     properties: [],
+    mastery: 'Sap',
     description: 'Cabeça de metal pesada sobre cabo de madeira. Eficaz contra armaduras metálicas que outras lâminas não penetram.'
   },
   {
@@ -91,6 +97,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Concussão',
     weight: '1.0 kg',
     properties: ['Leve', 'Arremesso (6/18 m)'],
+    mastery: 'Nick',
     description: 'Martelo pequeno de uma mão, equilibrado para arremesso. Favorito de clérigos e guerreiros que precisam de opção à distância.'
   },
   {
@@ -104,6 +111,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Concussão',
     weight: '2.0 kg',
     properties: ['Versátil (1d8)'],
+    mastery: 'Topple',
     description: 'Bastão resistente de madeira. Inofensivo na aparência, mas letalmente eficaz nas mãos de druidas, monges e viajantes experientes.'
   },
   {
@@ -117,6 +125,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Concussão',
     weight: '5.0 kg',
     properties: ['Duas Mãos'],
+    mastery: 'Push',
     description: 'Pesado bastão de madeira maciça que exige as duas mãos. Esmaga com força brutal, ideal para aventureiros sem recursos para armas melhores.'
   },
   {
@@ -130,21 +139,23 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '1.0 kg',
     properties: ['Leve', 'Arremesso (6/18 m)'],
+    mastery: 'Vex',
     description: 'Machado de mão pequeno e leve, perfeito para arremesso. Muito usado por guerreiros bárbaros e caçadores em combate próximo.'
   },
 
-  // ─── ARMAS SIMPLES À DISTÂNCIA ────────────────────────────────────────────
+  // ─── ARMAS SIMPLES À DISTÂNCIA ─────────────────────────────────────────────
   {
     item_type: 'arma',
     id: 'dardo',
     name: 'Dardo',
     category: 'Simples',
     type: 'À Distância',
-    price: '5 pp',
+    price: '5 pc',
     damage: '1d4',
     damage_type: 'Perfurante',
     weight: '0.1 kg',
     properties: ['Acuidade', 'Arremesso (6/18 m)'],
+    mastery: 'Vex',
     description: 'Pequeno projétil de metal afiado arremessado à mão. Ágil e silencioso, eficaz para ataques furtivos em curta distância.'
   },
   {
@@ -158,6 +169,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Concussão',
     weight: '0.0 kg',
     properties: ['Munição (9/36 m)'],
+    mastery: 'Slow',
     description: 'Tira de couro que arremessa pedras com grande velocidade. Barata e eficaz, usa pedras do chão ou balas de chumbo como munição.'
   },
   {
@@ -171,6 +183,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '1.0 kg',
     properties: ['Munição (24/96 m)', 'Duas Mãos'],
+    mastery: 'Vex',
     description: 'Arco compacto de madeira flexível. Ágil e eficaz para combate em movimento, preferido por arqueiros leves e batedores.'
   },
   {
@@ -184,10 +197,11 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '2.5 kg',
     properties: ['Munição (24/96 m)', 'Recarga', 'Duas Mãos'],
+    mastery: 'Slow',
     description: 'Arma de projéteis de mecanismo simples. Mais poderosa que um arco curto, mas exige recarga manual a cada disparo.'
   },
 
-  // ─── ARMAS MARCIAIS CORPO A CORPO ─────────────────────────────────────────
+  // ─── ARMAS MARCIAIS CORPO A CORPO ──────────────────────────────────────────
   {
     item_type: 'arma',
     id: 'chicote',
@@ -199,6 +213,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '1.5 kg',
     properties: ['Acuidade', 'Alcance (3 m)'],
+    mastery: 'Slow',
     description: 'Couro trançado capaz de atingir alvos a 3 metros. Ágil e preciso, favorito de trapeiros e domadores que preferem não se aproximar.'
   },
   {
@@ -212,7 +227,22 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '1.0 kg',
     properties: ['Acuidade', 'Leve'],
+    mastery: 'Vex',
     description: 'Lâmina curta e ágil, favorita de ladinos e guerreiros que valorizam velocidade e precisão sobre força bruta.'
+  },
+  {
+    item_type: 'arma',
+    id: 'cimitarra',
+    name: 'Cimitarra',
+    category: 'Marcial',
+    type: 'Corpo a Corpo',
+    price: '25 po',
+    damage: '1d6',
+    damage_type: 'Cortante',
+    weight: '1.5 kg',
+    properties: ['Acuidade', 'Leve'],
+    mastery: 'Nick',
+    description: 'Lâmina curva de fio único, leve e veloz. Favorita de duelistas e exploradores do deserto que trocam força bruta por velocidade.'
   },
   {
     item_type: 'arma',
@@ -221,10 +251,11 @@ export const WEAPONS: Weapon[] = [
     category: 'Marcial',
     type: 'Corpo a Corpo',
     price: '5 po',
-    damage: '1d6',
+    damage: '1d8',
     damage_type: 'Perfurante',
     weight: '2.0 kg',
-    properties: ['Arremesso (6/18 m)', 'Versátil (1d8)'],
+    properties: ['Arremesso (6/18 m)', 'Versátil (1d10)'],
+    mastery: 'Topple',
     description: 'Garfo de três pontas de origem costeira. Versátil para combate próximo ou arremesso, popular em culturas ligadas ao mar.'
   },
   {
@@ -236,8 +267,9 @@ export const WEAPONS: Weapon[] = [
     price: '5 po',
     damage: '1d8',
     damage_type: 'Perfurante',
-    weight: '1.5 kg',
-    properties: [],
+    weight: '1.0 kg',
+    properties: ['Versátil (1d10)'],
+    mastery: 'Sap',
     description: 'Ferramenta de mineração adaptada ao combate. A ponta concentrada perfura armaduras pesadas com uma eficiência cruel.'
   },
   {
@@ -251,6 +283,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Concussão',
     weight: '1.0 kg',
     properties: [],
+    mastery: 'Sap',
     description: 'Cabo com correntes e bolas de metal pesadas. A cabeça oscilante contorna escudos e bloqueios rígidos com facilidade.'
   },
   {
@@ -264,6 +297,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '2.0 kg',
     properties: [],
+    mastery: 'Sap',
     description: 'Cabeça de metal com pontas longas sobre cabo resistente. Combina o impacto de uma maça com a capacidade de furar armaduras.'
   },
   {
@@ -277,6 +311,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '1.5 kg',
     properties: ['Versátil (1d10)'],
+    mastery: 'Sap',
     description: 'A espada clássica do aventureiro, símbolo de cavaleiros e heróis. Equilibrada para uma ou duas mãos, versátil em qualquer situação.'
   },
   {
@@ -288,8 +323,9 @@ export const WEAPONS: Weapon[] = [
     price: '15 po',
     damage: '1d8',
     damage_type: 'Concussão',
-    weight: '1.0 kg',
+    weight: '2.5 kg',
     properties: ['Versátil (1d10)'],
+    mastery: 'Push',
     description: 'Martelo pesado de combate, favorito de anões e guerreiros divinos. Eficaz com uma ou duas mãos, devasta armaduras metálicas.'
   },
   {
@@ -303,6 +339,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '1.0 kg',
     properties: ['Acuidade'],
+    mastery: 'Vex',
     description: 'Lâmina fina de esgrima projetada para velocidade e precisão. Favorita de duelistas e bardos que dependem de Destreza para atacar.'
   },
   {
@@ -316,6 +353,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '2.0 kg',
     properties: ['Versátil (1d10)'],
+    mastery: 'Topple',
     description: 'Machado equilibrado de uma mão. Pode ser empunhado com duas mãos para golpes mais devastadores. Ícone de guerreiros e bárbaros.'
   },
   {
@@ -325,10 +363,11 @@ export const WEAPONS: Weapon[] = [
     category: 'Marcial',
     type: 'Corpo a Corpo',
     price: '10 po',
-    damage: '1d12',
+    damage: '1d10',
     damage_type: 'Perfurante',
     weight: '3.0 kg',
-    properties: ['Alcance (3 m)', 'Especial'],
+    properties: ['Pesada', 'Alcance (3 m)', 'Duas Mãos (exceto montado)'],
+    mastery: 'Topple',
     description: 'Haste longa para cargas montadas. Devastadora em movimento, mas causa desvantagem contra alvos adjacentes quando desmontado.'
   },
   {
@@ -342,6 +381,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '3.0 kg',
     properties: ['Alcance (3 m)', 'Pesada', 'Duas Mãos'],
+    mastery: 'Graze',
     description: 'Lâmina curva montada numa haste longa. Mantém inimigos à distância e causa dano devastador em ataques de oportunidade.'
   },
   {
@@ -355,6 +395,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '3.0 kg',
     properties: ['Alcance (3 m)', 'Pesada', 'Duas Mãos'],
+    mastery: 'Cleave',
     description: 'Haste com lâmina de machado e ponta de lança combinadas. Versátil para cortar, perfurar e controlar distância em combate.'
   },
   {
@@ -366,9 +407,24 @@ export const WEAPONS: Weapon[] = [
     price: '5 po',
     damage: '1d10',
     damage_type: 'Perfurante',
-    weight: '4.5 kg',
+    weight: '9.0 kg',
     properties: ['Alcance (3 m)', 'Pesada', 'Duas Mãos'],
+    mastery: 'Push',
     description: 'Haste extremamente longa usada por formações militares para travar cargas de cavalaria. Simples mas brutalmente eficaz em massa.'
+  },
+  {
+    item_type: 'arma',
+    id: 'malho',
+    name: 'Malho',
+    category: 'Marcial',
+    type: 'Corpo a Corpo',
+    price: '10 po',
+    damage: '2d6',
+    damage_type: 'Concussão',
+    weight: '5.0 kg',
+    properties: ['Pesada', 'Duas Mãos'],
+    mastery: 'Topple',
+    description: 'Marreta de guerra com cabeça maciça de metal. Exige as duas mãos e converte o peso inteiro do golpe em impacto devastador.'
   },
   {
     item_type: 'arma',
@@ -381,6 +437,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '3.5 kg',
     properties: ['Pesada', 'Duas Mãos'],
+    mastery: 'Cleave',
     description: 'Machado enorme de duas mãos, preferido por bárbaros em fúria. Bruto e devastador, capaz de partir escudos e armaduras.'
   },
   {
@@ -394,10 +451,25 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Cortante',
     weight: '3.0 kg',
     properties: ['Pesada', 'Duas Mãos'],
+    mastery: 'Graze',
     description: 'Espada enorme de duas mãos com lâmina larga e imponente. Símbolo de guerreiros lendários, capaz de derrubar múltiplos inimigos.'
   },
 
-  // ─── ARMAS MARCIAIS À DISTÂNCIA ───────────────────────────────────────────
+  // ─── ARMAS MARCIAIS À DISTÂNCIA ────────────────────────────────────────────
+  {
+    item_type: 'arma',
+    id: 'zarabatana',
+    name: 'Zarabatana',
+    category: 'Marcial',
+    type: 'À Distância',
+    price: '10 po',
+    damage: '1',
+    damage_type: 'Perfurante',
+    weight: '0.5 kg',
+    properties: ['Munição (7,5/30 m)', 'Recarga'],
+    mastery: 'Vex',
+    description: 'Tubo estreito que dispara agulhas com um sopro. Dano irrisório, mas silenciosa e ideal para aplicar venenos à distância.'
+  },
   {
     item_type: 'arma',
     id: 'besta_de_mao',
@@ -409,20 +481,8 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '1.5 kg',
     properties: ['Leve', 'Munição (9/36 m)', 'Recarga'],
+    mastery: 'Vex',
     description: 'Versão compacta da besta usável com uma mão. Permite escudo ou segunda arma, mas exige recarga após cada disparo.'
-  },
-  {
-    item_type: 'arma',
-    id: 'arco_longo',
-    name: 'Arco Longo',
-    category: 'Marcial',
-    type: 'À Distância',
-    price: '50 po',
-    damage: '1d8',
-    damage_type: 'Perfurante',
-    weight: '1.0 kg',
-    properties: ['Munição (45/180 m)', 'Pesada', 'Duas Mãos'],
-    description: 'Arco alto de madeira flexível com alcance e potência superiores. A escolha definitiva de arqueiros especializados e guardiões da floresta.'
   },
   {
     item_type: 'arma',
@@ -435,19 +495,49 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Perfurante',
     weight: '9.0 kg',
     properties: ['Munição (30/120 m)', 'Pesada', 'Recarga', 'Duas Mãos'],
+    mastery: 'Push',
     description: 'Besta de alto poder de penetração. Perfura armaduras pesadas mas exige duas mãos e recarga constante entre disparos.'
   },
   {
     item_type: 'arma',
-    id: 'rede',
-    name: 'Rede',
+    id: 'arco_longo',
+    name: 'Arco Longo',
     category: 'Marcial',
     type: 'À Distância',
-    price: '1 po',
-    damage: '—',
-    damage_type: 'Especial',
+    price: '50 po',
+    damage: '1d8',
+    damage_type: 'Perfurante',
+    weight: '1.0 kg',
+    properties: ['Munição (45/180 m)', 'Pesada', 'Duas Mãos'],
+    mastery: 'Slow',
+    description: 'Arco alto de madeira flexível com alcance e potência superiores. A escolha definitiva de arqueiros especializados e guardiões da floresta.'
+  },
+  {
+    item_type: 'arma',
+    id: 'mosquete',
+    name: 'Mosquete',
+    category: 'Marcial',
+    type: 'À Distância',
+    price: '500 po',
+    damage: '1d12',
+    damage_type: 'Perfurante',
+    weight: '5.0 kg',
+    properties: ['Munição (12/36 m)', 'Recarga', 'Duas Mãos'],
+    mastery: 'Slow',
+    description: 'Arma de pólvora de cano longo. Rara e caríssima, atravessa armaduras pesadas ao custo de uma recarga lenta e barulhenta.'
+  },
+  {
+    item_type: 'arma',
+    id: 'pistola',
+    name: 'Pistola',
+    category: 'Marcial',
+    type: 'À Distância',
+    price: '250 po',
+    damage: '1d10',
+    damage_type: 'Perfurante',
     weight: '1.5 kg',
-    properties: ['Especial', 'Arremesso (1,5/4,5 m)'],
-    description: 'Rede ponderada arremessada para enredar oponentes. Não causa dano mas deixa criaturas de tamanho Grande ou menor com a condição Impedida.'
+    properties: ['Munição (9/27 m)', 'Recarga'],
+    mastery: 'Vex',
+    description: 'Arma de pólvora compacta, usável com uma mão. Alcance curto e recarga lenta, mas devastadora no primeiro disparo.'
   }
 ]

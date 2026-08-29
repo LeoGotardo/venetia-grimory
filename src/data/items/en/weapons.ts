@@ -1,7 +1,7 @@
 import type { Weapon } from '../types'
 
 export const WEAPONS: Weapon[] = [
-  // ─── SIMPLE MELEE WEAPONS ─────────────────────────────────────────────────
+  // ─── SIMPLE MELEE WEAPONS ──────────────────────────────────────────────────
   {
     item_type: 'arma',
     id: 'clava',
@@ -13,6 +13,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Bludgeoning',
     weight: '1.0 kg',
     properties: ['Light'],
+    mastery: 'Slow',
     description: 'A stout piece of wood used as an improvised weapon. Cheap and accessible to any adventurer without formal combat training.'
   },
   {
@@ -26,6 +27,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '0.5 kg',
     properties: ['Finesse', 'Light', 'Thrown (6/18 m)'],
+    mastery: 'Nick',
     description: 'A short, discreet blade indispensable to any adventurer. Can be wielded or thrown with equal effectiveness.'
   },
   {
@@ -39,6 +41,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '1.0 kg',
     properties: ['Light'],
+    mastery: 'Nick',
     description: 'A curved blade originally used for harvesting. Light and sharp, dangerous in skilled hands.'
   },
   {
@@ -52,6 +55,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '1.5 kg',
     properties: ['Thrown (6/18 m)', 'Versatile (1d8)'],
+    mastery: 'Sap',
     description: 'A long shaft with a metal tip. Standard infantry weapon, works well one- or two-handed and can be thrown.'
   },
   {
@@ -65,6 +69,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '1.0 kg',
     properties: ['Thrown (9/36 m)'],
+    mastery: 'Slow',
     description: 'A light spear designed for medium-range throwing. More accurate than a common spear when thrown.'
   },
   {
@@ -78,6 +83,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Bludgeoning',
     weight: '2.0 kg',
     properties: [],
+    mastery: 'Sap',
     description: 'A heavy metal head on a wooden haft. Effective against metal armor that other blades cannot penetrate.'
   },
   {
@@ -91,6 +97,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Bludgeoning',
     weight: '1.0 kg',
     properties: ['Light', 'Thrown (6/18 m)'],
+    mastery: 'Nick',
     description: 'A small one-handed hammer balanced for throwing. A favorite of clerics and warriors who need a ranged option.'
   },
   {
@@ -104,6 +111,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Bludgeoning',
     weight: '2.0 kg',
     properties: ['Versatile (1d8)'],
+    mastery: 'Topple',
     description: 'A sturdy wooden staff. Deceptively harmless in appearance, yet lethally effective in the hands of druids, monks, and seasoned travelers.'
   },
   {
@@ -117,6 +125,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Bludgeoning',
     weight: '5.0 kg',
     properties: ['Two-Handed'],
+    mastery: 'Push',
     description: 'A heavy club of solid wood requiring both hands. Crushes with brutal force, ideal for adventurers lacking resources for better weapons.'
   },
   {
@@ -130,21 +139,23 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '1.0 kg',
     properties: ['Light', 'Thrown (6/18 m)'],
+    mastery: 'Vex',
     description: 'A small, light hand axe perfect for throwing. Widely used by barbarian warriors and hunters in close combat.'
   },
 
-  // ─── SIMPLE RANGED WEAPONS ────────────────────────────────────────────────
+  // ─── SIMPLE RANGED WEAPONS ─────────────────────────────────────────────────
   {
     item_type: 'arma',
     id: 'dardo',
     name: 'Dart',
     category: 'Simple',
     type: 'Ranged',
-    price: '5 pp',
+    price: '5 pc',
     damage: '1d4',
     damage_type: 'Piercing',
     weight: '0.1 kg',
     properties: ['Finesse', 'Thrown (6/18 m)'],
+    mastery: 'Vex',
     description: 'A small, sharp metal projectile thrown by hand. Agile and silent, effective for sneak attacks at close range.'
   },
   {
@@ -158,6 +169,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Bludgeoning',
     weight: '0.0 kg',
     properties: ['Ammunition (9/36 m)'],
+    mastery: 'Slow',
     description: 'A leather strap that hurls stones at great speed. Cheap and effective, uses stones from the ground or lead bullets as ammunition.'
   },
   {
@@ -171,6 +183,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '1.0 kg',
     properties: ['Ammunition (24/96 m)', 'Two-Handed'],
+    mastery: 'Vex',
     description: 'A compact flexible wood bow. Agile and effective for combat on the move, preferred by light archers and scouts.'
   },
   {
@@ -184,10 +197,11 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '2.5 kg',
     properties: ['Ammunition (24/96 m)', 'Loading', 'Two-Handed'],
+    mastery: 'Slow',
     description: 'A simple-mechanism ranged weapon. More powerful than a shortbow, but requires manual reloading after each shot.'
   },
 
-  // ─── MARTIAL MELEE WEAPONS ────────────────────────────────────────────────
+  // ─── MARTIAL MELEE WEAPONS ─────────────────────────────────────────────────
   {
     item_type: 'arma',
     id: 'chicote',
@@ -199,6 +213,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '1.5 kg',
     properties: ['Finesse', 'Reach (3 m)'],
+    mastery: 'Slow',
     description: 'Braided leather capable of striking targets 3 metres away. Agile and precise, favored by rogues and tamers who prefer not to close in.'
   },
   {
@@ -212,7 +227,22 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '1.0 kg',
     properties: ['Finesse', 'Light'],
+    mastery: 'Vex',
     description: 'A short, agile blade favored by rogues and fighters who value speed and precision over brute force.'
+  },
+  {
+    item_type: 'arma',
+    id: 'cimitarra',
+    name: 'Scimitar',
+    category: 'Martial',
+    type: 'Melee',
+    price: '25 po',
+    damage: '1d6',
+    damage_type: 'Slashing',
+    weight: '1.5 kg',
+    properties: ['Finesse', 'Light'],
+    mastery: 'Nick',
+    description: 'A curved single-edged blade, light and swift. A favorite of duelists and desert scouts who trade brute force for speed.'
   },
   {
     item_type: 'arma',
@@ -221,10 +251,11 @@ export const WEAPONS: Weapon[] = [
     category: 'Martial',
     type: 'Melee',
     price: '5 po',
-    damage: '1d6',
+    damage: '1d8',
     damage_type: 'Piercing',
     weight: '2.0 kg',
-    properties: ['Thrown (6/18 m)', 'Versatile (1d8)'],
+    properties: ['Thrown (6/18 m)', 'Versatile (1d10)'],
+    mastery: 'Topple',
     description: 'A three-pronged fork of coastal origin. Versatile for close combat or throwing, popular in sea-faring cultures.'
   },
   {
@@ -236,8 +267,9 @@ export const WEAPONS: Weapon[] = [
     price: '5 po',
     damage: '1d8',
     damage_type: 'Piercing',
-    weight: '1.5 kg',
-    properties: [],
+    weight: '1.0 kg',
+    properties: ['Versatile (1d10)'],
+    mastery: 'Sap',
     description: 'A mining tool adapted for combat. The concentrated tip punches through heavy armor with cruel efficiency.'
   },
   {
@@ -251,6 +283,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Bludgeoning',
     weight: '1.0 kg',
     properties: [],
+    mastery: 'Sap',
     description: 'A haft with chains and heavy metal balls. The swinging head bypasses shields and rigid blocks with ease.'
   },
   {
@@ -264,6 +297,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '2.0 kg',
     properties: [],
+    mastery: 'Sap',
     description: 'A metal head with long spikes on a sturdy haft. Combines the impact of a mace with the ability to pierce armor.'
   },
   {
@@ -277,6 +311,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '1.5 kg',
     properties: ['Versatile (1d10)'],
+    mastery: 'Sap',
     description: "The classic adventurer's sword, symbol of knights and heroes. Balanced for one or two hands, versatile in any situation."
   },
   {
@@ -288,8 +323,9 @@ export const WEAPONS: Weapon[] = [
     price: '15 po',
     damage: '1d8',
     damage_type: 'Bludgeoning',
-    weight: '1.0 kg',
+    weight: '2.5 kg',
     properties: ['Versatile (1d10)'],
+    mastery: 'Push',
     description: 'A heavy war hammer favored by dwarves and divine warriors. Effective one- or two-handed, devastating against metal armor.'
   },
   {
@@ -303,6 +339,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '1.0 kg',
     properties: ['Finesse'],
+    mastery: 'Vex',
     description: 'A thin fencing blade designed for speed and precision. Favored by duelists and bards who rely on Dexterity to attack.'
   },
   {
@@ -316,6 +353,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '2.0 kg',
     properties: ['Versatile (1d10)'],
+    mastery: 'Topple',
     description: 'A balanced one-handed axe. Can be wielded two-handed for more devastating strikes. An icon of warriors and barbarians.'
   },
   {
@@ -325,10 +363,11 @@ export const WEAPONS: Weapon[] = [
     category: 'Martial',
     type: 'Melee',
     price: '10 po',
-    damage: '1d12',
+    damage: '1d10',
     damage_type: 'Piercing',
     weight: '3.0 kg',
-    properties: ['Reach (3 m)', 'Special'],
+    properties: ['Heavy', 'Reach (3 m)', 'Two-Handed (unless mounted)'],
+    mastery: 'Topple',
     description: 'A long shaft for mounted charges. Devastating in motion, but imposes disadvantage against adjacent targets when dismounted.'
   },
   {
@@ -342,6 +381,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '3.0 kg',
     properties: ['Reach (3 m)', 'Heavy', 'Two-Handed'],
+    mastery: 'Graze',
     description: 'A curved blade mounted on a long shaft. Keeps enemies at distance and deals devastating damage on opportunity attacks.'
   },
   {
@@ -355,6 +395,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '3.0 kg',
     properties: ['Reach (3 m)', 'Heavy', 'Two-Handed'],
+    mastery: 'Cleave',
     description: 'A polearm combining an axe blade and a spear tip. Versatile for cutting, thrusting, and controlling distance in combat.'
   },
   {
@@ -366,9 +407,24 @@ export const WEAPONS: Weapon[] = [
     price: '5 po',
     damage: '1d10',
     damage_type: 'Piercing',
-    weight: '4.5 kg',
+    weight: '9.0 kg',
     properties: ['Reach (3 m)', 'Heavy', 'Two-Handed'],
+    mastery: 'Push',
     description: 'An extremely long shaft used by military formations to halt cavalry charges. Simple but brutally effective in mass.'
+  },
+  {
+    item_type: 'arma',
+    id: 'malho',
+    name: 'Maul',
+    category: 'Martial',
+    type: 'Melee',
+    price: '10 po',
+    damage: '2d6',
+    damage_type: 'Bludgeoning',
+    weight: '5.0 kg',
+    properties: ['Heavy', 'Two-Handed'],
+    mastery: 'Topple',
+    description: 'A war sledge with a solid metal head. Demands both hands and turns the full weight of the swing into devastating impact.'
   },
   {
     item_type: 'arma',
@@ -381,6 +437,7 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '3.5 kg',
     properties: ['Heavy', 'Two-Handed'],
+    mastery: 'Cleave',
     description: 'An enormous two-handed axe preferred by raging barbarians. Brute and devastating, capable of splitting shields and armor.'
   },
   {
@@ -394,10 +451,25 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Slashing',
     weight: '3.0 kg',
     properties: ['Heavy', 'Two-Handed'],
+    mastery: 'Graze',
     description: 'An enormous two-handed sword with a wide, imposing blade. Symbol of legendary warriors, capable of felling multiple enemies.'
   },
 
-  // ─── MARTIAL RANGED WEAPONS ───────────────────────────────────────────────
+  // ─── MARTIAL RANGED WEAPONS ────────────────────────────────────────────────
+  {
+    item_type: 'arma',
+    id: 'zarabatana',
+    name: 'Blowgun',
+    category: 'Martial',
+    type: 'Ranged',
+    price: '10 po',
+    damage: '1',
+    damage_type: 'Piercing',
+    weight: '0.5 kg',
+    properties: ['Ammunition (7.5/30 m)', 'Loading'],
+    mastery: 'Vex',
+    description: 'A narrow tube that fires needles with a puff of breath. Negligible damage, but silent and ideal for delivering poison at range.'
+  },
   {
     item_type: 'arma',
     id: 'besta_de_mao',
@@ -409,20 +481,8 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '1.5 kg',
     properties: ['Light', 'Ammunition (9/36 m)', 'Loading'],
+    mastery: 'Vex',
     description: 'A compact crossbow usable one-handed. Allows a shield or second weapon, but requires reloading after each shot.'
-  },
-  {
-    item_type: 'arma',
-    id: 'arco_longo',
-    name: 'Longbow',
-    category: 'Martial',
-    type: 'Ranged',
-    price: '50 po',
-    damage: '1d8',
-    damage_type: 'Piercing',
-    weight: '1.0 kg',
-    properties: ['Ammunition (45/180 m)', 'Heavy', 'Two-Handed'],
-    description: 'A tall flexible wood bow with superior range and power. The definitive choice of specialist archers and forest wardens.'
   },
   {
     item_type: 'arma',
@@ -435,19 +495,49 @@ export const WEAPONS: Weapon[] = [
     damage_type: 'Piercing',
     weight: '9.0 kg',
     properties: ['Ammunition (30/120 m)', 'Heavy', 'Loading', 'Two-Handed'],
+    mastery: 'Push',
     description: 'A high-penetration crossbow. Punches through heavy armor but requires two hands and constant reloading between shots.'
   },
   {
     item_type: 'arma',
-    id: 'rede',
-    name: 'Net',
+    id: 'arco_longo',
+    name: 'Longbow',
     category: 'Martial',
     type: 'Ranged',
-    price: '1 po',
-    damage: '—',
-    damage_type: 'Special',
+    price: '50 po',
+    damage: '1d8',
+    damage_type: 'Piercing',
+    weight: '1.0 kg',
+    properties: ['Ammunition (45/180 m)', 'Heavy', 'Two-Handed'],
+    mastery: 'Slow',
+    description: 'A tall flexible wood bow with superior range and power. The definitive choice of specialist archers and forest wardens.'
+  },
+  {
+    item_type: 'arma',
+    id: 'mosquete',
+    name: 'Musket',
+    category: 'Martial',
+    type: 'Ranged',
+    price: '500 po',
+    damage: '1d12',
+    damage_type: 'Piercing',
+    weight: '5.0 kg',
+    properties: ['Ammunition (12/36 m)', 'Loading', 'Two-Handed'],
+    mastery: 'Slow',
+    description: 'A long-barrelled gunpowder weapon. Rare and costly, it punches through heavy armor at the cost of a slow, noisy reload.'
+  },
+  {
+    item_type: 'arma',
+    id: 'pistola',
+    name: 'Pistol',
+    category: 'Martial',
+    type: 'Ranged',
+    price: '250 po',
+    damage: '1d10',
+    damage_type: 'Piercing',
     weight: '1.5 kg',
-    properties: ['Special', 'Thrown (1.5/4.5 m)'],
-    description: 'A weighted net thrown to entangle opponents. Deals no damage but leaves Large or smaller creatures with the Restrained condition.'
+    properties: ['Ammunition (9/27 m)', 'Loading'],
+    mastery: 'Vex',
+    description: 'A compact gunpowder weapon usable one-handed. Short range and slow reload, but devastating on the opening shot.'
   }
 ]

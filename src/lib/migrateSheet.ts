@@ -13,6 +13,32 @@ type LegacySheet = CharacterSheet & {
   }
 }
 
+/**
+ * Ids do catálogo de itens que mudaram: as armaduras foram unificadas com os
+ * ids do dataset de regras (`src/data/rules/armors.ts`) e a "Harpa" virou
+ * "Saltério" (o instrumento de 25 po do PHB 2024). Fichas salvas antes disso
+ * guardam o id antigo em `inventory.items[].item_id`.
+ */
+const LEGACY_ITEM_IDS: Record<string, string> = {
+  gibelao_de_couro: 'gibao_de_peles',
+  camisao_de_malha: 'cota_malha_parcial',
+  brunea: 'loriga_de_escamas',
+  courace: 'couraca_peitoral',
+  meia_armadura: 'placas_parcial',
+  cota_de_talas: 'armadura_de_tala',
+  armadura_completa: 'placas',
+  harpa: 'salterio',
+}
+
+function remapItemIds(items: CharacterSheet['inventory']['items'] | undefined) {
+  if (!items?.length) return items
+  return items.map(it =>
+    it.item_id && LEGACY_ITEM_IDS[it.item_id]
+      ? { ...it, item_id: LEGACY_ITEM_IDS[it.item_id] }
+      : it
+  )
+}
+
 function groupByClass(classId: string, list: string[] | undefined): Record<string, string[]> {
   if (!list?.length) return {}
   return { [classId]: list }
@@ -69,6 +95,7 @@ export function migrateSheet(saved: CharacterSheet): CharacterSheet {
     inventory: {
       ...base.inventory,
       ...sheet.inventory,
+      items: remapItemIds(sheet.inventory?.items) ?? base.inventory.items,
       coins: { ...base.inventory.coins, ...sheet.inventory?.coins },
     },
     feats: { ...base.feats, ...sheet.feats },

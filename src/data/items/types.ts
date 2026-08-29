@@ -1,3 +1,14 @@
+/** As oito maestrias de arma do PHB 2024. */
+export type WeaponMastery =
+  | 'Cleave'
+  | 'Graze'
+  | 'Nick'
+  | 'Push'
+  | 'Sap'
+  | 'Slow'
+  | 'Topple'
+  | 'Vex'
+
 export interface Weapon {
   item_type: 'arma'
   id: string
@@ -9,6 +20,9 @@ export interface Weapon {
   damage_type: string
   weight: string
   properties: string[]
+  /** Maestria de arma (PHB 2024). Palavra-chave mantida em inglês nos dois
+   *  idiomas: é o identificador da regra, igual ao das opções de classe. */
+  mastery: WeaponMastery
   description: string
 }
 
@@ -79,6 +93,30 @@ export interface Transport {
   description: string
 }
 
+export interface AdventuringGear {
+  item_type: 'equipamento'
+  id: string
+  name: string
+  category:
+    | 'Equipamento'
+    | 'Munição'
+    | 'Foco Arcano'
+    | 'Foco Druídico'
+    | 'Símbolo Sagrado'
+    | 'Vestuário'
+    | 'Recipiente'
+    | 'Gear'
+    | 'Ammunition'
+    | 'Arcane Focus'
+    | 'Druidic Focus'
+    | 'Holy Symbol'
+    | 'Clothing'
+    | 'Container'
+  price: string
+  weight: string
+  description: string
+}
+
 export interface MagicItem {
   item_type: 'item_magico'
   id: string
@@ -90,11 +128,15 @@ export interface MagicItem {
     | 'Raro'
     | 'Muito Raro'
     | 'Lendário'
+    | 'Artefato'
+    | 'Varia'
     | 'Common'
     | 'Uncommon'
     | 'Rare'
     | 'Very Rare'
     | 'Legendary'
+    | 'Artifact'
+    | 'Varies'
   price: string
   attunement?: boolean
   level?: number
@@ -103,4 +145,4 @@ export interface MagicItem {
   description: string
 }
 
-export type Item = Weapon | Armor | Tool | EquipmentPack | Transport | MagicItem
+export type Item = Weapon | Armor | Tool | EquipmentPack | Transport | MagicItem | AdventuringGear

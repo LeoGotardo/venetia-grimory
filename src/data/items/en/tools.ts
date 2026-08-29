@@ -80,7 +80,7 @@ export const TOOLS: Tool[] = [
     name: "Jeweler's Tools",
     category: "Artisan's Tools",
     price: '25 po',
-    weight: '2.0 kg',
+    weight: '1.0 kg',
     description: 'A magnifying glass, precision tweezers, fine files, and wax molds. For evaluating, cutting, and setting precious gems into jewelry and amulets.'
   },
   {
@@ -89,7 +89,7 @@ export const TOOLS: Tool[] = [
     name: "Potter's Tools",
     category: "Artisan's Tools",
     price: '10 po',
-    weight: '2.5 kg',
+    weight: '1.5 kg',
     description: 'A portable hand wheel, shaping tools, and pigments. Used to create ceramic containers, vases, and functional urns.'
   },
   {
@@ -146,7 +146,15 @@ export const TOOLS: Tool[] = [
     weight: '2.5 kg',
     description: 'Precision chisels, sandpaper, and finishing wax. Allows carving wood into functional items, decorative pieces, and weapon handles.'
   },
-
+  {
+    item_type: 'ferramenta',
+    id: 'ferramentas_de_funileiro',
+    name: "Tinker's Tools",
+    category: "Artisan's Tools",
+    price: '50 po',
+    weight: '5.0 kg',
+    description: 'Rivets, brass, bar iron, and precision tools. Used to repair mechanical objects and rig improvised devices.'
+  },
   // ─── UTILITY ──────────────────────────────────────────────────────────────
   {
     item_type: 'ferramenta',
@@ -200,7 +208,7 @@ export const TOOLS: Tool[] = [
     name: "Navigator's Tools",
     category: 'Utility',
     price: '25 po',
-    weight: '2.0 kg',
+    weight: '1.0 kg',
     description: 'A sextant, a compass, star charts, and nautical maps. Allows navigating oceans and unknown terrain without losing direction.'
   },
 
@@ -232,7 +240,15 @@ export const TOOLS: Tool[] = [
     weight: '0.5 kg',
     description: 'A strategy game with carved pieces representing fantastic creatures. Popular among nobles, tacticians, and intellectual adventurers.'
   },
-
+  {
+    item_type: 'ferramenta',
+    id: 'aposta_dos_tres_dragoes',
+    name: 'Three-Dragon Ante',
+    category: 'Gaming Sets',
+    price: '1 po',
+    weight: '0.0 kg',
+    description: 'A gambling card game popular in taverns and noble halls. Rewards bluffing as much as arithmetic.'
+  },
   // ─── MUSICAL INSTRUMENTS ──────────────────────────────────────────────────
   {
     item_type: 'ferramenta',
@@ -281,12 +297,12 @@ export const TOOLS: Tool[] = [
   },
   {
     item_type: 'ferramenta',
-    id: 'harpa',
-    name: 'Harp',
+    id: 'salterio',
+    name: 'Dulcimer',
     category: 'Musical Instrument',
     price: '25 po',
-    weight: '2.5 kg',
-    description: 'A string instrument with an arched frame and ethereal sound. Associated with fey, elves, and musicians of exceptional skill.'
+    weight: '5.0 kg',
+    description: 'A trapezoidal sound box with strings struck by small hammers. A crystalline tone, common at balls and noble halls.'
   },
   {
     item_type: 'ferramenta',
@@ -312,7 +328,16 @@ export const TOOLS: Tool[] = [
     name: 'Viol',
     category: 'Musical Instrument',
     price: '30 po',
-    weight: '1.5 kg',
+    weight: '0.5 kg',
     description: 'A bowed string instrument with a rich, resonant sound. Preferred by classical bards for formal performances and noble banquets.'
+  },
+  {
+    item_type: 'ferramenta',
+    id: 'charamela',
+    name: 'Shawm',
+    category: 'Musical Instrument',
+    price: '2 po',
+    weight: '0.5 kg',
+    description: 'A double-reed wind instrument with a piercing tone. Common at village feasts and military processions.'
   }
 ]

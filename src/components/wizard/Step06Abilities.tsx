@@ -5,7 +5,7 @@ import { WizardNav } from './WizardNav'
 import { calcModifier, formatModifier, ABILITIES, abilityName } from '../../lib/calculations'
 import { useWizardAbilities } from '../../hooks/useWizardAbilities'
 import { POINT_BUY_COSTS } from '../../constants'
-import type { AbilityId } from '../../types'
+import type { AbilityId, CharClass } from '../../types'
 import type { AbilityMethod } from '../../hooks/useWizardAbilities'
 import { gameData } from '../../data/rules'
 
@@ -22,19 +22,19 @@ export function Step06Abilities() {
 
   const classId = sheet.identity.class_id
   const level = sheet.identity.level ?? 1
-  const suggested = gameData.suggested_abilities_by_class?.[classId ?? ''] ?? []
-  const firstSuggestedName = suggested[0]
+  const charClass = gameData.classes.find(c => c.id === classId)
+  // Atributos primários da classe: é neles que o jogador deve concentrar os
+  // valores mais altos, então são destacados em todos os métodos de escolha.
+  const primary: AbilityId[] = charClass?.primary_abilities ?? []
 
   const numASIs = useMemo(() => {
-    if (!classId) return 0
-    const charClass = gameData.classes.find(c => c.id === classId)
     if (!charClass) return 0
     return charClass.progression
       .filter(p => p.level <= level)
       .reduce((acc, p) => acc + p.highlights.filter(
         d => d === 'AVA' || d === 'Aumento no Valor de Atributo'
       ).length, 0)
-  }, [classId, level])
+  }, [charClass, level])
 
   const totalAsiPool = numASIs * 2
   const [asiDistribution, setAsiDistribution] = useState<Partial<Record<AbilityId, number>>>({})
@@ -69,6 +69,8 @@ export function Step06Abilities() {
         <p className="text-[#A8A09B] text-sm">{t('step06.subtitle')}</p>
       </div>
 
+      {charClass && <PrimaryAbilitiesBanner charClass={charClass} primary={primary} />}
+
       <div className="flex gap-2 border-b border-[#B8860B]/20 pb-2 overflow-x-auto">
         {(Object.keys(METHOD_LABEL) as AbilityMethod[]).map(tab => (
           <button
@@ -83,19 +85,15 @@ export function Step06Abilities() {
       </div>
 
       {wizard.method === 'standard' && (
-        <StandardArrayPanel
-          wizard={wizard}
-          suggested={suggested}
-          firstSuggestedName={firstSuggestedName}
-        />
+        <StandardArrayPanel wizard={wizard} primary={primary} />
       )}
 
       {wizard.method === 'random' && (
-        <RandomPanel wizard={wizard} />
+        <RandomPanel wizard={wizard} primary={primary} />
       )}
 
       {wizard.method === 'pointBuy' && (
-        <PointBuyPanel wizard={wizard} />
+        <PointBuyPanel wizard={wizard} primary={primary} />
       )}
 
       {numASIs > 0 && wizard.isComplete && (
@@ -106,13 +104,11 @@ export function Step06Abilities() {
           baseAbilities={wizard.currentAbilities}
           asiDistribution={asiDistribution}
           onSetBonus={setAsiBonus}
+          primary={primary}
         />
       )}
 
-      <ResumoAtributos
-        currentAbilities={abilitiesWithAsi}
-        firstSuggestedName={firstSuggestedName}
-      />
+      <ResumoAtributos currentAbilities={abilitiesWithAsi} primary={primary} />
 
       <WizardNav onBack={() => setStep(4)} onNext={handleNext} nextDisabled={!wizard.isComplete || !asiComplete} />
     </div>
@@ -121,37 +117,86 @@ export function Step06Abilities() {
 
 type WizardHook = ReturnType<typeof useWizardAbilities>
 
-function StandardArrayPanel({
-  wizard,
-  suggested,
-  firstSuggestedName,
-}: {
-  wizard: WizardHook
-  suggested: AbilityId[]
-  firstSuggestedName: AbilityId | undefined
-}) {
+/** Estrela que marca um atributo primário da classe. */
+function PrimaryStar() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="#D4A017" className="inline ml-1 mb-0.5" aria-hidden="true">
+      <path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z" />
+    </svg>
+  )
+}
+
+/** Rótulo de atributo com o destaque de primário aplicado. */
+function AbilityLabel({ attr, primary, htmlFor }: { attr: AbilityId; primary: AbilityId[]; htmlFor?: string }) {
+  const { t } = useTranslation()
+  const isPrimary = primary.includes(attr)
+  return (
+    <label
+      htmlFor={htmlFor}
+      title={isPrimary ? t('step06.primaryTitle') : undefined}
+      className={`text-sm font-semibold ${isPrimary ? 'text-[#D4A017]' : 'text-[#B8860B]'}`}
+    >
+      {abilityName(attr, t)}
+      {isPrimary && <PrimaryStar />}
+    </label>
+  )
+}
+
+/**
+ * Banner do topo: diz de cara em quais atributos a classe escolhida se apoia,
+ * para o jogador distribuir os valores mais altos sem consultar a classe.
+ */
+function PrimaryAbilitiesBanner({ charClass, primary }: { charClass: CharClass; primary: AbilityId[] }) {
+  const { t } = useTranslation()
+  if (primary.length === 0) return null
+
+  return (
+    <div className="bg-[#B8860B]/10 border border-[#B8860B]/40 rounded-lg p-4 space-y-3">
+      <div className="flex items-baseline gap-2 flex-wrap">
+        <PrimaryStar />
+        <h3 className="font-cinzel font-semibold text-[#D4A017]">
+          {t('step06.primaryHeading', { charClass: charClass.name })}
+        </h3>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {primary.map((attr, i) => (
+          <span
+            key={attr}
+            className="inline-flex items-baseline gap-1.5 px-2.5 py-1 rounded border border-[#B8860B]/50 bg-[#2D2520] text-sm"
+          >
+            <span className="font-cinzel font-bold text-[#D4A017]">{attr}</span>
+            <span className="text-[#F5F0E8]">{abilityName(attr, t)}</span>
+            {i === 0 && primary.length > 1 && (
+              <span className="text-[10px] text-[#A8A09B]">{t('step06.primaryHighest')}</span>
+            )}
+          </span>
+        ))}
+      </div>
+
+      <p className="text-xs text-[#A8A09B]">
+        {t('step06.primaryHint', { charClass: charClass.name, saves: charClass.saves.join(', ') })}
+      </p>
+    </div>
+  )
+}
+
+function StandardArrayPanel({ wizard, primary }: { wizard: WizardHook; primary: AbilityId[] }) {
   const { t } = useTranslation()
   const classId = useSheetStore(s => s.sheet.identity.class_id)
   const charClass = gameData.classes.find(c => c.id === classId)
 
   return (
     <div className="space-y-3">
-      {charClass && suggested.length > 0 && (
+      {charClass && primary.length > 0 && (
         <p className="text-xs text-[#A8A09B]">
-          {t('step06.suggestion', { charClass: charClass.name, attrs: suggested.join(' → ') })}
+          {t('step06.suggestion', { charClass: charClass.name, attrs: primary.join(' → ') })}
         </p>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {ABILITIES.map(attr => (
           <div key={attr} className="flex flex-col gap-1">
-            <label
-              htmlFor={`standard-${attr}`}
-              className={`text-sm font-semibold ${firstSuggestedName === attr ? 'text-[#D4A017]' : 'text-[#B8860B]'}`}
-            >
-              {abilityName(attr, t)}{firstSuggestedName === attr && (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="#D4A017" className="inline ml-1 mb-0.5"><path d="M12 2l2.2 5.6L20 8.2l-4.4 3.9L17 18l-5-3.2L7 18l1.4-5.9L4 8.2l5.8-.6z"/></svg>
-          )}
-            </label>
+            <AbilityLabel attr={attr} primary={primary} htmlFor={`standard-${attr}`} />
             <select
               id={`standard-${attr}`}
               value={wizard.standard[attr] ?? ''}
@@ -176,7 +221,7 @@ function StandardArrayPanel({
   )
 }
 
-function RandomPanel({ wizard }: { wizard: WizardHook }) {
+function RandomPanel({ wizard, primary }: { wizard: WizardHook; primary: AbilityId[] }) {
   const { t } = useTranslation()
   return (
     <div className="space-y-4">
@@ -215,9 +260,7 @@ function RandomPanel({ wizard }: { wizard: WizardHook }) {
               const currentIdx = wizard.randomIndices[attr]
               return (
                 <div key={attr} className="flex flex-col gap-1">
-                  <label htmlFor={`random-${attr}`} className="text-sm font-semibold text-[#B8860B]">
-                    {abilityName(attr, t)}
-                  </label>
+                  <AbilityLabel attr={attr} primary={primary} htmlFor={`random-${attr}`} />
                   <div className="flex gap-1">
                     <select
                       id={`random-${attr}`}
@@ -264,7 +307,7 @@ function RandomPanel({ wizard }: { wizard: WizardHook }) {
   )
 }
 
-function PointBuyPanel({ wizard }: { wizard: WizardHook }) {
+function PointBuyPanel({ wizard, primary }: { wizard: WizardHook; primary: AbilityId[] }) {
   const { t } = useTranslation()
   return (
     <div className="space-y-4">
@@ -284,7 +327,7 @@ function PointBuyPanel({ wizard }: { wizard: WizardHook }) {
         {ABILITIES.map(attr => (
           <div key={attr} className="flex flex-col gap-1">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-[#B8860B]">{abilityName(attr, t)}</label>
+              <AbilityLabel attr={attr} primary={primary} />
               <span className="text-xs text-[#A8A09B]">c:{POINT_BUY_COSTS[wizard.pointBuy[attr]] ?? 0}</span>
             </div>
             <div className="flex items-center gap-1">
@@ -320,9 +363,10 @@ interface PainelASIProps {
   baseAbilities: Record<AbilityId, number | null>
   asiDistribution: Partial<Record<AbilityId, number>>
   onSetBonus: (attr: AbilityId, val: number) => void
+  primary: AbilityId[]
 }
 
-function AsiPanel({ numASIs, totalPool, totalUsado, baseAbilities, asiDistribution, onSetBonus }: PainelASIProps) {
+function AsiPanel({ numASIs, totalPool, totalUsado, baseAbilities, asiDistribution, onSetBonus, primary }: PainelASIProps) {
   const { t } = useTranslation()
   return (
     <div className="bg-[#3D332D] border border-[#B8860B]/30 rounded-lg p-4 space-y-4">
@@ -345,8 +389,15 @@ function AsiPanel({ numASIs, totalPool, totalUsado, baseAbilities, asiDistributi
           const podeDecrementar = bonus > 0
 
           return (
-            <div key={attr} className="flex flex-col items-center gap-1 p-2 rounded border border-[#2D2520]">
-              <span className="text-xs font-bold text-[#B8860B]">{attr}</span>
+            <div
+              key={attr}
+              className={`flex flex-col items-center gap-1 p-2 rounded border ${
+                primary.includes(attr) ? 'border-[#D4A017]/50 bg-[#B8860B]/10' : 'border-[#2D2520]'
+              }`}
+            >
+              <span className={`text-xs font-bold ${primary.includes(attr) ? 'text-[#D4A017]' : 'text-[#B8860B]'}`}>
+                {attr}{primary.includes(attr) && <PrimaryStar />}
+              </span>
               <span className="text-[10px] text-[#A8A09B]">
                 {base}
                 {bonus > 0 && <span className="text-green-400"> +{bonus} = {final}</span>}
@@ -387,10 +438,10 @@ function AsiPanel({ numASIs, totalPool, totalUsado, baseAbilities, asiDistributi
 
 function ResumoAtributos({
   currentAbilities,
-  firstSuggestedName,
+  primary,
 }: {
   currentAbilities: Record<AbilityId, number | null>
-  firstSuggestedName: AbilityId | undefined
+  primary: AbilityId[]
 }) {
   const { t } = useTranslation()
   return (
@@ -400,7 +451,7 @@ function ResumoAtributos({
         {ABILITIES.map(attr => {
           const val = currentAbilities[attr]
           const mod = val !== null ? calcModifier(val) : null
-          const isPrimary = firstSuggestedName === attr
+          const isPrimary = primary.includes(attr)
 
           return (
             <div
@@ -410,7 +461,9 @@ function ResumoAtributos({
               }`}
               aria-live="polite"
             >
-              <span className="text-xs text-[#A8A09B]">{attr}</span>
+              <span className={`text-xs ${isPrimary ? 'text-[#D4A017]' : 'text-[#A8A09B]'}`}>
+                {attr}{isPrimary && <PrimaryStar />}
+              </span>
               <span className="font-cinzel font-bold text-2xl text-[#F5F0E8]">{val ?? '—'}</span>
               <span
                 className={`text-sm font-semibold ${

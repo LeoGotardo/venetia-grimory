@@ -1,23 +1,35 @@
 import { useTranslation } from 'react-i18next'
 import { useConfigStore } from '../../store/configStore'
+import { itemRarityKey } from '../../data/items'
 import type { InventoryItem } from '../../types'
 import type { Item } from '../../data/items'
 
-const BADGE: Record<string, { color: string; label: string }> = {
-  weapon:        { color: 'bg-red-900/40 text-red-300 border-red-700/40',       label: 'Arma' },
-  armor:    { color: 'bg-blue-900/40 text-blue-300 border-blue-700/40',    label: 'Armadura' },
-  tool:  { color: 'bg-yellow-900/40 text-yellow-300 border-yellow-700/40', label: 'Ferramenta' },
-  kit:         { color: 'bg-green-900/40 text-green-300 border-green-700/40', label: 'Kit' },
-  transport:  { color: 'bg-orange-900/40 text-orange-300 border-orange-700/40', label: 'Transporte' },
-  magic_item: { color: 'bg-purple-900/40 text-purple-300 border-purple-700/40', label: 'Mágico' },
+/** Cor da tarja por tipo de item do catálogo (`item_type`). */
+const BADGE_COLOR: Record<string, string> = {
+  arma:        'bg-red-900/40 text-red-300 border-red-700/40',
+  armadura:    'bg-blue-900/40 text-blue-300 border-blue-700/40',
+  ferramenta:  'bg-yellow-900/40 text-yellow-300 border-yellow-700/40',
+  kit:         'bg-green-900/40 text-green-300 border-green-700/40',
+  equipamento: 'bg-stone-700/50 text-stone-300 border-stone-500/40',
+  transporte:  'bg-orange-900/40 text-orange-300 border-orange-700/40',
+  item_magico: 'bg-purple-900/40 text-purple-300 border-purple-700/40',
 }
 
-function subtitle(cat: Item): string | null {
-  const parts: string[] = []
-  if ('categoria' in cat) parts.push(String(cat.category))
-  if ('tipo' in cat) parts.push(String((cat as { type: string }).type))
-  if ('raridade' in cat) parts.push(String((cat as { rarity: string }).rarity))
-  return parts.length ? parts.join(' · ') : null
+/** Cor da tarja de raridade — escala visual crescente. */
+const RARITY_COLOR: Record<string, string> = {
+  common:    'bg-[#2D2520] text-[#A8A09B] border-[#A8A09B]/30',
+  uncommon:  'bg-green-900/40 text-green-300 border-green-700/40',
+  rare:      'bg-blue-900/40 text-blue-300 border-blue-700/40',
+  very_rare: 'bg-purple-900/40 text-purple-300 border-purple-700/40',
+  legendary: 'bg-amber-900/40 text-amber-300 border-amber-600/50',
+  artifact:  'bg-red-900/40 text-red-300 border-red-600/50',
+  varies:    'bg-[#2D2520] text-[#A8A09B] border-[#A8A09B]/30',
+}
+
+function subtitle(item: Item): string | null {
+  const parts: string[] = [item.category]
+  if (item.item_type === 'arma') parts.push(item.type)
+  return parts.filter(Boolean).join(' · ') || null
 }
 
 interface Props {
@@ -30,15 +42,20 @@ interface Props {
   onQtyChange: (n: number) => void
   onSell?: () => void
   onRemove: () => void
+  onShowDetails?: () => void
 }
 
-export function InventoryItemRow({ item, displayedName, catalogItem, coins, onEquipToggle, onQtyChange, onSell, onRemove }: Props) {
+export function InventoryItemRow({ item, displayedName, catalogItem, onEquipToggle, onQtyChange, onSell, onRemove, onShowDetails }: Props) {
   const { t } = useTranslation()
   const { config } = useConfigStore()
 
-  const typeKey = item.category ?? catalogItem?.item_type ?? null
-  const badge = typeKey ? (BADGE[typeKey] ?? null) : null
+  const typeKey = catalogItem?.item_type ?? item.category ?? null
+  const badgeColor = typeKey ? BADGE_COLOR[typeKey] : null
+  const badgeLabel = typeKey
+    ? (badgeColor ? t(`bag.type_${typeKey}`) : typeKey)
+    : null
 
+  const rarity = itemRarityKey(catalogItem)
   const sub = catalogItem ? subtitle(catalogItem) : null
   const damage = catalogItem?.item_type === 'arma' ? `${catalogItem.damage} ${catalogItem.damage_type}` : null
   const ac = catalogItem?.item_type === 'armadura' ? `CA ${catalogItem.ac}` : null
@@ -61,7 +78,7 @@ export function InventoryItemRow({ item, displayedName, catalogItem, coins, onEq
           className="mt-0.5 w-4 h-4 rounded-sm border-2 flex-shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] transition-colors"
           style={{
             backgroundColor: item.equipped ? '#B8860B' : 'transparent',
-            borderColor: item.equipped ? '#B8860B' : '#6B6560',
+            borderColor: item.equipped ? '#B8860B' : '#A8A09B',
           }}
         />
 
@@ -74,11 +91,31 @@ export function InventoryItemRow({ item, displayedName, catalogItem, coins, onEq
           )}
         </div>
 
-        {/* Badge */}
-        {badge && (
-          <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border flex-shrink-0 ${badge.color}`}>
-            {badge.label}
-          </span>
+        {/* Tarjas: raridade só existe em itens mágicos */}
+        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+          {badgeLabel && (
+            <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border ${badgeColor ?? 'bg-[#2D2520] text-[#A8A09B] border-[#A8A09B]/30'}`}>
+              {badgeLabel}
+            </span>
+          )}
+          {rarity && (
+            <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded border ${RARITY_COLOR[rarity]}`}>
+              {t(`inventory.rarity_${rarity}`)}
+            </span>
+          )}
+        </div>
+
+        {/* Detalhes */}
+        {onShowDetails && (
+          <button
+            type="button"
+            onClick={onShowDetails}
+            aria-label={t('edit.viewDetails', { name: displayedName })}
+            title={t('inventory.detailsTitle')}
+            className="w-6 h-6 shrink-0 flex items-center justify-center text-[11px] text-[#A8A09B] hover:text-[#F5F0E8] border border-[#B8860B]/20 hover:border-[#B8860B]/50 rounded-full transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+          >
+            ℹ
+          </button>
         )}
       </div>
 

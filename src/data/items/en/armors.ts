@@ -42,7 +42,7 @@ export const ARMORS: Armor[] = [
   // ─── MEDIUM ARMOR ─────────────────────────────────────────────────────────
   {
     item_type: 'armadura',
-    id: 'gibelao_de_couro',
+    id: 'gibao_de_peles',
     name: 'Hide',
     category: 'Medium',
     price: '10 po',
@@ -54,7 +54,7 @@ export const ARMORS: Armor[] = [
   },
   {
     item_type: 'armadura',
-    id: 'camisao_de_malha',
+    id: 'cota_malha_parcial',
     name: 'Chain Shirt',
     category: 'Medium',
     price: '50 po',
@@ -66,7 +66,7 @@ export const ARMORS: Armor[] = [
   },
   {
     item_type: 'armadura',
-    id: 'brunea',
+    id: 'loriga_de_escamas',
     name: 'Scale Mail',
     category: 'Medium',
     price: '50 po',
@@ -78,7 +78,7 @@ export const ARMORS: Armor[] = [
   },
   {
     item_type: 'armadura',
-    id: 'courace',
+    id: 'couraca_peitoral',
     name: 'Breastplate',
     category: 'Medium',
     price: '400 po',
@@ -90,7 +90,7 @@ export const ARMORS: Armor[] = [
   },
   {
     item_type: 'armadura',
-    id: 'meia_armadura',
+    id: 'placas_parcial',
     name: 'Half Plate',
     category: 'Medium',
     price: '750 po',
@@ -128,7 +128,7 @@ export const ARMORS: Armor[] = [
   },
   {
     item_type: 'armadura',
-    id: 'cota_de_talas',
+    id: 'armadura_de_tala',
     name: 'Splint',
     category: 'Heavy',
     price: '200 po',
@@ -140,7 +140,7 @@ export const ARMORS: Armor[] = [
   },
   {
     item_type: 'armadura',
-    id: 'armadura_completa',
+    id: 'placas',
     name: 'Plate',
     category: 'Heavy',
     price: '1500 po',

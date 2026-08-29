@@ -56,6 +56,8 @@ interface SheetStore {
   }) => void
   setExpertise: (skillIds: string[]) => void
   setLanguages: (languages: string[]) => void
+  setProficiencies: (p: Partial<CharacterSheet['proficiencies']>) => void
+  setSpeed: (speed: Partial<Pick<CharacterSheet['combat']['speed'], 'base_meters' | 'bonus_meters'>>) => void
   setEquipment: (option: 'A' | 'B', items: InventoryItem[]) => void
   setPersonality: (p: Partial<CharacterSheet['personality']>) => void
   setIdentity: (id: Partial<CharacterSheet['identity']>) => void
@@ -362,6 +364,20 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
   setLanguages: languages =>
     set(s => ({
       sheet: { ...s.sheet, proficiencies: { ...s.sheet.proficiencies, languages } },
+    })),
+
+  setProficiencies: p =>
+    set(s => ({
+      sheet: { ...s.sheet, proficiencies: { ...s.sheet.proficiencies, ...p } },
+    })),
+
+  // Deslocamento base vem da espécie e o bônus de itens/talentos; ambos são
+  // editáveis, mas `_total_meters` só é escrito por `recalculate`.
+  setSpeed: speed =>
+    set(s => ({
+      sheet: recalculate(
+        updateCombat(s.sheet, { speed: { ...s.sheet.combat.speed, ...speed } }),
+      ),
     })),
 
   setEquipment: (_option, items) =>

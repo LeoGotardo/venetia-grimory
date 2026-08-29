@@ -2,12 +2,13 @@ import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { useConfigStore } from '../../store/configStore'
-import { getItems } from '../../data/items'
+import { ItemCard } from './ItemCard'
+import { getItems, itemRarityKey } from '../../data/items'
 import type { Item } from '../../data/items'
 import type { InventoryItem } from '../../types'
 import { calcMaxCarry } from '../../lib/calculations'
 
-type FilterType = 'todos' | 'arma' | 'armadura' | 'ferramenta' | 'kit' | 'transporte' | 'item_magico'
+type FilterType = 'todos' | 'arma' | 'armadura' | 'ferramenta' | 'equipamento' | 'kit' | 'transporte' | 'item_magico'
 
 function parsePrice(price: string): number | null {
   if (!price || price === '—') return null
@@ -40,25 +41,32 @@ function itemToInventory(item: Item): InventoryItem {
   }
 }
 
-function subtitle(item: Item, t: (key: string, options?: any) => string): string {
+function subtitle(item: Item, t: (key: string, options?: Record<string, unknown>) => string): string {
   switch (item.item_type) {
     case 'arma':        return `${item.category} · ${item.type} · ${item.damage} ${item.damage_type}`
     case 'armadura':    return `${item.category} · CA ${item.ac}`
     case 'ferramenta':  return item.category
-    case 'kit':         return `${t('bag.typeKit')} · ${item.weight}`
+    case 'equipamento': return item.category
+    case 'kit':         return `${t('bag.type_kit')} · ${item.weight}`
     case 'transporte':  return `${item.category}${item.speed ? ` · ${item.speed}` : ''}`
-    case 'item_magico': return `${item.rarity}${item.attunement ? ' · ' + t('bag.attunement') : ''}`
+    case 'item_magico': {
+      const rarity = itemRarityKey(item)
+      const label = rarity ? t(`inventory.rarity_${rarity}`) : item.rarity
+      return `${label}${item.attunement ? ' · ' + t('bag.attunement') : ''}`
+    }
     default:            return ''
   }
 }
 
+/** Chaveado por `item_type` do catálogo. */
 const BADGE_COLOR: Record<string, string> = {
-  weapon:        'bg-red-900/30 text-red-300 border-red-900/40',
-  armor:    'bg-blue-900/30 text-blue-300 border-blue-900/40',
-  tool:  'bg-amber-900/30 text-amber-300 border-amber-900/40',
+  arma:        'bg-red-900/30 text-red-300 border-red-900/40',
+  armadura:    'bg-blue-900/30 text-blue-300 border-blue-900/40',
+  ferramenta:  'bg-amber-900/30 text-amber-300 border-amber-900/40',
+  equipamento: 'bg-stone-700/40 text-stone-300 border-stone-500/40',
   kit:         'bg-green-900/30 text-green-300 border-green-900/40',
-  transport:  'bg-purple-900/30 text-purple-300 border-purple-900/40',
-  magic_item: 'bg-pink-900/30 text-pink-300 border-pink-900/40',
+  transporte:  'bg-purple-900/30 text-purple-300 border-purple-900/40',
+  item_magico: 'bg-pink-900/30 text-pink-300 border-pink-900/40',
 }
 
 
@@ -75,6 +83,7 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
   const { t, i18n } = useTranslation()
   const [search, setSearch] = useState('')
   const [filtro, setFiltro] = useState<FilterType>('todos')
+  const [detailItem, setDetailItem] = useState<Item | null>(null)
 
   const itemMap = useMemo(() => {
     const map = new Map<string, Item>()
@@ -87,14 +96,16 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
     { id: 'arma',        label: t('bag.filterWeapons') },
     { id: 'armadura',    label: t('bag.filterArmors') },
     { id: 'ferramenta',  label: t('bag.filterTools') },
+    { id: 'equipamento', label: t('bag.filterGear') },
     { id: 'kit',         label: t('bag.filterKits') },
     { id: 'transporte',  label: t('bag.filterTransport') },
     { id: 'item_magico', label: t('bag.filterMagic') },
   ]
 
   const TIPO_LABEL: Record<string, string> = {
-    weapon: t('bag.typeWeapon'), armor: t('bag.typeArmor'), tool: t('bag.typeTool'),
-    kit: t('bag.typeKit'), transport: t('bag.typeTransport'), magic_item: t('bag.typeMagic'),
+    arma: t('bag.type_arma'), armadura: t('bag.type_armadura'), ferramenta: t('bag.type_ferramenta'),
+    equipamento: t('bag.type_equipamento'), kit: t('bag.type_kit'),
+    transporte: t('bag.type_transporte'), item_magico: t('bag.type_item_magico'),
   }
 
   const efetivoCobrar = chargeItem && config.manage_gold
@@ -220,6 +231,15 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
                   </div>
                   <button
                     type="button"
+                    onClick={() => setDetailItem(item)}
+                    aria-label={t('edit.viewDetails', { name: item.name })}
+                    title={t('inventory.detailsTitle')}
+                    className="w-7 h-7 shrink-0 flex items-center justify-center rounded-full border border-[#B8860B]/20 text-[#A8A09B] hover:text-[#F5F0E8] hover:border-[#B8860B]/50 text-xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+                  >
+                    ℹ
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => adicionarItem(item)}
                     disabled={insufficientFunds}
                     aria-label={insufficientFunds ? t('bag.insufficientGold', { name: item.name }) : t('bag.addItem', { name: item.name })}
@@ -318,6 +338,8 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
           )}
         </div>
       )}
+
+      <ItemCard item={detailItem} onClose={() => setDetailItem(null)} />
     </div>
   )
 }
