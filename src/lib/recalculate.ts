@@ -1,4 +1,4 @@
-import type { CharacterSheet, Armor } from '../types'
+import type { AbilityId, CharacterSheet, Armor, FreeCast } from '../types'
 import {
   calcModifier,
   calcProfBonus,
@@ -11,11 +11,19 @@ import {
   calcSpellAttackBonus,
   calcMulticlassCasterLevel,
   calcMulticlassSlots,
+  calcPactCasterLevel,
+  calcThirdCasterSlots,
   calcPrimaryClassLevel,
+  isCasterClass,
+  isThirdCaster,
   canChooseSubclass,
   ABILITIES,
 } from './calculations'
-import { CASTER_TYPE } from '../constants'
+import {
+  CASTER_TYPE,
+  MAGIC_INITIATE_LIST_BY_NAME,
+  MYSTIC_ARCANUM_BY_LEVEL,
+} from '../constants'
 import { gameDataPt as gameData } from '../data/rules'
 
 // Subclasse exige 3 níveis NA classe: redistribuir níveis entre classes pode
@@ -169,87 +177,240 @@ function recalculateSkills(sheet: CharacterSheet, profBonus: number): CharacterS
   return { ...sheet, skills }
 }
 
-function recalculateSpellcasting(sheet: CharacterSheet, profBonus: number): CharacterSheet {
-  const multiclasses = sheet.identity.multiclasses ?? []
+const SPELL_LEVELS = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'] as const
+type SpellSlots = CharacterSheet['spellcasting']['spell_slots']
 
-  // Determina se alguma classe é conjuradora
-  const classesPrimaria = sheet.identity.class_id ? [sheet.identity.class_id] : []
-  const todasClasseIds = [...classesPrimaria, ...multiclasses.map(m => m.class_id)]
-  const ehConjuradorMulti = todasClasseIds.some(id => CASTER_TYPE[id] != null)
+/** Aplica novos máximos preservando o que já foi gasto, limitado ao novo máximo. */
+function applySlotMaxes(current: SpellSlots, maxes: Partial<Record<string, number>>): SpellSlots {
+  const slots = { ...current }
+  SPELL_LEVELS.forEach(k => {
+    const max = maxes[k] ?? 0
+    slots[k] = { max, spent: Math.min(current[k]?.spent ?? 0, max) }
+  })
+  return slots
+}
 
-  if (!ehConjuradorMulti && !sheet.spellcasting.spellcaster) return sheet
+interface ClassEntry {
+  classId: string
+  subclassId: string | null
+  level: number
+}
 
-  // Determina o atributo de conjuração: usa a classe primária se conjuradora, senão a primeira secundária
-  let atributoConj = sheet.spellcasting.spellcasting_ability
-  if (!atributoConj) {
-    const primeiraConj = multiclasses.find(m => CASTER_TYPE[m.class_id] != null)
-    if (primeiraConj) {
-      const c = gameData.classes.find(c => c.id === primeiraConj.class_id)
-      atributoConj = ((c as { spellcasting_ability?: string })?.spellcasting_ability ?? null) as typeof atributoConj
-    }
-  }
-  if (!atributoConj) return sheet
+/** Classe primária (nível já descontado das multiclasses) seguida das secundárias. */
+function classEntries(sheet: CharacterSheet): ClassEntry[] {
+  const identity = sheet.identity
+  const multiclasses = identity.multiclasses ?? []
+  return [
+    {
+      classId: identity.class_id ?? '',
+      subclassId: identity.subclass_id,
+      level: Math.max(1, calcPrimaryClassLevel(identity.level, multiclasses)),
+    },
+    ...multiclasses.map(m => ({ classId: m.class_id, subclassId: m.subclass_id, level: m.level })),
+  ]
+}
 
-  const modConj = sheet.abilities[atributoConj]._modifier ?? 0
-  let spellcasting = {
-    ...sheet.spellcasting,
-    _spell_dc: calcSpellDc(profBonus, modConj),
-    _spell_attack_bonus: calcSpellAttackBonus(profBonus, modConj),
-  }
+/** Atributo de conjuração da classe — INT nas subclasses de 1/3 conjurador. */
+function classCastingAbility(entry: ClassEntry): AbilityId | null {
+  if (isThirdCaster(entry.subclassId)) return 'INT'
+  if (CASTER_TYPE[entry.classId] == null) return null
+  const cd = gameData.classes.find(c => c.id === entry.classId)
+  return ((cd as { spellcasting_ability?: string })?.spellcasting_ability ?? null) as AbilityId | null
+}
 
-  const SPELL_LEVELS = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'] as const
+// Antecedentes gravam o nome do talento como id, e já traduzido — daí o casamento
+// pelos dois idiomas além do id canônico.
+const MAGIC_INITIATE = /^(iniciado em magia|magic initiate)/i
 
-  if (multiclasses.length > 0 && ehConjuradorMulti) {
-    // Multiclasse: tabela combinada (PHB 2024)
-    const level = sheet.identity.level
-    const primaryLevel = level - multiclasses.reduce((s, m) => s + m.level, 0)
-    const allClassesForSlots = [
-      { classId: sheet.identity.class_id ?? '', subclassId: sheet.identity.subclass_id, level: Math.max(1, primaryLevel) },
-      ...multiclasses.map(m => ({ classId: m.class_id, subclassId: m.subclass_id, level: m.level })),
-    ]
-    const casterLevelTotal = calcMulticlassCasterLevel(allClassesForSlots)
-    const multiSlots = calcMulticlassSlots(casterLevelTotal)
-    const slots = { ...spellcasting.spell_slots }
-    SPELL_LEVELS.forEach(k => {
-      const newValue = multiSlots[k] ?? 0
-      slots[k] = { max: newValue, spent: Math.min(slots[k].spent, newValue) }
+function isMagicInitiate(feat: { feat_id: string; name: string }): boolean {
+  return (
+    feat.feat_id.startsWith('iniciado_em_magia') ||
+    MAGIC_INITIATE.test(feat.feat_id) ||
+    MAGIC_INITIATE.test(feat.name)
+  )
+}
+
+/** Sem acentos e em minúsculas, para casar nomes de lista nos dois idiomas. */
+function normalizeName(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+/** Lista já fixada pelo nome do talento, como em "Iniciado em Magia (Clérigo)". */
+function magicInitiateList(feat: { feat_id: string; name: string }): string | null {
+  const match = /\(([^)]+)\)/.exec(feat.name) ?? /\(([^)]+)\)/.exec(feat.feat_id)
+  if (!match) return null
+  return MAGIC_INITIATE_LIST_BY_NAME[normalizeName(match[1])] ?? null
+}
+
+/**
+ * As conjurações que não gastam espaço, derivadas dos talentos e do nível de bruxo:
+ * Iniciado em Magia (1 magia de 1º círculo, atributo escolhido pelo jogador) e
+ * Arcana Mística (1 magia de 6º a 9º, atributo do bruxo). Ambas voltam no Descanso
+ * Longo, e nenhuma delas concede espaço de magia.
+ *
+ * A lista é derivada, mas as escolhas do jogador (lista, atributo, truques, magia)
+ * são preservadas pelo id entre recálculos.
+ */
+function recalculateFreeCasts(sheet: CharacterSheet, profBonus: number): CharacterSheet {
+  const previous = sheet.spellcasting.free_casts ?? []
+  const prevById = new Map(previous.map(c => [c.id, c]))
+  const modOf = (ability: AbilityId | null) => (ability ? (sheet.abilities[ability]._modifier ?? 0) : 0)
+
+  const casts: FreeCast[] = []
+
+  // Iniciado em Magia — repetível, um registro por talento adquirido.
+  sheet.feats.list.filter(isMagicInitiate).forEach(feat => {
+    const prev = prevById.get(feat.feat_id)
+    const fixedList = magicInitiateList(feat)
+    const spellList = fixedList ?? prev?.spell_list ?? null
+    // Trocar de lista invalida as magias já escolhidas.
+    const keptChoices = prev?.spell_list === spellList
+    const ability = prev?.ability ?? null
+    casts.push({
+      id: feat.feat_id,
+      kind: 'magic_initiate',
+      spell_list: spellList,
+      list_locked: fixedList !== null,
+      ability,
+      cantrips: keptChoices ? (prev?.cantrips ?? []) : [],
+      spell: keptChoices ? (prev?.spell ?? null) : null,
+      level: 1,
+      max: 1,
+      spent: Math.min(prev?.spent ?? 0, 1),
+      _spell_dc: ability ? calcSpellDc(profBonus, modOf(ability)) : null,
+      _spell_attack_bonus: ability ? calcSpellAttackBonus(profBonus, modOf(ability)) : null,
     })
-    spellcasting = { ...spellcasting, spell_slots: slots }
-  } else {
-    // Classe única: lê espaços diretamente da progressão da classe
-    const classId = sheet.identity.class_id
-    const level = sheet.identity.level
-    const charClass = gameData.classes.find(c => c.id === classId)
-    const progRow = charClass?.progression.find((p: { level: number }) => p.level === level) as Record<string, unknown> | undefined
+  })
 
-    if (progRow) {
-      const slots = { ...spellcasting.spell_slots }
-      const progSlots = progRow.slots as Record<string, number> | undefined
-
-      if (progSlots) {
-        // Conjuradores padrão: campo `slots` com contagens por círculo
-        SPELL_LEVELS.forEach(k => {
-          const newValue = progSlots[k] ?? 0
-          slots[k] = { max: newValue, spent: Math.min(slots[k].spent, newValue) }
+  // Arcana Mística — derivada do nível de bruxo, com o atributo do próprio bruxo.
+  const entries = classEntries(sheet)
+  const pactEntry = entries.find(c => CASTER_TYPE[c.classId] === 'pacto')
+  const pactLevel = calcPactCasterLevel(entries)
+  if (pactEntry && pactLevel > 0) {
+    const ability = classCastingAbility(pactEntry)
+    Object.entries(MYSTIC_ARCANUM_BY_LEVEL)
+      .map(([classLevel, circle]) => [Number(classLevel), circle] as const)
+      .sort((a, b) => a[0] - b[0])
+      .forEach(([classLevel, circle]) => {
+        if (pactLevel < classLevel) return
+        const id = `mystic_arcanum_${circle}`
+        const prev = prevById.get(id)
+        casts.push({
+          id,
+          kind: 'mystic_arcanum',
+          spell_list: pactEntry.classId,
+          list_locked: true,
+          ability,
+          cantrips: [],
+          spell: prev?.spell ?? null,
+          level: circle,
+          max: 1,
+          spent: Math.min(prev?.spent ?? 0, 1),
+          _spell_dc: ability ? calcSpellDc(profBonus, modOf(ability)) : null,
+          _spell_attack_bonus: ability ? calcSpellAttackBonus(profBonus, modOf(ability)) : null,
         })
-      } else {
-        // Bruxo: Magia de Pacto usa `max_spell_level` + `spell_slots` (contagem)
-        const maxSpellLevel = progRow.max_spell_level as number | undefined
-        const slotCount = progRow.spell_slots as number | undefined
-        SPELL_LEVELS.forEach(k => {
-          slots[k] = { max: 0, spent: 0 }
-        })
-        if (maxSpellLevel && slotCount) {
-          const key = `c${maxSpellLevel}` as typeof SPELL_LEVELS[number]
-          slots[key] = { max: slotCount, spent: Math.min(spellcasting.spell_slots[key]?.spent ?? 0, slotCount) }
-        }
-      }
-
-      spellcasting = { ...spellcasting, spell_slots: slots }
-    }
+      })
   }
 
-  return { ...sheet, spellcasting }
+  if (JSON.stringify(casts) === JSON.stringify(previous)) return sheet
+
+  return { ...sheet, spellcasting: { ...sheet.spellcasting, free_casts: casts } }
+}
+
+/**
+ * Espaços de magia em três reservas separadas, porque as regras de 2024 as tratam
+ * como coisas distintas:
+ * - `spell_slots`: Conjuração. Classe única lê a própria progressão; em multiclasse
+ *   soma-se o nível de conjurador e consulta-se a tabela do PHB.
+ * - `pact_slots`: Magia de Pacto do bruxo. Fora da tabela de multiclasse, todos do
+ *   mesmo círculo, recuperados em Descanso Curto.
+ * - `free_casts`: conjurações sem espaço (Iniciado em Magia), calculadas à parte.
+ */
+function recalculateSpellcasting(sheet: CharacterSheet, profBonus: number): CharacterSheet {
+  const identity = sheet.identity
+  const multiclasses = identity.multiclasses ?? []
+  const allClasses = classEntries(sheet)
+
+  const anyCaster = allClasses.some(c => isCasterClass(c.classId, c.subclassId))
+  if (!anyCaster && !sheet.spellcasting.spellcaster) return sheet
+
+  // Atributo de conjuração: o da classe primária se ela conjura, senão o da
+  // primeira secundária conjuradora. O Cavaleiro Místico e o Trapaceiro Arcano
+  // caem aqui também, porque a classe deles não declara atributo nenhum.
+  const castingAbility =
+    sheet.spellcasting.spellcasting_ability ??
+    allClasses.map(classCastingAbility).find(a => a != null) ??
+    null
+  if (!castingAbility) return sheet
+
+  const castingMod = sheet.abilities[castingAbility]._modifier ?? 0
+
+  // Cada classe conjura com o próprio atributo — em multiclasse a CD não é uma só.
+  const dcByClass: Record<string, number> = {}
+  const attackByClass: Record<string, number> = {}
+  allClasses.forEach(entry => {
+    const ability = classCastingAbility(entry)
+    if (!entry.classId || !ability) return
+    const mod = sheet.abilities[ability]._modifier ?? 0
+    dcByClass[entry.classId] = calcSpellDc(profBonus, mod)
+    attackByClass[entry.classId] = calcSpellAttackBonus(profBonus, mod)
+  })
+
+  // ---- Magia de Pacto (bruxo): reserva própria, um único círculo
+  const pactLevel = calcPactCasterLevel(allClasses)
+  const pactClass = allClasses.find(c => CASTER_TYPE[c.classId] === 'pacto')
+  const pactRow =
+    pactLevel > 0 && pactClass
+      ? (gameData.classes
+          .find(c => c.id === pactClass.classId)
+          ?.progression.find((p: { level: number }) => p.level === pactLevel) as
+          | Record<string, unknown>
+          | undefined)
+      : undefined
+  const pactMax = (pactRow?.spell_slots as number | undefined) ?? 0
+  const pactSlots = {
+    level: pactMax > 0 ? ((pactRow?.max_spell_level as number | undefined) ?? null) : null,
+    max: pactMax,
+    spent: Math.min(sheet.spellcasting.pact_slots?.spent ?? 0, pactMax),
+  }
+
+  // ---- Conjuração padrão: `null` significa "não sei calcular, mantém o que está"
+  let maxes: Partial<Record<string, number>> | null = null
+  if (multiclasses.length > 0) {
+    maxes = calcMulticlassSlots(calcMulticlassCasterLevel(allClasses))
+  } else if (CASTER_TYPE[identity.class_id ?? ''] === 'pacto') {
+    // Bruxo puro só tem Magia de Pacto — nenhum espaço de Conjuração.
+    maxes = {}
+  } else if (isThirdCaster(identity.subclass_id)) {
+    // Cavaleiro Místico / Trapaceiro Arcano: a progressão da CLASSE não tem
+    // `slots` (quem conjura é a subclasse) e a tabela deles não é a do
+    // multiclasse, que daria menos espaços em vários níveis.
+    maxes = calcThirdCasterSlots(identity.level)
+  } else {
+    const charClass = gameData.classes.find(c => c.id === identity.class_id)
+    const progRow = charClass?.progression.find(
+      (p: { level: number }) => p.level === identity.level,
+    ) as Record<string, unknown> | undefined
+    if (progRow) maxes = (progRow.slots as Record<string, number> | undefined) ?? {}
+  }
+
+  const spellSlots =
+    maxes === null ? sheet.spellcasting.spell_slots : applySlotMaxes(sheet.spellcasting.spell_slots, maxes)
+
+  return {
+    ...sheet,
+    spellcasting: {
+      ...sheet.spellcasting,
+      spellcaster: anyCaster || sheet.spellcasting.spellcaster,
+      spellcasting_ability: castingAbility,
+      _spell_dc: calcSpellDc(profBonus, castingMod),
+      _spell_attack_bonus: calcSpellAttackBonus(profBonus, castingMod),
+      _spell_dc_by_class: dcByClass,
+      _spell_attack_by_class: attackByClass,
+      spell_slots: spellSlots,
+      pact_slots: pactSlots,
+    },
+  }
 }
 
 export function recalculate(sheet: CharacterSheet): CharacterSheet {
@@ -260,6 +421,7 @@ export function recalculate(sheet: CharacterSheet): CharacterSheet {
   const withCombat = recalculateCombat(withModifiers, profBonus)
   const withSkills = recalculateSkills(withCombat, profBonus)
   const withSpellcasting = recalculateSpellcasting(withSkills, profBonus)
+  const withFreeCasts = recalculateFreeCasts(withSpellcasting, profBonus)
 
-  return withSpellcasting
+  return withFreeCasts
 }

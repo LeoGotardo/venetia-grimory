@@ -16,8 +16,16 @@ export function Step05Background() {
   const { t } = useTranslation()
   const backgroundId = sheet.identity.background_id
 
-  const [distribution, setDistribution] = useState<Partial<Record<AbilityId, number>>>({})
-  const [distributionMode, setDistributionMode] = useState<DistributionMode>('2+1')
+  // A distribuição já fica gravada em `identity.background_distribution`, então
+  // voltar ao passo tem que reexibi-la em vez de pedir tudo de novo. O modo é
+  // deduzido dela: só o '2+1' coloca 2 pontos em um atributo.
+  const savedDistribution = sheet.identity.background_distribution ?? {}
+  const [distribution, setDistribution] = useState<Partial<Record<AbilityId, number>>>(
+    () => savedDistribution,
+  )
+  const [distributionMode, setDistributionMode] = useState<DistributionMode>(
+    () => (Object.values(savedDistribution).some(v => (v ?? 0) >= 2) ? '2+1' : '1+1+1'),
+  )
 
   const background = getBackgrounds().find(a => a.id === backgroundId)
   const totalDistributed = Object.values(distribution).reduce((acc, b) => acc + b, 0)

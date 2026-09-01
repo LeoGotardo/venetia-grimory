@@ -747,5 +747,23 @@ export const ADVENTURING_GEAR: AdventuringGear[] = [
     price: '2 pp',
     weight: '2.5 kg',
     description: 'Holds 4 pints of liquid; the listed weight is for a full skin.'
+  },
+  {
+    item_type: 'equipamento',
+    id: 'caixa_de_esmolas',
+    name: 'Alms Box',
+    category: 'Container',
+    price: '0 po',
+    weight: '0.0 kg',
+    description: 'A box for collecting donations. Holds up to 25 GP in coins.'
+  },
+  {
+    item_type: 'equipamento',
+    id: 'pedra_de_amolar',
+    name: 'Whetstone',
+    category: 'Gear',
+    price: '1 pc',
+    weight: '0.5 kg',
+    description: 'A stone for sharpening blades. Honing a Slashing or Piercing weapon takes 1 hour.'
   }
 ]

@@ -747,5 +747,23 @@ export const ADVENTURING_GEAR: AdventuringGear[] = [
     price: '2 pp',
     weight: '2.5 kg',
     description: 'Comporta 4 litros de líquido; o peso indicado é com o odre cheio.'
+  },
+  {
+    item_type: 'equipamento',
+    id: 'caixa_de_esmolas',
+    name: 'Caixa de Esmolas',
+    category: 'Recipiente',
+    price: '0 po',
+    weight: '0.0 kg',
+    description: 'Caixa para receber doações. Comporta até 25 po em moedas.'
+  },
+  {
+    item_type: 'equipamento',
+    id: 'pedra_de_amolar',
+    name: 'Pedra de Amolar',
+    category: 'Equipamento',
+    price: '1 pc',
+    weight: '0.5 kg',
+    description: 'Pedra para afiar lâminas. Amolar uma arma cortante ou perfurante leva 1 hora.'
   }
 ]

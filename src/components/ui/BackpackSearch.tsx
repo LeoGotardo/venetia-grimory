@@ -3,12 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { useConfigStore } from '../../store/configStore'
 import { ItemCard } from './ItemCard'
-import { getItems, itemRarityKey } from '../../data/items'
+import { getItems, itemRarityKey, RARITY_KEYS, type RarityKey } from '../../data/items'
 import type { Item } from '../../data/items'
 import type { InventoryItem } from '../../types'
 import { calcMaxCarry } from '../../lib/calculations'
 
 type FilterType = 'todos' | 'arma' | 'armadura' | 'ferramenta' | 'equipamento' | 'kit' | 'transporte' | 'item_magico'
+/** Só itens mágicos têm raridade, então o filtro só faz sentido sobre eles. */
+type RarityFilter = 'todas' | RarityKey
+
+/** Quantos itens a lista renderiza de uma vez. O catálogo tem centenas. */
+const RESULT_LIMIT = 60
 
 function parsePrice(price: string): number | null {
   if (!price || price === '—') return null
@@ -35,6 +40,7 @@ function itemToInventory(item: Item): InventoryItem {
     category: null,
     quantity: 1,
     equipped: false,
+    uses_spent: null,
     cost_gp: parsePrice(item.price),
     weight_kg: parseWeight(item),
     notes: null,
@@ -83,6 +89,7 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
   const { t, i18n } = useTranslation()
   const [search, setSearch] = useState('')
   const [filtro, setFiltro] = useState<FilterType>('todos')
+  const [raridade, setRaridade] = useState<RarityFilter>('todas')
   const [detailItem, setDetailItem] = useState<Item | null>(null)
 
   const itemMap = useMemo(() => {
@@ -115,18 +122,33 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
   const currentWeight = sheet.inventory.items.reduce((a, it) => a + (it.weight_kg ?? 0) * it.quantity, 0)
   const carryPercent = Math.min(100, (currentWeight / maxCarry) * 100)
 
-  const resultados = useMemo(() => {
+  const encontrados = useMemo(() => {
     const term = search.toLowerCase().trim()
     return getItems().filter(item => {
-      const tipoOk = filtro === 'todos' || item.item_type === filtro
-      if (!tipoOk) return false
-      if (filtro === 'todos' && !term) return false
-      if (term) return item.name.toLowerCase().includes(term) || item.description.toLowerCase().includes(term)
-      return true
-    }).slice(0, 30)
-  }, [search, filtro, i18n.language])
+      if (filtro !== 'todos' && item.item_type !== filtro) return false
+      // A raridade é comparada pela chave canônica, então o filtro não muda de
+      // comportamento quando o catálogo troca de idioma.
+      if (raridade !== 'todas' && itemRarityKey(item) !== raridade) return false
+      if (!term) return true
+      return item.name.toLowerCase().includes(term) || item.description.toLowerCase().includes(term)
+    })
+  }, [search, filtro, raridade, i18n.language])
 
-  const mostrarResultados = search.trim() !== '' || filtro !== 'todos'
+  // A lista inteira são centenas de itens: mostra uma página e diz quantos ficaram
+  // de fora, para a busca não parecer vazia nem travar a rolagem.
+  const resultados = encontrados.slice(0, RESULT_LIMIT)
+
+  function selecionarTipo(id: FilterType) {
+    setFiltro(id)
+    // Sair dos itens mágicos deixaria um filtro de raridade invisível ativo.
+    if (id !== 'item_magico') setRaridade('todas')
+  }
+
+  function selecionarRaridade(r: RarityFilter) {
+    setRaridade(r)
+    // Raridade só existe em item mágico: escolher uma já leva para essa aba.
+    if (r !== 'todas') setFiltro('item_magico')
+  }
 
   function adicionarItem(item: Item) {
     if (efetivoCobrar) {
@@ -145,10 +167,10 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
   return (
     <div className="space-y-4">
 
-      {/* Barra de carga + saldo PO */}
-      {(config.track_weight || efetivoCobrar) && (
+      {/* Barra de carga + saldo PO. Com `noList` quem mostra a carga é o pai. */}
+      {((config.track_weight && !noList) || efetivoCobrar) && (
         <div className="flex items-center gap-3">
-          {config.track_weight && (
+          {config.track_weight && !noList && (
             <>
               <span className="text-xs text-[#A8A09B] shrink-0">{t('bag.load')}</span>
               <div className="flex-1 h-1.5 bg-[#2D2520] rounded-full overflow-hidden">
@@ -165,7 +187,7 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
             </>
           )}
           {efetivoCobrar && (
-            <span className={`text-xs font-semibold text-[#B8860B] shrink-0 tabular-nums ${!config.track_weight ? 'ml-auto' : ''}`}>
+            <span className={`text-xs font-semibold text-[#B8860B] shrink-0 tabular-nums ${!config.track_weight || noList ? 'ml-auto' : ''}`}>
               {sheet.inventory.coins.PO.toFixed(1)} {t('bag.gp')}
             </span>
           )}
@@ -192,7 +214,7 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
             key={f.id}
             role="tab"
             aria-selected={filtro === f.id}
-            onClick={() => setFiltro(f.id)}
+            onClick={() => selecionarTipo(f.id)}
             className={[
               'px-3 py-1 text-xs font-medium rounded transition-colors whitespace-nowrap cursor-pointer',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
@@ -206,8 +228,43 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
         ))}
       </div>
 
+      {/* Raridade — só itens mágicos têm, e escolher uma já muda para essa aba */}
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] uppercase tracking-wide text-[#A8A09B] shrink-0">
+          {t('bag.rarityLabel')}
+        </span>
+        <div
+          className="flex gap-1 overflow-x-auto pb-0.5"
+          role="tablist"
+          aria-label={t('bag.rarityAriaLabel')}
+        >
+          {(['todas', ...RARITY_KEYS] as RarityFilter[]).map(r => (
+            <button
+              key={r}
+              role="tab"
+              aria-selected={raridade === r}
+              onClick={() => selecionarRaridade(r)}
+              className={[
+                'px-3 py-1 text-xs font-medium rounded-full border transition-colors whitespace-nowrap cursor-pointer',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]',
+                raridade === r
+                  ? 'bg-[#B8860B]/20 border-[#B8860B] text-[#D4A017]'
+                  : 'bg-[#2D2520] border-[#B8860B]/20 text-[#A8A09B] hover:text-[#F5F0E8] hover:border-[#B8860B]/50',
+              ].join(' ')}
+            >
+              {r === 'todas' ? t('bag.rarityAll') : t(`inventory.rarity_${r}`)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Resultados */}
-      {mostrarResultados && (
+      <div className="space-y-1">
+        <p className="text-[11px] text-[#A8A09B]">
+          {encontrados.length > RESULT_LIMIT
+            ? t('bag.resultCountCapped', { n: resultados.length, total: encontrados.length })
+            : t('bag.resultCount', { n: encontrados.length })}
+        </p>
         <div className="space-y-1 max-h-56 overflow-y-auto pr-1">
           {resultados.length === 0 ? (
             <p className="text-xs text-[#A8A09B] py-2 text-center">{t('bag.noItems')}</p>
@@ -258,7 +315,7 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
             })
           )}
         </div>
-      )}
+      </div>
 
       {/* Mochila atual — omitida quando pai já exibe inventário */}
       {!noList && (

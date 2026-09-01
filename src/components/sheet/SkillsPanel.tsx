@@ -14,7 +14,8 @@ export function SkillsPanel() {
         <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('skills.heading')}</h3>
         <span className="text-xs text-[#A8A09B]">{t('skills.passivePerception', { n: passivePerception })}</span>
       </div>
-      <div className="space-y-0.5">
+      {/* Duas colunas quando sobra largura: 18 perícias em fila só alongam a página. */}
+      <div className="space-y-0.5 xl:space-y-0 xl:grid xl:grid-cols-2 xl:gap-x-4 xl:gap-y-0.5">
         {gameData.skills.map(p => {
           const partialSheet = sheet.skills[p.id]
           if (!partialSheet) return null

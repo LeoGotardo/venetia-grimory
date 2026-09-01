@@ -7,14 +7,20 @@ import { Badge } from '../ui/Badge'
 import { SpeciesCard } from '../ui/SpeciesCard'
 import type { Species } from '../../types'
 import { gameData } from '../../data/rules'
+import { SPECIES_WITH_ORIGIN_FEAT, FEAT_SOURCE_SPECIES } from '../../constants'
 
 export function Step04Species() {
-  const { sheet, setSpecies, setStep } = useSheetStore()
+  const { sheet, setSpecies, setSpeciesOriginFeat, setStep } = useSheetStore()
   const { t } = useTranslation()
   const speciesId = sheet.identity.species_id
   const lineageId = sheet.identity.lineage_id
   const species = gameData.species?.find(e => e.id === speciesId)
   const [speciesModal, setSpeciesModal] = useState<Species | null>(null)
+
+  // Humano ganha um Talento de Origem à escolha (traço Versátil). É o único jeito
+  // de pegar um talento de Origem fora do antecedente — o AVA dá talento Geral.
+  const grantsOriginFeat = !!speciesId && SPECIES_WITH_ORIGIN_FEAT.includes(speciesId)
+  const chosenOriginFeat = sheet.feats.list.find(f => f.source === FEAT_SOURCE_SPECIES) ?? null
 
   return (
     <div className="space-y-6">
@@ -81,6 +87,31 @@ export function Step04Species() {
         </div>
       )}
 
+      {grantsOriginFeat && (
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-cinzel font-semibold text-[#B8860B]">{t('step04.originFeatHeading')}</h3>
+            <p className="text-xs text-[#A8A09B]">{t('step04.originFeatHint')}</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {gameData.origin_feats?.map(feat => {
+              const selected = chosenOriginFeat?.feat_id === feat.id
+              return (
+                <Card
+                  key={feat.id}
+                  selected={selected}
+                  hoverable
+                  onClick={() => setSpeciesOriginFeat(selected ? null : feat.id)}
+                >
+                  <h4 className="font-cinzel font-semibold text-[#F5F0E8] mb-1">{feat.name}</h4>
+                  <p className="text-xs text-[#A8A09B]">{feat.description}</p>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       <SpeciesCard
         species={speciesModal}
         lineageId={speciesModal?.id === speciesId ? lineageId : null}
@@ -90,7 +121,11 @@ export function Step04Species() {
       <WizardNav
         onBack={() => setStep(3)}
         onNext={() => setStep(5)}
-        nextDisabled={!speciesId || (!!species?.lineages?.length && !lineageId)}
+        nextDisabled={
+          !speciesId ||
+          (!!species?.lineages?.length && !lineageId) ||
+          (grantsOriginFeat && !chosenOriginFeat)
+        }
       />
     </div>
   )

@@ -6,13 +6,29 @@ import { calcModifier, formatModifier, ABILITIES, abilityName } from '../../lib/
 import { useWizardAbilities } from '../../hooks/useWizardAbilities'
 import { POINT_BUY_COSTS } from '../../constants'
 import type { AbilityId, CharClass } from '../../types'
-import type { AbilityMethod } from '../../hooks/useWizardAbilities'
+import type { AbilityMethod, WizardAbilitiesInitial } from '../../hooks/useWizardAbilities'
 import { gameData } from '../../data/rules'
 
 export function Step06Abilities() {
-  const { sheet, setAbilities, setStep, abilityRolls, setAbilityRolls } = useSheetStore()
+  const { sheet, setAbilities, setStep, abilityRolls, setAbilityRolls, abilityAsi, setAbilityAsi } = useSheetStore()
   const { t } = useTranslation()
-  const wizard = useWizardAbilities({ initialRoll: abilityRolls, onRoll: setAbilityRolls })
+
+  // Voltar ao passo tem que reencontrar a distribuição salva: a ficha guarda só
+  // o valor final, então o AVA guardado no wizard é descontado para recuperar a
+  // base escolhida no método.
+  const initial = useMemo<WizardAbilitiesInitial | null>(() => {
+    const method = sheet.abilities.generation_method
+    if (method !== 'standard' && method !== 'random' && method !== 'pointBuy') return null
+    const values = ABILITIES.reduce((acc, a) => {
+      const value = sheet.abilities[a].value
+      return { ...acc, [a]: value == null ? null : value - (abilityAsi[a] ?? 0) }
+    }, {} as Partial<Record<AbilityId, number | null>>)
+    return { method, values }
+    // Só interessa o estado de quando o passo montou — depois quem manda é o hook.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const wizard = useWizardAbilities({ initialRoll: abilityRolls, onRoll: setAbilityRolls, initial })
 
   const METHOD_LABEL: Record<AbilityMethod, string> = {
     standard: t('step06.tabStandard'),
@@ -37,7 +53,9 @@ export function Step06Abilities() {
   }, [charClass, level])
 
   const totalAsiPool = numASIs * 2
-  const [asiDistribution, setAsiDistribution] = useState<Partial<Record<AbilityId, number>>>({})
+  const [asiDistribution, setAsiDistribution] = useState<Partial<Record<AbilityId, number>>>(
+    () => (initial ? abilityAsi : {}),
+  )
   const totalAsiUsed = Object.values(asiDistribution).reduce((a, b) => a + b, 0)
 
   function setAsiBonus(attr: AbilityId, val: number) {
@@ -59,6 +77,7 @@ export function Step06Abilities() {
   function handleNext() {
     if (!wizard.isComplete || !asiComplete) return
     setAbilities(abilitiesWithAsi as Record<AbilityId, number>, wizard.method)
+    setAbilityAsi(asiDistribution)
     setStep(6)
   }
 

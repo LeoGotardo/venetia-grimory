@@ -31,15 +31,57 @@ const NULL_INDICES: Record<AbilityId, number | null> = {
   FOR: null, DES: null, CON: null, INT: null, SAB: null, CAR: null,
 }
 
+/**
+ * Escolhas já feitas em uma passagem anterior pelo passo, para que voltar ao
+ * passo mostre a distribuição salva em vez de um formulário em branco.
+ */
+export interface WizardAbilitiesInitial {
+  method: AbilityMethod
+  values: Partial<Record<AbilityId, number | null>>
+}
+
+/** Reconstrói quais dados foram atribuídos a cada atributo, casando valores. */
+function indicesFromValues(
+  values: Partial<Record<AbilityId, number | null>>,
+  rolls: number[],
+): Record<AbilityId, number | null> {
+  const used = new Set<number>()
+  return ABILITIES.reduce((acc, a) => {
+    const v = values[a]
+    const idx = v == null ? -1 : rolls.findIndex((r, i) => r === v && !used.has(i))
+    if (idx >= 0) used.add(idx)
+    return { ...acc, [a]: idx >= 0 ? idx : null }
+  }, {} as Record<AbilityId, number | null>)
+}
+
 export function useWizardAbilities(opts?: {
   initialRoll?: number[]
   onRoll?: (vals: number[]) => void
+  initial?: WizardAbilitiesInitial | null
 }) {
-  const [method, setMethod] = useState<AbilityMethod>('standard')
-  const [standard, setStandard] = useState<AbilityValues>(NULL_VALUES)
-  const [rollValues, setRollValues] = useState<number[]>(() => opts?.initialRoll ?? [])
-  const [randomIndices, setRandomIndices] = useState<Record<AbilityId, number | null>>(NULL_INDICES)
-  const [pointBuy, setPointBuy] = useState<PointBuyValues>(INITIAL_POINT_BUY_VALUES)
+  const initial = opts?.initial ?? null
+  const initialRoll = opts?.initialRoll ?? []
+  const [method, setMethod] = useState<AbilityMethod>(initial?.method ?? 'standard')
+  const [standard, setStandard] = useState<AbilityValues>(() =>
+    initial?.method === 'standard'
+      ? ABILITIES.reduce((acc, a) => ({ ...acc, [a]: initial.values[a] ?? null }), {} as AbilityValues)
+      : NULL_VALUES,
+  )
+  const [rollValues, setRollValues] = useState<number[]>(() => initialRoll)
+  const [randomIndices, setRandomIndices] = useState<Record<AbilityId, number | null>>(() =>
+    initial?.method === 'random' ? indicesFromValues(initial.values, initialRoll) : NULL_INDICES,
+  )
+  const [pointBuy, setPointBuy] = useState<PointBuyValues>(() =>
+    initial?.method === 'pointBuy'
+      ? ABILITIES.reduce((acc, a) => ({
+          ...acc,
+          [a]: Math.max(
+            POINT_BUY_ABILITY_MIN,
+            Math.min(POINT_BUY_ABILITY_MAX, initial.values[a] ?? POINT_BUY_ABILITY_MIN),
+          ),
+        }), {} as PointBuyValues)
+      : INITIAL_POINT_BUY_VALUES,
+  )
 
   const spentPool = Object.values(pointBuy).reduce(
     (acc, v) => acc + (POINT_BUY_COSTS[v] ?? 0),

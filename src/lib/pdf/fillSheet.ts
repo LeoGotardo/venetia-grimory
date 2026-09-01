@@ -32,6 +32,11 @@ import type { CharacterSheet, InventoryItem } from '../../types'
  * Nunca são preenchidos, em modo nenhum, por não existirem no modelo de dados:
  * salvaguardas contra a morte, inspiração heroica e sintonização de itens.
  *
+ * As magias das conjurações sem espaço (`spellcasting.free_casts` — Iniciado em
+ * Magia e Arcana Mística) entram na lista de magias preparadas, mas o *uso* delas
+ * não: a ficha oficial não tem medidor para conjuração sem espaço. O talento em si
+ * aparece na lista de talentos.
+ *
  * Dos recursos de classe (fúrias, pontos de foco, …) sai só o **máximo**, que é
  * derivado do nível; o valor atual é gasto em jogo e fica de fora.
  */
@@ -215,7 +220,8 @@ function buildFillValues(sheet: CharacterSheet, mode: SheetPdfMode): FillValues 
   }
 
   // ---- magia
-  if (spellcasting.spellcaster) {
+  // Iniciado em Magia dá magias a quem não tem classe conjuradora — daí o `||`.
+  if (spellcasting.spellcaster || spellcasting.free_casts.length > 0) {
     const ability = spellcasting.spellcasting_ability
     // no idioma da interface, para casar com o modelo escolhido
     text(FIELDS.spellcasting.spellcasting_ability, ability ? i18n.t(`attrs.${ability}`) : null)
@@ -226,16 +232,25 @@ function buildFillValues(sheet: CharacterSheet, mode: SheetPdfMode): FillValues 
     text(FIELDS.spellcasting.cd_magia, spellcasting._spell_dc)
     text(FIELDS.spellcasting.bonus_ataque_magia, formatModifier(spellcasting._spell_attack_bonus))
 
+    // A ficha oficial tem uma única fileira por círculo, então os espaços de Magia
+    // de Pacto entram somados na fileira do círculo deles — é o que o jogador
+    // escreveria à mão. No app as duas reservas continuam separadas.
     FIELDS.spell_slots.forEach((celula, i) => {
-      const slot = spellcasting.spell_slots[`c${i + 1}` as keyof typeof spellcasting.spell_slots]
-      if (!slot?.max) return
-      text(celula.total, slot.max)
-      volatileMark(celula.spent, slot.spent)
+      const level = i + 1
+      const slot = spellcasting.spell_slots[`c${level}` as keyof typeof spellcasting.spell_slots]
+      const pact = spellcasting.pact_slots.level === level ? spellcasting.pact_slots : null
+      const max = (slot?.max ?? 0) + (pact?.max ?? 0)
+      if (!max) return
+      text(celula.total, max)
+      volatileMark(celula.spent, (slot?.spent ?? 0) + (pact?.spent ?? 0))
     })
 
     const nomesDeMagias = [
       ...Object.values(spellcasting.cantrips_by_class).flat(),
       ...Object.values(spellcasting.spells_by_class).flat(),
+      // Iniciado em Magia e Arcana Mística: sempre preparadas, mas não vêm de
+      // nenhuma classe do personagem, então não estão nos mapas acima.
+      ...spellcasting.free_casts.flatMap(c => [...c.cantrips, ...(c.spell ? [c.spell] : [])]),
     ]
     const preparadas = [...new Set(nomesDeMagias)]
       .map(name => resolveSpell(name))

@@ -47,14 +47,75 @@ export const MULTICLASS_PREREQUISITES: Record<string, { abilities: AbilityId[]; 
   paladino:   { abilities: ['FOR', 'CAR'], mode: 'e'  },
 }
 
-export const CASTER_TYPE: Record<string, 'completo' | 'meio' | null> = {
+/**
+ * Como cada classe conjura (PHB 2024):
+ * - `completo`: nível inteiro na tabela de multiclasse;
+ * - `meio`: metade do nível, arredondada para CIMA (paladino e guardião ganham
+ *   Conjuração no nível 1 na edição de 2024);
+ * - `pacto`: Magia de Pacto do bruxo — NÃO entra na tabela de multiclasse, tem
+ *   reserva própria (`spellcasting.pact_slots`) recuperada em Descanso Curto;
+ * - `null`: não conjura pela classe (subclasses de 1/3 são tratadas à parte, em
+ *   THIRD_CASTER_SUBCLASSES).
+ */
+export const CASTER_TYPE: Record<string, 'completo' | 'meio' | 'pacto' | null> = {
   bardo: 'completo', clerigo: 'completo', druida: 'completo',
-  feiticeiro: 'completo', mago: 'completo', bruxo: 'completo',
+  feiticeiro: 'completo', mago: 'completo',
+  bruxo: 'pacto',
   paladino: 'meio', guardiao: 'meio',
   barbaro: null, guerreiro: null, ladino: null, monge: null,
 }
 
 export const THIRD_CASTER_SUBCLASSES = ['cavaleiro_mistico', 'trapaceiro_arcano']
+
+/** Listas que o talento Iniciado em Magia pode abrir — ids de classe, como em `Spell.classes`. */
+export const MAGIC_INITIATE_LISTS = ['clerigo', 'druida', 'mago'] as const
+
+/**
+ * Nome da lista (como vem no talento e nos antecedentes, nos dois idiomas) → id da
+ * classe. A chave é comparada sem acento e em minúsculas.
+ */
+export const MAGIC_INITIATE_LIST_BY_NAME: Record<string, string> = {
+  clerigo: 'clerigo', cleric: 'clerigo',
+  druida: 'druida', druid: 'druida',
+  mago: 'mago', wizard: 'mago',
+}
+
+/** Arcana Mística: nível de bruxo → círculo da magia concedida (PHB 2024). */
+export const MYSTIC_ARCANUM_BY_LEVEL: Record<number, number> = {
+  11: 6, 13: 7, 15: 8, 17: 9,
+}
+
+/** Atributos que o Iniciado em Magia pode usar para conjurar. */
+export const MAGIC_INITIATE_ABILITIES = ['INT', 'SAB', 'CAR'] as const
+
+/**
+ * Espécies que concedem um Talento de Origem à escolha (Humano, traço "Versátil").
+ * É o único jeito, pelas regras de 2024, de ganhar um talento de Origem fora do
+ * antecedente: o AVA de nível 4 concede talento GERAL, não de Origem.
+ */
+export const SPECIES_WITH_ORIGIN_FEAT = ['humano']
+
+/** Marca de origem dos talentos concedidos pela espécie, em `AcquiredFeat.source`. */
+export const FEAT_SOURCE_SPECIES = 'especie'
+
+/** Marca dos talentos adicionados à mão na aba Editar. */
+export const FEAT_SOURCE_MANUAL = 'manual'
+
+/**
+ * Itens mágicos cujo uso devolve um espaço de Magia de Pacto (Bastão do Guardião
+ * do Pacto). Gastar o uso do item restaura o espaço na mesma ação.
+ */
+export const ITEMS_RESTORING_PACT_SLOT = ['rod_of_the_pact_keeper']
+
+/**
+ * Itens que devolvem um espaço de Conjuração gasto, mapeados para o círculo mais
+ * alto que alcançam (Pérola do Poder: "um espaço de até 3º círculo"). Diferente do
+ * Bastão do Guardião do Pacto, exigem escolher de qual círculo — daí o parâmetro
+ * de `spendItemUse`.
+ */
+export const ITEMS_RESTORING_SPELL_SLOT: Record<string, number> = {
+  pearl_of_power: 3,
+}
 
 export const MULTICLASS_PROFICIENCIES: Record<string, { armors?: string[]; weapons?: string[]; tools?: string[] }> = {
   barbaro:    { weapons: ['Marciais'], armors: ['Escudo'] },

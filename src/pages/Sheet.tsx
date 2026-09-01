@@ -398,12 +398,14 @@ export function CharacterSheet() {
         {/* Tab content */}
         <div role="tabpanel" id={`tabpanel-${tab}`}>
           {tab === 'sheet' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-7">
+            /* Recursos ficam com o combate: sozinho, ele deixava metade da coluna vazia. */
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-7 items-start">
               <div className="space-y-7">
                 <div className="vg-card p-5">
                   <SectionTitle>{t('sheet.sectionCombat')}</SectionTitle>
                   <CombatPanel />
                 </div>
+                <ResourcesPanel />
               </div>
               <div className="space-y-7">
                 <div className="vg-card p-5">
@@ -414,35 +416,28 @@ export function CharacterSheet() {
                   <SectionTitle>{t('sheet.sectionSkills')}</SectionTitle>
                   <SkillsPanel />
                 </div>
-                <ResourcesPanel />
               </div>
             </div>
           )}
 
           {tab === 'spells' && (
-            <div className="max-w-2xl">
-              <div className="vg-card p-5">
-                <SectionTitle>{t('sheet.sectionMagic')}</SectionTitle>
-                <SpellsPanel />
-              </div>
+            <div className="vg-card p-5">
+              <SectionTitle>{t('sheet.sectionMagic')}</SectionTitle>
+              <SpellsPanel />
             </div>
           )}
 
           {tab === 'inventory' && (
-            <div className="max-w-2xl">
-              <div className="vg-card p-5">
-                <SectionTitle>{t('sheet.sectionInventory')}</SectionTitle>
-                <InventoryPanel />
-              </div>
+            <div className="vg-card p-5">
+              <SectionTitle>{t('sheet.sectionInventory')}</SectionTitle>
+              <InventoryPanel />
             </div>
           )}
 
           {tab === 'notes' && (
-            <div className="max-w-2xl">
-              <div className="vg-card p-5">
-                <SectionTitle>{t('sheet.sectionNotes')}</SectionTitle>
-                <NotesPanel />
-              </div>
+            <div className="vg-card p-5">
+              <SectionTitle>{t('sheet.sectionNotes')}</SectionTitle>
+              <NotesPanel />
             </div>
           )}
 

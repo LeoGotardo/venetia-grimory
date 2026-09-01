@@ -437,6 +437,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Transforma uma salvaguarda de Destreza falhada em sucesso. 3 cargas diárias.'
   },
   {
@@ -446,6 +447,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Anel',
     rarity: 'Raro',
     price: '4000 po',
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Amizade Animal, Medo ou Falar com Animais. 3 cargas diárias.'
   },
   {
@@ -534,6 +536,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Muito Raro',
     price: '40000 po',
     attunement: true,
+    uses: { max: 6, recharge: 'dawn' },
     description: 'Luz do Dia, faíscas elétricas e meteoros de fogo. 6 cargas diárias.'
   },
   {
@@ -603,6 +606,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Dispara um carneiro de força: 2d10 e empurra 4,5 m. 3 cargas diárias.'
   },
   {
@@ -673,6 +677,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Lendário',
     price: '200000 po',
     attunement: true,
+    uses: { max: 5, recharge: 'manual' },
     description: 'Conjura Curar ou Ressurreição. 5 cargas, recuperadas lentamente.'
   },
   {
@@ -702,6 +707,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Enfeitiça criaturas em 36 m (CD 15) por 8 minutos, uma vez ao dia.'
   },
   {
@@ -712,6 +718,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Varia',
     price: '—',
     attunement: true,
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Bônus na CD e no ataque das magias de bruxo, e recupera um espaço de pacto por dia.'
   },
   {
@@ -773,6 +780,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Cajado',
     rarity: 'Comum',
     price: '100 po',
+    uses: { max: 10, recharge: 'dawn' },
     description: 'Faz brotar uma flor natural na ponta, dez vezes por dia.'
   },
   {
@@ -862,6 +870,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Lendário',
     price: '200000 po',
     attunement: true,
+    uses: { max: 50, recharge: 'manual' },
     description: 'Absorve magias e conjura dezenas delas, com 50 cargas. O ápice do poder arcano.'
   },
   {
@@ -903,6 +912,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 7, recharge: 'manual' },
     description: 'Raio que paralisa o alvo (CD 15) por 1 minuto. 7 cargas.'
   },
   {
@@ -922,6 +932,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Incomum',
     price: '400 po',
     attunement: true,
+    uses: { max: 7, recharge: 'manual' },
     description: 'Conjura Teia (CD 15). 7 cargas.'
   },
   {
@@ -942,6 +953,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 7, recharge: 'manual' },
     description: 'Conjura Bola de Fogo (CD 15) em até 7º círculo. 7 cargas.'
   },
   {
@@ -961,6 +973,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Varinha',
     rarity: 'Incomum',
     price: '400 po',
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Conjura Detectar Magia. 3 cargas diárias.'
   },
   {
@@ -970,6 +983,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Varinha',
     rarity: 'Incomum',
     price: '400 po',
+    uses: { max: 7, recharge: 'manual' },
     description: 'Conjura Mísseis Mágicos em até 7º círculo. 7 cargas.'
   },
   {
@@ -979,6 +993,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Varinha',
     rarity: 'Comum',
     price: '100 po',
+    uses: { max: 7, recharge: 'manual' },
     description: 'Cria fogos de artifício inofensivos e coloridos. 7 cargas.'
   },
   {
@@ -989,6 +1004,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 7, recharge: 'manual' },
     description: 'Conjura Relâmpago (CD 15) em até 7º círculo. 7 cargas.'
   },
   {
@@ -1019,6 +1035,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 7, recharge: 'manual' },
     description: 'Comando de fuga ou cone de 18 m que amedronta (CD 15). 7 cargas.'
   },
   {
@@ -1029,6 +1046,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Muito Raro',
     price: '40000 po',
     attunement: true,
+    uses: { max: 7, recharge: 'manual' },
     description: 'Conjura Metamorfose (CD 15). 7 cargas.'
   },
   {
@@ -1038,6 +1056,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Varinha',
     rarity: 'Incomum',
     price: '400 po',
+    uses: { max: 3, recharge: 'manual' },
     description: 'Aponta portas e armadilhas secretas a até 9 m. 3 cargas.'
   },
 
@@ -1049,6 +1068,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Arma',
     rarity: 'Raro',
     price: '4000 po',
+    uses: { max: 1, recharge: 'dawn' },
     description: '+1 e, uma vez ao dia, recobre a lâmina de veneno: CD 15 ou 2d10 e Envenenado.'
   },
   {
@@ -1438,6 +1458,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Aterroriza criaturas em 9 m (CD 15) por 1 minuto. 3 cargas diárias.'
   },
   {
@@ -1495,6 +1516,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Incomum',
     price: '400 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Conjura Dominar Animal (CD 15) contra bestas aquáticas. 3 cargas diárias.'
   },
   {
@@ -1744,6 +1766,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Lendário',
     price: '200000 po',
     attunement: true,
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Leva você e o que carrega ao Plano Etéreo por 10 minutos, uma vez ao dia.'
   },
 
@@ -1783,6 +1806,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Comum',
     price: '100 po',
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Uma vez ao dia, substitui a rolagem de um ataque por um 10 fixo.'
   },
   {
@@ -2128,6 +2152,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Raro',
     price: '4000 po',
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Conjura Porta Dimensional uma vez ao dia, deixando fumaça na saída e na chegada.'
   },
   {
@@ -2318,6 +2343,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Incomum',
     price: '400 po',
     attunement: true,
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Detectar Pensamentos à vontade, mais Sugestão uma vez ao dia.'
   },
   {
@@ -2338,6 +2364,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Conjura Teletransporte com 3 cargas diárias.'
   },
   {
@@ -2456,6 +2483,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Incomum',
     price: '400 po',
+    uses: { max: 3, recharge: 'manual' },
     description: 'A melodia amedronta quem ouve em 9 m (CD 15) por 1 minuto. 3 cargas.'
   },
   {
@@ -2531,6 +2559,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Raro',
     price: '4000 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Concede Visão Verdadeira em 36 m por 10 minutos. 3 cargas diárias.'
   },
   {
@@ -2540,6 +2569,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Incomum',
     price: '400 po',
+    uses: { max: 50, recharge: 'manual' },
     description: 'Emite luz, um facho ofuscante ou um clarão que cega (CD 15). 50 cargas.'
   },
   {
@@ -2874,6 +2904,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Incomum',
     price: '400 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Conjura Detectar Pensamentos (CD 13). 3 cargas diárias.'
   },
   {
@@ -2947,6 +2978,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Incomum',
     price: '400 po',
     attunement: true,
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Lentes que conjuram Enfeitiçar Pessoa (CD 13) três vezes ao dia.'
   },
   {
@@ -3013,6 +3045,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Incomum',
     price: '400 po',
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Par de pedras que conjuram Mandar Mensagem entre si, uma vez ao dia.'
   },
   {
@@ -3070,6 +3103,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Lendário',
     price: '200000 po',
+    uses: { max: 3, recharge: 'dawn' },
     description: 'Seis faces, seis planos: abre portais ou conjura Deslocamento Planar. 3 cargas diárias.'
   },
   {
@@ -3089,6 +3123,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     rarity: 'Incomum',
     price: '400 po',
     attunement: true,
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Uma vez ao dia, recupera um espaço de magia de até 3º círculo.'
   },
   {
@@ -3247,6 +3282,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Incomum',
     price: '400 po',
+    uses: { max: 1, recharge: 'dawn' },
     description: 'Conjura Raio Ardente (+5 de ataque, 2d6 radiante) uma vez ao dia.'
   },
   {
@@ -3311,6 +3347,7 @@ export const MAGIC_ITEMS: MagicItem[] = [
     category: 'Item Maravilhoso',
     rarity: 'Comum',
     price: '100 po',
+    uses: { max: 4, recharge: 'dawn' },
     description: 'Só quem você escolhe, a até 180 m, ouve o toque. 4 cargas diárias.'
   },
   {

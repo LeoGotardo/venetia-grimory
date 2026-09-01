@@ -83,6 +83,7 @@ export function createCompleteSheet(overrides: Partial<CharacterSheet['identity'
       cost_gp: null,
       weight_kg: null,
       notes: null,
+      uses_spent: null,
     },
   ]
 
@@ -115,6 +116,9 @@ export function createLegacySpellcasterSheet(): CharacterSheet {
       c7: { max: 0, spent: 0 }, c8: { max: 0, spent: 0 }, c9: { max: 0, spent: 0 },
     },
     pact_slots: { level: null, max: 0, spent: 0 },
+    free_casts: [],
+    _spell_dc_by_class: {},
+    _spell_attack_by_class: {},
   }
 
   const legacy = s as unknown as Record<string, unknown>

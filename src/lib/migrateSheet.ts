@@ -32,11 +32,11 @@ const LEGACY_ITEM_IDS: Record<string, string> = {
 
 function remapItemIds(items: CharacterSheet['inventory']['items'] | undefined) {
   if (!items?.length) return items
-  return items.map(it =>
-    it.item_id && LEGACY_ITEM_IDS[it.item_id]
-      ? { ...it, item_id: LEGACY_ITEM_IDS[it.item_id] }
-      : it
-  )
+  return items.map(it => ({
+    ...it,
+    item_id: it.item_id && LEGACY_ITEM_IDS[it.item_id] ? LEGACY_ITEM_IDS[it.item_id] : it.item_id,
+    uses_spent: it.uses_spent ?? null,
+  }))
 }
 
 function groupByClass(classId: string, list: string[] | undefined): Record<string, string[]> {
@@ -91,6 +91,10 @@ export function migrateSheet(saved: CharacterSheet): CharacterSheet {
       spells_by_class: savedSpellcasting.spells_by_class ?? groupByClass(classId, prepared_spells),
       spell_slots: { ...base.spellcasting.spell_slots, ...savedSpellcasting.spell_slots },
       pact_slots: savedSpellcasting.pact_slots ?? base.spellcasting.pact_slots,
+      free_casts: savedSpellcasting.free_casts ?? base.spellcasting.free_casts,
+      _spell_dc_by_class: savedSpellcasting._spell_dc_by_class ?? base.spellcasting._spell_dc_by_class,
+      _spell_attack_by_class:
+        savedSpellcasting._spell_attack_by_class ?? base.spellcasting._spell_attack_by_class,
     },
     inventory: {
       ...base.inventory,

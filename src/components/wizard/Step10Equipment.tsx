@@ -62,6 +62,7 @@ function parseEquipmentA(text: string, catalog: Item[]): { items: InventoryItem[
       category: found?.item_type ?? null,
       quantity,
       equipped: false,
+      uses_spent: null,
       cost_gp: found ? parseGp(found.price) : null,
       weight_kg: found ? parseWeight((found as { weight?: string }).weight) : null,
       notes: null,
@@ -79,7 +80,9 @@ function parseStartingGold(text: string): number {
 export function Step10Equipment() {
   const { sheet, setEquipment, updateCoins, setStep } = useSheetStore()
   const { t, i18n } = useTranslation()
-  const [option, setOption] = useState<'A' | 'B'>('A')
+  // Sem hidratar, voltar ao passo mostrava sempre a Opção A marcada — e escondia
+  // a mochila de quem tinha escolhido a B.
+  const [option, setOption] = useState<'A' | 'B' | null>(() => sheet.identity.equipment_option)
 
   const catalog = useMemo(() => getItems(), [i18n.language])
 

@@ -13,15 +13,19 @@ Capacitor (`/android`).
 
 ```bash
 npm run dev       # Vite dev server
-npm run build      # tsc -b (typecheck, project references) && vite build — treat this as the test suite
+npm run build      # tsc -b (typecheck, project references) && vite build
+npm test           # vitest run — unit tests for the rules layer, the store and the catalog
 npm run lint        # eslint .
+npm run test:e2e     # playwright (needs a dev server; the config starts one)
 npm run preview      # serve the production build locally
 ```
 
-There is no test runner configured (no `*.test.*` files, no vitest/jest). **`npm run build` is
-the correctness gate** — it runs the full TypeScript project-reference build before bundling, so
-a clean build is the closest thing to "tests pass" in this repo. Always run it after non-trivial
-changes.
+**`npm run build` plus `npm test` is the correctness gate.** The build runs the full TypeScript
+project-reference pass before bundling; the unit suite (`vitest.config.ts`, `src/**/*.test.ts`)
+covers the rules math, the recalculation pipeline, the store actions and the item catalog's
+integrity. Run both after non-trivial changes. Tests run in `environment: 'node'` — `vitest.setup.ts`
+stubs the `localStorage` that `i18n` and the store read at import time. Sheet fixtures live in
+`src/test/fixtures.ts` (`makeSheet` builds a sheet and runs `recalculate` on it).
 
 Android (Capacitor), only relevant when touching native packaging:
 ```bash
@@ -76,7 +80,10 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   needs the canonical strings.
 - Items (`src/data/items/`), spells (`src/data/spells/`), and backgrounds (`src/data/backgrounds/`)
   are a separate system: each has parallel `pt/` and `en/` subfolders with identically-shaped
-  modules. `src/data/items.ts`, `src/data/spells.ts`, and `src/data/backgrounds.ts` re-export
+  modules. The two languages must hold **the same ids in the same order** — `getItems()` returns
+  them in file order and the search caps results, so a divergent order silently changes what a
+  search shows per language. `src/data/catalog.test.ts` enforces that, plus id uniqueness,
+  recognized rarities and `uses` parity. `src/data/items.ts`, `src/data/spells.ts`, and `src/data/backgrounds.ts` re-export
   `getXxx()` functions that pick the PT or EN array based on `i18n.language` at call time — always
   read localized data through these getters, never import the `pt/`/`en/` modules directly from
   components.
@@ -96,7 +103,9 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   `getXxx()` for items/spells/backgrounds), driven directly by `i18n.language`, not by `t()`.
 - `pt.ts` and `en.ts` must stay key-for-key identical, including `{{interpolation}}` placeholder
   names — those placeholders are English (`{{name}}`, `{{charClass}}`, `{{level}}`) and must match
-  what the call site passes.
+  what the call site passes. Key-for-key parity is not enough on its own: a key written into the
+  wrong namespace is identical in both files and still renders as raw `edit.attackName` on screen,
+  so `src/i18n/keys.test.ts` resolves every literal `t('ns.key')` in `src/` against both catalogs.
 - When adding a component that renders any user-facing text, use `useTranslation` — don't
   hardcode strings. When adding new item/spell/background data, add entries to both `pt/` and `en/`.
 
@@ -122,6 +131,16 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - `src/pages/Sheet.tsx` is the in-play sheet: tabs render `src/components/sheet/XxxPanel.tsx`
   panels (Combat, Abilities, Skills, Resources, Spells, Inventory, Notes, Edit). Edits in
   any panel go through store actions, not local component state that bypasses the store.
+- Every tab lays out in two columns from `lg:` up (`grid-cols-2`, or a `1fr` + fixed-width aside),
+  with the wide sections — spells, personality, the bag — spanning the full row below. The page
+  container is `max-w-[1180px]`; don't put a `max-w-2xl` back around a tab, that was what made
+  these panels a single tall column on desktop.
+- `EditPanel` is the only way to reach most fields once the wizard is done, so a field that is
+  only settable in a wizard step is a gap — it covers identity, appearance, progression,
+  multiclass, class choices (`src/lib/classChoices.ts` decides which apply, shared with
+  `Step03Subclass`), feats, abilities, movement, armor, attacks, skills + expertise,
+  proficiencies, spells, personality and the bag. Changing the background there goes through
+  `setBackground` (skills + feat + the +3 ability spread), never `setBackgroundId` alone.
   `LevelUpModal` (in `src/components/sheet/`) handles ASI selection (+2 or +1+1) on level-up and
   supports choosing which class (primary or multiclass) gains the level.
 
@@ -194,6 +213,52 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - The progression rows in `src/data/rules/classes.ts` use `slots` for standard casters and
   `max_spell_level` + `spell_slots` (a count) for the Warlock's Pact Magic — `recalculateSpellcasting`
   branches on which one is present.
+- Spell slots live in **three separate pools**, because the 2024 rules treat them as different
+  things (see the JSDoc on `recalculateSpellcasting`): `spellcasting.spell_slots` (Spellcasting),
+  `spellcasting.pact_slots` (Warlock Pact Magic — `CASTER_TYPE['bruxo'] === 'pacto'`, deliberately
+  **excluded** from `calcMulticlassCasterLevel`, restored by `shortRest`), and
+  `spellcasting.free_casts` (casts that spend no slot at all). Never fold one into another — the PDF
+  is the only place they get summed, because the official sheet has a single row per circle.
+- Which table `spell_slots` comes from depends on the build: multiclass → `calcMulticlassSlots` on
+  the summed caster level; a single class with a `THIRD_CASTER_SUBCLASSES` subclass →
+  `calcThirdCasterSlots` (Eldritch Knight / Arcane Trickster have their **own** table, which is not
+  the multiclass one — at level 4 it gives 3 first-circle slots where the multiclass table gives 2);
+  any other single class → its own `progression[].slots`.
+- `free_casts` is derived by `recalculateFreeCasts` and holds two kinds: `magic_initiate` (one per
+  acquired feat, 2 cantrips + a level-1 spell with its own chosen ability) and `mystic_arcanum`
+  (warlock levels 11/13/15/17, per `MYSTIC_ARCANUM_BY_LEVEL`). The list is derived but the player's
+  choices are preserved by id across recalcs, so the store's `setFreeCastChoices` is the only writer.
+  `FreeCastPicker` (`src/components/ui/`) is the shared editor, used by both `Step08Spells` and
+  `EditPanel`.
+- `CASTER_TYPE` values feed `calcMulticlassCasterLevel`: `completo` counts full levels, `meio`
+  counts half **rounded up** (Paladin/Ranger get Spellcasting at level 1 in 2024), and
+  `THIRD_CASTER_SUBCLASSES` count a third **rounded down**. `CASTER_TYPE[id] != null` is **not** a
+  complete "does this cast?" test — it misses third casters, whose class is `null`; use
+  `isCasterClass(classId, subclassId)` from `calculations.ts` instead.
+- Third casters conjure from the **wizard** list, not from a fighter/rogue list (which doesn't
+  exist): `spellListForClass(classId, subclassId)` gives the catalog key, while `classId` stays the
+  storage key in `cantrips_by_class` / `spells_by_class`. Keep those two apart.
+- In multiclass every class casts with its own ability, so `_spell_dc_by_class` /
+  `_spell_attack_by_class` are the real numbers; the scalar `_spell_dc` / `_spell_attack_bonus` keep
+  the primary caster's values for the PDF and single-class UI.
+- Origin feats and General feats are **not** interchangeable: the level-4 ASI grants a General feat
+  (`gameData.general_feats`, which is what `LevelUpModal` offers) and Origin feats come from the
+  background or from a species that grants one (`SPECIES_WITH_ORIGIN_FEAT` — only Human's Versatile
+  in 2024, picked in `Step04Species` via `setSpeciesOriginFeat`). Don't "fix" Magic Initiate's
+  absence from the level-up list by moving it there. Species-granted feats are tagged
+  `source: FEAT_SOURCE_SPECIES` and are dropped when the species changes.
+- The item search (`BackpackSearch`, shared by the wizard's equipment step and the sheet's bag) has
+  a rarity filter that only appears under the magic-item type and is cleared when you leave it.
+  It compares `itemRarityKey(item)`, the canonical key, so the filter behaves the same in PT and EN.
+- Magic items with a fixed use budget carry `uses: { max, recharge }` in the catalog
+  (`src/data/items/*/magic_items.ts`, type in `items/types.ts`); the sheet stores only
+  `InventoryItem.uses_spent`. `recharge: 'dawn'` is refilled by `longRest` (the sheet has no other
+  marker for a new day); `'manual'` items (wands and staves that regain 1d6+1 a day) are only
+  restored by hand. Two constants wire items back into the spell pools inside `spendItemUse`:
+  `ITEMS_RESTORING_PACT_SLOT` (Rod of the Pact Keeper — gives back a pact slot, no choice) and
+  `ITEMS_RESTORING_SPELL_SLOT` (Pearl of Power — maps the item to the highest circle it reaches;
+  `spendItemUse(idx, slotLevel)` refuses the use unless that circle is within range and actually
+  has a spent slot, so the charge is never burned for nothing).
 - WCAG AA contrast: use `text-[#A8A09B]` (6.59:1 on the `#2D2520` background), not the older
   `#6B6560` (2.98:1, fails AA) — this was a deliberate global fix, don't reintroduce the old color.
 

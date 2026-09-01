@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
-import type { CharacterSheet, AbilityId, InventoryItem } from '../types'
+import type { CharacterSheet, AbilityId, FreeCast, InventoryItem } from '../types'
 import { createInitialSheet } from '../lib/initialSheet'
 import { recalculate } from '../lib/recalculate'
 import { migrateSheet } from '../lib/migrateSheet'
@@ -12,12 +12,17 @@ import {
   listSheets,
 } from '../services/sheetStorage'
 import { gameDataPt as gameData } from '../data/rules'
+import { getItems } from '../data/items'
 import {
   DEBOUNCE_SAVE_MS,
   MAX_EXHAUSTION,
   FIXED_LANGUAGES_BY_CLASS,
   MULTICLASS_PROFICIENCIES,
   CASTER_TYPE,
+  FEAT_SOURCE_MANUAL,
+  FEAT_SOURCE_SPECIES,
+  ITEMS_RESTORING_PACT_SLOT,
+  ITEMS_RESTORING_SPELL_SLOT,
 } from '../constants'
 
 export interface SheetListItem {
@@ -38,12 +43,18 @@ interface SheetStore {
   completeSheet: boolean
   abilityRolls: number[]
   setAbilityRolls: (vals: number[]) => void
+  /** AVAs distribuídos no passo de atributos — a ficha só guarda o total já somado. */
+  abilityAsi: Partial<Record<AbilityId, number>>
+  setAbilityAsi: (dist: Partial<Record<AbilityId, number>>) => void
 
   // Wizard
   setLevel: (level: number) => void
   setCharClass: (classId: string) => void
   setSubclass: (subclassId: string | null) => void
   setSpecies: (speciesId: string, lineageId?: string) => void
+  setSpeciesOriginFeat: (featId: string | null) => void
+  addFeat: (featId: string) => void
+  removeFeat: (featId: string) => void
   setBackgroundId: (backgroundId: string) => void
   setBackground: (backgroundId: string, distribution: Partial<Record<AbilityId, number>>) => void
   setAbilities: (values: Partial<Record<AbilityId, number>>, method?: string) => void
@@ -69,6 +80,14 @@ interface SheetStore {
   spendHitDie: () => void
   spendSlot: (level: keyof CharacterSheet['spellcasting']['spell_slots']) => void
   restoreSlot: (level: keyof CharacterSheet['spellcasting']['spell_slots']) => void
+  spendPactSlot: () => void
+  restorePactSlot: () => void
+  spendFreeCast: (id: string) => void
+  restoreFreeCast: (id: string) => void
+  setFreeCastChoices: (
+    id: string,
+    choices: Partial<Pick<FreeCast, 'spell_list' | 'ability' | 'cantrips' | 'spell'>>,
+  ) => void
   shortRest: () => void
   longRest: () => void
   updateResource: (resource: string, delta: number) => void
@@ -80,6 +99,9 @@ interface SheetStore {
   addItem: (item: InventoryItem) => void
   removeItem: (idx: number) => void
   updateItem: (idx: number, item: Partial<InventoryItem>) => void
+  /** `slotLevel` só é usado pelos itens que devolvem um espaço de Conjuração (Pérola do Poder). */
+  spendItemUse: (idx: number, slotLevel?: number) => void
+  restoreItemUse: (idx: number) => void
   updateCoins: (coins: Partial<CharacterSheet['inventory']['coins']>) => void
   toggleShield: () => void
   setArmor: (armorId: string | null) => void
@@ -115,6 +137,8 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
   completeSheet: false,
   abilityRolls: [],
   setAbilityRolls: vals => set({ abilityRolls: vals }),
+  abilityAsi: {},
+  setAbilityAsi: dist => set({ abilityAsi: dist }),
 
   setLevel: level =>
     set(s => ({ sheet: recalculate({ ...s.sheet, identity: { ...s.sheet.identity, level } }) })),
@@ -196,6 +220,8 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
       const sheet: CharacterSheet = {
         ...s.sheet,
         identity: { ...s.sheet.identity, species_id: speciesId, lineage_id: lineageId ?? null },
+        // Trocar de espécie descarta o Talento de Origem concedido pela anterior.
+        feats: { list: s.sheet.feats.list.filter(f => f.source !== FEAT_SOURCE_SPECIES) },
         species_traits: {
           darkvision_meters: species.darkvision ?? null,
           active_traits: [...speciesTraits, ...lineageTraits],
@@ -209,6 +235,67 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
 
       return { sheet: recalculate(sheet) }
     }),
+
+  /**
+   * Talento de Origem concedido pela espécie (Versátil, do Humano). Só um por
+   * personagem: a escolha anterior é substituída.
+   */
+  setSpeciesOriginFeat: featId =>
+    set(s => {
+      const kept = s.sheet.feats.list.filter(f => f.source !== FEAT_SOURCE_SPECIES)
+      const feat = featId ? gameData.origin_feats?.find(f => f.id === featId) : null
+      const list = feat
+        ? [
+            ...kept,
+            {
+              feat_id: feat.id,
+              name: feat.name,
+              category: 'Origem',
+              source: FEAT_SOURCE_SPECIES,
+              choices: {},
+            },
+          ]
+        : kept
+      return { sheet: recalculate({ ...s.sheet, feats: { list } }) }
+    }),
+
+  /**
+   * Talento adicionado à mão na aba Editar — para o que a ficha não deriva
+   * sozinha (talento de subclasse, prêmio de campanha, correção de importação).
+   */
+  addFeat: featId =>
+    set(s => {
+      if (s.sheet.feats.list.some(f => f.feat_id === featId)) return s
+      const origin = gameData.origin_feats?.find(f => f.id === featId)
+      const general = gameData.general_feats?.find(f => f.id === featId)
+      const feat = origin ?? general
+      if (!feat) return s
+      return {
+        sheet: recalculate({
+          ...s.sheet,
+          feats: {
+            list: [
+              ...s.sheet.feats.list,
+              {
+                feat_id: feat.id,
+                name: feat.name,
+                category: origin ? 'Origem' : 'Geral',
+                source: FEAT_SOURCE_MANUAL,
+                choices: {},
+              },
+            ],
+          },
+        }),
+      }
+    }),
+
+  removeFeat: featId =>
+    set(s => ({
+      sheet: recalculate({
+        ...s.sheet,
+        feats: { list: s.sheet.feats.list.filter(f => f.feat_id !== featId) },
+      }),
+    })),
 
   setBackgroundId: backgroundId =>
     set(s => ({
@@ -234,12 +321,18 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
       // Remove old antecedente talent, add new one
       const previousFeatId = previousBackground?.feat
       const baseList = s.sheet.feats.list.filter(t => t.feat_id !== previousFeatId)
+      // "Iniciado em Magia (Clérigo)" traz a lista entre parênteses, e o catálogo
+      // de talentos guarda só "Iniciado em Magia" — sem tirar o sufixo, esses três
+      // antecedentes não concediam talento nenhum. O rótulo completo continua sendo
+      // o id gravado, porque é dele que `recalculateFreeCasts` tira a lista.
+      const featLabel = background.feat
+      const featBase = featLabel?.replace(/\s*\([^)]*\)\s*$/, '').trim()
       const featData = gameData.origin_feats?.find(
-        t => t.id === background.feat || t.name === background.feat,
+        t => t.id === featLabel || t.name === featLabel || t.name === featBase,
       )
-      const featAlreadyAdded = baseList.some(t => t.feat_id === background.feat)
+      const featAlreadyAdded = baseList.some(t => t.feat_id === featLabel)
       const feats = featData && !featAlreadyAdded
-        ? [...baseList, { feat_id: background.feat, name: featData.name, category: 'Origem', source: 'Antecedente', choices: {} }]
+        ? [...baseList, { feat_id: featLabel, name: featLabel, category: 'Origem', source: 'Antecedente', choices: {} }]
         : baseList
 
       // Undo previous attribute distribution, then apply new one
@@ -380,9 +473,13 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
       ),
     })),
 
-  setEquipment: (_option, items) =>
+  setEquipment: (option, items) =>
     set(s => ({
-      sheet: { ...s.sheet, inventory: { ...s.sheet.inventory, items } },
+      sheet: {
+        ...s.sheet,
+        identity: { ...s.sheet.identity, equipment_option: option },
+        inventory: { ...s.sheet.inventory, items },
+      },
     })),
 
   setPersonality: p =>
@@ -471,11 +568,97 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
       }
     }),
 
+  // Magia de Pacto tem reserva própria: nunca some nem divide com `spell_slots`.
+  spendPactSlot: () =>
+    set(s => {
+      const pact = s.sheet.spellcasting.pact_slots
+      if (pact.spent >= pact.max) return s
+      return {
+        sheet: {
+          ...s.sheet,
+          spellcasting: { ...s.sheet.spellcasting, pact_slots: { ...pact, spent: pact.spent + 1 } },
+        },
+      }
+    }),
+
+  restorePactSlot: () =>
+    set(s => {
+      const pact = s.sheet.spellcasting.pact_slots
+      if (pact.spent <= 0) return s
+      return {
+        sheet: {
+          ...s.sheet,
+          spellcasting: { ...s.sheet.spellcasting, pact_slots: { ...pact, spent: pact.spent - 1 } },
+        },
+      }
+    }),
+
+  spendFreeCast: id =>
+    set(s => {
+      const casts = s.sheet.spellcasting.free_casts ?? []
+      const cast = casts.find(c => c.id === id)
+      if (!cast || cast.spent >= cast.max) return s
+      return {
+        sheet: {
+          ...s.sheet,
+          spellcasting: {
+            ...s.sheet.spellcasting,
+            free_casts: casts.map(c => (c.id === id ? { ...c, spent: c.spent + 1 } : c)),
+          },
+        },
+      }
+    }),
+
+  restoreFreeCast: id =>
+    set(s => {
+      const casts = s.sheet.spellcasting.free_casts ?? []
+      const cast = casts.find(c => c.id === id)
+      if (!cast || cast.spent <= 0) return s
+      return {
+        sheet: {
+          ...s.sheet,
+          spellcasting: {
+            ...s.sheet.spellcasting,
+            free_casts: casts.map(c => (c.id === id ? { ...c, spent: c.spent - 1 } : c)),
+          },
+        },
+      }
+    }),
+
+  setFreeCastChoices: (id, choices) =>
+    set(s => {
+      const casts = (s.sheet.spellcasting.free_casts ?? []).map(c => {
+        if (c.id !== id) return c
+        const next = { ...c, ...choices }
+        // Trocar de lista descarta os truques e a magia escolhidos na anterior —
+        // mas não o que vier junto nesta mesma chamada.
+        if (choices.spell_list !== undefined && choices.spell_list !== c.spell_list) {
+          if (choices.cantrips === undefined) next.cantrips = []
+          if (choices.spell === undefined) next.spell = null
+        }
+        return next
+      })
+      return {
+        sheet: recalculate({
+          ...s.sheet,
+          spellcasting: { ...s.sheet.spellcasting, free_casts: casts },
+        }),
+      }
+    }),
+
+  // Descanso Curto devolve os espaços de pacto (PHB 2024, Magia de Pacto);
+  // os espaços de Conjuração só voltam no Descanso Longo.
   shortRest: () =>
     set(s => ({
-      sheet: updateCombat(s.sheet, {
-        hit_dice: { ...s.sheet.combat.hit_dice, spent: 0 },
-      }),
+      sheet: {
+        ...updateCombat(s.sheet, {
+          hit_dice: { ...s.sheet.combat.hit_dice, spent: 0 },
+        }),
+        spellcasting: {
+          ...s.sheet.spellcasting,
+          pact_slots: { ...s.sheet.spellcasting.pact_slots, spent: 0 },
+        },
+      },
     })),
 
   longRest: () =>
@@ -495,15 +678,31 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
       if (r.focus_points.max) r.focus_points = { ...r.focus_points, current: r.focus_points.max }
       if (r.bardic_inspiration.max) r.bardic_inspiration = { ...r.bardic_inspiration, current: r.bardic_inspiration.max }
 
+      // Itens de recarga diária: o Descanso Longo é o único marcador de virada de
+      // dia que a ficha tem. Os de recarga lenta (`manual`) ficam como estão.
+      const catalog = getItems()
+      const restoredItems = s.sheet.inventory.items.map(it => {
+        if (!it.item_id || !it.uses_spent) return it
+        const catalogItem = catalog.find(i => i.id === it.item_id)
+        const uses = (catalogItem as { uses?: { recharge: string } } | undefined)?.uses
+        return uses?.recharge === 'dawn' ? { ...it, uses_spent: 0 } : it
+      })
+
       return {
         sheet: {
           ...s.sheet,
+          inventory: { ...s.sheet.inventory, items: restoredItems },
           combat: {
             ...s.sheet.combat,
             hit_points: { ...s.sheet.combat.hit_points, current: maxHp, temporary: 0 },
             hit_dice: { ...s.sheet.combat.hit_dice, spent: 0 },
           },
-          spellcasting: { ...s.sheet.spellcasting, spell_slots: restoredSlots },
+          spellcasting: {
+            ...s.sheet.spellcasting,
+            spell_slots: restoredSlots,
+            pact_slots: { ...s.sheet.spellcasting.pact_slots, spent: 0 },
+            free_casts: (s.sheet.spellcasting.free_casts ?? []).map(c => ({ ...c, spent: 0 })),
+          },
           class_features: { ...s.sheet.class_features, class_resources: r },
         },
       }
@@ -582,6 +781,73 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
         },
       },
     })),
+
+  /**
+   * Gasta um uso de um item mágico. O máximo vem do catálogo; aqui só se conta o
+   * gasto. O Bastão do Guardião do Pacto devolve um espaço de pacto no mesmo ato.
+   */
+  spendItemUse: (idx, slotLevel) =>
+    set(s => {
+      const item = s.sheet.inventory.items[idx]
+      if (!item?.item_id) return s
+      const catalogItem = getItems().find(i => i.id === item.item_id)
+      const max = (catalogItem as { uses?: { max: number } } | undefined)?.uses?.max ?? 0
+      const spent = item.uses_spent ?? 0
+      if (max <= 0 || spent >= max) return s
+
+      let spellcasting = s.sheet.spellcasting
+
+      // Pérola do Poder e afins: gastar o uso devolve um espaço de Conjuração do
+      // círculo escolhido. Sem círculo válido e gasto, o uso não é consumido.
+      const maxSlotLevel = ITEMS_RESTORING_SPELL_SLOT[item.item_id]
+      if (maxSlotLevel != null) {
+        if (!slotLevel || slotLevel < 1 || slotLevel > maxSlotLevel) return s
+        const key = `c${slotLevel}` as keyof typeof spellcasting.spell_slots
+        const slot = spellcasting.spell_slots[key]
+        if (!slot || slot.spent <= 0) return s
+        spellcasting = {
+          ...spellcasting,
+          spell_slots: { ...spellcasting.spell_slots, [key]: { ...slot, spent: slot.spent - 1 } },
+        }
+      }
+
+      // Bastão do Guardião do Pacto: devolve um espaço de pacto, sem escolha.
+      const pact = spellcasting.pact_slots
+      if (ITEMS_RESTORING_PACT_SLOT.includes(item.item_id) && pact.spent > 0) {
+        spellcasting = { ...spellcasting, pact_slots: { ...pact, spent: pact.spent - 1 } }
+      }
+
+      return {
+        sheet: {
+          ...s.sheet,
+          inventory: {
+            ...s.sheet.inventory,
+            items: s.sheet.inventory.items.map((it, i) =>
+              i === idx ? { ...it, uses_spent: spent + 1 } : it,
+            ),
+          },
+          spellcasting,
+        },
+      }
+    }),
+
+  restoreItemUse: idx =>
+    set(s => {
+      const item = s.sheet.inventory.items[idx]
+      const spent = item?.uses_spent ?? 0
+      if (spent <= 0) return s
+      return {
+        sheet: {
+          ...s.sheet,
+          inventory: {
+            ...s.sheet.inventory,
+            items: s.sheet.inventory.items.map((it, i) =>
+              i === idx ? { ...it, uses_spent: spent - 1 } : it,
+            ),
+          },
+        },
+      }
+    }),
 
   updateCoins: coins =>
     set(s => ({
@@ -870,7 +1136,7 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
 
   newSheet: () => {
     const id = uuidv4()
-    set({ sheet: createInitialSheet(), sheetId: id, currentStep: 1, completeSheet: false, abilityRolls: [] })
+    set({ sheet: createInitialSheet(), sheetId: id, currentStep: 1, completeSheet: false, abilityRolls: [], abilityAsi: {} })
   },
 
   deleteSheet: id => {

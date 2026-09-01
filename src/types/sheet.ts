@@ -14,6 +14,8 @@ export interface InventoryItem {
   cost_gp: number | null
   weight_kg: number | null
   notes: string | null
+  /** Usos gastos do item mágico. O máximo vem do catálogo (`MagicItem.uses`), não daqui. */
+  uses_spent: number | null
 }
 
 export interface Attack {
@@ -41,6 +43,33 @@ export interface SpellSlot {
   spent: number
 }
 
+/**
+ * Conjuração que não gasta espaço de magia, recuperada no Descanso Longo. Fica
+ * fora de `spell_slots` de propósito: não é um espaço, é um uso à parte.
+ *
+ * - `magic_initiate`: o talento Iniciado em Magia — 2 truques + 1 magia de 1º
+ *   círculo da lista escolhida, com atributo de conjuração próprio;
+ * - `mystic_arcanum`: Arcana Mística do bruxo (níveis 11/13/15/17) — 1 magia de
+ *   6º a 9º círculo da lista de bruxo, com o atributo de conjuração do bruxo.
+ */
+export interface FreeCast {
+  id: string
+  kind: 'magic_initiate' | 'mystic_arcanum'
+  /** Id da classe cuja lista de magias o talento abre (`clerigo`/`druida`/`mago`); null = ainda não escolhida. */
+  spell_list: string | null
+  /** Antecedentes já fixam a lista no nome do talento — aí ela não é escolhível. */
+  list_locked: boolean
+  ability: AbilityId | null
+  cantrips: string[]
+  spell: string | null
+  /** Círculo da magia concedida: 1 no Iniciado em Magia, 6–9 na Arcana Mística. */
+  level: number
+  max: number
+  spent: number
+  _spell_dc: number | null
+  _spell_attack_bonus: number | null
+}
+
 export interface CharacterSheet {
   identity: {
     character_name: string | null
@@ -54,6 +83,8 @@ export interface CharacterSheet {
     lineage_id: string | null
     background_id: string | null
     background_distribution: Partial<Record<AbilityId, number>>
+    /** Pacote inicial escolhido no passo de equipamento ('A' = itens, 'B' = ouro). */
+    equipment_option: 'A' | 'B' | null
     alignment: { ethical: string | null; moral: string | null }
     age: string | null
     height: string | null
@@ -121,11 +152,16 @@ export interface CharacterSheet {
     spellcasting_ability: AbilityId | null
     _spell_dc: number | null
     _spell_attack_bonus: number | null
+    /** CD por classe conjuradora: em multiclasse cada uma usa o próprio atributo. */
+    _spell_dc_by_class: Record<string, number>
+    _spell_attack_by_class: Record<string, number>
     cantrips_by_class: Record<string, string[]>
     spells_by_class: Record<string, string[]>
     spellbook: string[]
     spell_slots: Record<'c1' | 'c2' | 'c3' | 'c4' | 'c5' | 'c6' | 'c7' | 'c8' | 'c9', SpellSlot>
+    /** Magia de Pacto do bruxo: reserva separada, recuperada em Descanso Curto. */
     pact_slots: { level: number | null; max: number; spent: number }
+    free_casts: FreeCast[]
   }
   inventory: {
     coins: { PC: number; PP: number; PE: number; PO: number; PL: number }

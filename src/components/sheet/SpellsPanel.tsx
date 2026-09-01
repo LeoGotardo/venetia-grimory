@@ -5,6 +5,7 @@ import { formatModifier } from '../../lib/calculations'
 import { resolveSpell, type Spell } from '../../data/spells'
 import { gameData } from '../../data/rules'
 import { SpellCard } from '../ui/SpellCard'
+import { freeCastLabel } from '../../lib/freeCasts'
 import type { CharacterSheet } from '../../types'
 
 const SPELL_LEVELS: Array<keyof CharacterSheet['spellcasting']['spell_slots']> = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9']
@@ -24,7 +25,15 @@ const SPELL_LEVEL_COLORS = [
 ]
 
 export function SpellsPanel() {
-  const { sheet, spendSlot, restoreSlot } = useSheetStore()
+  const {
+    sheet,
+    spendSlot,
+    restoreSlot,
+    spendPactSlot,
+    restorePactSlot,
+    spendFreeCast,
+    restoreFreeCast,
+  } = useSheetStore()
   const { t } = useTranslation()
   const [openSpell, setOpenSpell] = useState<Spell | null>(null)
   const { spellcasting } = sheet
@@ -33,7 +42,15 @@ export function SpellsPanel() {
     Object.values(spellcasting.cantrips_by_class).flat().length +
     Object.values(spellcasting.spells_by_class).flat().length
 
-  if (!spellcasting.spellcaster) {
+  // As três reservas são independentes: Conjuração, Magia de Pacto e conjurações
+  // grátis (Iniciado em Magia). Qualquer uma delas já faz a aba valer a pena.
+  const pact = spellcasting.pact_slots
+  const freeCasts = spellcasting.free_casts ?? []
+  const hasStandardSlots = SPELL_LEVELS.some(c => spellcasting.spell_slots[c].max > 0)
+  const castingClasses = Object.keys(spellcasting._spell_dc_by_class ?? {})
+  const hasMagic = spellcasting.spellcaster || pact.max > 0 || freeCasts.length > 0
+
+  if (!hasMagic) {
     return (
       <div className="text-center py-10 text-[#A8A09B]">
         <div className="mb-3 flex justify-center opacity-40">
@@ -46,78 +63,214 @@ export function SpellsPanel() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 text-center">
-          <div className="text-xs text-[#A8A09B] mb-1">{t('magic.spellDC')}</div>
-          <div className="font-cinzel font-bold text-3xl text-[#F5F0E8]">{spellcasting._spell_dc ?? '—'}</div>
+    <>
+      {/* No desktop as reservas viram uma coluna à esquerda e as listas de magias
+          ocupam o resto da largura, em vez de tudo empilhar. */}
+      <div className="space-y-5 lg:grid lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] lg:gap-6 lg:items-start lg:space-y-0">
+        <div className="space-y-5">
+          {castingClasses.length > 1 ? (
+            // Multiclasse: cada classe conjura com o próprio atributo, então a CD é uma por classe.
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+              {castingClasses.map(classId => (
+                <div key={classId} className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3">
+                  <div className="text-[11px] uppercase tracking-wide text-[#A8A09B] mb-1">
+                    {gameData.classes.find(c => c.id === classId)?.name ?? classId}
+                  </div>
+                  <div className="flex items-baseline gap-4">
+                    <span className="text-xs text-[#A8A09B]">
+                      {t('magic.spellDC')}{' '}
+                      <b className="font-cinzel text-xl text-[#F5F0E8]">
+                        {spellcasting._spell_dc_by_class[classId]}
+                      </b>
+                    </span>
+                    <span className="text-xs text-[#A8A09B]">
+                      {t('magic.spellAttackBonus')}{' '}
+                      <b className="font-cinzel text-xl text-[#F5F0E8]">
+                        {formatModifier(spellcasting._spell_attack_by_class[classId])}
+                      </b>
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 text-center">
+                <div className="text-xs text-[#A8A09B] mb-1">{t('magic.spellDC')}</div>
+                <div className="font-cinzel font-bold text-3xl text-[#F5F0E8]">{spellcasting._spell_dc ?? '—'}</div>
+              </div>
+              <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 text-center">
+                <div className="text-xs text-[#A8A09B] mb-1">{t('magic.spellAttackBonus')}</div>
+                <div className="font-cinzel font-bold text-3xl text-[#F5F0E8]">
+                  {spellcasting._spell_attack_bonus !== null ? formatModifier(spellcasting._spell_attack_bonus) : '—'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {hasStandardSlots && (
+            <section aria-label={t('magic.spellSlots')}>
+              <h4 className="font-cinzel font-semibold text-[#B8860B] mb-3">{t('magic.spellSlots')}</h4>
+              <div className="space-y-2">
+                {SPELL_LEVELS.map((c, i) => {
+                  const slot = spellcasting.spell_slots[c]
+                  if (slot.max === 0) return null
+                  const level = i + 1
+                  return (
+                    <SlotTrack
+                      key={c}
+                      label={t('magic.level_n', { n: level })}
+                      level={level}
+                      max={slot.max}
+                      spent={slot.spent}
+                      groupLabel={t('magic.circleAriaLabel', { n: level })}
+                      spendLabel={j => t('magic.spendSlot', { slot: j, n: level })}
+                      restoreLabel={j => t('magic.restoreSlot', { slot: j, n: level })}
+                      onSpend={() => spendSlot(c)}
+                      onRestore={() => restoreSlot(c)}
+                    />
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {pact.max > 0 && (
+            <section aria-label={t('magic.pactSlots')}>
+              <h4 className="font-cinzel font-semibold text-[#B8860B] mb-1">{t('magic.pactSlots')}</h4>
+              <p className="text-[11px] text-[#A8A09B] mb-3">{t('magic.pactSlotsHint')}</p>
+              <SlotTrack
+                label={t('magic.level_n', { n: pact.level ?? 1 })}
+                level={pact.level ?? 1}
+                max={pact.max}
+                spent={pact.spent}
+                groupLabel={t('magic.pactAriaLabel', { n: pact.level ?? 1 })}
+                spendLabel={j => t('magic.spendPactSlot', { slot: j })}
+                restoreLabel={j => t('magic.restorePactSlot', { slot: j })}
+                onSpend={spendPactSlot}
+                onRestore={restorePactSlot}
+              />
+            </section>
+          )}
+
+          {freeCasts.length > 0 && (
+            <section aria-label={t('magic.freeCasts')}>
+              <h4 className="font-cinzel font-semibold text-[#B8860B] mb-1">{t('magic.freeCasts')}</h4>
+              <p className="text-[11px] text-[#A8A09B] mb-3">{t('magic.freeCastsHint')}</p>
+              <div className="space-y-2">
+                {freeCasts.map(cast => {
+                  const label = freeCastLabel(cast, t)
+                  return (
+                    <div key={cast.id} className="space-y-0.5">
+                      <SlotTrack
+                        label={label}
+                        level={cast.level}
+                        max={cast.max}
+                        spent={cast.spent}
+                        groupLabel={label}
+                        spendLabel={() => t('magic.spendFreeCast', { source: label })}
+                        restoreLabel={() => t('magic.restoreFreeCast', { source: label })}
+                        onSpend={() => spendFreeCast(cast.id)}
+                        onRestore={() => restoreFreeCast(cast.id)}
+                        wideLabel
+                      />
+                      <p className="text-[11px] text-[#A8A09B] pl-[8.75rem]">
+                        {cast.spell ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const m = resolveSpell(cast.spell!)
+                              if (m) setOpenSpell(m)
+                            }}
+                            className="text-[#D4A017] hover:underline cursor-pointer"
+                          >
+                            {cast.spell}
+                          </button>
+                        ) : (
+                          <span className="italic">{t('magic.freeCastNoSpell')}</span>
+                        )}
+                        {cast.cantrips.length > 0 && <> · {cast.cantrips.join(', ')}</>}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
         </div>
-        <div className="bg-[#2D2520] border border-[#B8860B]/20 rounded-lg p-3 text-center">
-          <div className="text-xs text-[#A8A09B] mb-1">{t('magic.spellAttackBonus')}</div>
-          <div className="font-cinzel font-bold text-3xl text-[#F5F0E8]">
-            {spellcasting._spell_attack_bonus !== null ? formatModifier(spellcasting._spell_attack_bonus) : '—'}
-          </div>
+
+        <div className="space-y-5">
+          <ListaDeMagias
+            title={t('magic.cantrips')}
+            porClasse={spellcasting.cantrips_by_class}
+            onAbrir={setOpenSpell}
+          />
+
+          <ListaDeMagias
+            title={t('magic.preparedSpells')}
+            porClasse={spellcasting.spells_by_class}
+            onAbrir={setOpenSpell}
+          />
+
+          {totalSelected === 0 && (
+            <p className="text-sm text-[#A8A09B] text-center py-6">{t('magic.noSpellsSelected')}</p>
+          )}
         </div>
       </div>
 
-      <section aria-label={t('magic.spellSlots')}>
-        <h4 className="font-cinzel font-semibold text-[#B8860B] mb-3">{t('magic.spellSlots')}</h4>
-        <div className="space-y-2">
-          {SPELL_LEVELS.map((c, i) => {
-            const slot = spellcasting.spell_slots[c]
-            if (slot.max === 0) return null
-            const level = i + 1
-            return (
-              <div key={c} className="flex items-center gap-3">
-                <span className="text-xs text-[#A8A09B] w-8 text-right flex-shrink-0">{t('magic.level_n', { n: level })}</span>
-                <div className="flex gap-1 flex-wrap" role="group" aria-label={t('magic.circleAriaLabel', { n: level })}>
-                  {Array.from({ length: slot.max }, (_, j) => {
-                    const available = j < slot.max - slot.spent
-                    return (
-                      <button
-                        key={j}
-                        onClick={() => available ? spendSlot(c) : restoreSlot(c)}
-                        className={[
-                          'w-5 h-5 rounded-full border-2 transition-all cursor-pointer',
-                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-1 focus-visible:ring-offset-[#3D332D]',
-                          available
-                            ? `${SPELL_LEVEL_COLORS[level]} border-transparent opacity-90 hover:opacity-100`
-                            : 'border-[#A8A09B]/40 bg-transparent hover:border-[#B8860B]',
-                        ].join(' ')}
-                        aria-label={available
-                          ? t('magic.spendSlot', { slot: j + 1, n: level })
-                          : t('magic.restoreSlot', { slot: j + 1, n: level })}
-                        aria-pressed={!available}
-                      />
-                    )
-                  })}
-                </div>
-                <span className="text-xs text-[#A8A09B]">
-                  {slot.max - slot.spent}/{slot.max}
-                </span>
-              </div>
-            )
-          })}
-        </div>
-      </section>
-
-      <ListaDeMagias
-        title={t('magic.cantrips')}
-        porClasse={spellcasting.cantrips_by_class}
-        onAbrir={setOpenSpell}
-      />
-
-      <ListaDeMagias
-        title={t('magic.preparedSpells')}
-        porClasse={spellcasting.spells_by_class}
-        onAbrir={setOpenSpell}
-      />
-
-      {totalSelected === 0 && (
-        <p className="text-sm text-[#A8A09B] text-center py-6">{t('magic.noSpellsSelected')}</p>
-      )}
-
       <SpellCard spellcasting={openSpell} onClose={() => setOpenSpell(null)} />
+    </>
+  )
+}
+
+interface SlotTrackProps {
+  label: string
+  level: number
+  max: number
+  spent: number
+  groupLabel: string
+  spendLabel: (slot: number) => string
+  restoreLabel: (slot: number) => string
+  onSpend: () => void
+  onRestore: () => void
+  wideLabel?: boolean
+}
+
+/** Uma fileira de bolinhas gastáveis — serve para espaço de magia, de pacto ou conjuração grátis. */
+function SlotTrack({
+  label, level, max, spent, groupLabel, spendLabel, restoreLabel, onSpend, onRestore, wideLabel,
+}: SlotTrackProps) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        className={`text-xs text-[#A8A09B] text-right flex-shrink-0 ${wideLabel ? 'w-32 truncate' : 'w-8'}`}
+        title={wideLabel ? label : undefined}
+      >
+        {label}
+      </span>
+      <div className="flex gap-1 flex-wrap" role="group" aria-label={groupLabel}>
+        {Array.from({ length: max }, (_, j) => {
+          const available = j < max - spent
+          return (
+            <button
+              key={j}
+              onClick={() => (available ? onSpend() : onRestore())}
+              className={[
+                'w-5 h-5 rounded-full border-2 transition-all cursor-pointer',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-1 focus-visible:ring-offset-[#3D332D]',
+                available
+                  ? `${SPELL_LEVEL_COLORS[level] ?? SPELL_LEVEL_COLORS[1]} border-transparent opacity-90 hover:opacity-100`
+                  : 'border-[#A8A09B]/40 bg-transparent hover:border-[#B8860B]',
+              ].join(' ')}
+              aria-label={available ? spendLabel(j + 1) : restoreLabel(j + 1)}
+              aria-pressed={!available}
+            />
+          )
+        })}
+      </div>
+      <span className="text-xs text-[#A8A09B]">
+        {max - spent}/{max}
+      </span>
     </div>
   )
 }
@@ -155,7 +308,7 @@ function ListaDeMagias({ title, porClasse, onAbrir }: ListaDeMagiasProps) {
                 {gameData.classes.find(c => c.id === classId)?.name ?? classId}
               </p>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-1.5">
               {nomes.map(name => (
                 <ItemDeMagia key={`${classId}-${name}`} name={name} onAbrir={onAbrir} />
               ))}

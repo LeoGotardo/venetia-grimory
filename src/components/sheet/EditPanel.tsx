@@ -1,12 +1,41 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
-import { calcModifier, formatModifier, ABILITIES, abilityName, calcPrimaryClassLevel, canChooseSubclass } from '../../lib/calculations'
+import {
+  calcModifier,
+  formatModifier,
+  ABILITIES,
+  abilityName,
+  calcPrimaryClassLevel,
+  canChooseSubclass,
+  calcThirdCasterCantrips,
+  calcThirdCasterPreparedSpells,
+  calcThirdCasterSlots,
+  isCasterClass,
+  isThirdCaster,
+  spellListForClass,
+} from '../../lib/calculations'
 import { Input, Textarea } from '../ui/Input'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import type { AbilityId } from '../../types'
-import { MIN_LEVEL, MAX_LEVEL, MULTICLASS_PREREQUISITES, CASTER_TYPE } from '../../constants'
+import {
+  MIN_LEVEL,
+  MAX_LEVEL,
+  MULTICLASS_PREREQUISITES,
+  BACKGROUND_ABILITY_POINTS_TOTAL,
+  SPECIES_WITH_ORIGIN_FEAT,
+  FEAT_SOURCE_SPECIES,
+  FEAT_SOURCE_MANUAL,
+} from '../../constants'
+import {
+  hasFightingStyle,
+  hasDivineOrder,
+  hasPrimalOrder,
+  hasFavoredEnemy,
+  hasAnyClassChoice,
+} from '../../lib/classChoices'
+import type { Attack } from '../../types'
 import { getCantripsByClasses, getSpellsByClassesAndLevels, getCantripsByClass, getSpellsByClass } from '../../data/spells'
 import { getBackgrounds } from '../../data/backgrounds'
 import type { Spell } from '../../data/spells'
@@ -16,6 +45,7 @@ import type { ItemDetail } from '../ui/ItemCard'
 import { ClassCard } from '../ui/ClassCard'
 import { SpeciesCard } from '../ui/SpeciesCard'
 import { BackpackSearch } from '../ui/BackpackSearch'
+import { FreeCastPicker } from '../ui/FreeCastPicker'
 import { gameData, gameDataPt } from '../../data/rules'
 
 const ETHICAL_ALIGNMENTS = ['Lawful', 'Neutral', 'Chaotic'] as const
@@ -29,20 +59,34 @@ const SECTION_TITLE = 'font-cinzel font-semibold text-[#B8860B] pb-2 border-b bo
 export function EditPanel() {
   const { t } = useTranslation()
   return (
-    <div className="space-y-5 max-w-2xl">
-      <p className="flex items-center gap-1.5 text-xs text-[#A8A09B] bg-[#3D332D] border border-[#B8860B]/20 rounded-lg px-3 py-2">
+    <div className="space-y-5">
+      <p className="flex items-center gap-1.5 text-xs text-[#A8A09B] bg-[#3D332D] border border-[#B8860B]/20 rounded-lg px-3 py-2 lg:max-w-2xl">
         <svg width="10" height="10" viewBox="0 0 24 24" fill="#B8860B" className="flex-shrink-0"><path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z"/></svg>
         {t('edit.autoSave')}
       </p>
-      <InfoSection />
-      <AppearanceSection />
-      <ProgressionSection />
-      <MulticlassSection />
-      <AbilitiesSection />
-      <MovementSection />
-      <ArmorSection />
-      <SkillsSection />
-      <ProficienciesSection />
+
+      {/* Duas colunas no desktop: quem é o personagem à esquerda, o que ele faz à
+          direita. As seções largas (magias, personalidade, mochila) ficam embaixo,
+          ocupando a linha inteira, porque precisam da largura toda. */}
+      <div className="space-y-5 lg:grid lg:grid-cols-2 lg:gap-5 lg:items-start lg:space-y-0">
+        <div className="space-y-5">
+          <InfoSection />
+          <AppearanceSection />
+          <ProgressionSection />
+          <MulticlassSection />
+          <ClassChoicesSection />
+          <FeatsSection />
+          <ProficienciesSection />
+        </div>
+        <div className="space-y-5">
+          <AbilitiesSection />
+          <MovementSection />
+          <ArmorSection />
+          <AttacksSection />
+          <SkillsSection />
+        </div>
+      </div>
+
       <SpellSection />
       <PersonalitySection />
       <BackpackSection />
@@ -117,7 +161,7 @@ function InfoSection() {
 }
 
 function ProgressionSection() {
-  const { sheet, setLevel, setIdentity, setCharClass, setSubclass, setSpecies, setBackgroundId } = useSheetStore()
+  const { sheet, setLevel, setIdentity, setCharClass, setSubclass, setSpecies, setBackground } = useSheetStore()
   const { t } = useTranslation()
   const id = sheet.identity
   const level = id.level
@@ -256,12 +300,12 @@ function ProgressionSection() {
           </div>
         )}
 
-        {/* Antecedente */}
+        {/* Antecedente — passa pela ação completa, que aplica perícias, talento e bônus */}
         <div className="flex flex-col gap-1">
           <label className="text-sm text-[#B8860B] font-medium">{t('edit.background')}</label>
           <select
             value={id.background_id ?? ''}
-            onChange={e => setBackgroundId(e.target.value)}
+            onChange={e => setBackground(e.target.value, id.background_distribution ?? {})}
             className={SELECT_BASE}
           >
             <option value="">{t('edit.selectClass')}</option>
@@ -270,12 +314,351 @@ function ProgressionSection() {
         </div>
       </div>
 
+      {id.background_id && <BackgroundBonusEditor />}
+
       <ClassCard charClass={showClass ? (charClass ?? null) : null} level={level} onClose={() => setShowClass(false)} />
       <SpeciesCard
         species={showSpecies ? (species ?? null) : null}
         lineageId={id.lineage_id}
         onClose={() => setShowSpecies(false)}
       />
+    </section>
+  )
+}
+
+/**
+ * Os +3 pontos de atributo do antecedente: 2+1 em dois atributos, ou 1+1+1 em três.
+ * Só grava quando a distribuição fecha os 3 pontos — `setBackground` desfaz a
+ * anterior antes de aplicar a nova, e uma distribuição parcial deixaria a ficha
+ * com menos pontos do que deveria.
+ */
+function BackgroundBonusEditor() {
+  const { sheet, setBackground } = useSheetStore()
+  const { t } = useTranslation()
+  const backgroundId = sheet.identity.background_id ?? ''
+  const distribution = sheet.identity.background_distribution ?? {}
+
+  const modoSalvo = Object.values(distribution).includes(2) ? '2+1' : '1+1+1'
+  const [modo, setModo] = useState<'2+1' | '1+1+1'>(
+    Object.keys(distribution).length > 0 ? modoSalvo : '2+1',
+  )
+
+  const escolhidos = ABILITIES.filter(a => (distribution[a] ?? 0) > 0)
+  const maior = ABILITIES.find(a => distribution[a] === 2) ?? null
+  const slots = modo === '2+1' ? [2, 1] : [1, 1, 1]
+
+  function atual(idx: number): AbilityId | '' {
+    if (modo === '2+1') return (idx === 0 ? maior : escolhidos.find(a => a !== maior)) ?? ''
+    return escolhidos[idx] ?? ''
+  }
+
+  function definir(idx: number, ability: AbilityId | '') {
+    const proximos = slots.map((_, i) => (i === idx ? ability : atual(i)))
+    const nova: Partial<Record<AbilityId, number>> = {}
+    proximos.forEach((a, i) => {
+      if (!a) return
+      nova[a] = (nova[a] ?? 0) + slots[i]
+    })
+    const total = Object.values(nova).reduce((sum, v) => sum + v, 0)
+    // atributo repetido ou distribuição incompleta: espera o resto da escolha
+    if (total !== BACKGROUND_ABILITY_POINTS_TOTAL || Object.keys(nova).length !== slots.length) return
+    setBackground(backgroundId, nova)
+  }
+
+  function trocarModo(novoModo: '2+1' | '1+1+1') {
+    setModo(novoModo)
+    setBackground(backgroundId, {})
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-sm text-[#B8860B] font-medium">{t('edit.backgroundBonus')}</span>
+        <div className="flex gap-1">
+          {(['2+1', '1+1+1'] as const).map(m => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={modo === m}
+              onClick={() => trocarModo(m)}
+              className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors cursor-pointer
+                ${modo === m
+                  ? 'bg-[#B8860B]/20 border-[#B8860B] text-[#D4A017]'
+                  : 'border-[#B8860B]/20 text-[#A8A09B] hover:text-[#F5F0E8]'}`}
+            >
+              {m}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {slots.map((bonus, idx) => (
+          <div key={idx} className="flex flex-col gap-1">
+            <label className="text-[11px] text-[#A8A09B]">+{bonus}</label>
+            <select
+              value={atual(idx)}
+              onChange={e => definir(idx, (e.target.value || '') as AbilityId | '')}
+              className={SELECT_BASE}
+            >
+              <option value="">{t('edit.selectDefault')}</option>
+              {ABILITIES.map(a => <option key={a} value={a}>{abilityName(a, t)}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Escolhas que a classe concede fora do nível: Estilo de Luta, Ordem Divina/Primal
+ * e Inimigo Favorito. O wizard oferece as mesmas no passo 3 — aqui elas podem ser
+ * revistas depois, que é o que faltava.
+ */
+function ClassChoicesSection() {
+  const { sheet, setClassChoices } = useSheetStore()
+  const { t } = useTranslation()
+  const classId = sheet.identity.class_id ?? ''
+  const primaryLevel = calcPrimaryClassLevel(sheet.identity.level, sheet.identity.multiclasses ?? [])
+  const cc = sheet.class_features
+
+  if (!classId || !hasAnyClassChoice(classId, primaryLevel)) return null
+
+  const escolhas: Array<{
+    key: string
+    label: string
+    value: string | null
+    options: Array<{ id: string; name: string }>
+    onChange: (id: string | null) => void
+  }> = []
+
+  if (hasFightingStyle(classId, primaryLevel)) {
+    escolhas.push({
+      key: 'fighting_style',
+      label: t('edit.fightingStyle'),
+      value: cc.fighting_style,
+      options: gameData.fighting_styles ?? [],
+      onChange: id => setClassChoices({ fighting_style: id }),
+    })
+  }
+  if (hasDivineOrder(classId)) {
+    escolhas.push({
+      key: 'divine_order',
+      label: t('edit.divineOrder'),
+      value: cc.divine_order,
+      options: gameData.divine_orders ?? [],
+      onChange: id => setClassChoices({ divine_order: id }),
+    })
+  }
+  if (hasPrimalOrder(classId)) {
+    escolhas.push({
+      key: 'primal_order',
+      label: t('edit.primalOrder'),
+      value: cc.primal_order,
+      options: gameData.primal_orders ?? [],
+      onChange: id => setClassChoices({ primal_order: id }),
+    })
+  }
+  if (hasFavoredEnemy(classId)) {
+    escolhas.push({
+      key: 'favored_enemy',
+      label: t('edit.favoredEnemy'),
+      value: cc.favored_enemy,
+      options: gameData.favored_enemies ?? [],
+      onChange: id => setClassChoices({ favored_enemy: id }),
+    })
+  }
+
+  return (
+    <section aria-label={t('edit.classChoices')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.classChoices')}</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {escolhas.map(e => (
+          <div key={e.key} className="flex flex-col gap-1">
+            <label className="text-sm text-[#B8860B] font-medium">{e.label}</label>
+            <select
+              value={e.value ?? ''}
+              onChange={ev => e.onChange(ev.target.value || null)}
+              className={SELECT_BASE}
+            >
+              <option value="">{t('edit.selectDefault')}</option>
+              {e.options.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+            </select>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/**
+ * Talentos adquiridos. Os que vêm do antecedente, da espécie ou de um nível
+ * aparecem marcados com a origem; os adicionados aqui à mão cobrem o que a ficha
+ * não deriva sozinha. O Humano escolhe o Talento de Origem nesta seção.
+ */
+function FeatsSection() {
+  const { sheet, addFeat, removeFeat, setSpeciesOriginFeat } = useSheetStore()
+  const { t } = useTranslation()
+  const [novo, setNovo] = useState('')
+
+  const speciesId = sheet.identity.species_id
+  const grantsOriginFeat = !!speciesId && SPECIES_WITH_ORIGIN_FEAT.includes(speciesId)
+  const speciesFeat = sheet.feats.list.find(f => f.source === FEAT_SOURCE_SPECIES) ?? null
+
+  const catalogo = [...(gameData.origin_feats ?? []), ...(gameData.general_feats ?? [])]
+  const disponiveis = catalogo.filter(f => !sheet.feats.list.some(a => a.feat_id === f.id))
+
+  const ORIGIN_LABEL: Record<string, string> = {
+    [FEAT_SOURCE_SPECIES]: t('edit.featFromSpecies'),
+    [FEAT_SOURCE_MANUAL]: t('edit.featManual'),
+  }
+
+  return (
+    <section aria-label={t('edit.feats')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.feats')}</h3>
+
+      {grantsOriginFeat && (
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.speciesOriginFeat')}</label>
+          <select
+            value={speciesFeat?.feat_id ?? ''}
+            onChange={e => setSpeciesOriginFeat(e.target.value || null)}
+            className={SELECT_BASE}
+          >
+            <option value="">{t('edit.selectDefault')}</option>
+            {(gameData.origin_feats ?? []).map(f => (
+              <option key={f.id} value={f.id}>{f.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {sheet.feats.list.length === 0 ? (
+        <p className="text-sm text-[#A8A09B]">{t('edit.noFeats')}</p>
+      ) : (
+        <div className="space-y-1.5">
+          {sheet.feats.list.map(feat => (
+            <div
+              key={feat.feat_id}
+              className="flex items-center gap-2 bg-[#2D2520] border border-[#B8860B]/10 rounded-lg px-3 py-2"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-sm text-[#F5F0E8] truncate">{feat.name}</div>
+                <div className="text-[11px] text-[#A8A09B]">
+                  {feat.category}
+                  {ORIGIN_LABEL[feat.source] ? ` · ${ORIGIN_LABEL[feat.source]}` : ` · ${feat.source}`}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeFeat(feat.feat_id)}
+                aria-label={t('edit.removeFeat', { name: feat.name })}
+                className="w-6 h-6 shrink-0 flex items-center justify-center rounded bg-[#3D332D] border border-red-900/20 text-red-500/60 hover:text-red-400 hover:border-red-900/50 transition-colors cursor-pointer text-xs"
+              >✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex items-end gap-2">
+        <div className="flex flex-col gap-1 flex-1">
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.addFeat')}</label>
+          <select value={novo} onChange={e => setNovo(e.target.value)} className={SELECT_BASE}>
+            <option value="">{t('edit.selectDefault')}</option>
+            {disponiveis.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
+          </select>
+        </div>
+        <Button
+          size="sm"
+          variant="secondary"
+          disabled={!novo}
+          onClick={() => { addFeat(novo); setNovo('') }}
+        >
+          {t('edit.add')}
+        </Button>
+      </div>
+    </section>
+  )
+}
+
+const ATTACK_TYPES: Attack['type'][] = ['Corpo a Corpo', 'À Distância', 'Magia']
+
+/** Ataques anotados à mão. A ficha guarda o texto; nada aqui é derivado. */
+function AttacksSection() {
+  const { sheet, addAttack, removeAttack } = useSheetStore()
+  const { t } = useTranslation()
+  const [name, setName] = useState('')
+  const [type, setType] = useState<Attack['type']>('Corpo a Corpo')
+  const [bonus, setBonus] = useState('')
+  const [damage, setDamage] = useState('')
+  const [damageType, setDamageType] = useState('')
+
+  function adicionar() {
+    if (!name.trim()) return
+    addAttack({
+      name: name.trim(),
+      weapon_id: null,
+      type,
+      ability_used: null,
+      _attack_bonus: bonus.trim() === '' ? null : Number(bonus),
+      _damage: damage.trim() || null,
+      damage_type: damageType.trim() || null,
+      properties: [],
+      notes: null,
+    })
+    setName(''); setBonus(''); setDamage(''); setDamageType('')
+  }
+
+  return (
+    <section aria-label={t('edit.attacks')} className={SECTION_CARD}>
+      <h3 className={SECTION_TITLE}>{t('edit.attacks')}</h3>
+
+      {sheet.combat.attacks.length === 0 ? (
+        <p className="text-sm text-[#A8A09B]">{t('edit.noAttacks')}</p>
+      ) : (
+        <div className="space-y-1.5">
+          {sheet.combat.attacks.map((atk, idx) => (
+            <div
+              key={`${atk.name}-${idx}`}
+              className="flex items-center gap-2 bg-[#2D2520] border border-[#B8860B]/10 rounded-lg px-3 py-2"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="text-sm text-[#F5F0E8] truncate">{atk.name}</div>
+                <div className="text-[11px] text-[#A8A09B]">
+                  {atk.type}
+                  {atk._attack_bonus !== null ? ` · ${formatModifier(atk._attack_bonus)}` : ''}
+                  {atk._damage ? ` · ${atk._damage}${atk.damage_type ? ` ${atk.damage_type}` : ''}` : ''}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeAttack(idx)}
+                aria-label={t('edit.removeAttack', { name: atk.name })}
+                className="w-6 h-6 shrink-0 flex items-center justify-center rounded bg-[#3D332D] border border-red-900/20 text-red-500/60 hover:text-red-400 hover:border-red-900/50 transition-colors cursor-pointer text-xs"
+              >✕</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <Input label={t('edit.attackName')} value={name} onChange={e => setName(e.target.value)} />
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-[#B8860B] font-medium">{t('edit.attackType')}</label>
+          <select value={type} onChange={e => setType(e.target.value as Attack['type'])} className={SELECT_BASE}>
+            {ATTACK_TYPES.map(tp => <option key={tp} value={tp}>{tp}</option>)}
+          </select>
+        </div>
+        <Input label={t('edit.attackBonus')} type="number" value={bonus} onChange={e => setBonus(e.target.value)} />
+        <Input label={t('edit.attackDamage')} value={damage} onChange={e => setDamage(e.target.value)} placeholder="1d8+3" />
+        <Input label={t('edit.attackDamageType')} value={damageType} onChange={e => setDamageType(e.target.value)} />
+        <div className="flex items-end">
+          <Button size="sm" variant="secondary" disabled={!name.trim()} onClick={adicionar}>
+            {t('edit.add')}
+          </Button>
+        </div>
+      </div>
     </section>
   )
 }
@@ -557,7 +940,7 @@ function ArmorSection() {
 }
 
 function SkillsSection() {
-  const { sheet, setSkills } = useSheetStore()
+  const { sheet, setSkills, setExpertise } = useSheetStore()
   const { t } = useTranslation()
   const anteId = sheet.identity.background_id
   const background = getBackgrounds().find(a => a.id === anteId)
@@ -572,6 +955,18 @@ function SkillsSection() {
       ? current.filter(p => p !== skillId)
       : [...current, skillId]
     setSkills(newList)
+  }
+
+  // Especialização exige proficiência: marcar aqui liga a proficiência junto.
+  function toggleExpertise(skillId: string) {
+    const current = gameData.skills
+      .filter(p => sheet.skills[p.id]?.expertise)
+      .map(p => p.id)
+    const newList = current.includes(skillId)
+      ? current.filter(p => p !== skillId)
+      : [...current, skillId]
+    if (!current.includes(skillId) && !sheet.skills[skillId]?.proficient) toggleSkill(skillId)
+    setExpertise(newList)
   }
 
   // Agrupar por atributo para facilitar leitura
@@ -616,7 +1011,19 @@ function SkillsSection() {
                       {p.name}
                     </span>
                     {isBackground && <Badge variant="gold" className="text-[9px]">{t('edit.backgroundBadge')}</Badge>}
-                    {expertise && <Badge variant="crimson" className="text-[9px]">{t('edit.expertiseBadge')}</Badge>}
+                    <button
+                      type="button"
+                      onClick={e => { e.preventDefault(); toggleExpertise(p.id) }}
+                      aria-pressed={expertise}
+                      aria-label={t('edit.expertiseAriaLabel', { attr: p.name })}
+                      title={t('edit.expertiseBadge')}
+                      className={`px-1.5 py-0.5 rounded text-[9px] font-bold border transition-colors cursor-pointer
+                        ${expertise
+                          ? 'bg-[#4D2020] border-[#7B1D1D] text-[#F5F0E8]'
+                          : 'border-[#B8860B]/20 text-[#A8A09B]/60 hover:border-[#B8860B]/50 hover:text-[#F5F0E8]'}`}
+                    >
+                      {t('edit.expertiseBadge')}
+                    </button>
                     {partialSheet?._value !== null && partialSheet?._value !== undefined && (
                       <span className={`text-xs font-bold min-w-[2rem] text-right ${(partialSheet._value) > 0 ? 'text-green-400' : 'text-[#A8A09B]'}`}>
                         {partialSheet._value >= 0 ? `+${partialSheet._value}` : partialSheet._value}
@@ -644,6 +1051,20 @@ function getMaxCirculoNaClasse(classData: { progression: unknown[] } | undefined
     .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
 }
 
+/** Maior círculo acessível, cobrindo as subclasses de 1/3 conjurador. */
+function getMaxCircle(
+  classData: { progression: unknown[] } | undefined,
+  level: number,
+  subclassId: string | null,
+): number {
+  if (isThirdCaster(subclassId)) {
+    return Object.entries(calcThirdCasterSlots(level))
+      .filter(([, v]) => (v ?? 0) > 0)
+      .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
+  }
+  return getMaxCirculoNaClasse(classData, level)
+}
+
 function SpellSection() {
   const { sheet, updateSpellcasting } = useSheetStore()
   const { t, i18n } = useTranslation()
@@ -653,6 +1074,7 @@ function SpellSection() {
   const [spellInfo, setSpellInfo] = useState<Spell | null>(null)
 
   const classId = sheet.identity.class_id ?? ''
+  const subclassId = sheet.identity.subclass_id
   const totalLevel = sheet.identity.level
   const multiclasses = sheet.identity.multiclasses ?? []
   const primaryLevel = totalLevel - multiclasses.reduce((s, m) => s + m.level, 0)
@@ -661,28 +1083,37 @@ function SpellSection() {
 
   // Para cada classe conjuradora do personagem, determina o máximo de círculo acessível
   // (baseado no nível NAQUELA classe, não no total — regra do D&D multiclasse)
-  const classesParaMagias = useMemo<Array<{ classId: string; maxSpellLevel: number }>>(() => {
-    if (multiclasses.length === 0) {
-      const mc = getMaxCirculoNaClasse(charClass, totalLevel)
-      return [{ classId, maxSpellLevel: mc > 0 ? mc : 9 }]
-    }
-    const result: Array<{ classId: string; maxSpellLevel: number }> = []
-    if (CASTER_TYPE[classId] != null) {
-      const mc = getMaxCirculoNaClasse(charClass, Math.max(1, primaryLevel))
-      result.push({ classId, maxSpellLevel: mc > 0 ? mc : 9 })
-    }
-    for (const m of multiclasses) {
-      if (CASTER_TYPE[m.class_id] != null) {
-        const mc2 = gameData.classes.find(c => c.id === m.class_id)
-        const max = getMaxCirculoNaClasse(mc2, m.level)
-        if (max > 0) result.push({ classId: m.class_id, maxSpellLevel: max })
+  // `classId` é a chave de armazenamento; `spellListId` é a lista do catálogo —
+  // diferem no Cavaleiro Místico e no Trapaceiro Arcano, que conjuram da lista de mago.
+  const classesParaMagias = useMemo<
+    Array<{ classId: string; spellListId: string; maxSpellLevel: number }>
+  >(() => {
+    const entry = (id: string, sub: string | null, level: number, fallback = 0) => {
+      const cd = gameData.classes.find(c => c.id === id)
+      const max = getMaxCircle(cd, level, sub)
+      return {
+        classId: id,
+        spellListId: spellListForClass(id, sub),
+        maxSpellLevel: max > 0 ? max : fallback,
       }
     }
-    if (result.length === 0) result.push({ classId, maxSpellLevel: 9 })
-    return result
-  }, [classId, charClass, totalLevel, primaryLevel, multiclasses])
 
-  const allClasseIds = useMemo(() => classesParaMagias.map(c => c.classId), [classesParaMagias])
+    if (multiclasses.length === 0) return [entry(classId, subclassId, totalLevel, 9)]
+
+    const result: Array<{ classId: string; spellListId: string; maxSpellLevel: number }> = []
+    if (isCasterClass(classId, subclassId)) {
+      result.push(entry(classId, subclassId, Math.max(1, primaryLevel), 9))
+    }
+    for (const m of multiclasses) {
+      if (!isCasterClass(m.class_id, m.subclass_id)) continue
+      const e = entry(m.class_id, m.subclass_id, m.level)
+      if (e.maxSpellLevel > 0) result.push(e)
+    }
+    if (result.length === 0) result.push(entry(classId, subclassId, totalLevel, 9))
+    return result
+  }, [classId, subclassId, totalLevel, primaryLevel, multiclasses])
+
+  const allClasseIds = useMemo(() => classesParaMagias.map(c => c.spellListId), [classesParaMagias])
 
   // Progressão da classe primária no nível relevante (para exibir limites de truques/magias)
   const level = multiclasses.length === 0 ? totalLevel : Math.max(1, primaryLevel)
@@ -693,7 +1124,10 @@ function SpellSection() {
 
   const availableCantrips = useMemo(() => getCantripsByClasses(allClasseIds), [allClasseIds, i18n.language])
   const availableSpells = useMemo(
-    () => getSpellsByClassesAndLevels(classesParaMagias),
+    () =>
+      getSpellsByClassesAndLevels(
+        classesParaMagias.map(c => ({ classId: c.spellListId, maxSpellLevel: c.maxSpellLevel })),
+      ),
     [classesParaMagias, i18n.language],
   )
 
@@ -715,9 +1149,12 @@ function SpellSection() {
   )
 
   function resolveCasterClass(name: string, isTruque: boolean): string {
-    for (const { classId: classId } of classesParaMagias) {
-      const list = isTruque ? getCantripsByClass(classId) : getSpellsByClass(classId)
-      if (list.some(m => m.name === name)) return classId
+    for (const entry of classesParaMagias) {
+      const list = isTruque
+        ? getCantripsByClass(entry.spellListId)
+        : getSpellsByClass(entry.spellListId)
+      // A magia é procurada na lista do catálogo, mas guardada sob a classe.
+      if (list.some(m => m.name === name)) return entry.classId
     }
     return classesParaMagias[0]?.classId ?? classId
   }
@@ -747,7 +1184,9 @@ function SpellSection() {
   const allCantrips = Object.values(spellcasting.cantrips_by_class).flat()
   const allSpells = Object.values(spellcasting.spells_by_class).flat()
 
-  if (!spellcasting.spellcaster) {
+  const freeCasts = spellcasting.free_casts ?? []
+
+  if (!spellcasting.spellcaster && freeCasts.length === 0) {
     return (
       <section aria-label={t('edit.magic')} className={SECTION_CARD}>
         <h3 className={SECTION_TITLE}>{t('edit.magic')}</h3>
@@ -756,12 +1195,18 @@ function SpellSection() {
     )
   }
 
-  const maxCantrips = (prog?.cantrips as number | undefined) ?? 0
-  const maxSpells = (prog?.prepared_spells as number | undefined) ?? 0
+  const maxCantrips = isThirdCaster(subclassId)
+    ? calcThirdCasterCantrips(subclassId, level)
+    : ((prog?.cantrips as number | undefined) ?? 0)
+  const maxSpells = isThirdCaster(subclassId)
+    ? calcThirdCasterPreparedSpells(level)
+    : ((prog?.prepared_spells as number | undefined) ?? 0)
 
   return (
     <section aria-label={t('edit.magic')} className={SECTION_CARD}>
       <h3 className={SECTION_TITLE}>{t('edit.magic')}</h3>
+
+      <FreeCastPicker />
 
       <input
         type="text"
@@ -1140,30 +1585,32 @@ function PersonalitySection() {
     <section aria-label={t('edit.personality')} className={SECTION_CARD}>
       <h3 className={SECTION_TITLE}>{t('edit.personality')}</h3>
 
-      <StringListEditor
-        label={t('notes.traits')}
-        values={p.traits}
-        placeholder={t('step11.trait1Placeholder')}
-        onChange={traits => setPersonality({ traits })}
-      />
-      <StringListEditor
-        label={t('notes.ideals')}
-        values={p.ideals}
-        placeholder={t('step11.idealsPlaceholder')}
-        onChange={ideals => setPersonality({ ideals })}
-      />
-      <StringListEditor
-        label={t('notes.bonds')}
-        values={p.bonds}
-        placeholder={t('step11.bondsPlaceholder')}
-        onChange={bonds => setPersonality({ bonds })}
-      />
-      <StringListEditor
-        label={t('notes.flaws')}
-        values={p.flaws}
-        placeholder={t('step11.flawsPlaceholder')}
-        onChange={flaws => setPersonality({ flaws })}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-4">
+        <StringListEditor
+          label={t('notes.traits')}
+          values={p.traits}
+          placeholder={t('step11.trait1Placeholder')}
+          onChange={traits => setPersonality({ traits })}
+        />
+        <StringListEditor
+          label={t('notes.ideals')}
+          values={p.ideals}
+          placeholder={t('step11.idealsPlaceholder')}
+          onChange={ideals => setPersonality({ ideals })}
+        />
+        <StringListEditor
+          label={t('notes.bonds')}
+          values={p.bonds}
+          placeholder={t('step11.bondsPlaceholder')}
+          onChange={bonds => setPersonality({ bonds })}
+        />
+        <StringListEditor
+          label={t('notes.flaws')}
+          values={p.flaws}
+          placeholder={t('step11.flawsPlaceholder')}
+          onChange={flaws => setPersonality({ flaws })}
+        />
+      </div>
 
       <Textarea
         label={t('notes.backstory')}
@@ -1171,18 +1618,21 @@ function PersonalitySection() {
         onChange={e => setPersonality({ backstory: e.target.value })}
         placeholder={t('step11.backstoryPlaceholder')}
       />
-      <Textarea
-        label={t('edit.allies')}
-        value={p.allies_and_organizations ?? ''}
-        onChange={e => setPersonality({ allies_and_organizations: e.target.value })}
-        placeholder={t('edit.alliesPlaceholder')}
-      />
-      <Textarea
-        label={t('edit.symbol')}
-        value={p.symbol_or_treasure ?? ''}
-        onChange={e => setPersonality({ symbol_or_treasure: e.target.value })}
-        placeholder={t('edit.symbolPlaceholder')}
-      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-5 gap-y-4">
+        <Textarea
+          label={t('edit.allies')}
+          value={p.allies_and_organizations ?? ''}
+          onChange={e => setPersonality({ allies_and_organizations: e.target.value })}
+          placeholder={t('edit.alliesPlaceholder')}
+        />
+        <Textarea
+          label={t('edit.symbol')}
+          value={p.symbol_or_treasure ?? ''}
+          onChange={e => setPersonality({ symbol_or_treasure: e.target.value })}
+          placeholder={t('edit.symbolPlaceholder')}
+        />
+      </div>
     </section>
   )
 }

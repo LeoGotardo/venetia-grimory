@@ -5,18 +5,39 @@ import { WizardNav } from './WizardNav'
 import { getCantripsByClass, getSpellsByClassAndLevel } from '../../data/spells'
 import type { Spell } from '../../data/spells'
 import { SpellCard } from '../ui/SpellCard'
+import { FreeCastPicker } from '../ui/FreeCastPicker'
 
-import { CASTER_TYPE } from '../../constants'
+import {
+  calcThirdCasterCantrips,
+  calcThirdCasterPreparedSpells,
+  calcThirdCasterSlots,
+  isCasterClass,
+  isThirdCaster,
+  spellListForClass,
+} from '../../lib/calculations'
 import { gameData } from '../../data/rules'
 
-function getMaxSpellLevel(cd: { progression: unknown[] } | undefined, level: number): number {
+function highestCircle(slots: Partial<Record<string, number>>): number {
+  return Object.entries(slots)
+    .filter(([, v]) => (v ?? 0) > 0)
+    .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
+}
+
+function getMaxSpellLevel(
+  cd: { progression: unknown[] } | undefined,
+  level: number,
+  subclassId: string | null,
+): number {
+  // Subclasses de 1/3 conjurador têm tabela própria — a progressão da classe
+  // (guerreiro/ladino) não traz espaço nenhum.
+  if (isThirdCaster(subclassId)) return highestCircle(calcThirdCasterSlots(level))
   if (!cd?.progression) return 0
   const idx = Math.max(0, Math.min(level - 1, cd.progression.length - 1))
   const p = cd.progression[idx] as Record<string, unknown>
   // Standard casters: `espacos` object with per-circle counts
   const species = p?.slots as Record<string, number> | undefined
   if (species) {
-    const mc = Object.entries(species).filter(([, v]) => v > 0).reduce((a, [k]) => Math.max(a, parseInt(k.replace('c', ''))), 0)
+    const mc = highestCircle(species)
     if (mc > 0) return mc
   }
   // Warlocks use `circulo_maximo` instead of per-circle `espacos`
@@ -81,10 +102,12 @@ function SpellPill({
 }
 
 interface ClassSpellSectionProps {
-  classId: string
+  /** Lista do catálogo: 1/3 conjuradores leem a de mago, não a da própria classe. */
+  spellListId: string
   classLabel: string
   maxSpellLevel: number
-  level: number
+  maxCantrips: number
+  maxSpells: number
   search: string
   selectedCantrips: string[]
   selectedSpells: string[]
@@ -95,10 +118,11 @@ interface ClassSpellSectionProps {
 }
 
 function ClassSpellSection({
-  classId,
+  spellListId,
   classLabel,
   maxSpellLevel,
-  level,
+  maxCantrips,
+  maxSpells,
   search,
   selectedCantrips,
   selectedSpells,
@@ -110,26 +134,16 @@ function ClassSpellSection({
   const { t } = useTranslation()
   const [activeSpellLevel, setActiveSpellLevel] = useState(1)
 
-  const classData = gameData.classes.find(c => c.id === classId)
-  const prog = useMemo(() => {
-    if (!classData?.progression) return null
-    const idx = Math.max(0, Math.min(level - 1, classData.progression.length - 1))
-    return (classData.progression[idx] ?? classData.progression[0]) as Record<string, unknown> | null
-  }, [classData, level])
-
-  const maxCantrips = (prog?.cantrips as number | undefined) ?? 0
-  const maxSpells = (prog?.prepared_spells as number | undefined) ?? 0
-
   const availableCantrips = useMemo(
-    () => getCantripsByClass(classId).filter(tr => !search || tr.name.toLowerCase().includes(search.toLowerCase())),
+    () => getCantripsByClass(spellListId).filter(tr => !search || tr.name.toLowerCase().includes(search.toLowerCase())),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [classId, search, i18nLang],
+    [spellListId, search, i18nLang],
   )
 
   const availableSpells = useMemo(
-    () => getSpellsByClassAndLevel(classId, maxSpellLevel),
+    () => getSpellsByClassAndLevel(spellListId, maxSpellLevel),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [classId, maxSpellLevel, i18nLang],
+    [spellListId, maxSpellLevel, i18nLang],
   )
 
   const availableSpellLevels = useMemo(() => {
@@ -252,30 +266,52 @@ export function Step08Spells() {
   const multiclasses = sheet.identity.multiclasses ?? []
   const primaryLevel = level - multiclasses.reduce((s, m) => s + m.level, 0)
 
+  const subclassId = sheet.identity.subclass_id
+
   // True if any class in the build is a spellcaster
   const isCaster =
     sheet.spellcasting.spellcaster ||
-    CASTER_TYPE[classId ?? ''] != null ||
-    multiclasses.some(m => CASTER_TYPE[m.class_id] != null)
+    isCasterClass(classId ?? '', subclassId) ||
+    multiclasses.some(m => isCasterClass(m.class_id, m.subclass_id))
 
-  // List of { classeId, nivel, maxCirculo } for each caster class in the build
+  // Um bloco por classe conjuradora, com a lista do catálogo e os limites daquela
+  // classe — 1/3 conjuradores têm tabela e lista próprias.
   const casterClasses = useMemo(() => {
-    const result: Array<{ classId: string; level: number; maxSpellLevel: number }> = []
-    if (CASTER_TYPE[classId ?? ''] != null) {
-      const cd = gameData.classes.find(c => c.id === classId)
-      const level = Math.max(1, primaryLevel)
-      const mc = getMaxSpellLevel(cd, level)
-      if (mc > 0) result.push({ classId: classId!, level: level, maxSpellLevel: mc })
+    const result: Array<{
+      classId: string
+      spellListId: string
+      level: number
+      maxSpellLevel: number
+      maxCantrips: number
+      maxSpells: number
+    }> = []
+
+    const add = (id: string, sub: string | null, level: number) => {
+      if (!isCasterClass(id, sub)) return
+      const cd = gameData.classes.find(c => c.id === id)
+      const maxSpellLevel = getMaxSpellLevel(cd, level, sub)
+      if (maxSpellLevel <= 0) return
+      const prog = cd?.progression?.[Math.max(0, Math.min(level - 1, cd.progression.length - 1))] as
+        | Record<string, unknown>
+        | undefined
+      result.push({
+        classId: id,
+        spellListId: spellListForClass(id, sub),
+        level,
+        maxSpellLevel,
+        maxCantrips: isThirdCaster(sub)
+          ? calcThirdCasterCantrips(sub, level)
+          : ((prog?.cantrips as number | undefined) ?? 0),
+        maxSpells: isThirdCaster(sub)
+          ? calcThirdCasterPreparedSpells(level)
+          : ((prog?.prepared_spells as number | undefined) ?? 0),
+      })
     }
-    for (const m of multiclasses) {
-      if (CASTER_TYPE[m.class_id] != null) {
-        const cd = gameData.classes.find(c => c.id === m.class_id)
-        const mc = getMaxSpellLevel(cd, m.level)
-        if (mc > 0) result.push({ classId: m.class_id, level: m.level, maxSpellLevel: mc })
-      }
-    }
+
+    add(classId ?? '', subclassId, Math.max(1, primaryLevel))
+    for (const m of multiclasses) add(m.class_id, m.subclass_id, m.level)
     return result
-  }, [classId, primaryLevel, multiclasses])
+  }, [classId, subclassId, primaryLevel, multiclasses])
 
   const cantripsByClass = sheet.spellcasting.cantrips_by_class
   const spellsByClass = sheet.spellcasting.spells_by_class
@@ -303,7 +339,11 @@ export function Step08Spells() {
   const allCantrips = Object.values(cantripsByClass).flat()
   const allSpells = Object.values(spellsByClass).flat()
 
-  if (!isCaster) {
+  // Iniciado em Magia (e Arcana Mística) conjuram sem ser da classe: mesmo sem
+  // classe conjuradora ainda há escolhas a fazer aqui.
+  const freeCasts = sheet.spellcasting.free_casts ?? []
+
+  if (!isCaster && freeCasts.length === 0) {
     return (
       <div className="space-y-6">
         <div>
@@ -331,6 +371,8 @@ export function Step08Spells() {
         <p className="text-[#A8A09B] text-sm">{t('step08.subtitle')}</p>
       </div>
 
+      <FreeCastPicker />
+
       <input
         type="text"
         value={search}
@@ -340,15 +382,16 @@ export function Step08Spells() {
         aria-label={t('step08.searchAriaLabel')}
       />
 
-      {casterClasses.map(({ classId: classId, level: level, maxSpellLevel }) => {
+      {casterClasses.map(({ classId, spellListId, maxSpellLevel, maxCantrips, maxSpells }) => {
         const classData = gameData.classes.find(c => c.id === classId)
         return (
           <ClassSpellSection
             key={classId}
-            classId={classId}
+            spellListId={spellListId}
             classLabel={classData?.name ?? classId}
             maxSpellLevel={maxSpellLevel}
-            level={level}
+            maxCantrips={maxCantrips}
+            maxSpells={maxSpells}
             search={search}
             selectedCantrips={cantripsByClass[classId] ?? []}
             selectedSpells={spellsByClass[classId] ?? []}

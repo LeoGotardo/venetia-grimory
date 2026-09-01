@@ -117,6 +117,20 @@ export interface AdventuringGear {
   description: string
 }
 
+/**
+ * Orçamento de usos de um item mágico, quando a descrição declara um número fixo.
+ *
+ * `dawn` é o item que recarrega por completo todo dia ("3 cargas diárias",
+ * "uma vez ao dia") — o app devolve esses usos no Descanso Longo, que é o único
+ * marcador de passagem de dia que a ficha tem. `manual` é o item de carga que
+ * recarrega devagar ("7 cargas", 1d6+1 por dia): o total é conhecido, o ritmo de
+ * volta não, então quem devolve é o jogador.
+ */
+export interface ItemUses {
+  max: number
+  recharge: 'dawn' | 'manual'
+}
+
 export interface MagicItem {
   item_type: 'item_magico'
   id: string
@@ -143,6 +157,8 @@ export interface MagicItem {
   spell_id?: string
   effect?: string
   description: string
+  /** Usos declarados na descrição; ausente quando o item não tem orçamento fixo. */
+  uses?: ItemUses
 }
 
 export type Item = Weapon | Armor | Tool | EquipmentPack | Transport | MagicItem | AdventuringGear

@@ -4,16 +4,12 @@ import { WizardNav } from './WizardNav'
 import { Card } from '../ui/Card'
 import { gameData } from '../../data/rules'
 import { calcPrimaryClassLevel, canChooseSubclass } from '../../lib/calculations'
-
-function hasFightingStyle(classId: string, level: number) {
-  if (classId === 'guerreiro') return level >= 1
-  if (classId === 'guardiao' || classId === 'paladino') return level >= 2
-  return false
-}
-
-function hasDivineOrder(classId: string) { return classId === 'clerigo' }
-function hasPrimalOrder(classId: string) { return classId === 'druida' }
-function hasFavoredEnemy(classId: string) { return classId === 'guardiao' }
+import {
+  hasFightingStyle,
+  hasDivineOrder,
+  hasPrimalOrder,
+  hasFavoredEnemy,
+} from '../../lib/classChoices'
 
 export function Step03Subclass() {
   const { sheet, setSubclass, setClassChoices, setStep } = useSheetStore()
