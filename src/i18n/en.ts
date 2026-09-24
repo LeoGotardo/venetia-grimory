@@ -33,6 +33,7 @@ const en = {
     deleteConfirm: 'Delete "{{name}}"? This action cannot be undone.',
     deleteAriaLabel: 'Delete {{name}}',
     settings: 'Settings',
+    madeWith: 'made with ❤️ by',
   },
   sheet: {
     character: 'Character',

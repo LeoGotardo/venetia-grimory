@@ -33,6 +33,7 @@ const pt = {
     deleteConfirm: 'Deletar "{{name}}"? Esta ação não pode ser desfeita.',
     deleteAriaLabel: 'Deletar {{name}}',
     settings: 'Configurações',
+    madeWith: 'feito com ❤️ por',
   },
   sheet: {
     character: 'Personagem',

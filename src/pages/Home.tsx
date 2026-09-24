@@ -10,6 +10,7 @@ import { CharacterAvatar } from '../components/ui/CharacterAvatar'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { useState } from 'react'
 import { gameData } from '../data/rules'
+import { AUTHOR_NAME, AUTHOR_URL } from '../constants'
 
 export function Home() {
   const navigate = useNavigate()
@@ -118,6 +119,18 @@ export function Home() {
           </div>
         )}
       </div>
+
+      <footer className="pb-8 text-center text-[13px] text-[#A8A09B]">
+        {t('home.madeWith')}{' '}
+        <a
+          href={AUTHOR_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-semibold text-[#D4A017] hover:text-[#E8C25A] transition-colors"
+        >
+          {AUTHOR_NAME}
+        </a>
+      </footer>
     </div>
   )
 }

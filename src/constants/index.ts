@@ -141,3 +141,7 @@ export const EXHAUSTION_EFFECTS = [
   'Velocidade = 0',
   'Morte',
 ] as const
+
+// Crédito do autor exibido no rodapé da Home
+export const AUTHOR_NAME = 'Leo Gotardo'
+export const AUTHOR_URL = 'https://leogotardo.vercel.app/'
