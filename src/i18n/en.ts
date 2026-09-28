@@ -34,6 +34,8 @@ const en = {
     deleteAriaLabel: 'Delete {{name}}',
     settings: 'Settings',
     madeWith: 'made with ❤️ by',
+    feedbackPrompt: 'Found a bug or have a suggestion?',
+    feedbackLink: 'Let us know',
   },
   sheet: {
     character: 'Character',

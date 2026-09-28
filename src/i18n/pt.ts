@@ -34,6 +34,8 @@ const pt = {
     deleteAriaLabel: 'Deletar {{name}}',
     settings: 'Configurações',
     madeWith: 'feito com ❤️ por',
+    feedbackPrompt: 'Encontrou um bug ou tem uma sugestão?',
+    feedbackLink: 'Conte pra gente',
   },
   sheet: {
     character: 'Personagem',

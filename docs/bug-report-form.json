@@ -1,0 +1,340 @@
+{
+  "title": "Grimório de Venetia — Bugs e sugestões",
+  "description": "Encontrou algo errado ou tem uma ideia para melhorar o criador de fichas? Conte pra gente. Leva uns 3 minutos.",
+  "settings": {
+    "collectEmail": false,
+    "allowResponseEdits": true,
+    "confirmationMessage": "Obrigado! Sua mensagem foi registrada e vai ajudar a melhorar o Grimório."
+  },
+  "sections": [
+    {
+      "title": "O que você quer enviar?",
+      "items": [
+        {
+          "id": "feedback_type",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Você quer relatar um bug ou dar uma sugestão?",
+          "required": true,
+          "choices": [
+            "Relatar um bug",
+            "Dar uma sugestão"
+          ],
+          "goToSection": {
+            "Relatar um bug": "Detalhes do bug",
+            "Dar uma sugestão": "Sua sugestão"
+          }
+        },
+        {
+          "id": "area",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Sobre qual parte do app?",
+          "required": true,
+          "choices": [
+            "Tela inicial (lista de personagens)",
+            "Criação de personagem (assistente passo a passo)",
+            "Ficha em jogo",
+            "Exportar / imprimir PDF",
+            "Exportar / importar JSON",
+            "Configurações (idioma, peso, ouro, moedas)",
+            "O app como um todo",
+            "Outro"
+          ],
+          "allowOther": true
+        },
+        {
+          "id": "wizard_step",
+          "type": "LIST",
+          "title": "Se for na criação de personagem: em qual passo?",
+          "helpText": "Deixe em branco se não se aplica.",
+          "required": false,
+          "choices": [
+            "1 — Nível",
+            "2 — Classe",
+            "3 — Subclasse",
+            "4 — Espécie",
+            "5 — Atributos",
+            "6 — Antecedente",
+            "7 — Multiclasse",
+            "8 — Perícias",
+            "9 — Magias",
+            "10 — Idiomas",
+            "11 — Equipamento",
+            "12 — Personalidade",
+            "13 — Revisão",
+            "Não sei / vários passos"
+          ]
+        },
+        {
+          "id": "sheet_tab",
+          "type": "LIST",
+          "title": "Se for na ficha em jogo: em qual aba?",
+          "helpText": "Deixe em branco se não se aplica.",
+          "required": false,
+          "choices": [
+            "Combate",
+            "Atributos",
+            "Perícias",
+            "Recursos",
+            "Magias",
+            "Inventário",
+            "Notas",
+            "Editar",
+            "Subir de nível",
+            "Descanso curto / longo",
+            "Não sei / várias abas"
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Detalhes do bug",
+      "items": [
+        {
+          "id": "summary",
+          "type": "TEXT",
+          "title": "Resuma o bug em uma frase",
+          "helpText": "Ex.: \"Espaços de magia do Bruxo não voltam no descanso curto\"",
+          "required": true
+        },
+        {
+          "id": "category",
+          "type": "CHECKBOX",
+          "title": "Que tipo de problema é?",
+          "helpText": "Marque todos que se aplicam.",
+          "required": true,
+          "choices": [
+            "Cálculo errado (CA, PV, CD de magia, bônus, perícias, espaços de magia…)",
+            "Regra do D&D 2024 aplicada incorretamente",
+            "Dado de jogo faltando ou errado (classe, espécie, magia, item, talento…)",
+            "Tradução errada ou texto sem traduzir",
+            "Layout quebrado / visual estranho",
+            "Botão ou ação que não funciona",
+            "App travou, tela em branco ou mensagem de erro",
+            "Dados perdidos (ficha sumiu ou não salvou)",
+            "PDF com campo vazio, errado ou fora do lugar",
+            "Lentidão"
+          ],
+          "allowOther": true
+        },
+        {
+          "id": "steps_to_reproduce",
+          "type": "PARAGRAPH_TEXT",
+          "title": "Passo a passo para reproduzir",
+          "helpText": "Liste o que você fez até o bug aparecer. Ex.:\n1. Criei um Bruxo nível 5\n2. Gastei 2 espaços de pacto\n3. Cliquei em Descanso curto",
+          "required": true
+        },
+        {
+          "id": "expected",
+          "type": "PARAGRAPH_TEXT",
+          "title": "O que você esperava que acontecesse?",
+          "required": true
+        },
+        {
+          "id": "actual",
+          "type": "PARAGRAPH_TEXT",
+          "title": "O que aconteceu de fato?",
+          "helpText": "Se apareceu alguma mensagem de erro, copie o texto exato.",
+          "required": true
+        },
+        {
+          "id": "frequency",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Com que frequência acontece?",
+          "required": true,
+          "choices": [
+            "Sempre",
+            "Às vezes",
+            "Aconteceu uma vez só",
+            "Não tentei de novo"
+          ]
+        },
+        {
+          "id": "severity",
+          "type": "SCALE",
+          "title": "Quanto isso atrapalha o seu uso?",
+          "required": true,
+          "lowerBound": 1,
+          "upperBound": 5,
+          "lowerLabel": "Detalhe cosmético",
+          "upperLabel": "Impede de usar o app"
+        }
+      ]
+    },
+    {
+      "title": "Personagem envolvido",
+      "description": "Opcional, mas ajuda muito em bugs de cálculo e regras.",
+      "items": [
+        {
+          "id": "character_build",
+          "type": "TEXT",
+          "title": "Classe, subclasse, espécie e nível do personagem",
+          "helpText": "Ex.: \"Guerreiro 3 (Cavaleiro Arcano) / Mago 2, Elfo\"",
+          "required": false
+        },
+        {
+          "id": "sheet_json",
+          "type": "PARAGRAPH_TEXT",
+          "title": "Cole aqui o JSON da ficha (opcional)",
+          "helpText": "Na ficha, use Exportar JSON e cole o conteúdo do arquivo. Não coloque informações pessoais nas notas do personagem se não quiser compartilhá-las.",
+          "required": false
+        },
+        {
+          "id": "screenshots",
+          "type": "FILE_UPLOAD",
+          "title": "Capturas de tela ou vídeo (opcional)",
+          "helpText": "Requer login com conta Google. Se preferir, cole um link de imagem na pergunta anterior.",
+          "required": false,
+          "maxFiles": 5,
+          "maxFileSizeMb": 10
+        }
+      ]
+    },
+    {
+      "title": "Ambiente",
+      "items": [
+        {
+          "id": "platform",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Onde você estava usando?",
+          "required": true,
+          "choices": [
+            "App Android",
+            "Navegador no celular",
+            "Navegador no tablet",
+            "Navegador no computador"
+          ]
+        },
+        {
+          "id": "browser",
+          "type": "LIST",
+          "title": "Qual navegador?",
+          "required": false,
+          "choices": [
+            "Chrome",
+            "Firefox",
+            "Safari",
+            "Edge",
+            "Opera",
+            "Samsung Internet",
+            "Outro",
+            "Não se aplica (app Android)"
+          ]
+        },
+        {
+          "id": "os",
+          "type": "TEXT",
+          "title": "Sistema e versão",
+          "helpText": "Ex.: \"Android 14\", \"Windows 11\", \"iOS 18\"",
+          "required": false
+        },
+        {
+          "id": "language",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Idioma do app no momento do bug",
+          "required": true,
+          "choices": [
+            "Português",
+            "English"
+          ]
+        },
+        {
+          "id": "date",
+          "type": "DATE",
+          "title": "Quando aconteceu?",
+          "required": false
+        }
+      ],
+      "afterSection": "Contato"
+    },
+    {
+      "title": "Sua sugestão",
+      "items": [
+        {
+          "id": "suggestion_summary",
+          "type": "TEXT",
+          "title": "Resuma a sugestão em uma frase",
+          "helpText": "Ex.: \"Rolar dados de ataque direto na aba de Combate\"",
+          "required": true
+        },
+        {
+          "id": "suggestion_kind",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Que tipo de sugestão é?",
+          "required": true,
+          "choices": [
+            "Funcionalidade nova",
+            "Melhoria em algo que já existe",
+            "Conteúdo de jogo (classe, espécie, magia, item, talento…)",
+            "Visual / usabilidade",
+            "Tradução / textos"
+          ],
+          "allowOther": true
+        },
+        {
+          "id": "suggestion_problem",
+          "type": "PARAGRAPH_TEXT",
+          "title": "Que problema ou necessidade essa ideia resolve?",
+          "helpText": "Conte a situação em que você sentiu falta disso. Ex.: \"Na mesa, preciso sair do app para rolar o dano\"",
+          "required": true
+        },
+        {
+          "id": "suggestion_description",
+          "type": "PARAGRAPH_TEXT",
+          "title": "Como você imagina que funcionaria?",
+          "helpText": "Descreva com o nível de detalhe que quiser. Links de outros apps como referência são bem-vindos.",
+          "required": true
+        },
+        {
+          "id": "suggestion_importance",
+          "type": "SCALE",
+          "title": "Quanto isso faria diferença para você?",
+          "required": true,
+          "lowerBound": 1,
+          "upperBound": 5,
+          "lowerLabel": "Seria legal ter",
+          "upperLabel": "Essencial para eu usar o app"
+        },
+        {
+          "id": "suggestion_images",
+          "type": "FILE_UPLOAD",
+          "title": "Esboços ou imagens de referência (opcional)",
+          "helpText": "Requer login com conta Google.",
+          "required": false,
+          "maxFiles": 5,
+          "maxFileSizeMb": 10
+        }
+      ]
+    },
+    {
+      "title": "Contato",
+      "items": [
+        {
+          "id": "can_contact",
+          "type": "MULTIPLE_CHOICE",
+          "title": "Podemos entrar em contato para tirar dúvidas sobre o seu envio?",
+          "required": true,
+          "choices": [
+            "Sim",
+            "Não"
+          ]
+        },
+        {
+          "id": "contact",
+          "type": "TEXT",
+          "title": "E-mail ou Discord para contato",
+          "showIf": {
+            "item": "can_contact",
+            "equals": "Sim"
+          },
+          "required": false
+        },
+        {
+          "id": "extra",
+          "type": "PARAGRAPH_TEXT",
+          "title": "Mais alguma coisa?",
+          "required": false
+        }
+      ]
+    }
+  ]
+}

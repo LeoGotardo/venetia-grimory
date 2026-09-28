@@ -145,3 +145,6 @@ export const EXHAUSTION_EFFECTS = [
 // Crédito do autor exibido no rodapé da Home
 export const AUTHOR_NAME = 'Leo Gotardo'
 export const AUTHOR_URL = 'https://leogotardo.vercel.app/'
+
+// Formulário de bugs e sugestões, também linkado no rodapé da Home
+export const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSf3qvBBaJqDrYXhJqQxOm4mHK8uTZX_YpNpk_lgUYa2ptZpVQ/viewform'
