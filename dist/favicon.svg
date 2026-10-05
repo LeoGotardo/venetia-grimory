@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
-  <rect width="60" height="60" rx="14" fill="#1A1612"/>
-  <polygon points="30,4 55,22 5,22"   fill="#7A5D0E" stroke="#2C1A04" stroke-width="0.6" stroke-linejoin="round"/>
-  <polygon points="5,22 30,22 15,51"  fill="#B08018" stroke="#2C1A04" stroke-width="0.6" stroke-linejoin="round"/>
-  <polygon points="55,22 45,51 30,22" fill="#5E4508" stroke="#2C1A04" stroke-width="0.6" stroke-linejoin="round"/>
-  <polygon points="30,22 45,51 15,51" fill="#D4A017" stroke="#2C1A04" stroke-width="0.6" stroke-linejoin="round"/>
-  <polygon points="30,25 37,32 23,32" fill="rgba(255,255,240,0.18)" stroke="none"/>
-  <text x="30" y="45.5" text-anchor="middle" font-family="Manrope,system-ui,sans-serif" font-weight="800" font-size="12" fill="#100900" letter-spacing="0.5">20</text>
-</svg>

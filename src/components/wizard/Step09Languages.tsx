@@ -3,11 +3,7 @@ import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
 import { Badge } from '../ui/Badge'
 import { gameData } from '../../data/rules'
-
-const FIXED_LANGUAGES_BY_CLASS: Record<string, string[]> = {
-  druida: ['druidico'],
-  ladino: ['giria_dos_ladroes'],
-}
+import { FIXED_LANGUAGES_BY_CLASS, INITIAL_FREE_LANGUAGES } from '../../constants'
 
 export function Step09Languages() {
   const { sheet, setLanguages, setStep } = useSheetStore()
@@ -26,7 +22,7 @@ export function Step09Languages() {
   }
 
   const all = [...fixedLanguages, ...freeLanguages]
-  const maxFree = 2
+  const maxFree = INITIAL_FREE_LANGUAGES
 
   return (
     <div className="space-y-6">

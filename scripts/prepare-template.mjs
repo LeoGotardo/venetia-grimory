@@ -12,7 +12,7 @@ const FONT_SIZE = 8;
 /**
  * A aparência que o pdf-lib gera para uma caixa pinta um retângulo branco por cima
  * do anel impresso na ficha. Como as marcas são desenhadas na página (ver
- * `desenharMarcas` em fillSheet.ts), a caixa fica com aparência vazia — porém
+ * `drawMarks` em fillSheet.ts), a caixa fica com aparência vazia — porém
  * presente, senão o pdf-lib a regeraria na hora de preencher.
  */
 function apagarAparencia(widget, field) {

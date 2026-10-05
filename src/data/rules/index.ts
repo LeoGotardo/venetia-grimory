@@ -38,14 +38,14 @@ export const gameDataPt: GameData = {
   favored_enemies,
 } as unknown as GameData
 
-/** Dados no idioma da interface. Use na UI; as regras usam `dadosPT`. */
+/** Dados no idioma da interface. Use na UI; as regras usam `gameDataPt`. */
 export function getGameData(): GameData {
   return translateData(gameDataPt, i18n.language)
 }
 
 /**
- * Mesma forma de `dadosPT`, mas resolvido no idioma atual a cada leitura —
- * assim os componentes já existentes continuam usando `dados.classes` e passam
+ * Mesma forma de `gameDataPt`, mas resolvido no idioma atual a cada leitura —
+ * assim os componentes já existentes continuam usando `gameData.classes` e passam
  * a acompanhar a troca de idioma sem alteração.
  */
 export const gameData: GameData = new Proxy({} as GameData, {

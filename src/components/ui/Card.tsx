@@ -22,19 +22,3 @@ export function Card({ selected, hoverable = false, className = '', children, ..
     </div>
   )
 }
-
-export function CardTitle({ className = '', children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
-  return (
-    <h3 className={`font-cinzel font-semibold text-[#F5F0E8] ${className}`} {...props}>
-      {children}
-    </h3>
-  )
-}
-
-export function CardSubtitle({ className = '', children, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return (
-    <p className={`text-[#A8A09B] text-sm ${className}`} {...props}>
-      {children}
-    </p>
-  )
-}

@@ -6,8 +6,8 @@ during play. Also packaged as an Android app via Capacitor.
 
 ## Stack
 
-React 19 · TypeScript · Vite · Tailwind CSS v4 · Zustand · React Router v7 · Framer Motion · Zod ·
-i18next
+React 19 · TypeScript · Vite · Tailwind CSS v4 · Zustand · React Router v7 · Framer Motion ·
+i18next · pdf-lib
 
 ## Getting started
 
@@ -17,14 +17,14 @@ npm run dev       # Vite dev server
 ```
 
 ```bash
-npm run build      # tsc -b (typecheck) && vite build — the correctness gate for this repo
+npm run build      # tsc -b (typecheck) && vite build
+npm test           # vitest — rules math, recalculation, store actions, catalog integrity, i18n keys
 npm run lint        # eslint .
+npm run test:e2e     # playwright (starts its own dev server)
 npm run preview      # serve the production build locally
 ```
 
-There is no test runner configured. `npm run build` runs the full TypeScript project-reference
-build before bundling, so a clean build is the closest thing to "tests pass" in this repo —
-always run it after non-trivial changes.
+`npm run build` plus `npm test` is the correctness gate — run both after non-trivial changes.
 
 ### Android (Capacitor)
 
@@ -34,8 +34,8 @@ npm run build && npx cap sync
 
 ## Features
 
-- **Guided wizard** — 13-step character creation (level, species, class, attributes, skills,
-  multiclass, spells, equipment, background, review).
+- **Guided wizard** — 13-step character creation (level, class, subclass, species, abilities,
+  background, multiclass, skills, spells, languages, equipment, personality, review).
 - **Play sheet** — tabbed panels for combat, attributes, skills, class resources, spellcasting,
   inventory, and notes, with level-up (including ASI and multiclass) handled in place.
 - **Multiclassing** — full support for secondary classes, prerequisites, granted proficiencies,

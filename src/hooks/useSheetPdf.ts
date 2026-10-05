@@ -36,7 +36,7 @@ async function carregarModelo(): Promise<ArrayBuffer> {
  * Gera a ficha no modelo oficial (D&D 5.5). `export` sai preenchida e
  * achatada; `print` sai só com o que não muda em jogo e segue editável.
  * A entrega (download, folha de compartilhamento ou diálogo de impressão) fica
- * a cargo de `entregarPdf`, que conhece as limitações de cada plataforma.
+ * a cargo de `deliverPdf`, que conhece as limitações de cada plataforma.
  */
 export function useSheetPdf() {
   const sheet = useSheetStore(s => s.sheet)

@@ -1,5 +1,5 @@
 import type { AbilityId, Armor } from '../types'
-import { CASTER_TYPE, SUBCLASS_LEVEL, THIRD_CASTER_SUBCLASSES } from '../constants'
+import { CASTER_TYPE, SHIELD_BONUS, SUBCLASS_LEVEL, THIRD_CASTER_SUBCLASSES } from '../constants'
 
 export function calcModifier(value: number): number {
   return Math.floor((value - 10) / 2)
@@ -192,7 +192,7 @@ export function calcAc(params: {
   shield: boolean
 }): number {
   const { armor, dexMod, conMod, wisMod, classIds, shield } = params
-  const shieldBonus = shield ? 2 : 0
+  const shieldBonus = shield ? SHIELD_BONUS : 0
 
   if (!armor) {
     if (classIds.includes('barbaro')) return 10 + dexMod + conMod + shieldBonus
@@ -258,16 +258,6 @@ export const ABILITIES: AbilityId[] = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR']
 /** Nome do atributo no idioma da interface (recebe o `t` do react-i18next). */
 export function abilityName(attr: AbilityId, t: (key: string) => string): string {
   return t(`attrs.${attr}`)
-}
-
-/** Nomes em português — fallback para contextos sem i18n. */
-export const ABILITY_NAMES: Record<AbilityId, string> = {
-  FOR: 'Força',
-  DES: 'Destreza',
-  CON: 'Constituição',
-  INT: 'Inteligência',
-  SAB: 'Sabedoria',
-  CAR: 'Carisma',
 }
 
 export const XP_PER_LEVEL: Record<number, number> = {

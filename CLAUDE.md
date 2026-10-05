@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Grimório de Venetia** — a D&D 5.5 (2024 edition) character creator SPA. No backend; all
 persistence is `localStorage`. Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand +
-React Router v7 + Framer Motion + Zod + uuid + i18next. Also packaged as an Android app via
+React Router v7 + Framer Motion + uuid + i18next + pdf-lib. Also packaged as an Android app via
 Capacitor (`/android`).
 
 ## Commands
@@ -68,8 +68,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 
 - `src/data/rules/*.ts` are the static rules dataset — classes, species, backgrounds, feats,
   progression tables, armors — one default-exported array per file, assembled in
-  `src/data/rules/index.ts`. `src/data/dnd_data.json` is the **legacy** copy of the same data and
-  is no longer imported by anything; don't add reads of it.
+  `src/data/rules/index.ts`.
 - `gameDataPt` is canonical and always Portuguese: the rules compare raw strings (`'Leve'`,
   `'Escudo'`), so they must not vary with the UI language. `src/data/rules/translation.ts` translates
   whole strings through `EN_DICTIONARY` for display-bearing keys only (`TRANSLATABLE_KEYS`);
@@ -124,9 +123,10 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   (`Wizard`, character creation), `/ficha/:id` (`Sheet`, the play sheet). Wrapped in an
   `ErrorBoundary` (`src/pages/ServerError.tsx`) and a `Suspense` fallback.
 - `src/pages/Wizard.tsx` drives 13 steps in sequence, tracked by `currentStep`/`setStep` in the
-  store. Step components are `Step01Level` through `Step12Review` (filenames) but the sequence
-  includes `StepMulticlass` at position 7 (between Skills and Spells), making the final review
-  step id 13. Each step calls the corresponding store setter which internally triggers
+  store. Step filenames (`Step01Level` … `Step12Review`) do **not** match the step ids: the `STEPS`
+  array runs Level, Class, Subclass, Species, Abilities (`Step06Abilities`, id 5), Background
+  (`Step05Background`, id 6), `StepMulticlass` (id 7), Skills, Spells, Languages, Equipment,
+  Personality, Review (id 13). The array is the source of truth for order. Each step calls the corresponding store setter which internally triggers
   `recalculate`.
 - `src/pages/Sheet.tsx` is the in-play sheet: tabs render `src/components/sheet/XxxPanel.tsx`
   panels (Combat, Abilities, Skills, Resources, Spells, Inventory, Notes, Edit). Edits in

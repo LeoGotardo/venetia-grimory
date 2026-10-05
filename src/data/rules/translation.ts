@@ -1,7 +1,7 @@
 /**
  * Camada de tradução dos dados de jogo.
  *
- * Os dados canônicos (`dadosPT`) ficam em português e são a fonte usada pelas
+ * Os dados canônicos (`gameDataPt`) ficam em português e são a fonte usada pelas
  * regras — `recalcular`, o store e os cálculos comparam strings como 'Leve' ou
  * 'Escudo'. A UI consome `dados`, que devolve a versão traduzida para o idioma
  * atual. Traduzir é sempre por string inteira: o que não estiver no dicionário

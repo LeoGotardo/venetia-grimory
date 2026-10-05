@@ -34,13 +34,13 @@ function getMaxSpellLevel(
   if (!cd?.progression) return 0
   const idx = Math.max(0, Math.min(level - 1, cd.progression.length - 1))
   const p = cd.progression[idx] as Record<string, unknown>
-  // Standard casters: `espacos` object with per-circle counts
-  const species = p?.slots as Record<string, number> | undefined
-  if (species) {
-    const mc = highestCircle(species)
+  // Conjuradores padrão: `slots` traz a contagem por círculo
+  const slots = p?.slots as Record<string, number> | undefined
+  if (slots) {
+    const mc = highestCircle(slots)
     if (mc > 0) return mc
   }
-  // Warlocks use `circulo_maximo` instead of per-circle `espacos`
+  // Bruxo (Magia de Pacto): `max_spell_level` no lugar de `slots` por círculo
   const maxSpellLevel = p?.max_spell_level as number | undefined
   if (maxSpellLevel && maxSpellLevel > 0) return maxSpellLevel
   return 0

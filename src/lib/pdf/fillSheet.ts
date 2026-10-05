@@ -22,8 +22,8 @@ import type { CharacterSheet, InventoryItem } from '../../types'
  * 2. o desenho da própria ficha — só são medidores as caixas que vêm em par
  *    (ATUAL/TEMP · GASTO/max · Total/Gastos), mais SUCESSOS/FALHAS, EXP,
  *    INSPIRAÇÃO HERÓICA e MOEDAS. As demais caixas são valores fixos;
- * 3. as ações do store — o que `descansoLongo`/`descansoCurto` restauram e o que
- *    `atualizarPV`, `gastarDadoVida`, `gastarEspaco`, `updateMoedas` e `addXP`
+ * 3. as ações do store — o que `longRest`/`shortRest` restauram e o que
+ *    `updateHp`, `spendHitDie`, `spendSlot`, `updateCoins` e `addXP`
  *    alteram fora do wizard.
  *
  * Resultado: ficam em branco no modo `print` os PV atual e temporário, os
