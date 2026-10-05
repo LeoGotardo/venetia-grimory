@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { WizardNav } from './WizardNav'
@@ -16,7 +16,7 @@ export function StepMulticlass() {
 
   const level = sheet.identity.level
   const classId = sheet.identity.class_id
-  const multiclasses = sheet.identity.multiclasses ?? []
+  const multiclasses = useMemo(() => sheet.identity.multiclasses ?? [], [sheet.identity.multiclasses])
   const abilities = sheet.abilities
   const primaryLevel = level - multiclasses.reduce((s, m) => s + m.level, 0)
 
@@ -31,7 +31,7 @@ export function StepMulticlass() {
         if (firstSub) setMulticlassSubclass(m.class_id, firstSub.id)
       }
     }
-  }, [multiclasses])
+  }, [multiclasses, setMulticlassSubclass])
 
   const multiclassOk = multiclasses.every(m => !canChooseSubclass(m.level) || !!m.subclass_id)
 

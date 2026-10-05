@@ -1076,7 +1076,7 @@ function SpellSection() {
   const classId = sheet.identity.class_id ?? ''
   const subclassId = sheet.identity.subclass_id
   const totalLevel = sheet.identity.level
-  const multiclasses = sheet.identity.multiclasses ?? []
+  const multiclasses = useMemo(() => sheet.identity.multiclasses ?? [], [sheet.identity.multiclasses])
   const primaryLevel = totalLevel - multiclasses.reduce((s, m) => s + m.level, 0)
 
   const charClass = gameData.classes.find(c => c.id === classId)
@@ -1122,12 +1122,14 @@ function SpellSection() {
     return (charClass.progression[Math.max(0, level - 1)] ?? charClass.progression[0]) as Record<string, unknown> | null
   }, [charClass, level])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- os getters leem i18n.language na chamada; a dep refaz o memo na troca de idioma
   const availableCantrips = useMemo(() => getCantripsByClasses(allClasseIds), [allClasseIds, i18n.language])
   const availableSpells = useMemo(
     () =>
       getSpellsByClassesAndLevels(
         classesParaMagias.map(c => ({ classId: c.spellListId, maxSpellLevel: c.maxSpellLevel })),
       ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- os getters leem i18n.language na chamada; a dep refaz o memo na troca de idioma
     [classesParaMagias, i18n.language],
   )
 

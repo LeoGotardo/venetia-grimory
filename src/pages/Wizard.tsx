@@ -44,10 +44,12 @@ export function Wizard() {
 
   useEffect(() => {
     if (!sheetId) newSheet()
-  }, [])
+  }, [sheetId, newSheet])
+
+  // Passo mais distante já alcançado — ajustado no render, sem effect
+  if (currentStep > maxStep) setMaxStep(currentStep)
 
   useEffect(() => {
-    setMaxStep(prev => Math.max(prev, currentStep))
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }, [currentStep])
 

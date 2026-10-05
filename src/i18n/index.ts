@@ -11,7 +11,7 @@ const getInitialLanguage = (): string => {
       const parsed = JSON.parse(stored)
       // `lingua` é o nome antigo, de antes da renomeação PT → EN dos campos.
       return parsed.state?.config?.language ?? parsed.state?.config?.lingua ?? 'en'
-    } catch (error) {
+    } catch {
       return 'en'
     }
   }

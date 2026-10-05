@@ -199,6 +199,7 @@ test.describe('Informações de classe, subclasse e antecedente', () => {
     await wizard.chooseOption('Defense')
     await wizard.next()
     await wizard.chooseCard('Human')
+    await wizard.chooseCard('Crafter')
     await wizard.next()
     await wizard.assignStandardArray()
     await wizard.next()

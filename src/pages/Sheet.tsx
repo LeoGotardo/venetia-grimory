@@ -54,7 +54,7 @@ export function CharacterSheet() {
         loadSheet(id)
       }
     }
-  }, [id])
+  }, [id, sheetId, loadSheet, navigate])
 
   const identity = sheet.identity
   const charClass = gameData.classes.find(c => c.id === identity.class_id)

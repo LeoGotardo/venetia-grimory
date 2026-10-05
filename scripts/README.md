@@ -49,3 +49,26 @@ Os nomes dos campos no PDF oficial são gerados por máquina (`text_1aoob`,
 `checkbox_148cprb`), sem nenhuma semântica. `generate-field-map.mjs` identifica cada um
 pela posição na página, associa a uma chave em português e **falha se sobrar campo sem
 chave** — por isso o mapa é gerado, e não escrito à mão.
+
+# Release do APK Android
+
+| Script | O que faz |
+|---|---|
+| `scripts/setup-release-secrets.sh` | **uma vez só**: cria a keystore (`~/venetia-release.jks`) e grava os 4 secrets do repositório |
+| `scripts/release.sh` (`npm run release`) | confere branch/árvore limpa/sincronia, roda lint + testes + build, cria a tag `vX.Y.Z` e a envia |
+| `scripts/build-android-release.sh` | gera o APK assinado; roda no workflow e também à mão com as mesmas variáveis |
+
+O push da tag dispara `.github/workflows/release.yml`, que gera
+`grimorio-de-venetia-vX.Y.Z.apk` e publica a GitHub Release com a mensagem da tag
+como notas. `versionCode` sai da versão (`v1.2.3` → `10203`), passado ao Gradle por
+`-PversionCode`/`-PversionName` — o `build.gradle` versionado não é editado.
+
+```bash
+./scripts/setup-release-secrets.sh     # primeira vez
+npm run release                        # patch  (v1.0.0 → v1.0.1)
+npm run release -- minor               # minor  (v1.0.1 → v1.1.0)
+NOTES="Correções" npm run release      # notas sem abrir o editor
+```
+
+A keystore precisa de backup fora da máquina: o Android recusa atualização assinada
+por outra chave.

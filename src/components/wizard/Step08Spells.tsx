@@ -263,7 +263,7 @@ export function Step08Spells() {
 
   const classId = sheet.identity.class_id
   const level = sheet.identity.level
-  const multiclasses = sheet.identity.multiclasses ?? []
+  const multiclasses = useMemo(() => sheet.identity.multiclasses ?? [], [sheet.identity.multiclasses])
   const primaryLevel = level - multiclasses.reduce((s, m) => s + m.level, 0)
 
   const subclassId = sheet.identity.subclass_id

@@ -66,8 +66,12 @@ export class WizardPage {
     }
   }
 
-  /** Passo 6 — distribui os +3 do antecedente (modo 2+1 é o padrão). */
+  /**
+   * Passo 6 — distribui os +3 do antecedente. Escolher o antecedente já
+   * pré-distribui +1+1+1; trocar para o modo +2+1 zera e libera 2 num atributo.
+   */
   async assignBackgroundBonus(distribution: Record<string, number>): Promise<void> {
+    await this.page.getByRole('button', { name: '+2+1', exact: true }).click()
     for (const [attr, points] of Object.entries(distribution)) {
       const control = this.page.getByTestId(`bonus-${attr}`)
       for (let i = 0; i < points; i++) await control.getByRole('button', { name: '+' }).click()
@@ -113,6 +117,9 @@ export class WizardPage {
     // 4 — Espécie
     await expect(this.page.getByRole('heading', { name: 'Species', exact: true })).toBeVisible()
     await this.chooseCard('Human')
+    // Humano (Versátil) exige um talento de origem; Artesão só dá ferramentas,
+    // então não mexe em PV/CA/perícias que os testes conferem
+    await this.chooseCard('Crafter')
     await this.next()
 
     // 5 — Atributos

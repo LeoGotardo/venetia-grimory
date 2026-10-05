@@ -30,7 +30,22 @@ stubs the `localStorage` that `i18n` and the store read at import time. Sheet fi
 Android (Capacitor), only relevant when touching native packaging:
 ```bash
 npm run build && npx cap sync
+cd android && ./gradlew assembleDebug   # → android/app/build/outputs/apk/debug/app-debug.apk
 ```
+
+Releases: `npm run release [patch|minor|major|vX.Y.Z]` (`scripts/release.sh`) runs the gate and
+pushes an annotated `vX.Y.Z` tag; `.github/workflows/release.yml` then builds the signed APK with
+`scripts/build-android-release.sh` and publishes the GitHub Release. Signing comes from four repo
+secrets set once by `scripts/setup-release-secrets.sh`. `versionCode` is derived from the tag
+(`v1.2.3` → `10203`) and passed as `-PversionCode` — don't hardcode it back into `build.gradle`.
+
+Launcher icon and splash are generated from `assets/` (`icon-only.png`, `icon-foreground.png`,
+`icon-background.png`, `splash.png`, `splash-dark.png`, background `#1A1612`) with
+`npx capacitor-assets generate --android` — rerun it after changing any of them; until it runs,
+the APK ships Capacitor's placeholder icon. The adaptive-icon XML already insets the foreground
+16.7%, so `icon-foreground.png` is the full icon with no extra padding. The launcher name is
+localized in `res/values/strings.xml` (EN, "Venetia's Grimoire") and `res/values-pt/strings.xml`
+("Grimório de Venetia"), matching the `title` key in `src/i18n/`.
 
 ## Naming: English code, Portuguese comments
 

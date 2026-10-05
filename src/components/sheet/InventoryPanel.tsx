@@ -25,6 +25,7 @@ export function InventoryPanel() {
     const map = new Map<string, Item>()
     getItems().forEach(i => map.set(i.id, i))
     return map
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- os getters leem i18n.language na chamada; a dep refaz o memo na troca de idioma
   }, [i18n.language])
 
   const resolveName = (it: InventoryItem): string =>

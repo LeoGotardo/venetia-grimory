@@ -96,6 +96,7 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
     const map = new Map<string, Item>()
     getItems().forEach(i => map.set(i.id, i))
     return map
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- os getters leem i18n.language na chamada; a dep refaz o memo na troca de idioma
   }, [i18n.language])
 
   const FILTROS: { id: FilterType; label: string }[] = [
@@ -132,6 +133,7 @@ export function BackpackSearch({ noList = false, chargeItem = false }: BackpackS
       if (!term) return true
       return item.name.toLowerCase().includes(term) || item.description.toLowerCase().includes(term)
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- os getters leem i18n.language na chamada; a dep refaz o memo na troca de idioma
   }, [search, filtro, raridade, i18n.language])
 
   // A lista inteira são centenas de itens: mostra uma página e diz quantos ficaram

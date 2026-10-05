@@ -73,10 +73,7 @@ export function LevelUpModal({ open, onClose, newLevel }: LevelUpModalProps) {
   const newProf = calcProfBonus(newLevel)
   const highlights = (progEntry?.highlights ?? []).filter(d => d !== 'AVA')
 
-  const newSlots = useMemo(() => {
-    if (!isCaster || !progEntry?.slots) return null
-    return progEntry.slots as Record<string, number>
-  }, [isCaster, progEntry])
+  const newSlots = isCaster && progEntry?.slots ? progEntry.slots : null
 
   // Perícias proficientes sem expertise ainda
   const proficientSkills = useMemo(() =>

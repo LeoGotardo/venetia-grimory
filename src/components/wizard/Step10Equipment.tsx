@@ -84,6 +84,7 @@ export function Step10Equipment() {
   // a mochila de quem tinha escolhido a B.
   const [option, setOption] = useState<'A' | 'B' | null>(() => sheet.identity.equipment_option)
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- os getters leem i18n.language na chamada; a dep refaz o memo na troca de idioma
   const catalog = useMemo(() => getItems(), [i18n.language])
 
   const classId = sheet.identity.class_id

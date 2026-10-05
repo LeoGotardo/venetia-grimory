@@ -45,11 +45,12 @@ test.describe('Tradução dos dados de jogo', () => {
     await expect(page.getByRole('heading', { name: 'Human', exact: true })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Dragonborn', exact: true })).toBeVisible()
     await wizard.chooseCard('Human')
+    await wizard.chooseCard('Crafter')
     await wizard.next()
 
     // atributos
-    await expect(page.getByText('Strength', { exact: true })).toBeVisible()
-    await expect(page.getByText('Charisma', { exact: true })).toBeVisible()
+    await expect(page.getByText('Strength', { exact: true }).first()).toBeVisible()
+    await expect(page.getByText('Charisma', { exact: true }).first()).toBeVisible()
     await wizard.assignStandardArray()
     await wizard.next()
 

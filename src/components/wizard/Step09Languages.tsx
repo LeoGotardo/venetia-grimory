@@ -13,7 +13,7 @@ export function Step09Languages() {
   const selectedLanguages = sheet.proficiencies.languages
   const freeLanguages = selectedLanguages.filter(i => !fixedLanguages.includes(i))
 
-  function toggleLanguage(languageId: string, type: 'comum' | 'raro') {
+  function toggleLanguage(languageId: string) {
     if (fixedLanguages.includes(languageId)) return
     const newValue = selectedLanguages.includes(languageId)
       ? selectedLanguages.filter(i => i !== languageId)
@@ -42,7 +42,7 @@ export function Step09Languages() {
             <Badge key={id} variant={fixedLanguages.includes(id) ? 'gold' : 'blue'}>
               {language?.name ?? id}
               {!fixedLanguages.includes(id) && (
-                <button onClick={() => toggleLanguage(id, 'comum')} className="ml-1 hover:text-red-400 cursor-pointer">×</button>
+                <button onClick={() => toggleLanguage(id)} className="ml-1 hover:text-red-400 cursor-pointer">×</button>
               )}
             </Badge>
           )
@@ -60,7 +60,7 @@ export function Step09Languages() {
               return (
                 <button
                   key={i.id}
-                  onClick={() => !isFixed && toggleLanguage(i.id, 'comum')}
+                  onClick={() => !isFixed && toggleLanguage(i.id)}
                   disabled={locked && !isSelected}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded text-left transition-colors cursor-pointer disabled:cursor-default
                     ${isSelected ? 'bg-[#3D332D] border border-[#B8860B]/30' : 'hover:bg-[#3D332D]'}
@@ -86,7 +86,7 @@ export function Step09Languages() {
               return (
                 <button
                   key={i.id}
-                  onClick={() => toggleLanguage(i.id, 'raro')}
+                  onClick={() => toggleLanguage(i.id)}
                   disabled={locked}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded text-left transition-colors cursor-pointer disabled:cursor-default
                     ${isSelected ? 'bg-[#4D2020] border border-[#7B1D1D]/30' : 'hover:bg-[#3D332D]'}
