@@ -39,6 +39,15 @@ pushes an annotated `vX.Y.Z` tag; `.github/workflows/release.yml` then builds th
 secrets set once by `scripts/setup-release-secrets.sh`. `versionCode` is derived from the tag
 (`v1.2.3` → `10203`) and passed as `-PversionCode` — don't hardcode it back into `build.gradle`.
 
+The installed app updates itself from those releases: `UpdatePrompt` (mounted in `App.tsx`) calls
+`checkForUpdate` (`src/lib/appUpdate.ts`), which on Android release builds fetches
+`releases/latest` and compares `versionCodeFromTag(tag)` — the same formula as the build script, keep
+them in sync — with the installed `versionCode`. Download and install are native, in the local
+plugin `android/.../AppUpdaterPlugin.java` (registered in `MainActivity.onCreate` before `super`):
+it downloads into `cacheDir/updates/`, sends the user to the "install unknown apps" screen when
+`canRequestPackageInstalls()` is false, and hands the file to the system installer via the existing
+`FileProvider`. Debug builds skip the check (different signing key — the installer would refuse).
+
 Launcher icon and splash are generated from `assets/` (`icon-only.png`, `icon-foreground.png`,
 `icon-background.png`, `splash.png`, `splash-dark.png`, background `#1A1612`) with
 `npx capacitor-assets generate --android` — rerun it after changing any of them; until it runs,

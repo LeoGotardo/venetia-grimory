@@ -148,3 +148,8 @@ export const AUTHOR_URL = 'https://leogotardo.vercel.app/'
 
 // Formulário de bugs e sugestões, também linkado no rodapé da Home
 export const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSf3qvBBaJqDrYXhJqQxOm4mHK8uTZX_YpNpk_lgUYa2ptZpVQ/viewform'
+
+// Atualização do app Android pelo GitHub Releases (src/lib/appUpdate.ts)
+export const GITHUB_REPO = 'LeoGotardo/venetia-grimory'
+export const LATEST_RELEASE_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`
+export const UPDATE_CHECK_TIMEOUT_MS = 8000
