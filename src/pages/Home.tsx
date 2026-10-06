@@ -48,6 +48,15 @@ export function Home() {
           <VenetiaLogo />
           <span className="font-extrabold tracking-[0.04em] text-sm text-[#E8DFD0]">Venetia</span>
         </div>
+        <div className="flex items-center gap-2">
+        <button
+          data-testid="area-mestre"
+          onClick={() => navigate('/mestre')}
+          className="inline-flex items-center gap-[7px] h-[34px] text-[13px] font-semibold text-[#E8DFD0] bg-white/5 hover:bg-white/10 border border-[rgba(212,160,23,0.25)] hover:border-[rgba(212,160,23,0.5)] rounded-[9px] px-3 cursor-pointer transition-colors"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
+          {t('gm.area')}
+        </button>
         <button
           onClick={() => setConfigOpen(true)}
           aria-label={t('home.settings')}
@@ -55,6 +64,7 @@ export function Home() {
         >
           <GearIcon />
         </button>
+        </div>
       </header>
 
       <ConfigModal open={configOpen} onClose={() => setConfigOpen(false)} />

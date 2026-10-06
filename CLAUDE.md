@@ -193,6 +193,24 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   - The checkboxes' on-state appearance references a font the widget doesn't declare, so `check()` renders nothing and `flatten()` emits broken XObjects. Marks are drawn on the page as filled circles and the checkbox fields are removed before flattening.
   - Each widget carries its own `/DA`, which **overrides** the field-level one — `setFontSize()` alone has no effect, so the widget `/DA` is deleted whenever the font is shrunk to fit.
 
+### GM area (`/mestre`)
+
+- Built in phases: players (done), NPC statblocks,
+  combat tracker, grid map editor, map + combat, SRD 5.2 monster catalog. Online play is a later
+  phase — every GM entity carries a uuid and `updated_at` so a sync layer can do last-write-wins.
+- `src/store/gmStore.ts` (`useGmStore`) is separate from the sheet store and owns the open
+  `Campaign`; every edit goes through `updateCampaign`, which stamps `updated_at`. It debounce-saves
+  through `src/services/gmStorage.ts` (`dnd_mestre_campanhas` index + `dnd_mestre_campanha_<id>`),
+  and flushes the pending save on `openCampaign`, on switching campaigns and on
+  `pagehide`/`visibilitychange` — reopening or closing the app inside the debounce lost the last edit.
+- Party members are `local` (live link by `sheet_id`, snapshot refreshed on every `openCampaign`;
+  a deleted sheet degrades to `imported`) or `imported` (JSON snapshot, read with
+  `parseSheetImport`, changes only on reimport). The GM never writes back into a player's sheet.
+- Campaign export is an envelope (`format: 'venetia-campaign'`, `src/lib/gm/party.ts`); importing
+  creates a new campaign and turns every local member into an imported one.
+- UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
+  `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.
+
 ### localStorage key schema and legacy migration
 
 - Individual sheets: `dnd_ficha_<uuid>` (raw `CharacterSheet` JSON).

@@ -8,6 +8,8 @@ import { useTranslation } from 'react-i18next'
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })))
 const Wizard = lazy(() => import('./pages/Wizard').then(m => ({ default: m.Wizard })))
 const CharacterSheet = lazy(() => import('./pages/Sheet').then(m => ({ default: m.CharacterSheet })))
+const GmHome = lazy(() => import('./pages/gm/GmHome').then(m => ({ default: m.GmHome })))
+const CampaignPage = lazy(() => import('./pages/gm/CampaignPage').then(m => ({ default: m.CampaignPage })))
 
 function PageLoader() {
   const { t } = useTranslation()
@@ -27,6 +29,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/novo" element={<Wizard />} />
             <Route path="/ficha/:id" element={<CharacterSheet />} />
+            <Route path="/mestre" element={<GmHome />} />
+            <Route path="/mestre/campanha/:id" element={<CampaignPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

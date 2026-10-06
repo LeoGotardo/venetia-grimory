@@ -16,6 +16,12 @@ export const STORAGE_KEY_SHEET_PREFIX = 'dnd_ficha_'
 export const SHEET_EXPORT_FORMAT = 'venetia-sheet'
 export const SHEET_EXPORT_VERSION = 1
 
+/** Área do mestre — chaves em português, como as das fichas. */
+export const STORAGE_KEY_CAMPAIGN_LIST = 'dnd_mestre_campanhas'
+export const STORAGE_KEY_CAMPAIGN_PREFIX = 'dnd_mestre_campanha_'
+export const CAMPAIGN_EXPORT_FORMAT = 'venetia-campaign'
+export const CAMPAIGN_EXPORT_VERSION = 1
+
 export const FIXED_LANGUAGES_BY_CLASS: Record<string, string[]> = {
   druida: ['druidico'],
   ladino: ['giria_dos_ladroes'],
