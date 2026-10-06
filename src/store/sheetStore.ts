@@ -4,6 +4,7 @@ import type { CharacterSheet, AbilityId, FreeCast, InventoryItem } from '../type
 import { createInitialSheet } from '../lib/initialSheet'
 import { recalculate } from '../lib/recalculate'
 import { migrateSheet } from '../lib/migrateSheet'
+import { buildSheetExport, parseSheetImport } from '../lib/sheetExport'
 import { ABILITIES, calcPrimaryClassLevel, canChooseSubclass } from '../lib/calculations'
 import {
   saveSheet,
@@ -117,6 +118,8 @@ interface SheetStore {
   recalculateAll: () => void
   saveLocal: () => void
   exportSheetJson: () => string
+  /** Exporta uma ficha salva sem carregá-la no store (botão da Home). */
+  exportSavedSheetJson: (id: string) => string | null
   importSheetJson: (json: string) => void
   loadSheet: (id: string) => void
   newSheet: () => void
@@ -1112,14 +1115,22 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
     set({ sheet: finalSheet, sheetId: id, completeSheet: true })
   },
 
-  exportSheetJson: () => JSON.stringify(get().sheet, null, 2),
+  exportSheetJson: () => buildSheetExport(get().sheet, get().completeSheet),
+
+  exportSavedSheetJson: id => {
+    const sheet = loadSheetFromStorage(id)
+    if (!sheet) return null
+    const complete = listSheets().find(item => item.id === id)?.complete ?? true
+    return buildSheetExport(sheet, complete)
+  },
 
   importSheetJson: json => {
     try {
-      const sheet = migrateSheet(JSON.parse(json) as CharacterSheet)
+      const parsed = parseSheetImport(json)
+      const sheet = migrateSheet(parsed.sheet)
       const id = uuidv4()
-      saveSheet(id, sheet)
-      set({ sheet: recalculate(sheet), sheetId: id })
+      saveSheet(id, sheet, parsed.complete)
+      set({ sheet: recalculate(sheet), sheetId: id, currentStep: 1, completeSheet: parsed.complete })
       get().loadSavedList()
     } catch (err) {
       console.error('[fichaStore] Falha ao importar JSON:', err)

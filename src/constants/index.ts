@@ -12,6 +12,9 @@ export const INITIAL_FREE_LANGUAGES = 2
 
 export const STORAGE_KEY_LIST = 'dnd_fichas_lista'
 export const STORAGE_KEY_SHEET_PREFIX = 'dnd_ficha_'
+/** Marca do JSON exportado — distingue o envelope de uma ficha crua (exports antigos). */
+export const SHEET_EXPORT_FORMAT = 'venetia-sheet'
+export const SHEET_EXPORT_VERSION = 1
 
 export const FIXED_LANGUAGES_BY_CLASS: Record<string, string[]> = {
   druida: ['druidico'],

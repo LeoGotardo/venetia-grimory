@@ -36,7 +36,7 @@ async function carregarModelo(): Promise<ArrayBuffer> {
  * Gera a ficha no modelo oficial (D&D 5.5). `export` sai preenchida e
  * achatada; `print` sai só com o que não muda em jogo e segue editável.
  * A entrega (download, folha de compartilhamento ou diálogo de impressão) fica
- * a cargo de `deliverPdf`, que conhece as limitações de cada plataforma.
+ * a cargo de `deliverFile`, que conhece as limitações de cada plataforma.
  */
 export function useSheetPdf() {
   const sheet = useSheetStore(s => s.sheet)
@@ -58,13 +58,20 @@ export function useSheetPdf() {
       setGenerating({ mode, action })
       setErro(null)
       try {
-        const [{ fillSheetPdf }, { deliverPdf }, template] = await Promise.all([
+        const [{ fillSheetPdf }, { deliverFile }, template] = await Promise.all([
           import('../lib/pdf/fillSheet'),
-          import('../lib/pdf/deliverPdf'),
+          import('../lib/deliverFile'),
           carregarModelo(),
         ])
         const bytes = await fillSheetPdf(sheet, mode, template)
-        await deliverPdf(bytes, pdfFileName(sheet.identity.character_name, mode), action)
+        await deliverFile(
+          {
+            bytes,
+            fileName: pdfFileName(sheet.identity.character_name, mode),
+            mimeType: 'application/pdf',
+          },
+          action,
+        )
       } catch (err) {
         console.error('[useFichaPdf] falha ao gerar o PDF:', err)
         setErro(err instanceof Error ? err.message : String(err))

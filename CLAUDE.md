@@ -186,7 +186,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - `public/sheet-template.pdf` (PT-BR) and `public/sheet-template-en.pdf` are the official D&D 5.5 sheets carrying **the same 411 AcroForm fields, with the same names, at the same coordinates** — PT and EN are the same InDesign template (603×774 pts). That is what lets `fillSheet.ts` fill either one without knowing the language.
 - `src/lib/pdf/sheetFields.ts` is **generated** — do not hand-edit. The PDF's own field names are machine-generated (`text_1aoob`, `checkbox_148cprb`); the generator identifies each field by page + position and fails if any field ends up without a semantic key. Regenerate with the pipeline in `scripts/README.md`.
 - `src/lib/pdf/fillSheet.ts` maps a `CharacterSheet` onto those keys. `export` fills everything and flattens; `print` leaves blank what changes during play (current/temp HP, spent Hit Dice, XP, spent spell slots, coins) and keeps the form editable. That split is documented in the file's header with its three sources (2024 rest rules, the sheet's own tracker boxes, the store's in-play actions) — keep it in sync if you add fields.
-- `src/lib/pdf/deliverPdf.ts` decides how the finished file reaches the user, and `src/lib/platform.ts` holds the predicate both it and the UI read (`deliverViaShare`). Desktop keeps `<a download>` / hidden-iframe printing; touch browsers go through the Web Share API; inside the app the PDF is written to `Directory.Cache` with `@capacitor/filesystem` and handed to `@capacitor/share`, because the WebView ignores `<a download>` and has no print dialog. Adding either plugin means running `npx cap sync` again.
+- `src/lib/deliverFile.ts` decides how a finished file (the PDF, and the JSON export too) reaches the user, and `src/lib/platform.ts` holds the predicate both it and the UI read (`deliverViaShare`). Desktop keeps `<a download>` / hidden-iframe printing; touch browsers go through the Web Share API; inside the app the file is written to `Directory.Cache` with `@capacitor/filesystem` — in ~1 MB chunks (`writeFile` + `appendFile`), never one multi-MB base64 message over the bridge — and handed to `@capacitor/share`, because the WebView ignores `<a download>` and has no print dialog. Adding either plugin means running `npx cap sync` again.
 - Death saves, Heroic Inspiration and item attunement are never filled: `CharacterSheet` has no such fields.
 - Class resources print their **maximum** only (level-derived, permanent); the current value is restored by `longRest` and stays out.
 - Two PDF gotchas, both already worked around — don't "simplify" them away:
@@ -199,6 +199,10 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - List index: `dnd_fichas_lista` (array of `SheetListItem`). A `complete` flag on each list item is
   never downgraded once set to `true` — the wizard sets it only upon finishing the final review
   step (currently step 13, `Step12Review` component).
+- Exported JSON is an envelope (`src/lib/sheetExport.ts`: `format: 'venetia-sheet'`, `version`,
+  `complete`, `sheet`) because that flag lives in the list, not the sheet — without it every import
+  came back as a draft. Older raw-sheet exports still import; they count as complete when class,
+  species and background are set.
 - The storage **keys** never changed across the Portuguese→English identifier rename, but every
   field *inside* them did. `src/lib/migrateLegacyPt.ts` translates the old shapes field by field —
   `translateLegacyPtSheet` (called from `migrateSheet`, so it covers both stored sheets and
