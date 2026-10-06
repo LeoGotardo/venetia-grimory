@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGmStore } from '../../store/gmStore'
 import { GmHeader, gmSecondaryButton } from '../../components/gm/GmHeader'
 import { PlayerCard } from '../../components/gm/PlayerCard'
 import { AddLocalPlayerModal } from '../../components/gm/AddLocalPlayerModal'
+import { NpcTab } from '../../components/gm/NpcTab'
 import { pickTextFile } from '../../lib/pickTextFile'
 import { deliverJson } from '../../lib/deliverJson'
 
-type Tab = 'players' | 'notes'
+const TABS = ['players', 'npcs', 'notes'] as const
+type Tab = typeof TABS[number]
 
 export function CampaignPage() {
   const { t } = useTranslation()
@@ -17,7 +19,10 @@ export function CampaignPage() {
     campaign, openedId, openCampaign, renameCampaign, setCampaignNotes,
     addLocalPlayer, importPlayerJson, reimportPlayerJson, removePlayer, exportCampaignJson,
   } = useGmStore()
-  const [tab, setTab] = useState<Tab>('players')
+  // A aba fica na URL (`?aba=npcs`): voltar do editor de NPC cai na aba certa.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab: Tab = TABS.find(x => x === searchParams.get('aba')) ?? 'players'
+  const setTab = (next: Tab) => setSearchParams(next === 'players' ? {} : { aba: next }, { replace: true })
   const [pickerOpen, setPickerOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -55,6 +60,7 @@ export function CampaignPage() {
 
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: 'players', label: t('gm.tabPlayers') },
+    { id: 'npcs', label: t('gm.tabNpcs') },
     { id: 'notes', label: t('gm.tabNotes') },
   ]
 
@@ -126,6 +132,8 @@ export function CampaignPage() {
             )}
           </section>
         )}
+
+        {tab === 'npcs' && <NpcTab campaign={campaign} />}
 
         {tab === 'notes' && (
           <textarea

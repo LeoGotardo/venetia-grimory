@@ -44,7 +44,15 @@ export function GmHome() {
 
   return (
     <div className="min-h-screen bg-[#131110] font-[Manrope,system-ui]">
-      <GmHeader title={t('gm.area')} backTo="/" />
+      <GmHeader
+        title={t('gm.area')}
+        backTo="/"
+        actions={
+          <button data-testid="bestiario" onClick={() => navigate('/mestre/bestiario')} className={gmSecondaryButton}>
+            {t('gm.bestiary')}
+          </button>
+        }
+      />
 
       <div className="max-w-[920px] mx-auto px-4 sm:px-8 py-8 sm:py-12 pb-20">
         <form onSubmit={handleCreate} className="flex flex-col sm:flex-row gap-3 mb-3">

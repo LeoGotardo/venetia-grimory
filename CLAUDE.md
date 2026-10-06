@@ -195,7 +195,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 
 ### GM area (`/mestre`)
 
-- Built in phases: players (done), NPC statblocks,
+- Built in phases: players (done), NPC statblocks (done),
   combat tracker, grid map editor, map + combat, SRD 5.2 monster catalog. Online play is a later
   phase — every GM entity carries a uuid and `updated_at` so a sync layer can do last-write-wins.
 - `src/store/gmStore.ts` (`useGmStore`) is separate from the sheet store and owns the open
@@ -208,6 +208,19 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   `parseSheetImport`, changes only on reimport). The GM never writes back into a player's sheet.
 - Campaign export is an envelope (`format: 'venetia-campaign'`, `src/lib/gm/party.ts`); importing
   creates a new campaign and turns every local member into an imported one.
+- NPCs and monsters share one `StatBlock` shape (`src/types/gm.ts`, 2024 layout, distances in
+  meters). The **bestiary** (`dnd_mestre_bestiario`, `/mestre/bestiario`) is global across
+  campaigns; a campaign's `npcs` are **copies** (`base_monster_id` points back), so editing an NPC
+  never touches the bestiary. Rules math lives in `src/lib/gm/statblock.ts` (CR → XP/PB, saves,
+  initiative, passive Perception) and `src/lib/gm/dice.ts` (`parseDice` / `averageDice` /
+  `rollDice` with an injectable RNG). Anything read from storage or an imported JSON goes
+  through `normalizeStatBlock` / `normalizeCampaign` (`src/lib/gm/normalize.ts`) — the GM
+  equivalent of `migrateSheet`; Phase-1 campaigns had no `npcs`.
+- The Monster Manual 2025 is not bundleable (only the SRD 5.2 is CC-BY). Users bring their own
+  book's monsters through the editor or a "monster pack" (`format: 'venetia-monsters'`);
+  importing a pack replaces entries with the same id.
+- The statblock editor (`StatBlockEditLayout`) keeps a local draft and writes to the store only
+  on Save, with a live `StatBlockCard` preview beside it from `lg:`.
 - UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
   `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.
 

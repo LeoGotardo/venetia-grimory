@@ -5,11 +5,13 @@ import { useTranslation } from 'react-i18next'
 interface GmHeaderProps {
   title: ReactNode
   backTo: string
+  /** Substitui a navegação do botão voltar (ex.: confirmar antes de descartar). */
+  onBack?: () => void
   actions?: ReactNode
 }
 
 /** Navbar fixa das telas do mestre, no mesmo estilo da Home. */
-export function GmHeader({ title, backTo, actions }: GmHeaderProps) {
+export function GmHeader({ title, backTo, onBack, actions }: GmHeaderProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
 
@@ -17,7 +19,7 @@ export function GmHeader({ title, backTo, actions }: GmHeaderProps) {
     <header className="sticky top-0 z-10 flex items-center justify-between gap-3 h-[60px] px-4 sm:px-7 bg-[#161311] border-b border-white/[0.06]">
       <div className="flex items-center gap-3 min-w-0">
         <button
-          onClick={() => navigate(backTo)}
+          onClick={() => (onBack ? onBack() : navigate(backTo))}
           aria-label={t('gm.back')}
           className="w-[34px] h-[34px] flex-shrink-0 rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
         >

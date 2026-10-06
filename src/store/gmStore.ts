@@ -1,16 +1,20 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
-import type { Campaign, CampaignListItem, CharacterSheet, PartyMember } from '../types'
+import type { Campaign, CampaignListItem, CharacterSheet, Monster, Npc, PartyMember, StatBlock } from '../types'
 import { recalculate } from '../lib/recalculate'
 import { migrateSheet } from '../lib/migrateSheet'
 import { parseSheetImport } from '../lib/sheetExport'
 import { buildCampaignExport, parseCampaignImport } from '../lib/gm/party'
+import { buildMonsterPack, parseMonsterPack } from '../lib/gm/statblock'
+import { normalizeCampaign } from '../lib/gm/normalize'
 import { loadSheet as loadSheetFromStorage } from '../services/sheetStorage'
 import {
   listCampaigns,
   saveCampaign,
   loadCampaign,
   deleteCampaign as deleteCampaignFromStorage,
+  loadBestiary,
+  saveBestiary,
 } from '../services/gmStorage'
 import { DEBOUNCE_SAVE_MS } from '../constants'
 
@@ -36,6 +40,20 @@ interface GmState {
   /** Troca o snapshot de um player importado por um JSON novo. Lança se o JSON for inválido. */
   reimportPlayerJson: (memberId: string, json: string) => void
   removePlayer: (memberId: string) => void
+
+  addNpc: (statblock: StatBlock, baseMonsterId?: string | null) => string
+  updateNpc: (npcId: string, change: Partial<Pick<Npc, 'statblock' | 'notes'>>) => void
+  duplicateNpc: (npcId: string) => string | null
+  removeNpc: (npcId: string) => void
+
+  /** Bestiário do mestre (todas as campanhas). Grava na hora — muda pouco e por botão. */
+  bestiary: Monster[]
+  loadBestiary: () => void
+  saveMonster: (statblock: StatBlock, id?: string) => string
+  deleteMonster: (id: string) => void
+  /** Mesmo id substitui (reimportar um pacote editado atualiza). Devolve quantos entraram. Lança se não for pacote. */
+  importMonsterPack: (json: string) => number
+  exportMonsterPack: (ids?: string[]) => string
 
   exportCampaignJson: () => string | null
   /** Importa como campanha nova e devolve o id. Lança se o JSON não for uma campanha. */
@@ -103,6 +121,7 @@ export const useGmStore = create<GmState>((set, get) => {
         id: uuidv4(),
         name: name.trim(),
         party: [],
+        npcs: [],
         notes: '',
         created_at: at,
         updated_at: at,
@@ -164,22 +183,82 @@ export const useGmStore = create<GmState>((set, get) => {
     removePlayer: memberId =>
       updateCampaign(c => ({ party: c.party.filter(m => m.id !== memberId) })),
 
+    addNpc: (statblock, baseMonsterId = null) => {
+      const npc: Npc = { id: uuidv4(), statblock, base_monster_id: baseMonsterId, notes: '', updated_at: now() }
+      updateCampaign(c => ({ npcs: [...c.npcs, npc] }))
+      return npc.id
+    },
+
+    updateNpc: (npcId, change) =>
+      updateCampaign(c => ({
+        npcs: c.npcs.map(n => (n.id === npcId ? { ...n, ...change, updated_at: now() } : n)),
+      })),
+
+    duplicateNpc: npcId => {
+      const source = get().campaign?.npcs.find(n => n.id === npcId)
+      if (!source) return null
+      const copy: Npc = { ...structuredClone(source), id: uuidv4(), updated_at: now() }
+      updateCampaign(c => {
+        const idx = c.npcs.findIndex(n => n.id === npcId)
+        return { npcs: [...c.npcs.slice(0, idx + 1), copy, ...c.npcs.slice(idx + 1)] }
+      })
+      return copy.id
+    },
+
+    removeNpc: npcId => updateCampaign(c => ({ npcs: c.npcs.filter(n => n.id !== npcId) })),
+
+    // Lido já na criação do store: as telas do bestiário não piscam "vazio".
+    bestiary: loadBestiary(),
+
+    loadBestiary: () => set({ bestiary: loadBestiary() }),
+
+    saveMonster: (statblock, id) => {
+      const bestiary = loadBestiary()
+      const monster: Monster = { id: id ?? uuidv4(), source: 'custom', statblock, updated_at: now() }
+      const idx = bestiary.findIndex(m => m.id === monster.id)
+      const next = idx >= 0 ? bestiary.map((m, i) => (i === idx ? monster : m)) : [...bestiary, monster]
+      saveBestiary(next)
+      set({ bestiary: next })
+      return monster.id
+    },
+
+    deleteMonster: id => {
+      const next = loadBestiary().filter(m => m.id !== id)
+      saveBestiary(next)
+      set({ bestiary: next })
+    },
+
+    importMonsterPack: json => {
+      const incoming = parseMonsterPack(json)
+      const at = now()
+      const byId = new Map(loadBestiary().map(m => [m.id, m]))
+      for (const { id, statblock } of incoming) {
+        byId.set(id, { id, source: 'custom', statblock, updated_at: at })
+      }
+      const next = [...byId.values()]
+      saveBestiary(next)
+      set({ bestiary: next })
+      return incoming.length
+    },
+
+    exportMonsterPack: ids => {
+      const all = loadBestiary()
+      return buildMonsterPack(ids ? all.filter(m => ids.includes(m.id)) : all)
+    },
+
     exportCampaignJson: () => {
       const { campaign } = get()
       return campaign ? buildCampaignExport(campaign) : null
     },
 
     importCampaignJson: json => {
-      const imported = parseCampaignImport(json)
-      const at = now()
+      const imported = normalizeCampaign(parseCampaignImport(json))
       const campaign: Campaign = {
         ...imported,
         id: uuidv4(),
         // As fichas locais de outro aparelho não existem aqui: viram snapshot.
-        party: (imported.party ?? []).map(m => ({ ...m, source: 'imported', sheet_id: null })),
-        notes: imported.notes ?? '',
-        created_at: imported.created_at ?? at,
-        updated_at: at,
+        party: imported.party.map(m => ({ ...m, source: 'imported', sheet_id: null })),
+        updated_at: now(),
       }
       saveCampaign(campaign)
       set({ campaigns: listCampaigns() })

@@ -1,5 +1,6 @@
-import type { Campaign, CampaignListItem } from '../types'
-import { STORAGE_KEY_CAMPAIGN_LIST, STORAGE_KEY_CAMPAIGN_PREFIX } from '../constants'
+import type { Campaign, CampaignListItem, Monster } from '../types'
+import { STORAGE_KEY_BESTIARY, STORAGE_KEY_CAMPAIGN_LIST, STORAGE_KEY_CAMPAIGN_PREFIX } from '../constants'
+import { normalizeCampaign, normalizeMonster } from '../lib/gm/normalize'
 
 function toListItem(campaign: Campaign): CampaignListItem {
   return {
@@ -41,7 +42,7 @@ export function loadCampaign(id: string): Campaign | null {
   if (!raw) return null
 
   try {
-    return JSON.parse(raw) as Campaign
+    return normalizeCampaign(JSON.parse(raw))
   } catch {
     console.error(`[gmStorage] Campanha ${id} corrompida.`)
     return null
@@ -51,4 +52,21 @@ export function loadCampaign(id: string): Campaign | null {
 export function deleteCampaign(id: string): void {
   localStorage.removeItem(`${STORAGE_KEY_CAMPAIGN_PREFIX}${id}`)
   saveList(listCampaigns().filter(item => item.id !== id))
+}
+
+/** Bestiário do mestre: um array só, compartilhado entre as campanhas. */
+export function loadBestiary(): Monster[] {
+  const raw = localStorage.getItem(STORAGE_KEY_BESTIARY)
+  if (!raw) return []
+
+  try {
+    return (JSON.parse(raw) as unknown[]).map(normalizeMonster)
+  } catch {
+    console.error('[gmStorage] Bestiário corrompido, reiniciando.')
+    return []
+  }
+}
+
+export function saveBestiary(monsters: Monster[]): void {
+  localStorage.setItem(STORAGE_KEY_BESTIARY, JSON.stringify(monsters))
 }
