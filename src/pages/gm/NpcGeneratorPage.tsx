@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Monster, NpcProfile, StatBlock } from '../../types'
 import { useGmStore } from '../../store/gmStore'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
+import { AppFooter } from '../../components/ui/AppFooter'
 import { StatBlockCard } from '../../components/gm/StatBlockCard'
 import { NpcPortrait } from '../../components/gm/NpcPortrait'
 import { NpcProfileFields, type ProfileField } from '../../components/gm/NpcProfileFields'
@@ -43,9 +44,10 @@ export function NpcGeneratorPage() {
   const backTo = `/mestre/campanha/${campaign.id}?aba=npcs`
   if (srd?.language !== i18n.language) {
     return (
-      <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+      <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
         <GmHeader title={t('gm.npcGen.title')} backTo={backTo} />
         <p className="text-center text-[#A8A09B] py-16">{t('gm.npcGen.loading')}</p>
+        <AppFooter containerClassName={gmContainer} />
       </div>
     )
   }
@@ -246,7 +248,7 @@ function Generator({ backTo, catalog, language }: { backTo: string; catalog: Mon
     : ''
 
   return (
-    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+    <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
       <GmHeader
         title={t('gm.npcGen.title')}
         backTo={backTo}
@@ -403,6 +405,7 @@ function Generator({ backTo, catalog, language }: { backTo: string; catalog: Mon
           </aside>
         </div>
       </div>
+      <AppFooter containerClassName={gmContainer} />
     </div>
   )
 }

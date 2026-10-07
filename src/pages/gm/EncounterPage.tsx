@@ -5,6 +5,7 @@ import type { Campaign, Encounter } from '../../types'
 import { useGmStore } from '../../store/gmStore'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
+import { AppFooter } from '../../components/ui/AppFooter'
 import { CombatantRow } from '../../components/gm/CombatantRow'
 import { CombatantPanel } from '../../components/gm/CombatantPanel'
 import { AddCombatantsModal, type CombatantSource } from '../../components/gm/AddCombatantsModal'
@@ -136,7 +137,7 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
   }
 
   return (
-    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+    <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
       <GmHeader
         backTo={`/mestre/campanha/${campaign.id}?aba=encontros`}
         title={
@@ -313,6 +314,7 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
         profile={selectedProfile}
         onClose={() => setViewingBlock(false)}
       />
+      <AppFooter containerClassName={gmContainer} />
     </div>
   )
 }

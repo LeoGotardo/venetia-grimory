@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Monster } from '../../types'
 import { useGmStore } from '../../store/gmStore'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
+import { AppFooter } from '../../components/ui/AppFooter'
 import { rowButton, rowDangerButton } from '../../components/gm/MonsterRow'
 import { MonsterBrowser } from '../../components/gm/MonsterBrowser'
 import { StatBlockModal } from '../../components/gm/StatBlockModal'
@@ -42,7 +43,7 @@ export function BestiaryPage() {
   }
 
   return (
-    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+    <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
       <GmHeader title={t('gm.bestiary')} backTo="/mestre" />
 
       <div className={`${gmContainer} py-6 pb-20`}>
@@ -94,6 +95,7 @@ export function BestiaryPage() {
       </div>
 
       <StatBlockModal block={isDesktop ? null : viewing?.statblock ?? null} onClose={() => setViewing(null)} />
+      <AppFooter containerClassName={gmContainer} />
     </div>
   )
 }
