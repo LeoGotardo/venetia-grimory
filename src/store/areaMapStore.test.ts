@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useAreaMapStore, flushPendingAreaMapSave } from './areaMapStore'
 import { useGmStore } from './gmStore'
-import { deleteCampaignAreaMaps, listAreaMaps, loadAreaMap, loadCampaignAreaMaps } from '../services/areaMapStorage'
+import { countAreaMapsByCampaign, deleteCampaignAreaMaps, listAreaMaps, loadAreaMap, loadCampaignAreaMaps } from '../services/areaMapStorage'
 import { addElements } from '../lib/gm/areaMap/scene'
 import type { AreaStamp } from '../types'
 
@@ -28,6 +28,7 @@ describe('mapas de área no IndexedDB', () => {
     expect((await listAreaMaps('c1')).map(m => m.name).sort()).toEqual(['Vale', 'Vale (cópia)'])
     expect(st().list).toHaveLength(2)
 
+    expect(await countAreaMapsByCampaign()).toMatchObject({ c1: 2, c2: 1 })
     await st().deleteAreaMap(a)
     expect(await loadAreaMap(a)).toBeNull()
     expect(st().list!.map(m => m.id)).toEqual([copy])

@@ -359,6 +359,14 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   `AREA_EXPORT_MAX_PX`) used by the PNG/JPEG export (`ExportDialog` → `deliverFile`) and by the list
   thumbnail, which the editor regenerates `AREA_THUMBNAIL_DELAY_MS` after the last edit;
   `setAreaThumbnail` is its only writer (`commitAreaMap` keeps the store's current one).
+  Effects are drawn once into a `cacheAsTexture` container (`buildEffect`) and rebuilt only when
+  `asset:effect` changes — live, three glowing stamps cost ~30 ms per frame. Selection is a list:
+  Shift (or the select tool's multi-select toggle, for touch) adds/removes and box-selects
+  (`elementsInRect`: paths/regions count by their line, not their bounding box); dragging any
+  selected element moves them all. A single selected path/region shows draggable vertices
+  (`vertexHit`/`moveVertex`). Asset favorites are a per-device convenience in localStorage
+  (`STORAGE_KEY_AREA_FAVORITES`). The GM home card adds area maps to the campaign's map count
+  via `countAreaMapsByCampaign` (index keys only).
 - `AVAILABLE_CONDITIONS` gained `Atordoado` (Stunned) — it is a 2024 condition the SRD uses.
 - UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
   `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.

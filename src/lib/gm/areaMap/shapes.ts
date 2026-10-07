@@ -160,3 +160,33 @@ export function boundsOf(flat: readonly number[], pad = 0): Box {
 export function translatePoints(flat: readonly number[], dx: number, dy: number): number[] {
   return flat.map((n, i) => (i % 2 === 0 ? n + dx : n + dy))
 }
+
+function segmentsCross(a: Point, b: Point, c: Point, d: Point): boolean {
+  const cross = (p: Point, q: Point, r: Point) => (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x)
+  const d1 = cross(c, d, a)
+  const d2 = cross(c, d, b)
+  const d3 = cross(a, b, c)
+  const d4 = cross(a, b, d)
+  return ((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0))
+}
+
+/**
+ * A linha (ou o polígono, se `closed`) encosta na caixa: algum ponto dentro,
+ * algum segmento cruzando uma borda ou, no polígono, a caixa inteira dentro dele.
+ */
+export function lineTouchesBox(flat: readonly number[], box: Box, closed: boolean): boolean {
+  const pts = pointsOf(flat)
+  const inside = (p: Point) => p.x >= box.minX && p.x <= box.maxX && p.y >= box.minY && p.y <= box.maxY
+  if (pts.some(inside)) return true
+  const corners = [
+    { x: box.minX, y: box.minY }, { x: box.maxX, y: box.minY }, { x: box.maxX, y: box.maxY }, { x: box.minX, y: box.maxY },
+  ]
+  const edges = corners.map((c, i) => [c, corners[(i + 1) % 4]] as const)
+  const n = closed ? pts.length : pts.length - 1
+  for (let i = 0; i < n; i++) {
+    const a = pts[i]
+    const b = pts[(i + 1) % pts.length]
+    if (edges.some(([c, d]) => segmentsCross(a, b, c, d))) return true
+  }
+  return closed && pointInPolygon(flat, corners[0])
+}

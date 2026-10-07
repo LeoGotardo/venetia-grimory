@@ -7,11 +7,12 @@ import type { AreaElement, AreaIcon, AreaLayerId, AreaMap, AreaStamp } from '../
 import { stampDef, stampSize, stampSvg } from '../../../data/areaMap/stamps'
 import { ICON_VIEWBOX, iconDef, iconSvg } from '../../../data/areaMap/icons'
 import { hexCenters, hexCorners } from '../../../lib/gm/areaMap/grid'
+import type { Box } from '../../../lib/gm/areaMap/shapes'
 import { AREA_EXPORT_MAX_PX } from '../../../constants'
 import { areaTextureTile } from './areaTextures'
 import { TILE_RESOLUTION, applyLabel, drawPaint, drawPath, drawRegion, labelStyle } from './areaStyles'
 import {
-  boxCorners, canRotate, elementBounds, elementBox, rotateHandle, GIZMO_HANDLE_PX, type Point,
+  boxCorners, canRotate, elementBounds, elementBox, rotateHandle, GIZMO_HANDLE_PX, VERTEX_HANDLE_PX, type Point,
 } from '../../../lib/gm/areaMap/geometry'
 import { fitView, panBy, screenToWorld, zoomAt, type View } from '../../../lib/gm/areaMap/viewport'
 
@@ -24,7 +25,9 @@ export interface StagePointerInfo {
 
 interface AreaStageProps {
   map: AreaMap
-  selectedId: string | null
+  selectedIds: readonly string[]
+  /** Seleção em caixa em andamento (coordenadas de mundo). */
+  marquee: Box | null
   /** Um dedo/mouse arrasta o mapa em vez de usar a ferramenta. */
   panMode: boolean
   /** Stamp que segue o ponteiro enquanto a ferramenta de colocar está ativa. */
@@ -78,10 +81,42 @@ function assetContext(asset: string): GraphicsContext {
 /** Stamp = contêiner com o desenho e, se houver efeito, uma cópia borrada por trás. */
 interface StampNode extends Container {
   main: Graphics
-  fx: Graphics | null
+  /** Efeito já desenhado numa textura (o blur não roda a cada quadro). */
+  fx: Container | null
+  /** `asset:efeito` do que está em `fx` — só refaz quando muda. */
+  fxKey: string
 }
 
 const GLOW_COLOR = 0xc8b6ff
+/** Pixels por unidade de mundo da textura do efeito: é um borrão, não precisa de mais. */
+const FX_RESOLUTION = 2
+
+/**
+ * Cópia borrada do stamp (sombra deslocada ou brilho maior), num contêiner em
+ * cache: o `BlurFilter` roda uma vez e vira textura. Sem o cache, três objetos
+ * brilhando custavam ~30 ms por quadro e o traço do pincel engasgava.
+ */
+function buildEffect(el: AreaStamp, ctx: GraphicsContext): Container {
+  const { w, h } = stampSize(el.asset)
+  const copy = new Graphics(ctx)
+  if (el.effect === 'shadow') {
+    // Sombra projetada para baixo e à direita (luz vindo de cima à esquerda, como nas texturas).
+    copy.tint = 0x000000
+    copy.alpha = 0.4
+    copy.position.set(w * 0.06, h * 0.08)
+    copy.filters = [new BlurFilter({ strength: 3, quality: 2 })]
+  } else {
+    copy.tint = GLOW_COLOR
+    copy.alpha = 0.85
+    copy.scale.set(1.12)
+    copy.position.set(-w * 0.06, -h * 0.06)
+    copy.filters = [new BlurFilter({ strength: 10, quality: 3 })]
+  }
+  const wrap = new Container()
+  wrap.addChild(copy)
+  wrap.cacheAsTexture({ resolution: FX_RESOLUTION, antialias: true })
+  return wrap
+}
 
 function applyStamp(node: StampNode, el: AreaStamp) {
   const ctx = assetContext(el.asset)
@@ -93,33 +128,12 @@ function applyStamp(node: StampNode, el: AreaStamp) {
   node.scale.set(el.flip ? -el.scale : el.scale, el.scale)
   node.alpha = el.opacity
 
-  if (!el.effect) {
-    if (node.fx) {
-      node.fx.destroy()
-      node.fx = null
-    }
-    return
-  }
-  if (!node.fx) {
-    node.fx = new Graphics(ctx)
-    node.addChildAt(node.fx, 0)
-  }
-  const fx = node.fx
-  if (fx.context !== ctx) fx.context = ctx
-  if (el.effect === 'shadow') {
-    // Sombra projetada para baixo e à direita (luz vindo de cima à esquerda, como nas texturas).
-    fx.tint = 0x000000
-    fx.alpha = 0.4
-    fx.scale.set(1)
-    fx.position.set(w * 0.06, h * 0.08)
-    fx.filters = [new BlurFilter({ strength: 3, quality: 2 })]
-  } else {
-    fx.tint = GLOW_COLOR
-    fx.alpha = 0.85
-    fx.scale.set(1.12)
-    fx.position.set(-w * 0.06, -h * 0.06)
-    fx.filters = [new BlurFilter({ strength: 10, quality: 3 })]
-  }
+  const key = el.effect ? `${el.asset}:${el.effect}` : ''
+  if (key === node.fxKey) return
+  node.fxKey = key
+  node.fx?.destroy({ children: true })
+  node.fx = el.effect ? buildEffect(el, ctx) : null
+  if (node.fx) node.addChildAt(node.fx, 0)
 }
 
 // Glifo de cada ícone em branco, compartilhado; a cor vem do `tint` da instância.
@@ -164,6 +178,7 @@ function createNode(el: AreaElement, textResolution: number): Container {
     const node = new Container() as StampNode
     node.main = new Graphics(assetContext(el.asset))
     node.fx = null
+    node.fxKey = ''
     node.addChild(node.main)
     return node
   }
@@ -266,7 +281,7 @@ interface Scene {
  * coordenada de mundo e avisa quem usa; o pan/zoom (roda, botões, pinça) é dele.
  * Desenha sob demanda — sem loop contínuo, para não gastar bateria no tablet.
  */
-export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel, apiRef }: AreaStageProps) {
+export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel, apiRef }: AreaStageProps) {
   const { t } = useTranslation()
   const hostRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<Scene | null>(null)
@@ -275,21 +290,22 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
   const frame = useRef<number | null>(null)
   const hover = useRef<Point | null>(null)
 
-  const latest = useRef({ map, selectedId, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel })
+  const latest = useRef({ map, selectedIds, marquee, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel })
   useLayoutEffect(() => {
-    latest.current = { map, selectedId, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel }
+    latest.current = { map, selectedIds, marquee, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel }
   })
 
   const drawOverlay = useCallback(() => {
     const scene = sceneRef.current
     if (!scene) return
-    const { map: m, selectedId: sel, ghostAsset: ghostId, brushSize: brush, panMode: pan } = latest.current
+    const { map: m, selectedIds: sel, marquee: box0, ghostAsset: ghostId, brushSize: brush, panMode: pan } = latest.current
     const zoom = view.current.zoom
     const px = 1 / zoom
     const o = scene.overlay
     o.clear()
 
-    const el = sel ? m.elements.find(e => e.id === sel) : undefined
+    const chosen = sel.length ? m.elements.filter(e => sel.includes(e.id)) : []
+    const el = chosen.length === 1 ? chosen[0] : undefined
     const box = el ? elementBox(el, stampSize) : null
     if (box && el) {
       const corners = boxCorners(box)
@@ -305,11 +321,32 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
         o.rect(c.x - r * 0.8, c.y - r * 0.8, r * 1.6, r * 1.6).fill({ color: GOLD }).stroke({ color: 0x1a1714, width: 1.5 * px })
       }
     } else if (el) {
-      // Linhas e regiões só se movem: caixa simples, sem alças.
+      // Linhas e regiões: caixa simples e um ponto arrastável em cada vértice.
       const b = elementBounds(el, stampSize)
       const pad = 4 * px
       o.rect(b.minX - pad, b.minY - pad, b.maxX - b.minX + pad * 2, b.maxY - b.minY + pad * 2)
-        .stroke({ color: GOLD, width: 2 * px, alpha: 0.95 })
+        .stroke({ color: GOLD, width: 1.5 * px, alpha: 0.7 })
+      if (el.kind === 'path' || el.kind === 'region') {
+        const r = VERTEX_HANDLE_PX * 0.45 * px
+        for (let i = 0; i + 1 < el.points.length; i += 2) {
+          o.circle(el.points[i], el.points[i + 1], r).fill({ color: 0xf5f0e8 }).stroke({ color: 0x1a1714, width: 1.5 * px })
+        }
+      }
+    } else if (chosen.length > 1) {
+      const pad = 4 * px
+      for (const item of chosen) {
+        const b = elementBounds(item, stampSize)
+        o.rect(b.minX - pad, b.minY - pad, b.maxX - b.minX + pad * 2, b.maxY - b.minY + pad * 2)
+          .stroke({ color: GOLD, width: 2 * px, alpha: 0.95 })
+      }
+    }
+
+    if (box0) {
+      const x = Math.min(box0.minX, box0.maxX)
+      const y = Math.min(box0.minY, box0.maxY)
+      o.rect(x, y, Math.abs(box0.maxX - box0.minX), Math.abs(box0.maxY - box0.minY))
+        .fill({ color: GOLD, alpha: 0.08 })
+        .stroke({ color: GOLD, width: 1.5 * px, alpha: 0.9 })
     }
 
     if (brush && hover.current && !pan) {
@@ -570,7 +607,7 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
   }, [sync, fit, schedule, refreshLabels])
 
   useEffect(sync, [map, sync])
-  useEffect(schedule, [selectedId, ghostAsset, brushSize, panMode, schedule])
+  useEffect(schedule, [selectedIds, marquee, ghostAsset, brushSize, panMode, schedule])
 
   // Roda do mouse: zoom em torno do cursor. `passive: false` para impedir a rolagem da página.
   useEffect(() => {

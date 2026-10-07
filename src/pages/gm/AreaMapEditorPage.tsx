@@ -24,9 +24,10 @@ import {
   setLayer, translateElement, updateElements, type ZMove,
 } from '../../lib/gm/areaMap/scene'
 import {
-  canRotate, elementBox, gizmoHit, hitTest, quantize, resizeToward, rotationToward, type Point,
+  canRotate, elementBox, elementsInRect, gizmoHit, hitTest, moveVertex, quantize, resizeToward, rotationToward, vertexHit,
+  type Point,
 } from '../../lib/gm/areaMap/geometry'
-import { quantizePoints, simplify } from '../../lib/gm/areaMap/shapes'
+import { quantizePoints, simplify, type Box } from '../../lib/gm/areaMap/shapes'
 import { snapToGrid } from '../../lib/gm/areaMap/grid'
 import {
   AREA_BRUSH_DEFAULT, AREA_GRID_MAX_SIZE, AREA_GRID_MIN_SIZE, AREA_ICON_COLORS, AREA_ICON_DEFAULT_SIZE,
@@ -45,10 +46,14 @@ const NUDGE = 1
 const DRAW_TOOLS: readonly AreaTool[] = ['brush', 'erase', 'region', 'path']
 
 interface Drag {
-  mode: 'move' | 'rotate' | 'scale'
+  mode: 'move' | 'rotate' | 'scale' | 'vertex' | 'marquee'
+  /** Elemento sob o ponteiro (o que gira, escala ou tem o vértice). */
   id: string
   start: Point
-  origin: AreaElement
+  origin: AreaElement | null
+  /** Todos os que se movem juntos (seleção múltipla), com a posição de antes do gesto. */
+  origins: Map<string, AreaElement>
+  vertex: number
   moved: boolean
 }
 
@@ -69,6 +74,7 @@ const DEFAULT_SETTINGS: ToolSettings = {
   pathStyle: 'dirtRoad',
   pathWidth: AREA_PATH_STYLES.dirtRoad.width,
   labelStyle: 'city',
+  multiSelect: false,
 }
 
 /** `/mestre/campanha/:id/area/:mapId` — editor do mapa de área. */
@@ -107,7 +113,11 @@ function Editor({ initial }: { initial: AreaMap }) {
   const stageApi = useRef<AreaStageApi>(null)
   const thumbTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [settings, setSettings] = useState<ToolSettings>(DEFAULT_SETTINGS)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  /** Um só selecionado: é ele que o inspector e as alças editam. */
+  const selectedId = selectedIds.length === 1 ? selectedIds[0] : null
+  const setSelectedId = useCallback((id: string | null) => setSelectedIds(id ? [id] : []), [])
+  const [marquee, setMarquee] = useState<Box | null>(null)
   /** Texto recém-criado: o inspector foca o campo para digitar o nome. */
   const [focusLabel, setFocusLabel] = useState<string | null>(null)
   const [sheet, setSheet] = useState<SheetTab | null>('assets')
@@ -159,7 +169,7 @@ function Editor({ initial }: { initial: AreaMap }) {
     setDraft(next)
     commitToStore(next)
     scheduleThumbnail()
-    setSelectedId(s => (s && next.elements.some(e => e.id === s) ? s : null))
+    setSelectedIds(ids => ids.filter(id => next.elements.some(e => e.id === id)))
   }, [commitToStore, setDraft, scheduleThumbnail])
 
   // `current` é lido antes de `restore`: o updater do setState roda depois e já veria o estado restaurado.
@@ -199,23 +209,23 @@ function Editor({ initial }: { initial: AreaMap }) {
   }, [selectedId, setDraft, commit])
 
   const removeSelected = useCallback(() => {
-    if (!selectedId) return
-    commit(removeElements(draftRef.current, [selectedId]))
-    setSelectedId(null)
-  }, [selectedId, commit])
+    if (selectedIds.length === 0) return
+    commit(removeElements(draftRef.current, selectedIds))
+    setSelectedIds([])
+  }, [selectedIds, commit])
 
   const duplicateSelected = useCallback(() => {
-    if (!selectedId) return
-    const result = duplicateElements(draftRef.current, [selectedId], DUPLICATE_OFFSET)
+    if (selectedIds.length === 0) return
+    const result = duplicateElements(draftRef.current, selectedIds, DUPLICATE_OFFSET)
     if (result.ids.length === 0) return
     commit(result.map)
-    setSelectedId(result.ids[0])
-  }, [selectedId, commit])
+    setSelectedIds(result.ids)
+  }, [selectedIds, commit])
 
   const chooseTool = useCallback((next: AreaTool) => {
     setTool(next)
     if (next !== 'place') setAsset(null)
-    if (next !== 'select') setSelectedId(null)
+    if (next !== 'select') setSelectedIds([])
   }, [])
 
   // Atalhos: desfazer/refazer, apagar, duplicar, setas e Esc.
@@ -236,24 +246,24 @@ function Editor({ initial }: { initial: AreaMap }) {
         e.preventDefault()
         duplicateSelected()
       } else if (key === 'delete' || key === 'backspace') {
-        if (selectedId) {
+        if (selectedIds.length) {
           e.preventDefault()
           removeSelected()
         }
       } else if (key === 'escape') {
         setSelectedId(null)
         chooseTool('select')
-      } else if (selectedId && key.startsWith('arrow')) {
+      } else if (selectedIds.length && key.startsWith('arrow')) {
         e.preventDefault()
         const step = NUDGE * (e.shiftKey ? 10 : 1)
         const dx = key === 'arrowleft' ? -step : key === 'arrowright' ? step : 0
         const dy = key === 'arrowup' ? -step : key === 'arrowdown' ? step : 0
-        commit(updateElements(draftRef.current, [selectedId], el => translateElement(el, dx, dy)))
+        commit(updateElements(draftRef.current, selectedIds, el => translateElement(el, dx, dy)))
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [undo, redo, duplicateSelected, removeSelected, selectedId, commit, chooseTool])
+  }, [undo, redo, duplicateSelected, removeSelected, selectedIds, setSelectedId, commit, chooseTool])
 
   function pickAsset(next: PickedAsset | null) {
     setAsset(next)
@@ -357,24 +367,43 @@ function Editor({ initial }: { initial: AreaMap }) {
 
     if (tool !== 'select') return false
 
+    // Shift (ou o modo de seleção múltipla, para quem não tem teclado) soma à seleção.
+    const multi = info.shift || settings.multiSelect
+    const blank = { origin: null, origins: new Map<string, AreaElement>(), vertex: -1, moved: false }
     const current = selectedId ? m.elements.find(e => e.id === selectedId) : undefined
-    const box = current ? elementBox(current, stampSize) : null
-    if (current && box) {
-      const handle = gizmoHit(box, info.zoom, world, canRotate(current))
+    if (current && !multi) {
+      const vertex = vertexHit(current, info.zoom, world)
+      if (vertex >= 0) {
+        drag.current = { ...blank, mode: 'vertex', id: current.id, start: world, origin: current, vertex }
+        return true
+      }
+      const box = elementBox(current, stampSize)
+      const handle = box ? gizmoHit(box, info.zoom, world, canRotate(current)) : null
       if (handle) {
-        drag.current = { mode: handle, id: current.id, start: world, origin: current, moved: false }
+        drag.current = { ...blank, mode: handle, id: current.id, start: world, origin: current }
         return true
       }
     }
     const hit = hitTest(m, world, stampSize, info.zoom)
     if (!hit) {
-      setSelectedId(null)
+      if (multi) {
+        drag.current = { ...blank, mode: 'marquee', id: '', start: world }
+        setMarquee({ minX: world.x, minY: world.y, maxX: world.x, maxY: world.y })
+        return true
+      }
+      setSelectedIds([])
       return false
     }
-    setSelectedId(hit)
+    if (multi) {
+      setSelectedIds(ids => (ids.includes(hit) ? ids.filter(id => id !== hit) : [...ids, hit]))
+      return true
+    }
+    // Arrastar alguém da seleção leva a seleção inteira junto.
+    const ids = selectedIds.includes(hit) ? selectedIds : [hit]
+    if (!selectedIds.includes(hit)) setSelectedId(hit)
     if (!isDesktop && sheet !== null) setSheet('props')
-    const el = m.elements.find(e => e.id === hit)!
-    drag.current = { mode: 'move', id: hit, start: world, origin: el, moved: false }
+    const origins = new Map(m.elements.filter(e => ids.includes(e.id)).map(e => [e.id, e]))
+    drag.current = { ...blank, mode: 'move', id: hit, start: world, origin: origins.get(hit)!, origins }
     return true
   }
 
@@ -391,20 +420,32 @@ function Editor({ initial }: { initial: AreaMap }) {
     const d = drag.current
     if (!d) return
     d.moved = true
+    if (d.mode === 'marquee') {
+      setMarquee({ minX: d.start.x, minY: d.start.y, maxX: world.x, maxY: world.y })
+      return
+    }
     const o = d.origin
-    let next: AreaElement
+    if (!o) return
+    if (d.mode === 'vertex') {
+      const at = snapping ? snapToGrid(world, draftRef.current.grid) : world
+      setDraft(updateElements(draftRef.current, [d.id], () => moveVertex(o, d.vertex, at)))
+      return
+    }
     if (d.mode === 'move') {
       let dx = world.x - d.start.x
       let dy = world.y - d.start.y
-      // Com encaixe, quem tem centro (objeto, texto, ícone) pula de casa em casa.
+      // Com encaixe, quem tem centro (objeto, texto, ícone) pula de casa em casa — e o resto acompanha.
       if (snapping && 'x' in o) {
         const target = snapToGrid({ x: o.x + dx, y: o.y + dy }, draftRef.current.grid)
         dx = target.x - o.x
         dy = target.y - o.y
       }
-      next = translateElement(o, dx, dy)
-    } else if (o.kind !== 'stamp' && o.kind !== 'label' && o.kind !== 'icon') return
-    else if (d.mode === 'rotate') {
+      setDraft(updateElements(draftRef.current, [...d.origins.keys()], el => translateElement(d.origins.get(el.id) ?? el, dx, dy)))
+      return
+    }
+    if (o.kind !== 'stamp' && o.kind !== 'label' && o.kind !== 'icon') return
+    let next: AreaElement
+    if (d.mode === 'rotate') {
       if (o.kind === 'icon') return
       next = { ...o, rotation: rotationToward(o, world, info.shift ? 15 : 0) }
     } else next = { ...o, ...resizeToward(o, stampSize, world) } as AreaElement
@@ -427,19 +468,31 @@ function Editor({ initial }: { initial: AreaMap }) {
       commit(updateElements(draftRef.current, [s.id], e => ({ ...e, points }) as AreaElement))
       return
     }
-    if (drag.current?.moved) commit()
+    const d = drag.current
     drag.current = null
+    if (d?.mode === 'marquee') {
+      if (marquee) {
+        const inside = elementsInRect(draftRef.current, marquee, stampSize)
+        setSelectedIds(ids => [...ids, ...inside.filter(id => !ids.includes(id))])
+      }
+      setMarquee(null)
+      return
+    }
+    if (d?.moved) commit()
   }
 
   function handleCancel() {
-    if (stroke.current || drag.current?.moved) setDraft(committed.current)
+    if (stroke.current || (drag.current?.moved && drag.current.mode !== 'marquee')) setDraft(committed.current)
     stroke.current = null
     drag.current = null
+    setMarquee(null)
   }
 
   const layerToggle = (layerId: AreaLayerId, patch: Partial<Omit<AreaLayerState, 'id'>>) => {
     commit(setLayer(draftRef.current, layerId, patch))
-    if ((patch.visible === false || patch.locked === true) && selected?.layer === layerId) setSelectedId(null)
+    if (patch.visible === false || patch.locked === true) {
+      setSelectedIds(ids => ids.filter(id => draftRef.current.elements.find(e => e.id === id)?.layer !== layerId))
+    }
   }
 
   const tools: Array<{ id: AreaTool; label: string; icon: ReactNode }> = [
@@ -538,7 +591,29 @@ function Editor({ initial }: { initial: AreaMap }) {
     <div className="gm-rule gm-rule-start text-[12px] font-semibold uppercase tracking-wider text-[#EAD9B0]">{label}</div>
   )
 
-  const inspector = selected ? (
+  const multiInspector = selectedIds.length > 1 ? (
+    <div className="flex flex-col gap-3">
+      <p className="text-[15px] font-semibold text-[#F5F0E8]">{t('gm.areaMap.selectedCount', { count: selectedIds.length })}</p>
+      <label className="flex flex-col gap-1">
+        <PanelLabel>{t('gm.areaMap.layer')}</PanelLabel>
+        <select
+          value=""
+          onChange={e => e.target.value && commit(moveToLayer(draftRef.current, selectedIds, e.target.value as AreaLayerId))}
+          className="w-full bg-[#131110] border border-white/[0.1] rounded-[8px] px-2.5 py-2 text-[14px] text-[#F5F0E8] focus:outline-none focus:border-[#D4A017]"
+        >
+          <option value="">{t('gm.areaMap.moveToLayer')}</option>
+          {draft.layers.map(l => <option key={l.id} value={l.id}>{t(`gm.areaMap.layers.${l.id}`)}</option>)}
+        </select>
+      </label>
+      <div className="grid grid-cols-2 gap-1.5">
+        <button type="button" onClick={duplicateSelected} className={gmSecondaryButton}>{t('gm.duplicate')}</button>
+        <button type="button" onClick={removeSelected} className={gmSecondaryButton}>{t('gm.remove')}</button>
+      </div>
+      <button type="button" onClick={() => setSelectedIds([])} className={gmSecondaryButton}>{t('gm.areaMap.clearSelection')}</button>
+    </div>
+  ) : null
+
+  const inspector = multiInspector ?? (selected ? (
     <AreaInspector
       element={selected}
       focusText={focusLabel === selected.id}
@@ -555,7 +630,7 @@ function Editor({ initial }: { initial: AreaMap }) {
     />
   ) : (
     <p className="text-[13px] text-[#A8A09B] leading-snug">{t('gm.areaMap.nothingSelected')}</p>
-  )
+  ))
 
   const layers = (
     <LayersPanel
@@ -576,12 +651,15 @@ function Editor({ initial }: { initial: AreaMap }) {
     ? t('gm.areaMap.placeHint', { name: assetName })
     : tool !== 'select' && tool !== 'pan'
       ? t(`gm.areaMap.hints.${tool}`)
-      : t('gm.areaMap.status', { w: draft.width, h: draft.height, count: draft.elements.length })
+      : selectedIds.length > 1
+        ? t('gm.areaMap.selectedCount', { count: selectedIds.length })
+        : t('gm.areaMap.status', { w: draft.width, h: draft.height, count: draft.elements.length })
 
   const stage = (
     <AreaStage
       map={draft}
-      selectedId={selectedId}
+      selectedIds={selectedIds}
+      marquee={marquee}
       panMode={tool === 'pan'}
       ghostAsset={tool === 'place' && asset?.kind === 'stamp' ? asset.id : null}
       brushSize={tool === 'brush' || tool === 'erase' ? settings.brushSize : null}

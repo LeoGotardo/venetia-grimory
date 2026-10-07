@@ -22,6 +22,8 @@ export const STORAGE_KEY_CAMPAIGN_PREFIX = 'dnd_mestre_campanha_'
 export const CAMPAIGN_EXPORT_FORMAT = 'venetia-campaign'
 export const CAMPAIGN_EXPORT_VERSION = 1
 export const STORAGE_KEY_BESTIARY = 'dnd_mestre_bestiario'
+/** Assets favoritos do editor de mapa de área (`stamp:oak`, `icon:city`) — preferência do aparelho. */
+export const STORAGE_KEY_AREA_FAVORITES = 'dnd_mestre_mapa_favoritos'
 export const MONSTER_PACK_FORMAT = 'venetia-monsters'
 export const MONSTER_PACK_VERSION = 1
 

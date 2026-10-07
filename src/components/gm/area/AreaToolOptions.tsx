@@ -19,6 +19,8 @@ export interface ToolSettings {
   pathStyle: AreaPathStyle
   pathWidth: number
   labelStyle: AreaLabelStyle
+  /** Cada toque soma à seleção (o Shift do teclado, para telas de toque). */
+  multiSelect: boolean
 }
 
 interface AreaToolOptionsProps {
@@ -37,6 +39,23 @@ export function AreaToolOptions({ tool, settings: s, onChange }: AreaToolOptions
   )
 
   switch (tool) {
+    case 'select':
+      return (
+        <div className="flex flex-col gap-1.5">
+          <button
+            type="button"
+            aria-pressed={s.multiSelect}
+            data-testid="area-multisel"
+            onClick={() => onChange({ multiSelect: !s.multiSelect })}
+            className={`flex items-center justify-between min-h-[40px] rounded-[9px] px-3 text-[13px] font-semibold border cursor-pointer transition-colors ${
+              s.multiSelect ? 'bg-[rgba(212,160,23,0.16)] border-[#D4A017] text-[#F5F0E8]' : 'bg-white/5 border-white/[0.1] text-[#A8A09B] hover:text-[#E8DFD0]'
+            }`}
+          >
+            {t('gm.areaMap.multiSelect')}<span aria-hidden="true">{s.multiSelect ? '✓' : ''}</span>
+          </button>
+          <p className="text-[11px] leading-snug text-[#A8A09B]">{t('gm.areaMap.multiHint')}</p>
+        </div>
+      )
     case 'brush':
       return (
         <div className="flex flex-col gap-3">

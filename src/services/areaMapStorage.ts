@@ -97,3 +97,19 @@ export async function deleteCampaignAreaMaps(campaignId: string): Promise<void> 
   for (const key of keys) s.delete(key)
   await finished(tx)
 }
+
+/** Quantos mapas de área cada campanha tem — só as chaves do índice, sem ler os mapas. */
+export async function countAreaMapsByCampaign(): Promise<Record<string, number>> {
+  const { tx, store: s } = await store('readonly')
+  const counts: Record<string, number> = {}
+  const req = s.index(CAMPAIGN_INDEX).openKeyCursor()
+  req.onsuccess = () => {
+    const cursor = req.result
+    if (!cursor) return
+    const key = String(cursor.key)
+    counts[key] = (counts[key] ?? 0) + 1
+    cursor.continue()
+  }
+  await finished(tx)
+  return counts
+}

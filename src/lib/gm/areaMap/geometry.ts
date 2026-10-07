@@ -4,7 +4,7 @@ import {
   AREA_STAMP_MIN_SCALE,
 } from '../../../constants'
 import { drawOrder, isEditable } from './scene'
-import { boundsOf, distanceToLine, pointInPolygon, type Box } from './shapes'
+import { boundsOf, distanceToLine, lineTouchesBox, pointInPolygon, type Box } from './shapes'
 
 /** Geometria dos elementos em coordenadas de mundo. Sem Pixi: testável em node. */
 
@@ -200,4 +200,54 @@ export function gizmoHit(box: OBox, zoom: number, p: Point, rotatable = true): '
   if (rotatable && near(rotateHandle(box, zoom))) return 'rotate'
   if (boxCorners(box).some(near)) return 'scale'
   return null
+}
+
+/**
+ * Elementos editáveis que encostam no retângulo da seleção em caixa (pinceladas
+ * ficam de fora, como no toque). Caminho e região contam pela linha, não pelo
+ * retângulo que os envolve — uma estrada diagonal longa não entra só porque a
+ * caixa caiu no meio do "quadrado" dela. Na ordem do array.
+ */
+export function elementsInRect(map: AreaMap, rect: Box, sizeOf: SizeOf): string[] {
+  const box: Box = {
+    minX: Math.min(rect.minX, rect.maxX), maxX: Math.max(rect.minX, rect.maxX),
+    minY: Math.min(rect.minY, rect.maxY), maxY: Math.max(rect.minY, rect.maxY),
+  }
+  return map.elements
+    .filter(el => el.kind !== 'paint' && isEditable(map, el))
+    .filter(el => {
+      if (el.kind === 'path') return lineTouchesBox(el.points, box, false)
+      if (el.kind === 'region') return lineTouchesBox(el.points, box, true)
+      const b = elementBounds(el, sizeOf)
+      return b.minX <= box.maxX && b.maxX >= box.minX && b.minY <= box.maxY && b.maxY >= box.minY
+    })
+    .map(el => el.id)
+}
+
+/** Raio de toque dos pontos editáveis de caminhos e regiões, em px de tela. */
+export const VERTEX_HANDLE_PX = 12
+
+/** Índice do ponto (vértice) de um caminho/região sob o ponteiro, ou -1. */
+export function vertexHit(el: AreaElement, zoom: number, p: Point): number {
+  if (el.kind !== 'path' && el.kind !== 'region') return -1
+  const reach = VERTEX_HANDLE_PX / zoom
+  let best = -1
+  let bestDist = Infinity
+  for (let i = 0; i + 1 < el.points.length; i += 2) {
+    const d = Math.hypot(el.points[i] - p.x, el.points[i + 1] - p.y)
+    if (d <= reach && d < bestDist) {
+      bestDist = d
+      best = i / 2
+    }
+  }
+  return best
+}
+
+/** Move um vértice para `p` (quantizado). */
+export function moveVertex<T extends AreaElement>(el: T, index: number, p: Point): T {
+  if (el.kind !== 'path' && el.kind !== 'region') return el
+  const points = [...el.points]
+  points[index * 2] = quantize(p.x)
+  points[index * 2 + 1] = quantize(p.y)
+  return { ...el, points }
 }

@@ -2,8 +2,9 @@ import { expect, test } from '@playwright/test'
 
 test.describe('Mapa de área', () => {
   test('cria um mapa de área, coloca um stamp e ele sobrevive ao reload', async ({ page }, testInfo) => {
-    // Fluxo longo e o Pixel 5 emulado (DPR 2,75) renderiza bem mais devagar que o desktop.
-    test.setTimeout(60_000)
+    // Fluxo longo, e o Pixel 5 emulado (DPR 2,75) renderiza WebGL bem mais devagar — pior ainda
+    // com a suíte inteira rodando em paralelo.
+    test.setTimeout(120_000)
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/mestre')
     await page.getByRole('textbox', { name: 'Campaign name' }).fill('Mesa')
@@ -16,7 +17,8 @@ test.describe('Mapa de área', () => {
     await expect(page).toHaveURL(/\/area\//)
 
     const canvas = page.getByTestId('area-canvas')
-    await expect(canvas).toBeVisible()
+    // O Pixi inicializa o WebGL de forma assíncrona; com a suíte em paralelo isso passa dos 5 s padrão.
+    await expect(canvas).toBeVisible({ timeout: 20_000 })
     const status = page.locator('[aria-live=polite]')
     await expect(status).toContainText('0 elements')
 
@@ -30,7 +32,7 @@ test.describe('Mapa de área', () => {
 
     // Selecionar o stamp mostra as propriedades dele.
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
-    await expect(page.getByText('Oak', { exact: true }).last()).toBeVisible()
+    await expect(page.getByText('Oak', { exact: true }).last()).toBeVisible({ timeout: 15_000 })
 
     // Caminho e pincelada: arrastar desenha, soltar grava um elemento cada.
     const drag = async (from: [number, number], to: [number, number]) => {
@@ -55,7 +57,7 @@ test.describe('Mapa de área', () => {
     await expect(status).toContainText('4 elements')
 
     await page.reload()
-    await expect(page.locator('[aria-live=polite]')).toContainText('4 elements')
+    await expect(page.locator('[aria-live=polite]')).toContainText('4 elements', { timeout: 20_000 })
 
     // Exportar baixa um PNG no desktop (no celular a imagem vai pela folha de compartilhamento).
     if (testInfo.project.name === 'desktop') {

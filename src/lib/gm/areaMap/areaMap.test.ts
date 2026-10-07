@@ -5,7 +5,7 @@ import {
   removeElements, reorderElement, setLayer, translateElement, updateElements,
 } from './scene'
 import {
-  boxContains, boxCorners, canRotate, elementBounds, gizmoHit, hitTest, labelBox, resizeToward, rotateHandle, rotationToward, stampBox,
+  boxContains, boxCorners, canRotate, elementBounds, elementsInRect, moveVertex, vertexHit, gizmoHit, hitTest, labelBox, resizeToward, rotateHandle, rotationToward, stampBox,
 } from './geometry'
 import { boundsOf, dashLine, distanceToLine, pointInPolygon, simplify, smooth } from './shapes'
 import { MAX_GRID_CELLS, hexCenters, hexCorners, hexRowHeight, snapToGrid } from './grid'
@@ -147,6 +147,34 @@ describe('geometria', () => {
     let n = 0
     const { map } = duplicateElements(mapWith(region('r', [0, 0, 10, 0, 5, 10])), ['r'], 24, () => `n${++n}`)
     expect(map.elements[1]).toMatchObject({ id: 'n1', kind: 'region', points: [24, 24, 34, 24, 29, 34] })
+  })
+})
+
+describe('seleção múltipla e pontos', () => {
+  it('seleção em caixa pega quem encosta, ignora pincelada e camada travada', () => {
+    const m = mapWith(
+      stamp('a', { x: 100, y: 100 }), stamp('b', { x: 400, y: 400 }), path('c', [150, 0, 150, 300]),
+      paint('p', [100, 100, 120, 120]), stamp('t', { x: 110, y: 110, layer: 'decor' }),
+    )
+    const locked = setLayer(m, 'decor', { locked: true })
+    expect(elementsInRect(locked, { minX: 90, minY: 90, maxX: 160, maxY: 160 }, sizeOf)).toEqual(['a', 'c'])
+    // Retângulo desenhado ao contrário (de baixo para cima) vale igual.
+    expect(elementsInRect(locked, { minX: 160, minY: 160, maxX: 90, maxY: 90 }, sizeOf)).toEqual(['a', 'c'])
+  })
+
+  it('caminho diagonal conta pela linha; região pega a caixa dentro dela', () => {
+    const m = mapWith(path('d', [0, 0, 1000, 1000]), region('r', [0, 0, 1000, 0, 1000, 1000, 0, 1000]))
+    // A caixa está dentro do retângulo envolvente da diagonal, mas longe da linha.
+    expect(elementsInRect(m, { minX: 700, minY: 100, maxX: 800, maxY: 200 }, sizeOf)).toEqual(['r'])
+    expect(elementsInRect(m, { minX: 480, minY: 480, maxX: 520, maxY: 520 }, sizeOf)).toEqual(['d', 'r'])
+  })
+
+  it('acha e move o vértice mais próximo dentro do alcance', () => {
+    const c = path('c', [0, 0, 100, 0, 200, 0])
+    expect(vertexHit(c, 1, { x: 103, y: 4 })).toBe(1)
+    expect(vertexHit(c, 1, { x: 150, y: 0 })).toBe(-1)
+    expect(vertexHit(stamp('s'), 1, { x: 100, y: 100 })).toBe(-1)
+    expect(moveVertex(c, 1, { x: 110.04, y: 50 }).points).toEqual([0, 0, 110, 50, 200, 0])
   })
 })
 
