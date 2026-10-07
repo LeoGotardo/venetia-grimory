@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGmStore } from '../../store/gmStore'
+import { useAreaMapStore } from '../../store/areaMapStore'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
 import { AppFooter } from '../../components/ui/AppFooter'
 import { PlayerCard } from '../../components/gm/PlayerCard'
@@ -35,6 +36,12 @@ export function CampaignPage() {
     if (id) openCampaign(id)
   }, [id, openCampaign])
 
+  // Os mapas de área moram no IndexedDB: a contagem da aba chega um instante depois.
+  const { list: areaMaps, listCampaignId: areaMapsOf, loadList: loadAreaMaps } = useAreaMapStore()
+  useEffect(() => {
+    if (id) void loadAreaMaps(id)
+  }, [id, loadAreaMaps])
+
   if (openedId === id && !campaign) {
     return (
       <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
@@ -57,8 +64,8 @@ export function CampaignPage() {
     }
   }
 
-  function handleExport() {
-    const json = exportCampaignJson()
+  async function handleExport() {
+    const json = await exportCampaignJson()
     if (!json || !campaign) return
     const name = (campaign.name || t('gm.untitled')).replace(/\s+/g, '_')
     void deliverJson(json, `${name}.json`)
@@ -68,7 +75,7 @@ export function CampaignPage() {
     { id: 'players', label: t('gm.tabPlayers'), count: campaign.party.length },
     { id: 'npcs', label: t('gm.tabNpcs'), count: campaign.npcs.length },
     { id: 'encontros', label: t('gm.tabEncounters'), count: campaign.encounters.length },
-    { id: 'mapas', label: t('gm.tabMaps'), count: campaign.maps.length },
+    { id: 'mapas', label: t('gm.tabMaps'), count: campaign.maps.length + (areaMapsOf === campaign.id ? areaMaps?.length ?? 0 : 0) },
     { id: 'notes', label: t('gm.tabNotes') },
   ]
 
@@ -86,7 +93,7 @@ export function CampaignPage() {
           />
         }
         actions={
-          <button onClick={handleExport} className={gmSecondaryButton}>
+          <button onClick={() => void handleExport()} className={gmSecondaryButton}>
             {t('gm.exportCampaign')}
           </button>
         }

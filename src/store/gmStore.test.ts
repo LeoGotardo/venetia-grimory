@@ -21,7 +21,8 @@ describe('campanhas do mestre', () => {
   beforeEach(() => {
     localStorage.clear()
     useGmStore.setState({ campaigns: [], campaign: null })
-    vi.useFakeTimers()
+    // Sem `setImmediate`: o fake-indexeddb agenda por ele, e congelá-lo trava o banco dos mapas de área.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] })
   })
   afterEach(() => {
     vi.runOnlyPendingTimers()
@@ -112,15 +113,15 @@ describe('players da mesa', () => {
     expect(() => st().importPlayerJson('não é json')).toThrow()
   })
 
-  it('exporta e importa a campanha como nova, sem link local', () => {
+  it('exporta e importa a campanha como nova, sem link local', async () => {
     localSheet('s1', 'Grukk')
     st().addLocalPlayer('s1')
-    const json = st().exportCampaignJson()!
-    const newId = st().importCampaignJson(json)
+    const json = (await st().exportCampaignJson())!
+    const newId = await st().importCampaignJson(json)
     expect(newId).not.toBe(st().campaign!.id)
     const imported = loadCampaign(newId)!
     expect(imported.party[0]).toMatchObject({ source: 'imported', sheet_id: null })
-    expect(() => st().importCampaignJson('{"format":"venetia-sheet"}')).toThrow()
+    await expect(st().importCampaignJson('{"format":"venetia-sheet"}')).rejects.toThrow()
   })
 })
 
@@ -151,7 +152,7 @@ describe('NPCs da campanha', () => {
     expect(st().bestiary[0].statblock.name).toBe('Goblin')
   })
 
-  it('o perfil do NPC gerado é salvo, sobrevive ao reload e é normalizado', () => {
+  it('o perfil do NPC gerado é salvo, sobrevive ao reload e é normalizado', async () => {
     const profile = {
       gender: 'f' as const, species: 'anao', archetype: 'guard', age: 'adult', occupation: 'Guarda do portão',
       appearance: 'Cicatriz no queixo', mannerism: '', personality: '', ideal: '', bond: '', flaw: '',
@@ -164,15 +165,15 @@ describe('NPCs da campanha', () => {
     st().updateNpc(id, { profile: { ...profile, secret: '' } })
     expect(st().campaign!.npcs[0].profile!.secret).toBe('')
     // Perfil corrompido no JSON volta com os campos de texto vazios em vez de quebrar a tela.
-    const bad = JSON.parse(st().exportCampaignJson()!)
+    const bad = JSON.parse((await st().exportCampaignJson())!)
     bad.campaign.npcs[0].profile = { gender: 'z', species: 3 }
-    const imported = loadCampaign(st().importCampaignJson(JSON.stringify(bad)))!
+    const imported = loadCampaign(await st().importCampaignJson(JSON.stringify(bad)))!
     expect(imported.npcs[0].profile).toMatchObject({ gender: '', species: '', secret: '' })
   })
 
-  it('NPCs vão junto no export da campanha', () => {
+  it('NPCs vão junto no export da campanha', async () => {
     st().addNpc(createBlankStatBlock('Capitão'))
-    const id = st().importCampaignJson(st().exportCampaignJson()!)
+    const id = await st().importCampaignJson((await st().exportCampaignJson())!)
     expect(loadCampaign(id)!.npcs[0].statblock.name).toBe('Capitão')
   })
 })
@@ -323,7 +324,7 @@ describe('mapas', () => {
     expect(map().cells.length).toBe(36)
   })
 
-  it('duplica com ids novos e vai junto no export', () => {
+  it('duplica com ids novos e vai junto no export', async () => {
     const id = st().createMap('A', 5, 5)
     st().addMapLabel(id, 0, 0, 'x')
     const copy = st().duplicateMap(id, 'B')!
@@ -331,7 +332,7 @@ describe('mapas', () => {
     expect(maps.map(m => m.name)).toEqual(['A', 'B'])
     expect(maps[1].labels[0].id).not.toBe(maps[0].labels[0].id)
     st().deleteMap(id)
-    const imported = loadCampaign(st().importCampaignJson(st().exportCampaignJson()!))!
+    const imported = loadCampaign(await st().importCampaignJson((await st().exportCampaignJson())!))!
     expect(imported.maps.map(m => m.id)).toEqual([copy])
   })
 })

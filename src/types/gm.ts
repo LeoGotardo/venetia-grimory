@@ -211,6 +211,12 @@ export interface Encounter {
   round: number
   /** Combatente da vez, por id — reordenar a lista não muda de quem é o turno. */
   turn_id: string | null
+  /**
+   * Respeitar terreno e deslocamento no mapa durante o combate: quem tem a vez só
+   * para dentro do alcance que resta e ninguém atravessa parede. Desligado, o
+   * mestre move livre (o comportamento de antes).
+   */
+  strict_movement: boolean
   log: EncounterLogEntry[]
   created_at: string
   updated_at: string
@@ -235,6 +241,160 @@ export interface GridMap {
   cells: string
   labels: MapLabel[]
   created_at: string
+  updated_at: string
+}
+
+/**
+ * Camadas do mapa de área, de baixo para cima. O mapa guarda o estado de cada
+ * uma (visível, bloqueada, opacidade); a ordem do array é a ordem de desenho.
+ */
+export type AreaLayerId =
+  | 'background' | 'terrain' | 'water' | 'roads' | 'structures' | 'vegetation' | 'decor' | 'effects' | 'labels'
+
+export interface AreaLayerState {
+  id: AreaLayerId
+  visible: boolean
+  locked: boolean
+  /** 0–1. */
+  opacity: number
+}
+
+/** Objeto do catálogo posto no mapa (árvore, casa, ponte…). `x`/`y` é o centro, em unidades de mundo. */
+export interface AreaStamp {
+  kind: 'stamp'
+  id: string
+  layer: AreaLayerId
+  asset: string
+  x: number
+  y: number
+  /** Multiplicador do tamanho padrão do asset. */
+  scale: number
+  /** Graus, sentido horário. */
+  rotation: number
+  flip: boolean
+  opacity: number
+  /** Sombra projetada ou brilho mágico; sem campo = nenhum. */
+  effect?: AreaEffect
+}
+
+export type AreaEffect = 'shadow' | 'glow'
+
+/**
+ * Ícone de informação (cidade, perigo, missão…) do game-icons.net: fica sempre
+ * de pé, com selo redondo opcional por trás. `size` é o diâmetro em unidades de mundo.
+ */
+export interface AreaIcon {
+  kind: 'icon'
+  id: string
+  layer: AreaLayerId
+  icon: string
+  x: number
+  y: number
+  size: number
+  color: string
+  badge: boolean
+}
+
+/**
+ * Pincelada de textura. Guarda só a linha central (`[x, y, x, y, …]`, já
+ * simplificada) e a espessura — o contorno sai na hora de desenhar. `erase`
+ * apaga a tinta da própria camada que estiver por baixo.
+ */
+export interface AreaPaint {
+  kind: 'paint'
+  id: string
+  layer: AreaLayerId
+  texture: string
+  size: number
+  points: number[]
+  erase: boolean
+}
+
+/** Região fechada: textura (`texture`) ou cor lisa translúcida, com borda tracejada opcional. */
+export interface AreaRegion {
+  kind: 'region'
+  id: string
+  layer: AreaLayerId
+  /** `null` = preenche com `color`. */
+  texture: string | null
+  color: string
+  border: boolean
+  opacity: number
+  points: number[]
+}
+
+export type AreaPathStyle = 'dirtRoad' | 'stoneRoad' | 'trail' | 'river' | 'stream' | 'wall' | 'border'
+
+/** Linha aberta desenhada à mão (estrada, rio, muralha, fronteira), suavizada ao desenhar. */
+export interface AreaPath {
+  kind: 'path'
+  id: string
+  layer: AreaLayerId
+  style: AreaPathStyle
+  width: number
+  points: number[]
+}
+
+export type AreaLabelStyle = 'region' | 'city' | 'note'
+
+/** Texto no mapa. `x`/`y` é o centro; `size` é a altura da fonte em unidades de mundo. */
+export interface AreaLabel {
+  kind: 'label'
+  id: string
+  layer: AreaLayerId
+  text: string
+  x: number
+  y: number
+  size: number
+  rotation: number
+  style: AreaLabelStyle
+  color: string
+}
+
+/**
+ * Elemento da cena. A lista é plana, com a camada em cada elemento: a ordem no
+ * array é o z dentro da camada — desfazer, duplicar e trocar de camada ficam triviais.
+ */
+export type AreaElement = AreaStamp | AreaPaint | AreaRegion | AreaPath | AreaLabel | AreaIcon
+
+/**
+ * Mapa ilustrativo, sem regra de combate: coordenadas de mundo (px a 1×), não
+ * casas. Fica no IndexedDB (`areaMapStorage`), fora da campanha do localStorage.
+ */
+export interface AreaMap {
+  id: string
+  campaign_id: string
+  name: string
+  width: number
+  height: number
+  background: { texture: string }
+  layers: AreaLayerState[]
+  elements: AreaElement[]
+  /** Grade só de alinhamento (sem regra de jogo). */
+  grid: AreaGrid
+  /** Miniatura JPEG (data URL) para a lista da aba Mapas; refeita pelo editor depois das edições. */
+  thumbnail?: string
+  version: 1
+  created_at: string
+  updated_at: string
+}
+
+export interface AreaGrid {
+  kind: 'off' | 'square' | 'hex'
+  /** Lado do quadrado ou distância entre centros de hexágonos, em unidades de mundo. */
+  size: number
+  opacity: number
+}
+
+/** Resumo para a lista da aba Mapas, sem carregar os elementos. */
+export interface AreaMapListItem {
+  id: string
+  name: string
+  width: number
+  height: number
+  background: string
+  elements: number
+  thumbnail?: string
   updated_at: string
 }
 

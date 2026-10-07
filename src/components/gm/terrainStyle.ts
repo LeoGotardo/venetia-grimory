@@ -8,8 +8,8 @@ import type { TerrainId } from '../../lib/gm/terrain'
  * parecer carimbado.
  */
 
-type Rand = () => number
-type Painter = (ctx: CanvasRenderingContext2D, s: number, r: Rand) => void
+export type Rand = () => number
+export type Painter = (ctx: CanvasRenderingContext2D, s: number, r: Rand) => void
 
 interface TerrainLook {
   fill: string
@@ -18,21 +18,21 @@ interface TerrainLook {
 
 export const VARIANTS = 4
 
-function speckle(color: string, count: number, size: number): Painter {
+export function speckle(color: string, count: number, size: number): Painter {
   return (ctx, s, r) => {
     ctx.fillStyle = color
     for (let i = 0; i < count; i++) ctx.fillRect(r() * s, r() * s, s * size, s * size)
   }
 }
 
-function stroke(ctx: CanvasRenderingContext2D, color: string, width: number) {
+export function stroke(ctx: CanvasRenderingContext2D, color: string, width: number) {
   ctx.strokeStyle = color
   ctx.lineWidth = width
   ctx.lineCap = 'round'
   ctx.stroke()
 }
 
-function blob(ctx: CanvasRenderingContext2D, cx: number, cy: number, rad: number, r: Rand, points = 7) {
+export function blob(ctx: CanvasRenderingContext2D, cx: number, cy: number, rad: number, r: Rand, points = 7) {
   ctx.beginPath()
   for (let i = 0; i < points; i++) {
     const a = (i / points) * Math.PI * 2
@@ -339,7 +339,7 @@ export const TERRAIN_STYLE: Record<TerrainId, TerrainLook> = {
   } },
 }
 
-function mulberry(seed: number): Rand {
+export function mulberry(seed: number): Rand {
   let a = seed >>> 0
   return () => {
     a = (a + 0x6d2b79f5) >>> 0

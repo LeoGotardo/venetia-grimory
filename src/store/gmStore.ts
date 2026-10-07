@@ -7,9 +7,9 @@ import type {
 import { recalculate } from '../lib/recalculate'
 import { migrateSheet } from '../lib/migrateSheet'
 import { parseSheetImport } from '../lib/sheetExport'
-import { buildCampaignExport, parseCampaignImport } from '../lib/gm/party'
+import { buildCampaignExport, parseCampaignAreaMaps, parseCampaignImport } from '../lib/gm/party'
 import { buildMonsterPack, parseMonsterPack } from '../lib/gm/statblock'
-import { normalizeCampaign } from '../lib/gm/normalize'
+import { normalizeAreaMap, normalizeCampaign } from '../lib/gm/normalize'
 import { loadSrdMonsters } from '../data/monsters'
 import { blankCells, clampMapSize, resizeCells } from '../lib/gm/terrain'
 import {
@@ -36,6 +36,8 @@ import {
   loadBestiary,
   saveBestiary,
 } from '../services/gmStorage'
+import { deleteCampaignAreaMaps, loadCampaignAreaMaps, saveAreaMaps } from '../services/areaMapStorage'
+import { flushPendingAreaMapSave } from './areaMapStore'
 import { DEBOUNCE_SAVE_MS, MAX_ENCOUNTER_LOG } from '../constants'
 
 interface GmState {
@@ -130,6 +132,7 @@ interface GmState {
   toggleDash: (encounterId: string, combatantId: string) => void
   /** `null` desliga a névoa. */
   setFog: (encounterId: string, fog: string | null) => void
+  setStrictMovement: (encounterId: string, on: boolean) => void
 
   /** Catálogo do SRD 5.2.1 no idioma em que foi carregado. Só leitura. */
   srd: { language: string; monsters: Monster[] } | null
@@ -138,9 +141,10 @@ interface GmState {
   /** Cópia editável de um monstro do SRD no bestiário. Devolve o id novo. */
   copySrdToBestiary: (srdId: string) => string | null
 
-  exportCampaignJson: () => string | null
-  /** Importa como campanha nova e devolve o id. Lança se o JSON não for uma campanha. */
-  importCampaignJson: (json: string) => string
+  /** Inclui os mapas de área, que moram no IndexedDB — por isso é assíncrono. */
+  exportCampaignJson: () => Promise<string | null>
+  /** Importa como campanha nova (mapas de área inclusos) e devolve o id. Rejeita se o JSON não for uma campanha. */
+  importCampaignJson: (json: string) => Promise<string>
 }
 
 const now = () => new Date().toISOString()
@@ -300,6 +304,7 @@ export const useGmStore = create<GmState>((set, get) => {
     deleteCampaign: id => {
       cancelPendingSave(id)
       deleteCampaignFromStorage(id)
+      deleteCampaignAreaMaps(id).catch(err => console.error('[gmStore] Falha ao apagar os mapas de área.', err))
       set(s => ({
         campaigns: listCampaigns(),
         campaign: s.campaign?.id === id ? null : s.campaign,
@@ -416,7 +421,7 @@ export const useGmStore = create<GmState>((set, get) => {
       const at = now()
       const encounter: Encounter = {
         id: uuidv4(), name: name.trim(), status: 'preparing', map_id: null, fog: null, combatants: [], round: 0,
-        turn_id: null, log: [], created_at: at, updated_at: at,
+        turn_id: null, strict_movement: false, log: [], created_at: at, updated_at: at,
       }
       updateCampaign(c => ({ encounters: [...c.encounters, encounter] }))
       return encounter.id
@@ -624,6 +629,9 @@ export const useGmStore = create<GmState>((set, get) => {
 
     setFog: (encounterId, fog) => updateEncounter(encounterId, e => (e.fog === fog ? e : { ...e, fog })),
 
+    setStrictMovement: (encounterId, on) =>
+      updateEncounter(encounterId, e => (e.strict_movement === on ? e : { ...e, strict_movement: on })),
+
     createMap: (name, width, height) => {
       const at = now()
       const w = clampMapSize(width)
@@ -675,12 +683,14 @@ export const useGmStore = create<GmState>((set, get) => {
     removeMapLabel: (mapId, labelId) =>
       updateMap(mapId, m => ({ ...m, labels: m.labels.filter(l => l.id !== labelId) })),
 
-    exportCampaignJson: () => {
+    exportCampaignJson: async () => {
       const { campaign } = get()
-      return campaign ? buildCampaignExport(campaign) : null
+      if (!campaign) return null
+      await flushPendingAreaMapSave()
+      return buildCampaignExport(campaign, await loadCampaignAreaMaps(campaign.id))
     },
 
-    importCampaignJson: json => {
+    importCampaignJson: async json => {
       const imported = normalizeCampaign(parseCampaignImport(json))
       const campaign: Campaign = {
         ...imported,
@@ -689,6 +699,11 @@ export const useGmStore = create<GmState>((set, get) => {
         party: imported.party.map(m => ({ ...m, source: 'imported', sheet_id: null })),
         updated_at: now(),
       }
+      // Ids novos: importar duas vezes a mesma campanha não pode sobrescrever os mapas da primeira.
+      const areaMaps = parseCampaignAreaMaps(json)
+        .map(normalizeAreaMap)
+        .map(m => ({ ...m, id: uuidv4(), campaign_id: campaign.id }))
+      await saveAreaMaps(areaMaps)
       saveCampaign(campaign)
       set({ campaigns: listCampaigns() })
       return campaign.id

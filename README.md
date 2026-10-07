@@ -468,3 +468,10 @@ Coast LLC, disponível em https://www.dndbeyond.com/srd. O SRD 5.2.1 é licencia
 Commons Attribution 4.0 International License, disponível em
 https://creativecommons.org/licenses/by/4.0/legalcode. Os monstros do catálogo da Área do Mestre
 (`src/data/monsters/`) vêm dele, gerados por `scripts/srd/generate-monsters.mjs`.
+
+Os ícones do mapa de área (`src/data/areaMap/icons.generated.ts`) são do
+[game-icons.net](https://game-icons.net), criados por Lorc e Delapouite, sob a licença
+[Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/). São gerados por
+`scripts/areamap/generate-icons.mjs` a partir da curadoria em `scripts/areamap/icons.json`, que
+registra o autor de cada ícone. Os objetos (stamps) e as texturas do mapa de área são desenhos
+próprios do projeto.

@@ -22,6 +22,8 @@ export const STORAGE_KEY_CAMPAIGN_PREFIX = 'dnd_mestre_campanha_'
 export const CAMPAIGN_EXPORT_FORMAT = 'venetia-campaign'
 export const CAMPAIGN_EXPORT_VERSION = 1
 export const STORAGE_KEY_BESTIARY = 'dnd_mestre_bestiario'
+/** Assets favoritos do editor de mapa de área (`stamp:oak`, `icon:city`) — preferência do aparelho. */
+export const STORAGE_KEY_AREA_FAVORITES = 'dnd_mestre_mapa_favoritos'
 export const MONSTER_PACK_FORMAT = 'venetia-monsters'
 export const MONSTER_PACK_VERSION = 1
 
@@ -138,6 +140,73 @@ export const MAP_MAX_SIZE = 100
 export const MAP_DEFAULT_WIDTH = 30
 export const MAP_DEFAULT_HEIGHT = 20
 export const MAP_UNDO_LIMIT = 50
+/** Mapa de área (IndexedDB): banco, store e limites. Unidades de mundo = px a 1×. */
+export const AREA_DB_NAME = 'venetia-gm'
+export const AREA_DB_VERSION = 1
+export const AREA_DB_STORE = 'area_maps'
+/** Ordem padrão de desenho, de baixo para cima: textos por último para nenhum território cobrir um nome. */
+export const AREA_LAYERS = [
+  'background', 'terrain', 'water', 'roads', 'structures', 'vegetation', 'decor', 'effects', 'labels',
+] as const
+export const AREA_MAP_DEFAULT_WIDTH = 1600
+export const AREA_MAP_DEFAULT_HEIGHT = 1100
+export const AREA_MAP_MIN_SIZE = 400
+export const AREA_MAP_MAX_SIZE = 8000
+export const AREA_MAP_MAX_ELEMENTS = 5000
+export const AREA_DEFAULT_TEXTURE = 'grass'
+export const AREA_STAMP_MIN_SCALE = 0.1
+export const AREA_STAMP_MAX_SCALE = 10
+/** Pincel e borracha: espessura em unidades de mundo. */
+export const AREA_BRUSH_MIN = 8
+export const AREA_BRUSH_MAX = 400
+export const AREA_BRUSH_DEFAULT = 80
+/** Distância mínima (em px de tela) entre dois pontos gravados de um traço. */
+export const AREA_STROKE_STEP_PX = 4
+/** Tolerância da simplificação de traços (Ramer-Douglas-Peucker), em px de tela. */
+export const AREA_SIMPLIFY_PX = 1.5
+/** Estilos de caminho: largura padrão e camada onde entram. */
+export const AREA_PATH_STYLES = {
+  dirtRoad: { width: 18, layer: 'roads' },
+  stoneRoad: { width: 20, layer: 'roads' },
+  trail: { width: 8, layer: 'roads' },
+  river: { width: 28, layer: 'water' },
+  stream: { width: 10, layer: 'water' },
+  wall: { width: 16, layer: 'structures' },
+  border: { width: 6, layer: 'effects' },
+} as const
+export const AREA_PATH_MIN_WIDTH = 2
+export const AREA_PATH_MAX_WIDTH = 200
+/** Cores das regiões de território (preenchimento translúcido + borda). */
+export const AREA_REGION_COLORS = ['#b5392f', '#d4a017', '#3f7fa8', '#4f8a3a', '#8f6bff', '#e8e0d0', '#2a1d10'] as const
+export const AREA_REGION_TERRITORY_OPACITY = 0.25
+/** Estilos de texto: tamanho padrão (altura da fonte em unidades de mundo). */
+export const AREA_LABEL_STYLES = {
+  region: { size: 64 },
+  city: { size: 34 },
+  note: { size: 20 },
+} as const
+export const AREA_LABEL_MIN_SIZE = 8
+export const AREA_LABEL_MAX_SIZE = 400
+export const AREA_LABEL_COLORS = ['#f5f0e8', '#2a1d10', '#d4a017', '#b5392f', '#9fd0ea'] as const
+/** Ícones: diâmetro padrão e limites (unidades de mundo). Cores do glifo/selo. */
+export const AREA_ICON_DEFAULT_SIZE = 48
+export const AREA_ICON_MIN_SIZE = 12
+export const AREA_ICON_MAX_SIZE = 400
+export const AREA_ICON_COLORS = ['#f5f0e8', '#d4a017', '#b5392f', '#3f7fa8', '#4f8a3a', '#8f6bff', '#2a1d10'] as const
+/** Grade de alinhamento. */
+export const AREA_GRID_DEFAULT_SIZE = 64
+export const AREA_GRID_MIN_SIZE = 16
+export const AREA_GRID_MAX_SIZE = 1000
+/** Exportação em imagem: lado máximo em pixels (cabe na textura de GPU de celular). */
+export const AREA_EXPORT_MAX_PX = 8192
+export const AREA_EXPORT_JPEG_QUALITY = 0.92
+/** Miniatura da lista: lado maior em pixels, qualidade JPEG e espera depois da última edição. */
+export const AREA_THUMBNAIL_PX = 360
+export const AREA_THUMBNAIL_QUALITY = 0.72
+export const AREA_THUMBNAIL_DELAY_MS = 1500
+/** Zoom do editor: pixels de tela por unidade de mundo. */
+export const AREA_MIN_ZOOM = 0.05
+export const AREA_MAX_ZOOM = 8
 /** Casas ocupadas por lado, por tamanho de criatura. */
 export const CREATURE_SIZE_SQUARES: Record<string, number> = {
   tiny: 1, small: 1, medium: 1, large: 2, huge: 3, gargantuan: 4,

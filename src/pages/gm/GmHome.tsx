@@ -5,6 +5,7 @@ import { useGmStore } from '../../store/gmStore'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
 import { AppFooter } from '../../components/ui/AppFooter'
 import { pickTextFile } from '../../lib/pickTextFile'
+import { countAreaMapsByCampaign } from '../../services/areaMapStorage'
 import { EmptyState, MapIcon, PeopleIcon, PlusIcon, QuillIcon, SectionTitle, SkullIcon, SwordsIcon } from '../../components/gm/ornaments'
 
 export function GmHome() {
@@ -13,11 +14,19 @@ export function GmHome() {
   const { campaigns, loadCampaignList, createCampaign, deleteCampaign, importCampaignJson, bestiary, loadBestiary } = useGmStore()
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
+  /** Mapas de área por campanha: moram no IndexedDB, fora do índice de campanhas. */
+  const [areaCounts, setAreaCounts] = useState<Record<string, number>>({})
 
   useEffect(() => {
     loadCampaignList()
     loadBestiary()
   }, [loadCampaignList, loadBestiary])
+
+  useEffect(() => {
+    countAreaMapsByCampaign()
+      .then(setAreaCounts)
+      .catch(err => console.error('[GmHome] Falha ao contar os mapas de área.', err))
+  }, [campaigns])
 
   const sorted = useMemo(
     () => [...campaigns].sort((a, b) => b.updated_at.localeCompare(a.updated_at)),
@@ -36,7 +45,7 @@ export function GmHome() {
     const json = await pickTextFile()
     if (!json) return
     try {
-      navigate(`/mestre/campanha/${importCampaignJson(json)}`)
+      navigate(`/mestre/campanha/${await importCampaignJson(json)}`)
     } catch {
       setError(t('gm.invalidCampaign'))
     }
@@ -84,7 +93,7 @@ export function GmHome() {
                         ['tabPlayers', c.players, <PeopleIcon size={16} key="p" />],
                         ['tabNpcs', c.npcs, <QuillIcon size={16} key="n" />],
                         ['tabEncounters', c.encounters, <SwordsIcon size={16} key="e" />],
-                        ['tabMaps', c.maps, <MapIcon size={16} key="m" />],
+                        ['tabMaps', c.maps === undefined ? undefined : c.maps + (areaCounts[c.id] ?? 0), <MapIcon size={16} key="m" />],
                       ] as const).map(([key, n, icon]) => (
                         <div key={key} className="flex flex-col items-center gap-1 rounded-[10px] bg-[#131110] border border-white/[0.06] py-2.5">
                           <span className="text-[#D4A017] opacity-80">{icon}</span>

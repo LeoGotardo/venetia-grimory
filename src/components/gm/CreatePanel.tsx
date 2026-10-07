@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { gmPrimaryButton } from './GmHeader'
 import { PlusIcon } from './ornaments'
 
@@ -9,11 +9,13 @@ interface CreatePanelProps {
   /** `data-testid` do campo e do botão (o e2e procura por eles). */
   inputTestId: string
   buttonTestId: string
+  /** Conteúdo entre a dica e o campo (ex.: o tipo de mapa). */
+  extra?: ReactNode
   onCreate: (name: string) => void
 }
 
 /** Coluna "criar novo" das abas da campanha: mesmo lugar e mesmo jeito em encontros e mapas. */
-export function CreatePanel({ title, hint, placeholder, inputTestId, buttonTestId, onCreate }: CreatePanelProps) {
+export function CreatePanel({ title, hint, placeholder, inputTestId, buttonTestId, extra, onCreate }: CreatePanelProps) {
   const [name, setName] = useState('')
 
   function submit(e: FormEvent) {
@@ -26,6 +28,7 @@ export function CreatePanel({ title, hint, placeholder, inputTestId, buttonTestI
     <form onSubmit={submit} className="vg-card p-6 flex flex-col gap-3 lg:sticky lg:top-[88px]">
       <h2 className="font-cinzel text-[17px] font-semibold text-[#EAD9B0]">{title}</h2>
       <p className="text-[14px] text-[#A8A09B] leading-snug">{hint}</p>
+      {extra}
       <input
         data-testid={inputTestId}
         value={name}

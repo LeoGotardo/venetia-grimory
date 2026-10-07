@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { normalizeEncounter } from './normalize'
 import type { Combatant, Encounter } from '../../types'
 import {
   advanceTurn,
@@ -26,7 +27,7 @@ function c(name: string, initiative: number | null, init_bonus = 0, extra: Parti
 }
 
 function enc(combatants: Combatant[], extra: Partial<Encounter> = {}): Encounter {
-  return { id: 'e', name: '', status: 'preparing', map_id: null, fog: null, combatants, round: 0, turn_id: null, log: [], created_at: '', updated_at: '', ...extra }
+  return { id: 'e', name: '', status: 'preparing', map_id: null, fog: null, combatants, round: 0, turn_id: null, strict_movement: false, log: [], created_at: '', updated_at: '', ...extra }
 }
 
 describe('nomes numerados', () => {
@@ -126,5 +127,13 @@ describe('dificuldade (2024)', () => {
     expect(encounterBudget([1, 1, 1], 200).difficulty).toBe('moderate')
     expect(encounterBudget([1], 200).difficulty).toBe('beyond')
     expect(encounterBudget([], 200).difficulty).toBe('none')
+  })
+})
+
+describe('respeitar deslocamento no encontro', () => {
+  it('encontros salvos antes da opção ficam desligados; o valor salvo é mantido', () => {
+    expect(normalizeEncounter({ id: 'x' }).strict_movement).toBe(false)
+    expect(normalizeEncounter({ id: 'x', strict_movement: true }).strict_movement).toBe(true)
+    expect(normalizeEncounter({ id: 'x', strict_movement: 'sim' }).strict_movement).toBe(false)
   })
 })

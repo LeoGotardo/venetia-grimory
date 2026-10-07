@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { combatantAt, movementCostMeters, occupancyFor, occupiedCells, reachableCells, remainingMovement, speedSquares } from './movement'
+import { checkMove, combatantAt, movementCostMeters, occupancyFor, occupiedCells, reachableCells, remainingMovement, speedSquares } from './movement'
 import { combatantFromStatBlock } from './encounter'
 import { createBlankStatBlock } from './statblock'
 import type { Combatant } from '../../types'
@@ -102,5 +102,54 @@ describe('criaturas no caminho (2024)', () => {
       expect(occ.get(2)).toBe('pass')
     }
     expect(occupancyFor(hero, [hero, at('foe', 2, { defeated: true })], corridor.width).size).toBe(0)
+  })
+})
+
+describe('respeitar deslocamento (modo estrito)', () => {
+  const mk = (id: string, x: number, y: number, over: Partial<Combatant> = {}): Combatant => ({
+    ...combatantFromStatBlock('monster', null, createBlankStatBlock(id), id),
+    id, position: { x, y }, speed_m: 9, ...over,
+  })
+  // Parede de alto a baixo com uma passagem embaixo.
+  const m = grid([
+    '..#.....',
+    '..#.....',
+    '..#.....',
+    '........',
+  ])
+  const strict = { strict: true, turnOwner: true }
+
+  it('livre: aceita qualquer destino desocupado e devolve o custo quando há caminho', () => {
+    const hero = mk('h', 0, 0)
+    expect(checkMove(m, hero, { x: 7, y: 0 }, [hero], { strict: false, turnOwner: true })).toEqual({ ok: true, cost: 13.5 })
+    expect(checkMove(grid(['.#.']), mk('h', 0, 0), { x: 2, y: 0 }, [], { strict: false, turnOwner: true })).toEqual({ ok: true, cost: null })
+  })
+
+  it('estrito: quem tem a vez para dentro do que resta, contornando a parede', () => {
+    const hero = mk('h', 0, 0)
+    // Até a passagem (2,3): 4 casas = 6 m, dentro dos 9 m.
+    expect(checkMove(m, hero, { x: 2, y: 3 }, [hero], strict)).toEqual({ ok: true, cost: 6 })
+    // Do outro lado da parede, (3,0): 8 casas = 12 m (sem cortar quina) — longe demais…
+    expect(checkMove(m, hero, { x: 3, y: 0 }, [hero], strict)).toEqual({ ok: false, reason: 'tooFar' })
+    // …a não ser com Disparada (18 m).
+    expect(checkMove(m, mk('h', 0, 0, { dash: true }), { x: 3, y: 0 }, [hero], strict)).toEqual({ ok: true, cost: 12 })
+    // O que já andou conta.
+    expect(checkMove(m, mk('h', 0, 0, { movement_used_m: 4.5 }), { x: 2, y: 3 }, [hero], strict)).toEqual({ ok: false, reason: 'tooFar' })
+  })
+
+  it('estrito: ninguém atravessa parede fechada, mas fora do turno não há limite de distância', () => {
+    const closed = grid(['..#.....', '..#.....'])
+    const ogre = mk('o', 0, 0)
+    expect(checkMove(closed, ogre, { x: 5, y: 0 }, [ogre], { strict: true, turnOwner: false })).toEqual({ ok: false, reason: 'noPath' })
+    expect(checkMove(m, ogre, { x: 7, y: 0 }, [ogre], { strict: true, turnOwner: false })).toMatchObject({ ok: true })
+    // Voando, a parede baixa (árvore) não barra.
+    expect(checkMove(grid(['.t.']), mk('b', 0, 0, { move_mode: 'fly', fly_m: 9 }), { x: 2, y: 0 }, [], strict)).toMatchObject({ ok: true })
+  })
+
+  it('casa ocupada é recusada nos dois modos', () => {
+    const hero = mk('h', 0, 0)
+    const wolf = mk('w', 1, 0)
+    expect(checkMove(m, hero, { x: 1, y: 0 }, [hero, wolf], { strict: false, turnOwner: true })).toEqual({ ok: false, reason: 'occupied' })
+    expect(checkMove(m, hero, { x: 1, y: 0 }, [hero, wolf], strict)).toEqual({ ok: false, reason: 'occupied' })
   })
 })
