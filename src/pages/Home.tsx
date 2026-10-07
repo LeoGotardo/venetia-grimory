@@ -5,19 +5,17 @@ import { useSheetStore } from '../store/sheetStore'
 import { useSheetExport } from '../hooks/useSheetExport'
 import type { SheetListItem } from '../store/sheetStore'
 
-import { ConfigModal } from '../components/ui/ConfigModal'
+import { SettingsButton } from '../components/ui/SettingsButton'
+import { AppFooter } from '../components/ui/AppFooter'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
-import { useState } from 'react'
 import { gameData } from '../data/rules'
-import { AUTHOR_NAME, AUTHOR_URL, FEEDBACK_FORM_URL } from '../constants'
 
 export function Home() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { savedSheets, newSheet, loadSheet, deleteSheet, loadSavedList } = useSheetStore()
   const { exportById, importSheet } = useSheetExport()
-  const [configOpen, setConfigOpen] = useState(false)
 
   useEffect(() => { loadSavedList() }, [loadSavedList])
 
@@ -41,7 +39,7 @@ export function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#131110] font-[Manrope,system-ui]">
+    <div className="min-h-screen flex flex-col bg-[#131110] font-[Manrope,system-ui]">
       {/* Sticky navbar */}
       <header className="sticky top-0 z-10 flex items-center justify-between h-[60px] px-7 bg-[#161311] border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
@@ -57,20 +55,12 @@ export function Home() {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
           {t('gm.area')}
         </button>
-        <button
-          onClick={() => setConfigOpen(true)}
-          aria-label={t('home.settings')}
-          className="w-[34px] h-[34px] rounded-[9px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
-        >
-          <GearIcon />
-        </button>
+        <SettingsButton />
         </div>
       </header>
 
-      <ConfigModal open={configOpen} onClose={() => setConfigOpen(false)} />
-
       {/* Main content */}
-      <div className="max-w-[920px] mx-auto px-4 sm:px-8 py-10 sm:py-16 pb-20">
+      <div className="w-full flex-1 max-w-[920px] mx-auto px-4 sm:px-8 py-10 sm:py-16 pb-6">
         {/* Hero */}
         <div className="text-center mb-10">
           <SwordsIcon />
@@ -130,28 +120,7 @@ export function Home() {
         )}
       </div>
 
-      <footer className="pb-8 text-center text-[13px] text-[#A8A09B]">
-        <p className="mb-1">
-          {t('home.feedbackPrompt')}{' '}
-          <a
-            href={FEEDBACK_FORM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-semibold text-[#D4A017] hover:text-[#E8C25A] transition-colors"
-          >
-            {t('home.feedbackLink')}
-          </a>
-        </p>
-        {t('home.madeWith')}{' '}
-        <a
-          href={AUTHOR_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-semibold text-[#D4A017] hover:text-[#E8C25A] transition-colors"
-        >
-          {AUTHOR_NAME}
-        </a>
-      </footer>
+      <AppFooter />
     </div>
   )
 }
@@ -227,15 +196,6 @@ function SheetCard({ sheet, onLoad, onExport, onDelete }: SheetCardProps) {
         </button>
       </div>
     </div>
-  )
-}
-
-function GearIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
   )
 }
 

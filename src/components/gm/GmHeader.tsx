@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { SettingsButton } from '../ui/SettingsButton'
 
 interface GmHeaderProps {
   title: ReactNode
@@ -10,7 +11,7 @@ interface GmHeaderProps {
   actions?: ReactNode
 }
 
-/** Navbar fixa das telas do mestre, no mesmo estilo da Home. */
+/** Navbar fixa das telas do mestre, no mesmo estilo da Home, sempre com a engrenagem das configurações. */
 export function GmHeader({ title, backTo, onBack, actions }: GmHeaderProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -27,7 +28,10 @@ export function GmHeader({ title, backTo, onBack, actions }: GmHeaderProps) {
         </button>
         <div className="min-w-0 font-extrabold text-[17px] text-[#E8DFD0] truncate">{title}</div>
       </div>
-      {actions && <div className="flex items-center gap-2 flex-shrink-0">{actions}</div>}
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {actions}
+        <SettingsButton className="w-[40px] h-[40px] rounded-[10px]" />
+      </div>
     </header>
   )
 }

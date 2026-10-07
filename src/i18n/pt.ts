@@ -33,9 +33,13 @@ const pt = {
     deleteConfirm: 'Deletar "{{name}}"? Esta ação não pode ser desfeita.',
     deleteAriaLabel: 'Deletar {{name}}',
     settings: 'Configurações',
+  },
+  footer: {
     madeWith: 'feito com ❤️ por',
     feedbackPrompt: 'Encontrou um bug ou tem uma sugestão?',
     feedbackLink: 'Conte pra gente',
+    github: 'Código no GitHub',
+    downloadApk: 'Baixar o app (APK)',
   },
   sheet: {
     character: 'Personagem',

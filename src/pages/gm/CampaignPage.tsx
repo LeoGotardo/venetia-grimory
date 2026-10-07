@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGmStore } from '../../store/gmStore'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
+import { AppFooter } from '../../components/ui/AppFooter'
 import { PlayerCard } from '../../components/gm/PlayerCard'
 import { PartySummary } from '../../components/gm/PartySummary'
 import { AddLocalPlayerModal } from '../../components/gm/AddLocalPlayerModal'
@@ -36,9 +37,10 @@ export function CampaignPage() {
 
   if (openedId === id && !campaign) {
     return (
-      <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+      <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
         <GmHeader title={t('gm.area')} backTo="/mestre" />
         <p className="text-center text-[#A8A09B] py-16">{t('gm.notFound')}</p>
+        <AppFooter containerClassName={gmContainer} />
       </div>
     )
   }
@@ -71,7 +73,7 @@ export function CampaignPage() {
   ]
 
   return (
-    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+    <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
       <GmHeader
         backTo="/mestre"
         title={
@@ -171,6 +173,7 @@ export function CampaignPage() {
           setPickerOpen(false)
         }}
       />
+      <AppFooter containerClassName={gmContainer} />
     </div>
   )
 }

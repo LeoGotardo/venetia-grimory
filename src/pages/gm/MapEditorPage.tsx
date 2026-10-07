@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { Campaign, GridMap } from '../../types'
 import { useGmStore } from '../../store/gmStore'
-import { GmHeader, gmPrimaryButton, gmSecondaryButton } from '../../components/gm/GmHeader'
+import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
+import { AppFooter } from '../../components/ui/AppFooter'
 import { MapCanvas } from '../../components/gm/MapCanvas'
 import { TERRAIN_STYLE, terrainSwatch } from '../../components/gm/terrainStyle'
 import { Modal } from '../../components/ui/Modal'
@@ -218,6 +219,8 @@ function MapEditor({ campaign, map }: { campaign: Campaign; map: GridMap }) {
     }`
 
   return (
+    <>
+    {/* O editor ocupa a tela inteira; o rodapé fica logo abaixo, ao rolar. */}
     <div className="h-[100dvh] flex flex-col bg-[#131110] font-[Manrope,system-ui]">
       <GmHeader
         backTo={`/mestre/campanha/${campaign.id}?aba=mapas`}
@@ -334,5 +337,7 @@ function MapEditor({ campaign, map }: { campaign: Campaign; map: GridMap }) {
         </div>
       </Modal>
     </div>
+    <AppFooter containerClassName={gmContainer} />
+    </>
   )
 }

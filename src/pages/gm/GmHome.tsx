@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGmStore } from '../../store/gmStore'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
+import { AppFooter } from '../../components/ui/AppFooter'
 import { pickTextFile } from '../../lib/pickTextFile'
 import { EmptyState, MapIcon, PeopleIcon, PlusIcon, QuillIcon, SectionTitle, SkullIcon, SwordsIcon } from '../../components/gm/ornaments'
 
@@ -47,7 +48,7 @@ export function GmHome() {
   }
 
   return (
-    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+    <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
       <GmHeader
         title={t('gm.area')}
         backTo="/"
@@ -155,6 +156,7 @@ export function GmHome() {
           </aside>
         </div>
       </div>
+      <AppFooter containerClassName={gmContainer} />
     </div>
   )
 }

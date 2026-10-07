@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { StatBlock } from '../../types'
 import { GmHeader, gmPrimaryButton, gmContainer } from './GmHeader'
+import { AppFooter } from '../ui/AppFooter'
 import { StatBlockEditor } from './StatBlockEditor'
 import { StatBlockCard } from './StatBlockCard'
 
@@ -47,7 +48,7 @@ export function StatBlockEditLayout({ title, backTo, initial, extra, onSave }: S
   }
 
   return (
-    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
+    <div className="min-h-screen flex flex-col gm-page font-[Manrope,system-ui]">
       <GmHeader
         title={title}
         backTo={backTo}
@@ -71,6 +72,7 @@ export function StatBlockEditLayout({ title, backTo, initial, extra, onSave }: S
           </aside>
         </div>
       </div>
+      <AppFooter containerClassName={gmContainer} />
     </div>
   )
 }

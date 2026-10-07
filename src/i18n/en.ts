@@ -33,9 +33,13 @@ const en = {
     deleteConfirm: 'Delete "{{name}}"? This action cannot be undone.',
     deleteAriaLabel: 'Delete {{name}}',
     settings: 'Settings',
+  },
+  footer: {
     madeWith: 'made with ❤️ by',
     feedbackPrompt: 'Found a bug or have a suggestion?',
     feedbackLink: 'Let us know',
+    github: 'Source on GitHub',
+    downloadApk: 'Download the app (APK)',
   },
   sheet: {
     character: 'Character',
