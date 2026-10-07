@@ -3,6 +3,7 @@ import type { AreaElement, AreaLayerId, AreaLayerState, AreaMap, AreaMapListItem
 import {
   AREA_DEFAULT_TEXTURE, AREA_LAYERS, AREA_MAP_MAX_ELEMENTS, AREA_MAP_MAX_SIZE, AREA_MAP_MIN_SIZE,
 } from '../../../constants'
+import { translatePoints } from './shapes'
 
 /**
  * Operações puras sobre a cena do mapa de área. Toda função devolve um mapa novo
@@ -93,6 +94,14 @@ export function removeElements(map: AreaMap, ids: readonly string[]): AreaMap {
   return elements.length === map.elements.length ? map : { ...map, elements }
 }
 
+const q = (n: number) => Math.round(n * 10) / 10
+
+/** Desloca qualquer elemento: centro para stamp/texto, todos os pontos para linhas e regiões. */
+export function translateElement<T extends AreaElement>(el: T, dx: number, dy: number): T {
+  if (el.kind === 'stamp' || el.kind === 'label') return { ...el, x: q(el.x + dx), y: q(el.y + dy) }
+  return { ...el, points: translatePoints(el.points, dx, dy).map(q) }
+}
+
 /**
  * Copia os elementos com um deslocamento, logo acima dos originais. Devolve os
  * ids novos para a seleção passar para as cópias.
@@ -103,7 +112,7 @@ export function duplicateElements(
   const wanted = new Set(ids)
   const copies = map.elements
     .filter(el => wanted.has(el.id))
-    .map(el => ({ ...el, id: newId(), x: el.x + offset, y: el.y + offset }))
+    .map(el => ({ ...translateElement(el, offset, offset), id: newId() }))
   const next = addElements(map, copies)
   return next === map ? { map, ids: [] } : { map: next, ids: copies.map(c => c.id) }
 }

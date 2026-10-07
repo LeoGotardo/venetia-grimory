@@ -23,7 +23,6 @@
     "framer-motion": "^12.40.0",
     "i18next": "^26.3.1",
     "pdf-lib": "^1.17.1",
-    "perfect-freehand": "^1.2.3",
     "pixi.js": "^8.22.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

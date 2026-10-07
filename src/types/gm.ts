@@ -243,7 +243,7 @@ export interface GridMap {
  * uma (visível, bloqueada, opacidade); a ordem do array é a ordem de desenho.
  */
 export type AreaLayerId =
-  | 'background' | 'terrain' | 'water' | 'roads' | 'structures' | 'vegetation' | 'decor' | 'labels' | 'effects'
+  | 'background' | 'terrain' | 'water' | 'roads' | 'structures' | 'vegetation' | 'decor' | 'effects' | 'labels'
 
 export interface AreaLayerState {
   id: AreaLayerId
@@ -270,11 +270,66 @@ export interface AreaStamp {
 }
 
 /**
+ * Pincelada de textura. Guarda só a linha central (`[x, y, x, y, …]`, já
+ * simplificada) e a espessura — o contorno sai na hora de desenhar. `erase`
+ * apaga a tinta da própria camada que estiver por baixo.
+ */
+export interface AreaPaint {
+  kind: 'paint'
+  id: string
+  layer: AreaLayerId
+  texture: string
+  size: number
+  points: number[]
+  erase: boolean
+}
+
+/** Região fechada: textura (`texture`) ou cor lisa translúcida, com borda tracejada opcional. */
+export interface AreaRegion {
+  kind: 'region'
+  id: string
+  layer: AreaLayerId
+  /** `null` = preenche com `color`. */
+  texture: string | null
+  color: string
+  border: boolean
+  opacity: number
+  points: number[]
+}
+
+export type AreaPathStyle = 'dirtRoad' | 'stoneRoad' | 'trail' | 'river' | 'stream' | 'wall' | 'border'
+
+/** Linha aberta desenhada à mão (estrada, rio, muralha, fronteira), suavizada ao desenhar. */
+export interface AreaPath {
+  kind: 'path'
+  id: string
+  layer: AreaLayerId
+  style: AreaPathStyle
+  width: number
+  points: number[]
+}
+
+export type AreaLabelStyle = 'region' | 'city' | 'note'
+
+/** Texto no mapa. `x`/`y` é o centro; `size` é a altura da fonte em unidades de mundo. */
+export interface AreaLabel {
+  kind: 'label'
+  id: string
+  layer: AreaLayerId
+  text: string
+  x: number
+  y: number
+  size: number
+  rotation: number
+  style: AreaLabelStyle
+  color: string
+}
+
+/**
  * Elemento da cena. A lista é plana, com a camada em cada elemento: a ordem no
  * array é o z dentro da camada — desfazer, duplicar e trocar de camada ficam triviais.
- * As fases seguintes acrescentam pinceladas, regiões, caminhos, ícones e textos.
  */
-export type AreaElement = AreaStamp
+export type AreaElement = AreaStamp | AreaPaint | AreaRegion | AreaPath | AreaLabel
 
 /**
  * Mapa ilustrativo, sem regra de combate: coordenadas de mundo (px a 1×), não

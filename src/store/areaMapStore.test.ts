@@ -33,14 +33,15 @@ describe('mapas de área no IndexedDB', () => {
     expect(st().list!.map(m => m.id)).toEqual([copy])
   })
 
-  it('abre, edita com debounce e grava no flush', async () => {
+  it('grava cada commit na hora, e a fila fica só com o mais recente', async () => {
     const id = await st().createAreaMap('c1', 'Vale', 1200, 900)
     expect(await st().openAreaMap(id)).toBe(true)
     st().commitAreaMap(addElements(st().map!, [tree('t1')]))
-    expect(st().map!.elements).toHaveLength(1)
-    expect((await loadAreaMap(id))!.elements).toHaveLength(0)
+    st().commitAreaMap(addElements(st().map!, [tree('t2')]))
+    st().commitAreaMap(addElements(st().map!, [tree('t3')]))
+    expect(st().map!.elements).toHaveLength(3)
     await flushPendingAreaMapSave()
-    expect((await loadAreaMap(id))!.elements.map(e => e.id)).toEqual(['t1'])
+    expect((await loadAreaMap(id))!.elements.map(e => e.id)).toEqual(['t1', 't2', 't3'])
   })
 
   it('mapa inexistente abre como nulo', async () => {

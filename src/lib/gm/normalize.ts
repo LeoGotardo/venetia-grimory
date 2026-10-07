@@ -1,11 +1,15 @@
 import { v4 as uuidv4 } from 'uuid'
 import type {
-  AreaElement, AreaLayerId, AreaLayerState, AreaMap, Campaign, Combatant, Encounter, GridMap, MapLabel, Monster, Npc, NpcProfile,
+  AreaElement, AreaLabelStyle, AreaLayerId, AreaLayerState, AreaMap, AreaPathStyle, Campaign, Combatant, Encounter, GridMap, MapLabel, Monster, Npc, NpcProfile,
 } from '../../types'
 import { blankCells, clampMapSize, isTerrainCode } from './terrain'
-import { AREA_DEFAULT_TEXTURE, AREA_LAYERS, CREATURE_SIZES, DEFAULT_SPEED_METERS, TERRAIN_VOID } from '../../constants'
+import {
+  AREA_BRUSH_DEFAULT, AREA_BRUSH_MAX, AREA_BRUSH_MIN, AREA_DEFAULT_TEXTURE, AREA_LABEL_COLORS, AREA_LABEL_STYLES,
+  AREA_LAYERS, AREA_PATH_MAX_WIDTH, AREA_PATH_MIN_WIDTH, AREA_PATH_STYLES, AREA_REGION_COLORS,
+  CREATURE_SIZES, DEFAULT_SPEED_METERS, TERRAIN_VOID,
+} from '../../constants'
 import { clampAreaSize, defaultLayers } from './areaMap/scene'
-import { clampScale, normalizeDegrees } from './areaMap/geometry'
+import { clampLabelSize, clampScale, normalizeDegrees } from './areaMap/geometry'
 import { normalizeStatBlock } from './statblock'
 
 /**
@@ -176,20 +180,71 @@ export function normalizeAreaMap(raw: unknown): AreaMap {
   }
 }
 
+const PATH_STYLES = Object.keys(AREA_PATH_STYLES) as AreaPathStyle[]
+const LABEL_STYLES = Object.keys(AREA_LABEL_STYLES) as AreaLabelStyle[]
+const HEX = /^#[0-9a-f]{6}$/i
+
+/** Array plano de coordenadas finitas com pelo menos `min` pontos; senão `null`. */
+function flatPoints(v: unknown, min: number): number[] | null {
+  if (!Array.isArray(v) || v.length % 2 !== 0 || v.length < min * 2) return null
+  return v.every(n => typeof n === 'number' && Number.isFinite(n)) ? v as number[] : null
+}
+
 function normalizeAreaElement(raw: unknown): AreaElement | null {
-  const e = (raw ?? {}) as Partial<AreaElement>
-  if (e.kind !== 'stamp' || typeof e.asset !== 'string') return null
-  if (typeof e.x !== 'number' || !Number.isFinite(e.x) || typeof e.y !== 'number' || !Number.isFinite(e.y)) return null
-  return {
-    kind: 'stamp',
-    id: typeof e.id === 'string' ? e.id : uuidv4(),
-    layer: isLayerId(e.layer) ? e.layer : 'decor',
-    asset: e.asset,
-    x: e.x,
-    y: e.y,
-    scale: clampScale(finite(e.scale, 1)),
-    rotation: normalizeDegrees(finite(e.rotation, 0)),
-    flip: e.flip === true,
-    opacity: unit(e.opacity),
+  const e = (raw ?? {}) as Record<string, unknown>
+  const id = typeof e.id === 'string' ? e.id : uuidv4()
+  const layer = isLayerId(e.layer) ? e.layer : 'decor'
+  const point = typeof e.x === 'number' && Number.isFinite(e.x) && typeof e.y === 'number' && Number.isFinite(e.y)
+
+  switch (e.kind) {
+    case 'stamp':
+      if (typeof e.asset !== 'string' || !point) return null
+      return {
+        kind: 'stamp', id, layer, asset: e.asset, x: e.x as number, y: e.y as number,
+        scale: clampScale(finite(e.scale, 1)),
+        rotation: normalizeDegrees(finite(e.rotation, 0)),
+        flip: e.flip === true,
+        opacity: unit(e.opacity),
+      }
+    case 'paint': {
+      const points = flatPoints(e.points, 1)
+      if (!points || typeof e.texture !== 'string') return null
+      return {
+        kind: 'paint', id, layer, texture: e.texture, points, erase: e.erase === true,
+        size: Math.min(AREA_BRUSH_MAX, Math.max(AREA_BRUSH_MIN, finite(e.size, AREA_BRUSH_DEFAULT))),
+      }
+    }
+    case 'region': {
+      const points = flatPoints(e.points, 3)
+      if (!points) return null
+      return {
+        kind: 'region', id, layer, points,
+        texture: typeof e.texture === 'string' ? e.texture : null,
+        color: typeof e.color === 'string' && HEX.test(e.color) ? e.color : AREA_REGION_COLORS[0],
+        border: e.border === true,
+        opacity: unit(e.opacity),
+      }
+    }
+    case 'path': {
+      const points = flatPoints(e.points, 2)
+      if (!points) return null
+      const style = PATH_STYLES.includes(e.style as AreaPathStyle) ? e.style as AreaPathStyle : 'dirtRoad'
+      return {
+        kind: 'path', id, layer, style, points,
+        width: Math.min(AREA_PATH_MAX_WIDTH, Math.max(AREA_PATH_MIN_WIDTH, finite(e.width, AREA_PATH_STYLES[style].width))),
+      }
+    }
+    case 'label': {
+      if (typeof e.text !== 'string' || !point) return null
+      const style = LABEL_STYLES.includes(e.style as AreaLabelStyle) ? e.style as AreaLabelStyle : 'city'
+      return {
+        kind: 'label', id, layer, text: e.text, x: e.x as number, y: e.y as number, style,
+        size: clampLabelSize(finite(e.size, AREA_LABEL_STYLES[style].size)),
+        rotation: normalizeDegrees(finite(e.rotation, 0)),
+        color: typeof e.color === 'string' && HEX.test(e.color) ? e.color : AREA_LABEL_COLORS[0],
+      }
+    }
+    default:
+      return null
   }
 }

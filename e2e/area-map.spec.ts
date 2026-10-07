@@ -30,7 +30,22 @@ test.describe('Mapa de área', () => {
     await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
     await expect(page.getByText('Oak', { exact: true }).last()).toBeVisible()
 
+    // Caminho e pincelada: arrastar desenha, soltar grava um elemento cada.
+    const drag = async (from: [number, number], to: [number, number]) => {
+      await page.mouse.move(box.x + box.width * from[0], box.y + box.height * from[1])
+      await page.mouse.down()
+      await page.mouse.move(box.x + box.width * to[0], box.y + box.height * to[1], { steps: 12 })
+      await page.mouse.up()
+    }
+    await page.getByTestId('area-tool-path').click()
+    await drag([0.3, 0.3], [0.7, 0.35])
+    await page.getByTestId('area-tool-brush').click()
+    await expect(status).toContainText('Drag to paint')
+    await drag([0.3, 0.7], [0.6, 0.75])
+    await page.keyboard.press('Escape')
+    await expect(status).toContainText('3 elements')
+
     await page.reload()
-    await expect(page.locator('[aria-live=polite]')).toContainText('1 element')
+    await expect(page.locator('[aria-live=polite]')).toContainText('3 elements')
   })
 })

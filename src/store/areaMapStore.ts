@@ -8,7 +8,6 @@ import {
   loadAreaMap,
   saveAreaMap,
 } from '../services/areaMapStorage'
-import { DEBOUNCE_SAVE_MS } from '../constants'
 
 interface AreaMapState {
   /** Campanha cuja lista está carregada; a lista é `null` até o IndexedDB responder. */
@@ -34,7 +33,26 @@ interface AreaMapState {
 
 const now = () => new Date().toISOString()
 
-let pending: { map: AreaMap; timeout: ReturnType<typeof setTimeout> } | null = null
+/**
+ * Gravação sem debounce: o IndexedDB é assíncrono e uma transação aberta no
+ * `pagehide` morre com a página — o debounce do localStorage perderia a última
+ * edição ao fechar o app. Cada commit já é um gesto inteiro, então grava na hora;
+ * enquanto uma escrita corre, só o estado mais novo espera na fila.
+ */
+let queued: AreaMap | null = null
+let writing: Promise<void> | null = null
+
+function queueSave(map: AreaMap) {
+  queued = map
+  writing ??= (async () => {
+    while (queued) {
+      const next = queued
+      queued = null
+      await persist(next)
+    }
+    writing = null
+  })()
+}
 
 async function persist(map: AreaMap) {
   try {
@@ -51,13 +69,9 @@ async function persist(map: AreaMap) {
   }
 }
 
-/** Grava já o que estiver no debounce — antes de abrir outro mapa e quando a página some. */
-export function flushPendingAreaMapSave(): Promise<void> {
-  if (!pending) return Promise.resolve()
-  clearTimeout(pending.timeout)
-  const { map } = pending
-  pending = null
-  return persist(map)
+/** Espera a fila de gravação esvaziar — antes de abrir outro mapa, exportar ou listar. */
+export async function flushPendingAreaMapSave(): Promise<void> {
+  while (writing) await writing
 }
 
 function upsert(list: AreaMapListItem[], item: AreaMapListItem): AreaMapListItem[] {
@@ -106,10 +120,8 @@ export const useAreaMapStore = create<AreaMapState>((set, get) => ({
   },
 
   deleteAreaMap: async id => {
-    if (pending?.map.id === id) {
-      clearTimeout(pending.timeout)
-      pending = null
-    }
+    if (queued?.id === id) queued = null
+    await flushPendingAreaMapSave()
     try {
       await deleteFromDb(id)
     } catch (err) {
@@ -143,20 +155,7 @@ export const useAreaMapStore = create<AreaMapState>((set, get) => ({
     if (!current || current.id !== next.id || current === next) return
     const map = { ...next, updated_at: now() }
     set({ map })
-    if (pending) clearTimeout(pending.timeout)
-    pending = {
-      map,
-      timeout: setTimeout(() => {
-        pending = null
-        void persist(map)
-      }, DEBOUNCE_SAVE_MS),
-    }
+    queueSave(map)
   },
 }))
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('pagehide', () => void flushPendingAreaMapSave())
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') void flushPendingAreaMapSave()
-  })
-}

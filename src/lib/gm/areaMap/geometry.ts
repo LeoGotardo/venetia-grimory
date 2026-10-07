@@ -1,6 +1,9 @@
-import type { AreaMap, AreaStamp } from '../../../types'
-import { AREA_STAMP_MAX_SCALE, AREA_STAMP_MIN_SCALE } from '../../../constants'
+import type { AreaElement, AreaLabel, AreaMap, AreaStamp } from '../../../types'
+import {
+  AREA_LABEL_MAX_SIZE, AREA_LABEL_MIN_SIZE, AREA_STAMP_MAX_SCALE, AREA_STAMP_MIN_SCALE,
+} from '../../../constants'
 import { drawOrder, isEditable } from './scene'
+import { boundsOf, distanceToLine, pointInPolygon, type Box } from './shapes'
 
 /** Geometria dos elementos em coordenadas de mundo. Sem Pixi: testável em node. */
 
@@ -8,6 +11,15 @@ export interface Point { x: number; y: number }
 export interface Size { w: number; h: number }
 /** Tamanho padrão (escala 1) de um asset do catálogo. */
 export type SizeOf = (asset: string) => Size
+
+/** Caixa orientada (centro, giro e meias-medidas) — o que stamps e textos têm em comum. */
+export interface OBox {
+  x: number
+  y: number
+  rotation: number
+  hw: number
+  hh: number
+}
 
 const RAD = Math.PI / 180
 
@@ -18,39 +30,91 @@ export function rotate(p: Point, degrees: number): Point {
   return { x: p.x * cos - p.y * sin, y: p.x * sin + p.y * cos }
 }
 
-/** Ponto do mundo no espaço do stamp (origem no centro, sem rotação; a escala continua aplicada). */
-export function toStampSpace(stamp: AreaStamp, p: Point): Point {
-  return rotate({ x: p.x - stamp.x, y: p.y - stamp.y }, -stamp.rotation)
+export function stampBox(stamp: AreaStamp, size: Size): OBox {
+  return { x: stamp.x, y: stamp.y, rotation: stamp.rotation, hw: (size.w * stamp.scale) / 2, hh: (size.h * stamp.scale) / 2 }
 }
 
-export function halfExtents(stamp: AreaStamp, size: Size): Point {
-  return { x: (size.w * stamp.scale) / 2, y: (size.h * stamp.scale) / 2 }
+/** Largura média de um caractere, em alturas de fonte, por estilo (Cinzel espaçada é larga). */
+const LABEL_CHAR_WIDTH = { region: 0.95, city: 0.68, note: 0.55 } as const
+
+/**
+ * Medida aproximada do texto, sem canvas: basta para tocar e para a caixa da
+ * seleção. O Pixi mede de verdade ao desenhar.
+ */
+export function labelBox(label: AreaLabel): OBox {
+  const chars = Math.max(1, [...label.text].length)
+  return {
+    x: label.x,
+    y: label.y,
+    rotation: label.rotation,
+    hw: (chars * label.size * LABEL_CHAR_WIDTH[label.style]) / 2,
+    hh: (label.size * 1.3) / 2,
+  }
 }
 
-export function stampContains(stamp: AreaStamp, size: Size, p: Point): boolean {
-  const local = toStampSpace(stamp, p)
-  const half = halfExtents(stamp, size)
-  return Math.abs(local.x) <= half.x && Math.abs(local.y) <= half.y
+/** Caixa de quem gira e escala pelas alças (stamp e texto); `null` para linhas e regiões. */
+export function elementBox(el: AreaElement, sizeOf: SizeOf): OBox | null {
+  if (el.kind === 'stamp') return stampBox(el, sizeOf(el.asset))
+  if (el.kind === 'label') return labelBox(el)
+  return null
+}
+
+export function boxContains(box: OBox, p: Point): boolean {
+  const local = rotate({ x: p.x - box.x, y: p.y - box.y }, -box.rotation)
+  return Math.abs(local.x) <= box.hw && Math.abs(local.y) <= box.hh
 }
 
 /** Cantos na ordem topo-esquerdo, topo-direito, baixo-direito, baixo-esquerdo. */
-export function stampCorners(stamp: AreaStamp, size: Size): Point[] {
-  const { x: hx, y: hy } = halfExtents(stamp, size)
+export function boxCorners(box: OBox): Point[] {
   return [
-    { x: -hx, y: -hy }, { x: hx, y: -hy }, { x: hx, y: hy }, { x: -hx, y: hy },
+    { x: -box.hw, y: -box.hh }, { x: box.hw, y: -box.hh }, { x: box.hw, y: box.hh }, { x: -box.hw, y: box.hh },
   ].map(c => {
-    const r = rotate(c, stamp.rotation)
-    return { x: r.x + stamp.x, y: r.y + stamp.y }
+    const r = rotate(c, box.rotation)
+    return { x: r.x + box.x, y: r.y + box.y }
   })
 }
 
+/** Caixa alinhada aos eixos que envolve o elemento (seleção de linhas e regiões). */
+export function elementBounds(el: AreaElement, sizeOf: SizeOf): Box {
+  switch (el.kind) {
+    case 'stamp':
+    case 'label': {
+      const c = boxCorners(elementBox(el, sizeOf)!)
+      return boundsOf(c.flatMap(p => [p.x, p.y]))
+    }
+    case 'path':
+      return boundsOf(el.points, el.width / 2)
+    case 'paint':
+      return boundsOf(el.points, el.size / 2)
+    case 'region':
+      return boundsOf(el.points)
+  }
+}
+
+/** Folga do toque em linhas finas, em px de tela. */
+const LINE_TOUCH_PX = 8
+
+function hits(el: AreaElement, p: Point, sizeOf: SizeOf, zoom: number): boolean {
+  switch (el.kind) {
+    case 'stamp':
+    case 'label':
+      return boxContains(elementBox(el, sizeOf)!, p)
+    case 'path':
+      return distanceToLine(el.points, p) <= el.width / 2 + LINE_TOUCH_PX / zoom
+    case 'region':
+      return pointInPolygon(el.points, p)
+    case 'paint':
+      // Pinceladas formam o chão: tocar nelas não seleciona (a borracha e o desfazer cuidam delas).
+      return false
+  }
+}
+
 /** Elemento editável mais acima sob o ponto, ou `null`. */
-export function hitTest(map: AreaMap, p: Point, sizeOf: SizeOf): string | null {
+export function hitTest(map: AreaMap, p: Point, sizeOf: SizeOf, zoom = 1): string | null {
   const ordered = drawOrder(map)
   for (let i = ordered.length - 1; i >= 0; i--) {
     const el = ordered[i]
-    if (!isEditable(map, el)) continue
-    if (el.kind === 'stamp' && stampContains(el, sizeOf(el.asset), p)) return el.id
+    if (isEditable(map, el) && hits(el, p, sizeOf, zoom)) return el.id
   }
   return null
 }
@@ -61,7 +125,7 @@ export function normalizeDegrees(deg: number): number {
 }
 
 /**
- * Rotação de um stamp cuja alça fica acima do centro: apontar para cima é 0°.
+ * Rotação de quem tem a alça acima do centro: apontar para cima é 0°.
  * `snap` arredonda para múltiplos (ex.: 15° com Shift).
  */
 export function rotationToward(center: Point, pointer: Point, snap = 0): number {
@@ -75,15 +139,25 @@ export function clampScale(scale: number): number {
   return Math.min(AREA_STAMP_MAX_SCALE, Math.max(AREA_STAMP_MIN_SCALE, scale))
 }
 
+export function clampLabelSize(size: number): number {
+  if (!Number.isFinite(size)) return AREA_LABEL_MIN_SIZE
+  return Math.min(AREA_LABEL_MAX_SIZE, Math.max(AREA_LABEL_MIN_SIZE, size))
+}
+
 /**
- * Escala uniforme ao arrastar um canto: a razão entre a distância do ponteiro ao
- * centro e a do canto ao centro na escala 1.
+ * Escala uniforme ao arrastar um canto: a razão entre a distância do ponteiro
+ * ao centro e a meia-diagonal da caixa. Stamp muda `scale`; texto muda `size`.
  */
-export function scaleToward(stamp: AreaStamp, size: Size, pointer: Point): number {
-  const diagonal = Math.hypot(size.w / 2, size.h / 2)
-  if (diagonal === 0) return stamp.scale
-  const dist = Math.hypot(pointer.x - stamp.x, pointer.y - stamp.y)
-  return Math.round(clampScale(dist / diagonal) * 100) / 100
+export function resizeToward(el: AreaStamp | AreaLabel, sizeOf: SizeOf, pointer: Point): { scale?: number; size?: number } {
+  const dist = Math.hypot(pointer.x - el.x, pointer.y - el.y)
+  if (el.kind === 'stamp') {
+    const { w, h } = sizeOf(el.asset)
+    const diagonal = Math.hypot(w / 2, h / 2)
+    return diagonal === 0 ? {} : { scale: Math.round(clampScale(dist / diagonal) * 100) / 100 }
+  }
+  const box = labelBox(el)
+  const diagonal = Math.hypot(box.hw, box.hh)
+  return diagonal === 0 ? {} : { size: Math.round(clampLabelSize((el.size * dist) / diagonal)) }
 }
 
 /** Arredonda a 1 casa decimal: o JSON fica menor e nada visível muda. */
@@ -97,17 +171,16 @@ export const GIZMO_ROTATE_OFFSET_PX = 30
 export const GIZMO_HANDLE_PX = 14
 
 /** Alça de rotação: acima do meio da borda de cima, acompanhando o giro. */
-export function rotateHandle(stamp: AreaStamp, size: Size, zoom: number): Point {
-  const half = halfExtents(stamp, size)
-  const r = rotate({ x: 0, y: -half.y - GIZMO_ROTATE_OFFSET_PX / zoom }, stamp.rotation)
-  return { x: stamp.x + r.x, y: stamp.y + r.y }
+export function rotateHandle(box: OBox, zoom: number): Point {
+  const r = rotate({ x: 0, y: -box.hh - GIZMO_ROTATE_OFFSET_PX / zoom }, box.rotation)
+  return { x: box.x + r.x, y: box.y + r.y }
 }
 
 /** Qual alça está sob o ponteiro: girar, escalar (qualquer canto) ou nenhuma. */
-export function gizmoHit(stamp: AreaStamp, size: Size, zoom: number, p: Point): 'rotate' | 'scale' | null {
+export function gizmoHit(box: OBox, zoom: number, p: Point): 'rotate' | 'scale' | null {
   const reach = GIZMO_HANDLE_PX / zoom
   const near = (q: Point) => Math.hypot(q.x - p.x, q.y - p.y) <= reach
-  if (near(rotateHandle(stamp, size, zoom))) return 'rotate'
-  if (stampCorners(stamp, size).some(near)) return 'scale'
+  if (near(rotateHandle(box, zoom))) return 'rotate'
+  if (boxCorners(box).some(near)) return 'scale'
   return null
 }

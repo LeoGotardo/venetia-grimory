@@ -1,10 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import type { AreaMap, AreaStamp } from '../../../types'
+import type { AreaLabel, AreaMap, AreaPaint, AreaPath, AreaRegion, AreaStamp } from '../../../types'
 import {
   addElements, createAreaMap, drawOrder, duplicateElements, isEditable, moveLayer, moveToLayer,
-  removeElements, reorderElement, setLayer, updateElements,
+  removeElements, reorderElement, setLayer, translateElement, updateElements,
 } from './scene'
-import { hitTest, rotationToward, scaleToward, stampContains, stampCorners } from './geometry'
+import {
+  boxContains, boxCorners, elementBounds, gizmoHit, hitTest, labelBox, resizeToward, rotateHandle, rotationToward, stampBox,
+} from './geometry'
+import { boundsOf, dashLine, distanceToLine, pointInPolygon, simplify, smooth } from './shapes'
 import { fitView, screenToWorld, worldToScreen, zoomAt } from './viewport'
 import { normalizeAreaMap } from '../normalize'
 import { AREA_LAYERS, AREA_MAP_MAX_ELEMENTS, AREA_MAP_MAX_SIZE, AREA_STAMP_MAX_SCALE } from '../../../constants'
@@ -15,8 +18,20 @@ const stamp = (id: string, over: Partial<AreaStamp> = {}): AreaStamp => ({
 const SIZE = { w: 40, h: 20 }
 const sizeOf = () => SIZE
 const ids = (m: AreaMap) => m.elements.map(e => e.id)
+const path = (id: string, points: number[], over: Partial<AreaPath> = {}): AreaPath => ({
+  kind: 'path', id, layer: 'roads', style: 'dirtRoad', width: 10, points, ...over,
+})
+const region = (id: string, points: number[]): AreaRegion => ({
+  kind: 'region', id, layer: 'terrain', texture: null, color: '#b5392f', border: true, opacity: 0.25, points,
+})
+const label = (over: Partial<AreaLabel> = {}): AreaLabel => ({
+  kind: 'label', id: 'l', layer: 'labels', text: 'Vila', x: 100, y: 100, size: 20, rotation: 0, style: 'note', color: '#f5f0e8', ...over,
+})
+const paint = (id: string, points: number[]): AreaPaint => ({
+  kind: 'paint', id, layer: 'terrain', texture: 'grass', size: 40, points, erase: false,
+})
 
-function mapWith(...els: AreaStamp[]): AreaMap {
+function mapWith(...els: Array<AreaStamp | AreaPath | AreaRegion | AreaLabel | AreaPaint>): AreaMap {
   return addElements(createAreaMap('c1', 'Vale', 1000, 800), els)
 }
 
@@ -82,10 +97,10 @@ describe('cena do mapa de área', () => {
 
 describe('geometria', () => {
   it('acerta o stamp girado e escolhe o de cima', () => {
-    const rotated = stamp('a', { rotation: 90 })
+    const rotated = stampBox(stamp('a', { rotation: 90 }), SIZE)
     // Girado 90°, o stamp 40×20 vira 20×40: (100, 118) está dentro, (118, 100) fora.
-    expect(stampContains(rotated, SIZE, { x: 100, y: 118 })).toBe(true)
-    expect(stampContains(rotated, SIZE, { x: 118, y: 100 })).toBe(false)
+    expect(boxContains(rotated, { x: 100, y: 118 })).toBe(true)
+    expect(boxContains(rotated, { x: 118, y: 100 })).toBe(false)
     const m = mapWith(stamp('baixo', { layer: 'structures' }), stamp('cima', { layer: 'terrain' }))
     expect(hitTest(m, { x: 100, y: 100 }, sizeOf)).toBe('baixo')
     expect(hitTest(setLayer(m, 'structures', { locked: true }), { x: 100, y: 100 }, sizeOf)).toBe('cima')
@@ -93,7 +108,7 @@ describe('geometria', () => {
   })
 
   it('cantos seguem rotação e escala', () => {
-    const [tl] = stampCorners(stamp('a', { scale: 2 }), SIZE)
+    const [tl] = boxCorners(stampBox(stamp('a', { scale: 2 }), SIZE))
     expect(tl).toEqual({ x: 60, y: 80 })
   })
 
@@ -102,12 +117,61 @@ describe('geometria', () => {
     expect(rotationToward(c, { x: 0, y: -10 })).toBe(0)
     expect(rotationToward(c, { x: 10, y: 0 })).toBe(90)
     expect(rotationToward(c, { x: -10, y: 0.5 }, 15)).toBe(270)
+    const box = stampBox(stamp('a'), SIZE)
+    expect(gizmoHit(box, 1, rotateHandle(box, 1))).toBe('rotate')
+    expect(gizmoHit(box, 1, boxCorners(box)[2])).toBe('scale')
+    expect(gizmoHit(box, 1, { x: 100, y: 100 })).toBeNull()
   })
 
-  it('escala pela distância ao canto, dentro dos limites', () => {
-    const s = stamp('a', { x: 0, y: 0 })
-    expect(scaleToward(s, SIZE, { x: 40, y: 20 })).toBe(2)
-    expect(scaleToward(s, SIZE, { x: 1e6, y: 0 })).toBe(AREA_STAMP_MAX_SCALE)
+  it('escala pela distância ao canto: stamp muda scale, texto muda size', () => {
+    expect(resizeToward(stamp('a', { x: 0, y: 0 }), sizeOf, { x: 40, y: 20 })).toEqual({ scale: 2 })
+    expect(resizeToward(stamp('a', { x: 0, y: 0 }), sizeOf, { x: 1e6, y: 0 })).toEqual({ scale: AREA_STAMP_MAX_SCALE })
+    const l = label({ x: 0, y: 0 })
+    const box = labelBox(l)
+    expect(resizeToward(l, sizeOf, { x: box.hw * 2, y: box.hh * 2 })).toEqual({ size: 40 })
+  })
+
+  it('caminho acerta pela largura, região por dentro, pincelada nunca', () => {
+    const m = mapWith(paint('p', [0, 0, 300, 0]), region('r', [200, 200, 400, 200, 300, 400]), path('c', [0, 50, 300, 50]))
+    expect(hitTest(m, { x: 150, y: 56 }, sizeOf, 1)).toBe('c')
+    expect(hitTest(m, { x: 150, y: 70 }, sizeOf, 1)).toBeNull()
+    expect(hitTest(m, { x: 300, y: 260 }, sizeOf, 1)).toBe('r')
+    expect(hitTest(m, { x: 150, y: 0 }, sizeOf, 1)).toBeNull()
+  })
+
+  it('caixa de seleção e deslocamento valem para todos os tipos', () => {
+    expect(elementBounds(path('c', [0, 0, 100, 50]), sizeOf)).toEqual({ minX: -5, minY: -5, maxX: 105, maxY: 55 })
+    expect(translateElement(path('c', [0, 0, 100, 50]), 10, -5).points).toEqual([10, -5, 110, 45])
+    expect(translateElement(label(), 1.25, 0)).toMatchObject({ x: 101.3, y: 100 })
+    let n = 0
+    const { map } = duplicateElements(mapWith(region('r', [0, 0, 10, 0, 5, 10])), ['r'], 24, () => `n${++n}`)
+    expect(map.elements[1]).toMatchObject({ id: 'n1', kind: 'region', points: [24, 24, 34, 24, 29, 34] })
+  })
+})
+
+describe('formas', () => {
+  it('simplifica uma linha quase reta para as pontas e mantém um canto', () => {
+    expect(simplify([0, 0, 1, 0.1, 2, -0.1, 3, 0], 0.5)).toEqual([0, 0, 3, 0])
+    expect(simplify([0, 0, 5, 5, 10, 0], 0.5)).toEqual([0, 0, 5, 5, 10, 0])
+  })
+
+  it('suaviza mantendo as pontas da linha aberta', () => {
+    const out = smooth([0, 0, 10, 10, 20, 0], 1)
+    expect(out.slice(0, 2)).toEqual([0, 0])
+    expect(out.slice(-2)).toEqual([20, 0])
+    expect(out.length).toBe(12)
+  })
+
+  it('tracejado cobre a linha em traços e intervalos', () => {
+    const dashes = dashLine([0, 0, 10, 0], 2, 3)
+    expect(dashes).toEqual([[0, 0, 2, 0], [5, 0, 7, 0]])
+  })
+
+  it('distância à linha, ponto no polígono e limites', () => {
+    expect(distanceToLine([0, 0, 10, 0], { x: 5, y: 3 })).toBe(3)
+    expect(pointInPolygon([0, 0, 10, 0, 10, 10, 0, 10], { x: 5, y: 5 })).toBe(true)
+    expect(pointInPolygon([0, 0, 10, 0, 10, 10, 0, 10], { x: 15, y: 5 })).toBe(false)
+    expect(boundsOf([3, 4, -1, 9], 1)).toEqual({ minX: -2, minY: 3, maxX: 4, maxY: 10 })
   })
 })
 
@@ -152,8 +216,26 @@ describe('normalizeAreaMap', () => {
     expect(m.background.texture).toBeTruthy()
   })
 
+  it('normaliza pinceladas, regiões, caminhos e textos', () => {
+    const m = normalizeAreaMap({
+      elements: [
+        { kind: 'paint', id: 'p', texture: 'sand', size: 99999, points: [1, 2, 3, 4] },
+        { kind: 'paint', id: 'p-impar', texture: 'sand', points: [1, 2, 3] },
+        { kind: 'region', id: 'r', points: [0, 0, 1, 0], color: 'vermelho' },
+        { kind: 'region', id: 'r2', points: [0, 0, 1, 0, 1, 1], color: 'nada' },
+        { kind: 'path', id: 'c', style: 'teleférico', points: [0, 0, 5, 5] },
+        { kind: 'label', id: 'l', text: 'Vila', x: 1, y: 2, style: 'gigante', size: -3 },
+      ],
+    })
+    expect(m.elements.map(e => e.id)).toEqual(['p', 'r2', 'c', 'l'])
+    expect(m.elements[0]).toMatchObject({ size: 400, erase: false })
+    expect(m.elements[1]).toMatchObject({ texture: null, color: '#b5392f', border: false })
+    expect(m.elements[2]).toMatchObject({ style: 'dirtRoad', width: 18 })
+    expect(m.elements[3]).toMatchObject({ style: 'city', size: 8, color: '#f5f0e8' })
+  })
+
   it('não altera um mapa válido', () => {
-    const m = mapWith(stamp('a', { rotation: 45, scale: 1.5, flip: true }))
+    const m = mapWith(stamp('a', { rotation: 45, scale: 1.5, flip: true }), path('c', [0, 0, 5, 5]), label(), paint('p', [1, 1]))
     expect(normalizeAreaMap(structuredClone(m))).toEqual(m)
   })
 })

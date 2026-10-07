@@ -26,7 +26,7 @@ export function AssetBrowser({ selected, onPick }: AssetBrowserProps) {
   }, [query, category, t])
 
   return (
-    <div className="flex flex-col gap-3 min-h-0">
+    <div className="flex flex-col gap-3">
       <input
         type="search"
         value={query}
