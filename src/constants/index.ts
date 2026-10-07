@@ -138,6 +138,24 @@ export const MAP_MAX_SIZE = 100
 export const MAP_DEFAULT_WIDTH = 30
 export const MAP_DEFAULT_HEIGHT = 20
 export const MAP_UNDO_LIMIT = 50
+/** Mapa de área (IndexedDB): banco, store e limites. Unidades de mundo = px a 1×. */
+export const AREA_DB_NAME = 'venetia-gm'
+export const AREA_DB_VERSION = 1
+export const AREA_DB_STORE = 'area_maps'
+export const AREA_LAYERS = [
+  'background', 'terrain', 'water', 'roads', 'structures', 'vegetation', 'decor', 'labels', 'effects',
+] as const
+export const AREA_MAP_DEFAULT_WIDTH = 1600
+export const AREA_MAP_DEFAULT_HEIGHT = 1100
+export const AREA_MAP_MIN_SIZE = 400
+export const AREA_MAP_MAX_SIZE = 8000
+export const AREA_MAP_MAX_ELEMENTS = 5000
+export const AREA_DEFAULT_TEXTURE = 'grass'
+export const AREA_STAMP_MIN_SCALE = 0.1
+export const AREA_STAMP_MAX_SCALE = 10
+/** Zoom do editor: pixels de tela por unidade de mundo. */
+export const AREA_MIN_ZOOM = 0.05
+export const AREA_MAX_ZOOM = 8
 /** Casas ocupadas por lado, por tamanho de criatura. */
 export const CREATURE_SIZE_SQUARES: Record<string, number> = {
   tiny: 1, small: 1, medium: 1, large: 2, huge: 3, gargantuan: 4,

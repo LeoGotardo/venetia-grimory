@@ -1,3 +1,6 @@
+// Os mapas de área moram no IndexedDB (`areaMapStorage`): node não tem, o fake em memória tem.
+import 'fake-indexeddb/auto'
+
 /**
  * `src/i18n/index.ts` lê o `localStorage` na inicialização para descobrir o idioma
  * salvo, e a store persiste a ficha por lá. Em ambiente node não existe nenhum dos

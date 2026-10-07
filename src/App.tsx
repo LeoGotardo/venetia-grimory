@@ -15,6 +15,7 @@ const NpcGeneratorPage = lazy(() => import('./pages/gm/NpcGeneratorPage').then(m
 const NpcEditPage = lazy(() => import('./pages/gm/NpcEditPage').then(m => ({ default: m.NpcEditPage })))
 const EncounterPage = lazy(() => import('./pages/gm/EncounterPage').then(m => ({ default: m.EncounterPage })))
 const MapEditorPage = lazy(() => import('./pages/gm/MapEditorPage').then(m => ({ default: m.MapEditorPage })))
+const AreaMapEditorPage = lazy(() => import('./pages/gm/AreaMapEditorPage').then(m => ({ default: m.AreaMapEditorPage })))
 const CampaignPage = lazy(() => import('./pages/gm/CampaignPage').then(m => ({ default: m.CampaignPage })))
 
 function PageLoader() {
@@ -41,6 +42,7 @@ function App() {
             <Route path="/mestre/campanha/:id/npc/:npcId" element={<NpcEditPage />} />
             <Route path="/mestre/campanha/:id/encontro/:encounterId" element={<EncounterPage />} />
             <Route path="/mestre/campanha/:id/mapa/:mapId" element={<MapEditorPage />} />
+            <Route path="/mestre/campanha/:id/area/:mapId" element={<AreaMapEditorPage />} />
             <Route path="/mestre/bestiario" element={<BestiaryPage />} />
             <Route path="/mestre/bestiario/:monsterId" element={<MonsterEditPage />} />
             <Route path="*" element={<NotFound />} />

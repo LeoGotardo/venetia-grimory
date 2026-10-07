@@ -1,7 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
-import type { Campaign, Combatant, Encounter, GridMap, MapLabel, Monster, Npc, NpcProfile } from '../../types'
+import type {
+  AreaElement, AreaLayerId, AreaLayerState, AreaMap, Campaign, Combatant, Encounter, GridMap, MapLabel, Monster, Npc, NpcProfile,
+} from '../../types'
 import { blankCells, clampMapSize, isTerrainCode } from './terrain'
-import { CREATURE_SIZES, DEFAULT_SPEED_METERS, TERRAIN_VOID } from '../../constants'
+import { AREA_DEFAULT_TEXTURE, AREA_LAYERS, CREATURE_SIZES, DEFAULT_SPEED_METERS, TERRAIN_VOID } from '../../constants'
+import { clampAreaSize, defaultLayers } from './areaMap/scene'
+import { clampScale, normalizeDegrees } from './areaMap/geometry'
 import { normalizeStatBlock } from './statblock'
 
 /**
@@ -128,4 +132,64 @@ export function normalizeMap(raw: unknown): GridMap {
         .map(l => ({ id: l.id ?? uuidv4(), x: l.x, y: l.y, text: l.text }))
     : []
   return { id: m.id ?? uuidv4(), name: m.name ?? '', width, height, cells, labels, created_at: m.created_at ?? at, updated_at: at }
+}
+
+const isLayerId = (v: unknown): v is AreaLayerId => (AREA_LAYERS as readonly unknown[]).includes(v)
+const finite = (v: unknown, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? v : fallback)
+const unit = (v: unknown, fallback = 1) => Math.min(1, Math.max(0, finite(v, fallback)))
+
+/**
+ * Mapa de área lido do IndexedDB ou de um JSON importado. Camadas desconhecidas
+ * somem e as que faltam voltam no fim; elementos de tipo desconhecido ou com
+ * número inválido são descartados — um asset que saiu do catálogo fica (o
+ * editor desenha um marcador no lugar).
+ */
+export function normalizeAreaMap(raw: unknown): AreaMap {
+  const m = (raw ?? {}) as Partial<AreaMap>
+  const at = m.updated_at ?? new Date().toISOString()
+
+  const seen = new Set<AreaLayerId>()
+  const layers: AreaLayerState[] = []
+  for (const l of Array.isArray(m.layers) ? m.layers : []) {
+    if (!isLayerId(l?.id) || seen.has(l.id)) continue
+    seen.add(l.id)
+    layers.push({ id: l.id, visible: l.visible !== false, locked: l.locked === true, opacity: unit(l.opacity) })
+  }
+  for (const l of defaultLayers()) if (!seen.has(l.id)) layers.push(l)
+
+  const elements = (Array.isArray(m.elements) ? m.elements : [])
+    .map(normalizeAreaElement)
+    .filter((el): el is AreaElement => el !== null)
+
+  return {
+    id: m.id ?? uuidv4(),
+    campaign_id: typeof m.campaign_id === 'string' ? m.campaign_id : '',
+    name: typeof m.name === 'string' ? m.name : '',
+    width: clampAreaSize(finite(m.width, 0)),
+    height: clampAreaSize(finite(m.height, 0)),
+    background: { texture: typeof m.background?.texture === 'string' ? m.background.texture : AREA_DEFAULT_TEXTURE },
+    layers,
+    elements,
+    version: 1,
+    created_at: m.created_at ?? at,
+    updated_at: at,
+  }
+}
+
+function normalizeAreaElement(raw: unknown): AreaElement | null {
+  const e = (raw ?? {}) as Partial<AreaElement>
+  if (e.kind !== 'stamp' || typeof e.asset !== 'string') return null
+  if (typeof e.x !== 'number' || !Number.isFinite(e.x) || typeof e.y !== 'number' || !Number.isFinite(e.y)) return null
+  return {
+    kind: 'stamp',
+    id: typeof e.id === 'string' ? e.id : uuidv4(),
+    layer: isLayerId(e.layer) ? e.layer : 'decor',
+    asset: e.asset,
+    x: e.x,
+    y: e.y,
+    scale: clampScale(finite(e.scale, 1)),
+    rotation: normalizeDegrees(finite(e.rotation, 0)),
+    flip: e.flip === true,
+    opacity: unit(e.opacity),
+  }
 }

@@ -36,7 +36,7 @@ export function GmHome() {
     const json = await pickTextFile()
     if (!json) return
     try {
-      navigate(`/mestre/campanha/${importCampaignJson(json)}`)
+      navigate(`/mestre/campanha/${await importCampaignJson(json)}`)
     } catch {
       setError(t('gm.invalidCampaign'))
     }

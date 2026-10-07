@@ -238,6 +238,73 @@ export interface GridMap {
   updated_at: string
 }
 
+/**
+ * Camadas do mapa de área, de baixo para cima. O mapa guarda o estado de cada
+ * uma (visível, bloqueada, opacidade); a ordem do array é a ordem de desenho.
+ */
+export type AreaLayerId =
+  | 'background' | 'terrain' | 'water' | 'roads' | 'structures' | 'vegetation' | 'decor' | 'labels' | 'effects'
+
+export interface AreaLayerState {
+  id: AreaLayerId
+  visible: boolean
+  locked: boolean
+  /** 0–1. */
+  opacity: number
+}
+
+/** Objeto do catálogo posto no mapa (árvore, casa, ponte…). `x`/`y` é o centro, em unidades de mundo. */
+export interface AreaStamp {
+  kind: 'stamp'
+  id: string
+  layer: AreaLayerId
+  asset: string
+  x: number
+  y: number
+  /** Multiplicador do tamanho padrão do asset. */
+  scale: number
+  /** Graus, sentido horário. */
+  rotation: number
+  flip: boolean
+  opacity: number
+}
+
+/**
+ * Elemento da cena. A lista é plana, com a camada em cada elemento: a ordem no
+ * array é o z dentro da camada — desfazer, duplicar e trocar de camada ficam triviais.
+ * As fases seguintes acrescentam pinceladas, regiões, caminhos, ícones e textos.
+ */
+export type AreaElement = AreaStamp
+
+/**
+ * Mapa ilustrativo, sem regra de combate: coordenadas de mundo (px a 1×), não
+ * casas. Fica no IndexedDB (`areaMapStorage`), fora da campanha do localStorage.
+ */
+export interface AreaMap {
+  id: string
+  campaign_id: string
+  name: string
+  width: number
+  height: number
+  background: { texture: string }
+  layers: AreaLayerState[]
+  elements: AreaElement[]
+  version: 1
+  created_at: string
+  updated_at: string
+}
+
+/** Resumo para a lista da aba Mapas, sem carregar os elementos. */
+export interface AreaMapListItem {
+  id: string
+  name: string
+  width: number
+  height: number
+  background: string
+  elements: number
+  updated_at: string
+}
+
 export interface Campaign {
   id: string
   name: string

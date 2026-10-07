@@ -322,6 +322,24 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   (merged creatures, lost "Hit:"/"Failure:" labels); fixed copies live in `scripts/srd/overrides/`,
   `scripts/srd/crosscheck.mjs` compares the output with a second CC-BY conversion, and the PT text
   comes from the global EN→PT dictionaries in `scripts/srd/monsters-pt.json` (see `scripts/README.md`).
+- **Area maps** (non-combat, `docs/venetia-area-map-spec.md`) are a separate system from the grid:
+  world coordinates, a flat `elements` list where each element carries its `layer` (array order =
+  z inside the layer), `layers` state (visible/locked/opacity, array order = draw order). They live
+  in **IndexedDB**, not in the campaign's localStorage: `src/services/areaMapStorage.ts` (db
+  `venetia-gm`, store `area_maps`, index `campaign_id`) behind `useAreaMapStore`
+  (`src/store/areaMapStore.ts`, debounced save + flush on `pagehide`, `saveFailed` surfaces write
+  errors). Campaign export carries them as `area_maps` (so `exportCampaignJson`/`importCampaignJson`
+  are async; import gives new ids), and `deleteCampaign` deletes them. Tests use `fake-indexeddb`
+  (`vitest.setup.ts`); don't fake `setImmediate` with `vi.useFakeTimers()` or the db hangs.
+  Pure logic in `src/lib/gm/areaMap/` (`scene`, `geometry` with the gizmo handles, `viewport`),
+  normalized by `normalizeAreaMap`. Rendering is PixiJS 8 in `AreaStage` (on-demand renders, no
+  ticker; one shared `GraphicsContext` per asset). Stamps are our own SVG in
+  `src/data/areaMap/stamps.ts`; Pixi's SVG parser reads `polygon points` as integers only, so
+  `pixiSafe` rewrites polygons as paths and rounds coordinates — `catalog.test.ts` enforces the
+  allowed tags. Textures (`areaTextures.ts`) reuse `TERRAIN_STYLE` painters as seamless tiles.
+  Editor: `AreaMapEditorPage` (`/mestre/campanha/:id/area/:mapId`), draft + undo snapshots like
+  the grid editor; the `undo`/`redo` updaters must capture `committed.current` *before*
+  `restore`. Later phases (paint, regions, paths, labels, icons, PNG export) are in the plan.
 - `AVAILABLE_CONDITIONS` gained `Atordoado` (Stunned) — it is a 2024 condition the SRD uses.
 - UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
   `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.

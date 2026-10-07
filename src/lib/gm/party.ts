@@ -1,4 +1,4 @@
-import type { AbilityId, Campaign, CharacterSheet } from '../../types'
+import type { AbilityId, AreaMap, Campaign, CharacterSheet } from '../../types'
 import { ABILITIES, calcPassivePerception } from '../calculations'
 import { CAMPAIGN_EXPORT_FORMAT, CAMPAIGN_EXPORT_VERSION } from '../../constants'
 
@@ -52,13 +52,16 @@ export interface CampaignExport {
   format: typeof CAMPAIGN_EXPORT_FORMAT
   version: number
   campaign: Campaign
+  /** Mapas de área (moram no IndexedDB, fora da campanha). Exports antigos não têm. */
+  area_maps?: AreaMap[]
 }
 
-export function buildCampaignExport(campaign: Campaign): string {
+export function buildCampaignExport(campaign: Campaign, areaMaps: AreaMap[] = []): string {
   const payload: CampaignExport = {
     format: CAMPAIGN_EXPORT_FORMAT,
     version: CAMPAIGN_EXPORT_VERSION,
     campaign,
+    area_maps: areaMaps,
   }
   return JSON.stringify(payload, null, 2)
 }
@@ -70,4 +73,10 @@ export function parseCampaignImport(json: string): Campaign {
     throw new Error('not a campaign export')
   }
   return data.campaign
+}
+
+/** Mapas de área de um export (crus — passam por `normalizeAreaMap`). Lança como `parseCampaignImport`. */
+export function parseCampaignAreaMaps(json: string): unknown[] {
+  const data = JSON.parse(json) as Partial<CampaignExport> | null
+  return Array.isArray(data?.area_maps) ? data.area_maps : []
 }
