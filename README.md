@@ -460,3 +460,11 @@ Duas gambiarras conhecidas, documentadas em `src/lib/pdf/fillSheet.ts`. Não rem
   `Venetia - Protótipo.dc.html` são referências de design e não entram no build.
 
 Notas de arquitetura e convenções para quem mexe no código estão em [`CLAUDE.md`](CLAUDE.md).
+
+## Atribuição
+
+Este trabalho inclui material do System Reference Document 5.2.1 (“SRD 5.2.1”) da Wizards of the
+Coast LLC, disponível em https://www.dndbeyond.com/srd. O SRD 5.2.1 é licenciado sob a Creative
+Commons Attribution 4.0 International License, disponível em
+https://creativecommons.org/licenses/by/4.0/legalcode. Os monstros do catálogo da Área do Mestre
+(`src/data/monsters/`) vêm dele, gerados por `scripts/srd/generate-monsters.mjs`.

@@ -797,6 +797,7 @@ export const EN_DICTIONARY: Record<string, string> = {
 
   // ─── Condições e exaustão ────────────────────────────────────────────────
   'Amedrontado': 'Frightened',
+  'Atordoado': 'Stunned',
   'Cego': 'Blinded',
   'Caído': 'Prone',
   'Contido': 'Restrained',

@@ -16,6 +16,145 @@ export const STORAGE_KEY_SHEET_PREFIX = 'dnd_ficha_'
 export const SHEET_EXPORT_FORMAT = 'venetia-sheet'
 export const SHEET_EXPORT_VERSION = 1
 
+/** Área do mestre — chaves em português, como as das fichas. */
+export const STORAGE_KEY_CAMPAIGN_LIST = 'dnd_mestre_campanhas'
+export const STORAGE_KEY_CAMPAIGN_PREFIX = 'dnd_mestre_campanha_'
+export const CAMPAIGN_EXPORT_FORMAT = 'venetia-campaign'
+export const CAMPAIGN_EXPORT_VERSION = 1
+export const STORAGE_KEY_BESTIARY = 'dnd_mestre_bestiario'
+export const MONSTER_PACK_FORMAT = 'venetia-monsters'
+export const MONSTER_PACK_VERSION = 1
+
+/** Tamanhos e tipos de criatura (2024). Rótulos em `gm.size.*` / `gm.creatureType.*`. */
+export const CREATURE_SIZES = ['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan'] as const
+export const CREATURE_TYPES = [
+  'aberration', 'beast', 'celestial', 'construct', 'dragon', 'elemental', 'fey',
+  'fiend', 'giant', 'humanoid', 'monstrosity', 'ooze', 'plant', 'undead',
+] as const
+
+/**
+ * ND estimado de um NPC montado como personagem, por nível. Não há tabela
+ * oficial em 2024; a régua é o SRD (Cavaleiro ND 3 ≈ guerreiro 5, Mago ND 6 ≈
+ * mago 9, Arquimago ND 12 ≈ mago 18). Serve para o XP do encontro; o bônus de
+ * proficiência do bloco continua sendo o do nível.
+ */
+export const PC_LEVEL_CR: Record<number, string> = {
+  1: '1/2', 2: '1', 3: '2', 4: '2', 5: '3', 6: '4', 7: '5', 8: '5', 9: '6', 10: '7',
+  11: '8', 12: '8', 13: '9', 14: '10', 15: '11', 16: '12', 17: '13', 18: '14', 19: '15', 20: '16',
+}
+/** Níveis de Aumento de Valor de Atributo (o 19 é Dádiva Épica em 2024); guerreiro e ladino têm extras. */
+export const ASI_LEVELS = [4, 8, 12, 16]
+export const EXTRA_ASI_LEVELS: Record<string, number[]> = { guerreiro: [6, 14], ladino: [10] }
+
+/** Nível de Desafio → XP (tabela do Livro dos Monstros / SRD 5.2). */
+export const CR_XP: Record<string, number> = {
+  '0': 10, '1/8': 25, '1/4': 50, '1/2': 100,
+  '1': 200, '2': 450, '3': 700, '4': 1100, '5': 1800, '6': 2300, '7': 2900, '8': 3900,
+  '9': 5000, '10': 5900, '11': 7200, '12': 8400, '13': 10000, '14': 11500, '15': 13000,
+  '16': 15000, '17': 18000, '18': 20000, '19': 22000, '20': 25000, '21': 33000, '22': 41000,
+  '23': 50000, '24': 62000, '25': 75000, '26': 90000, '27': 105000, '28': 120000,
+  '29': 135000, '30': 155000,
+}
+/**
+ * Orçamento de XP por personagem, por nível (Livro do Mestre 2024): dificuldade
+ * Baixa, Moderada e Alta. O encontro soma o XP de todos os monstros, sem multiplicador.
+ */
+export const XP_BUDGET_BY_LEVEL: Record<number, { low: number; moderate: number; high: number }> = {
+  1: { low: 50, moderate: 75, high: 100 },
+  2: { low: 100, moderate: 150, high: 200 },
+  3: { low: 150, moderate: 225, high: 400 },
+  4: { low: 250, moderate: 375, high: 500 },
+  5: { low: 500, moderate: 750, high: 1100 },
+  6: { low: 600, moderate: 1000, high: 1400 },
+  7: { low: 750, moderate: 1300, high: 1700 },
+  8: { low: 1000, moderate: 1700, high: 2100 },
+  9: { low: 1300, moderate: 2000, high: 2600 },
+  10: { low: 1600, moderate: 2300, high: 3100 },
+  11: { low: 1900, moderate: 2900, high: 4100 },
+  12: { low: 2200, moderate: 3700, high: 4700 },
+  13: { low: 2600, moderate: 4200, high: 5400 },
+  14: { low: 2900, moderate: 4900, high: 6200 },
+  15: { low: 3300, moderate: 5400, high: 7800 },
+  16: { low: 3800, moderate: 6100, high: 9800 },
+  17: { low: 4500, moderate: 7200, high: 11700 },
+  18: { low: 5000, moderate: 8700, high: 14200 },
+  19: { low: 5500, moderate: 10700, high: 17200 },
+  20: { low: 6400, moderate: 13200, high: 22000 },
+}
+
+/** Condição que a regra aplica a quem cai a 0 PV (nome canônico). */
+export const CONDITION_UNCONSCIOUS = 'Inconsciente'
+export const CONCENTRATION_DC_MIN = 10
+/** Registros guardados por encontro — o resto cai fora para o save não crescer sem fim. */
+export const MAX_ENCOUNTER_LOG = 200
+export const CONCENTRATION_DC_MAX = 30
+
+/**
+ * Terrenos da grade do mapa. `code` é o caractere salvo por célula em
+ * `GridMap.cells` — não mude um código existente, ele está nos mapas salvos.
+ * `cost` é o multiplicador de movimento (2 = terreno difícil); `null` bloqueia.
+ * `fly`: quem voa passa por cima (só parede, pilar e vazio barram). `swim`: com
+ * deslocamento de natação, a casa custa 1. `group` organiza a paleta do editor.
+ */
+export const TERRAINS = [
+  { code: '0', id: 'void', cost: null, group: 'void', fly: false, swim: false },
+  // Chão
+  { code: '.', id: 'floor', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'f', id: 'wood', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'e', id: 'dirt', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'g', id: 'grass', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'a', id: 'sand', cost: 1, group: 'ground', fly: true, swim: false },
+  // Terreno difícil
+  { code: 'd', id: 'difficult', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'r', id: 'rubble', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'm', id: 'mud', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'n', id: 'snow', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'i', id: 'ice', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'v', id: 'vegetation', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'u', id: 'furniture', cost: 2, group: 'difficult', fly: true, swim: false },
+  // Água: sem deslocamento de natação, nadar custa o dobro
+  { code: 'w', id: 'water', cost: 2, group: 'water', fly: true, swim: true },
+  { code: 'W', id: 'deepWater', cost: 2, group: 'water', fly: true, swim: true },
+  { code: 'b', id: 'bridge', cost: 1, group: 'water', fly: true, swim: false },
+  // Construção e obstáculos
+  { code: '#', id: 'wall', cost: null, group: 'structure', fly: false, swim: false },
+  { code: 'o', id: 'pillar', cost: null, group: 'structure', fly: false, swim: false },
+  { code: '+', id: 'door', cost: 1, group: 'structure', fly: true, swim: false },
+  { code: 's', id: 'stairs', cost: 1, group: 'structure', fly: true, swim: false },
+  { code: 't', id: 'tree', cost: null, group: 'structure', fly: true, swim: false },
+  { code: 'k', id: 'boulder', cost: null, group: 'structure', fly: true, swim: false },
+  // Perigo
+  { code: 'h', id: 'hazard', cost: 1, group: 'danger', fly: true, swim: false },
+  { code: 'l', id: 'lava', cost: 1, group: 'danger', fly: true, swim: false },
+  { code: 'p', id: 'pit', cost: null, group: 'danger', fly: true, swim: false },
+] as const
+export const TERRAIN_GROUPS = ['ground', 'difficult', 'water', 'structure', 'danger'] as const
+export const TERRAIN_VOID = '0'
+export const TERRAIN_FLOOR = '.'
+/** Uma casa da grade: 1,5 m (5 pés), diagonal inclusive — regra de 2024. */
+export const GRID_CELL_METERS = 1.5
+export const MAP_MIN_SIZE = 5
+export const MAP_MAX_SIZE = 100
+export const MAP_DEFAULT_WIDTH = 30
+export const MAP_DEFAULT_HEIGHT = 20
+export const MAP_UNDO_LIMIT = 50
+/** Casas ocupadas por lado, por tamanho de criatura. */
+export const CREATURE_SIZE_SQUARES: Record<string, number> = {
+  tiny: 1, small: 1, medium: 1, large: 2, huge: 3, gargantuan: 4,
+}
+/** Deslocamento quando a ficha não informa (o padrão das espécies de 2024). */
+export const DEFAULT_SPEED_METERS = 9
+/**
+ * Condições que incluem Incapacitado (2024): quem está com uma delas pode ter o
+ * espaço atravessado até por inimigos.
+ */
+export const INCAPACITATING_CONDITIONS = ['Incapacitado', 'Inconsciente', 'Paralisado', 'Petrificado', 'Atordoado']
+export const FOG_REVEALED = '1'
+export const FOG_HIDDEN = '0'
+
+/** Na ordem crescente — é a ordem do seletor de ND. */
+export const CHALLENGE_RATINGS = Object.keys(CR_XP)
+
 export const FIXED_LANGUAGES_BY_CLASS: Record<string, string[]> = {
   druida: ['druidico'],
   ladino: ['giria_dos_ladroes'],
@@ -28,7 +167,7 @@ export const POINT_BUY_COSTS: Record<number, number> = {
 export const STANDARD_ARRAY_VALUES = [15, 14, 13, 12, 10, 8] as const
 
 export const AVAILABLE_CONDITIONS = [
-  'Amedrontado', 'Cego', 'Caído', 'Contido', 'Enfeitiçado',
+  'Amedrontado', 'Atordoado', 'Cego', 'Caído', 'Contido', 'Enfeitiçado',
   'Ensurdecido', 'Envenenado', 'Exausto', 'Imobilizado', 'Incapacitado',
   'Inconsciente', 'Invisível', 'Paralisado', 'Petrificado', 'Surpreendido',
 ] as const

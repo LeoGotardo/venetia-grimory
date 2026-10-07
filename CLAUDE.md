@@ -85,7 +85,9 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   not inline in the store or components.
 - The store subscribes to itself (bottom of `sheetStore.ts`) and debounce-saves
   (`DEBOUNCE_SAVE_MS`, in `src/constants`) to `localStorage` via `src/services/sheetStorage.ts`
-  any time `sheetId` is set — components never call storage directly.
+  any time `sheetId` is set — components never call storage directly. The pending save is flushed
+  on `pagehide`/`visibilitychange` and before `loadSheet` (`flushPendingSheetSave`): closing or
+  backgrounding the app inside the debounce used to lose the last edit.
 - `src/lib/initialSheet.ts` is the factory for a brand-new blank sheet (`createInitialSheet`).
 
 ### Game data: canonical Portuguese modules + a whole-string translation layer
@@ -192,6 +194,137 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - Two PDF gotchas, both already worked around — don't "simplify" them away:
   - The checkboxes' on-state appearance references a font the widget doesn't declare, so `check()` renders nothing and `flatten()` emits broken XObjects. Marks are drawn on the page as filled circles and the checkbox fields are removed before flattening.
   - Each widget carries its own `/DA`, which **overrides** the field-level one — `setFontSize()` alone has no effect, so the widget `/DA` is deleted whenever the font is shrunk to fit.
+
+### GM area (`/mestre`)
+
+- Built in phases: players (done), NPC statblocks (done),
+  combat tracker (done), grid map editor (done), map + combat (done), SRD 5.2 monster catalog (done, EN + full PT). Online play is a later
+  phase — every GM entity carries a uuid and `updated_at` so a sync layer can do last-write-wins.
+- `src/store/gmStore.ts` (`useGmStore`) is separate from the sheet store and owns the open
+  `Campaign`; every edit goes through `updateCampaign`, which stamps `updated_at`. It debounce-saves
+  through `src/services/gmStorage.ts` (`dnd_mestre_campanhas` index + `dnd_mestre_campanha_<id>`),
+  and flushes the pending save on `openCampaign`, on switching campaigns and on
+  `pagehide`/`visibilitychange` — reopening or closing the app inside the debounce lost the last edit.
+- Party members are `local` (live link by `sheet_id`, snapshot refreshed on every `openCampaign`;
+  a deleted sheet degrades to `imported`) or `imported` (JSON snapshot, read with
+  `parseSheetImport`, changes only on reimport). The GM never writes back into a player's sheet.
+- Campaign export is an envelope (`format: 'venetia-campaign'`, `src/lib/gm/party.ts`); importing
+  creates a new campaign and turns every local member into an imported one.
+- NPCs and monsters share one `StatBlock` shape (`src/types/gm.ts`, 2024 layout, distances in
+  meters). The **bestiary** (`dnd_mestre_bestiario`, `/mestre/bestiario`) is global across
+  campaigns; a campaign's `npcs` are **copies** (`base_monster_id` points back), so editing an NPC
+  never touches the bestiary. Rules math lives in `src/lib/gm/statblock.ts` (CR → XP/PB, saves,
+  initiative, passive Perception) and `src/lib/gm/dice.ts` (`parseDice` / `averageDice` /
+  `rollDice` with an injectable RNG). Anything read from storage or an imported JSON goes
+  through `normalizeStatBlock` / `normalizeCampaign` (`src/lib/gm/normalize.ts`) — the GM
+  equivalent of `migrateSheet`; Phase-1 campaigns had no `npcs`.
+- The Monster Manual 2025 is not bundleable (only the SRD 5.2 is CC-BY). Users bring their own
+  book's monsters through the editor or a "monster pack" (`format: 'venetia-monsters'`);
+  importing a pack replaces entries with the same id.
+- The statblock editor (`StatBlockEditLayout`) keeps a local draft and writes to the store only
+  on Save, with a live `StatBlockCard` preview beside it from `lg:`.
+  `StatBlockEditor.onChange` takes an updater (`prev => next`), never a value built from the
+  last render — two field changes between renders used to drop the first.
+- Encounters live inside the campaign (`campaign.encounters`). A `Combatant` carries its own
+  numbers and, for NPCs/monsters, a **copy** of the statblock — encounter HP never writes back to
+  a player's sheet, and editing the bestiary doesn't change a running fight. The turn is tracked
+  by `turn_id`, not an index, so re-sorting or removing combatants can't hand the turn to the
+  wrong one (`repairTurn` moves it on when its owner leaves the order). Rules are pure in
+  `src/lib/gm/encounter.ts` (initiative sort, turns/rounds, damage with temp HP first, 0 HP →
+  defeated for monsters / Unconscious for players, concentration DC `max(10, ⌊dmg/2⌋)` capped at
+  30, crits double the dice only) and `src/lib/gm/difficulty.ts` (2024 XP budget,
+  `XP_BUDGET_BY_LEVEL`). The log stores structured entries (`EncounterLogEntry`) and
+  `EncounterLog` renders them in the current language; it is capped at `MAX_ENCOUNTER_LOG`.
+- Maps (`campaign.maps`, `GridMap`) store the grid as a **string with one terrain code per
+  square** (`TERRAINS` in constants — never change an existing code, it's in saved maps). Grid
+  math is pure in `src/lib/gm/terrain.ts` (paint, rect, Bresenham line, 4-way flood fill, resize
+  keeping the top-left, 2024 distance where a diagonal is one 1.5 m square). `MapCanvas` only
+  turns pointers into squares (zoom on wheel/buttons, one-finger draw or pan, two-finger pinch
+  that cancels the stroke) and takes a `drawOverlay` for previews/tokens; tools live in
+  `MapEditorPage`, which paints into a local draft (mirrored in refs, since `pointerup` can beat
+  the last render) and commits once per stroke. Undo/redo is per editing session only.
+  `MapCanvas` cleanup must reset its rAF id — StrictMode's double mount otherwise left it set
+  and the canvas never drew again.
+- An encounter can point at a campaign map (`map_id`); switching maps clears every `position`
+  and the fog. Combatants carry `position` (top-left square), `size` (Large+ cover 2×2 and up,
+  `CREATURE_SIZE_SQUARES`), `speed_m`, `movement_used_m` and `dash`; the last two reset when the
+  combatant's turn starts (`freshTurn`). Pathing is Dijkstra in `src/lib/gm/movement.ts`
+  (difficult = 2 per square, walls/pits/void block, diagonals don't cut wall corners). Dragging
+  the **turn owner** spends movement at the real path cost; dragging anyone else is a free GM
+  reposition (`placeCombatant`). Beyond-speed moves are allowed with a warning — the GM decides.
+  Each combatant has `move_mode` (walk/fly/swim, with `fly_m`/`swim_m` from the stat block; players
+  start with none and the GM can type them) — each `TERRAINS` entry carries `fly` (passable when
+  flying: everything but wall, pillar and void) and `swim` (costs 1 with a swim speed: shallow and
+  deep water), so `terrainCost` never switches on terrain ids. Switching modes mid-turn subtracts what was already moved (2024). Other
+  creatures are handled by `occupancyFor`: same `side`, Incapacitated, Tiny or 2+ sizes apart is
+  passable as difficult terrain, anything else blocks; nobody may end a move in an occupied space.
+- Terrains are grouped (`group`, `TERRAIN_GROUPS`) for the editor palette. Rendering is in
+  `src/components/gm/terrainStyle.ts`: `fill` is the flat colour (thumbnail, zoomed out below
+  `TEXTURE_MIN_PX`), `paint` draws a procedural texture into a cached tile (`terrainTile`, keyed by
+  terrain, pixel size and one of `VARIANTS` per square via `cellVariant`, so the same map always
+  draws the same). Texture, not colour, is what tells terrains apart (accessibility). Walls cast a
+  short shadow on the squares south and east of them. Adding a terrain = new code in `TERRAINS`,
+  a `TERRAIN_STYLE` entry and `gm.terrains.*` in both catalogs (`terrain.test.ts` checks).
+- NPCs carry an optional roleplay `profile` (`NpcProfile`: gender, species, archetype, age,
+  occupation, appearance, mannerism, personality, ideal, bond, flaw, motivation, secret), normalized
+  by `normalizeProfile`. The generator (`/mestre/campanha/:id/npc/gerar`, `NpcGeneratorPage`) is pure
+  in `src/lib/gm/npcGenerator.ts`: the GM fills what they want, everything empty is rolled
+  (`generateNpc` takes an injectable RNG), the stat block is the SRD block of an archetype
+  (`NPC_ARCHETYPES` in `src/data/npcTables.ts`, common folk first) varied ±2 per ability by
+  `varyStatBlock`, which recomputes HP from the hit dice + CON, initiative and skills. Typing in a
+  field locks it against "Reroll". Names and phrase tables live in `npcTables.ts`; the PT and EN
+  phrase lists must have the same lengths (tested). `NpcProfileFields` is shared by the generator
+  and `NpcEditPage`; `NpcPortrait` shows the profile in the NPC modal and the encounter.
+- The generator has a second mode, **like a character** (`src/lib/gm/pcNpc.ts`): `resolvePcBuild`
+  fills whatever the GM left open (class weighted by `PC_CLASS_WEIGHTS`, level 1–6, subclass from
+  the class's subclass level, species, lineage, background), `buildPcSheet` builds a real
+  `CharacterSheet` with the player rules (standard array in the class's suggested order, with INT
+  raised for third casters; background +2/+1; ASIs at `ASI_LEVELS` + `EXTRA_ASI_LEVELS`; class
+  skills and rogue/bard expertise; armor from `PC_LOADOUT`/`PC_ARMOR_BY_TIER`; spells up to
+  `maxSpellCircle`), and `sheetToStatBlock` turns it into the NPC block (weapon and damage-cantrip
+  actions, Extra Attack as Multiattack, spellcasting summarized in a trait). CR comes from
+  `PC_LEVEL_CR` (an estimate, there is no official 2024 table) but the block keeps the level's
+  proficiency bonus through the optional `StatBlock.proficiency_bonus`; always read it through
+  `blockProficiencyBonus`, never `crProficiencyBonus(block.cr)` directly. The class, species and
+  background steps live in `src/lib/characterBuild.ts` (`applyClass`, `applySpecies`,
+  `applyBackground`), shared with the sheet store's setters, so the generator and the wizard
+  cannot drift apart.
+- The bestiary list (`MonsterBrowser`) groups by creature type: chips with counts filter, and with
+  no search and no category it shows collapsible shelves (`TypeGroup`, `CreatureTypeIcon`).
+- Adding to an encounter: `EncounterPage` has one button per source that opens
+  `AddCombatantsModal` on that tab (remounted by `key`), and the NPC tab has "Add to encounter"
+  (`AddToEncounterModal`, existing encounter or a new one). `QuantityAdd` confirms each add.
+- GM visual vocabulary lives in `src/components/gm/ornaments.tsx` (`SectionTitle` with the gold
+  rule, `EmptyState` that teaches with its actions inline, stroke icons) plus the `gm-page`
+  background and `gm-rule` divider in `index.css`. Cinzel only for titles; numbers, buttons and
+  lists stay in Manrope. `PRODUCT.md` holds the design brief for this area.
+- GM layout: every GM page uses `gmContainer` (`GmHeader.tsx`, up to 1480px) and fills the width
+  with a side column from `lg:` instead of a narrow centred column. Lists that open a detail use
+  master-detail on desktop and a modal on phones (`useMediaQuery('(min-width: 1024px)')`): NPC tab
+  and bestiary show the selected block in a sticky aside; the players tab has `PartySummary`
+  (party table, XP budget, languages); encounter and map tabs put creation in `CreatePanel`; the
+  encounter page keeps the turn bar on one row and, in map view, moves the initiative order into
+  the aside so the map gets the height. The campaign index (`CampaignListItem`) carries counts and
+  the running encounter for the home cards; `listCampaigns` fills them in once for older indexes.
+- "Table view" is page state in `EncounterPage`: it renders only the map (hidden combatants and
+  anyone under fog removed), round and visible turn, with no GM panel, log or tools.
+- Fog is `encounter.fog`, one `0`/`1` char per square, ignored when its length no longer matches
+  the map (resized). GM view dims hidden squares; "table view" blacks them out and hides hidden
+  combatants and anyone standing in fog.
+- The SRD 5.2.1 catalog (`src/data/monsters/{en,pt}/`, 330 monsters) is **generated** by
+  `scripts/srd/generate-monsters.mjs` — see `scripts/README.md`; never hand-edit it. It is loaded
+  lazily per language (`loadSrdMonsters`, store `srd` + `loadSrd`) and is read-only: copying a
+  monster into the bestiary (`copySrdToBestiary`) or adding it to an NPC/encounter makes a copy.
+  `src/data/monsters.test.ts` checks PT/EN id parity, that every block survives
+  `normalizeStatBlock` unchanged, that mechanics match across languages and that every
+  extracted damage parses as dice. The CC-BY attribution is in `gm.srdAttribution` (shown under
+  the SRD list) and in both READMEs — keep it. The markdown source has PDF-pagination defects
+  (merged creatures, lost "Hit:"/"Failure:" labels); fixed copies live in `scripts/srd/overrides/`,
+  `scripts/srd/crosscheck.mjs` compares the output with a second CC-BY conversion, and the PT text
+  comes from the global EN→PT dictionaries in `scripts/srd/monsters-pt.json` (see `scripts/README.md`).
+- `AVAILABLE_CONDITIONS` gained `Atordoado` (Stunned) — it is a 2024 condition the SRD uses.
+- UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
+  `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.
 
 ### localStorage key schema and legacy migration
 

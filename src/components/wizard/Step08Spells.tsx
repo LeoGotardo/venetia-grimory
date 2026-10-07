@@ -10,41 +10,12 @@ import { FreeCastPicker } from '../ui/FreeCastPicker'
 import {
   calcThirdCasterCantrips,
   calcThirdCasterPreparedSpells,
-  calcThirdCasterSlots,
   isCasterClass,
+  maxSpellCircle,
   isThirdCaster,
   spellListForClass,
 } from '../../lib/calculations'
 import { gameData } from '../../data/rules'
-
-function highestCircle(slots: Partial<Record<string, number>>): number {
-  return Object.entries(slots)
-    .filter(([, v]) => (v ?? 0) > 0)
-    .reduce((acc, [k]) => Math.max(acc, parseInt(k.replace('c', ''))), 0)
-}
-
-function getMaxSpellLevel(
-  cd: { progression: unknown[] } | undefined,
-  level: number,
-  subclassId: string | null,
-): number {
-  // Subclasses de 1/3 conjurador têm tabela própria — a progressão da classe
-  // (guerreiro/ladino) não traz espaço nenhum.
-  if (isThirdCaster(subclassId)) return highestCircle(calcThirdCasterSlots(level))
-  if (!cd?.progression) return 0
-  const idx = Math.max(0, Math.min(level - 1, cd.progression.length - 1))
-  const p = cd.progression[idx] as Record<string, unknown>
-  // Conjuradores padrão: `slots` traz a contagem por círculo
-  const slots = p?.slots as Record<string, number> | undefined
-  if (slots) {
-    const mc = highestCircle(slots)
-    if (mc > 0) return mc
-  }
-  // Bruxo (Magia de Pacto): `max_spell_level` no lugar de `slots` por círculo
-  const maxSpellLevel = p?.max_spell_level as number | undefined
-  if (maxSpellLevel && maxSpellLevel > 0) return maxSpellLevel
-  return 0
-}
 
 function SpellPill({
   spellcasting,
@@ -289,7 +260,7 @@ export function Step08Spells() {
     const add = (id: string, sub: string | null, level: number) => {
       if (!isCasterClass(id, sub)) return
       const cd = gameData.classes.find(c => c.id === id)
-      const maxSpellLevel = getMaxSpellLevel(cd, level, sub)
+      const maxSpellLevel = maxSpellCircle(cd, level, sub)
       if (maxSpellLevel <= 0) return
       const prog = cd?.progression?.[Math.max(0, Math.min(level - 1, cd.progression.length - 1))] as
         | Record<string, unknown>
