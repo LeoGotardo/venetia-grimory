@@ -6,7 +6,7 @@ import { ABILITIES, formatModifier } from '../../lib/calculations'
 import {
   FEATURE_LISTS,
   abilityModifier,
-  crProficiencyBonus,
+  blockProficiencyBonus,
   crToXp,
   initiativeBonus,
   passivePerception,
@@ -99,7 +99,7 @@ export function StatBlockCard({ block }: StatBlockCardProps) {
         <Line label={t('gm.sensesLabel')}>{senses}</Line>
         <Line label={t('gm.languages')}>{block.languages || '—'}</Line>
         <Line label={t('gm.cr')}>
-          {t('gm.crLine', { cr: block.cr, xp: crToXp(block.cr).toLocaleString(i18n.language), pb: crProficiencyBonus(block.cr) })}
+          {t('gm.crLine', { cr: block.cr, xp: crToXp(block.cr).toLocaleString(i18n.language), pb: blockProficiencyBonus(block) })}
         </Line>
       </div>
 

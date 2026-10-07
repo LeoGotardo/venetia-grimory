@@ -68,6 +68,12 @@ export interface StatBlock {
   languages: string
   /** `'0'`, `'1/8'`, `'1/4'`, `'1/2'`, `'1'`…`'30'`. */
   cr: string
+  /**
+   * Bônus de proficiência fixo. Ausente = vem do ND (regra dos blocos de 2024).
+   * NPCs montados como personagem usam o do nível — senão salvaguardas e o
+   * número da linha do ND sairiam de outra tabela.
+   */
+  proficiency_bonus?: number
   /** `null` usa o modificador de Destreza. */
   initiative_bonus: number | null
   traits: StatBlockFeature[]
@@ -87,6 +93,26 @@ export interface Monster {
   updated_at: string
 }
 
+/**
+ * Quem o NPC é, fora dos números: o que o gerador sorteia e o mestre edita.
+ * Campos vazios simplesmente não aparecem.
+ */
+export interface NpcProfile {
+  gender: 'f' | 'm' | 'x' | ''
+  species: string
+  archetype: string
+  age: string
+  occupation: string
+  appearance: string
+  mannerism: string
+  personality: string
+  ideal: string
+  bond: string
+  flaw: string
+  motivation: string
+  secret: string
+}
+
 /** NPC de uma campanha: cópia própria do bloco, editável sem mexer no bestiário. */
 export interface Npc {
   id: string
@@ -94,6 +120,7 @@ export interface Npc {
   /** Monstro do bestiário de onde a cópia saiu, se saiu de um. */
   base_monster_id: string | null
   notes: string
+  profile: NpcProfile | null
   updated_at: string
 }
 
@@ -228,5 +255,10 @@ export interface CampaignListItem {
   id: string
   name: string
   players: number
+  /** Contagens e combate em andamento para o cartão da campanha. Opcionais: índices antigos não têm. */
+  npcs?: number
+  encounters?: number
+  maps?: number
+  active_encounter?: string | null
   updated_at: string
 }

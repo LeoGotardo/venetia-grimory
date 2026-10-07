@@ -2,11 +2,12 @@ import { useCallback, useEffect, useLayoutEffect, useRef, type ReactNode } from 
 import { useTranslation } from 'react-i18next'
 import type { MapLabel } from '../../types'
 import { terrainOf, type Cell } from '../../lib/gm/terrain'
-import { TERRAIN_STYLE } from './terrainStyle'
+import { TERRAIN_STYLE, cellVariant, terrainTile } from './terrainStyle'
 
 const MIN_CELL_PX = 6
 const MAX_CELL_PX = 96
-const GLYPH_MIN_PX = 16
+/** Abaixo disso a textura vira ruído: pinta a cor lisa. */
+const TEXTURE_MIN_PX = 10
 const GRID_MIN_PX = 8
 
 interface View {
@@ -75,29 +76,48 @@ export function MapCanvas({
     const x1 = Math.min(w, Math.ceil((cw - ox) / scale))
     const y1 = Math.min(h, Math.ceil((ch - oy) / scale))
 
+    const textured = scale >= TEXTURE_MIN_PX
     for (let y = y0; y < y1; y++) {
       for (let x = x0; x < x1; x++) {
-        ctx.fillStyle = TERRAIN_STYLE[terrainOf(grid[y * w + x]).id].fill
-        ctx.fillRect(x * scale, y * scale, scale, scale)
+        const id = terrainOf(grid[y * w + x]).id
+        if (textured) {
+          ctx.drawImage(terrainTile(id, scale * dpr, cellVariant(x, y)), x * scale, y * scale, scale, scale)
+        } else {
+          ctx.fillStyle = TERRAIN_STYLE[id].fill
+          ctx.fillRect(x * scale, y * scale, scale, scale)
+        }
       }
     }
 
-    if (scale >= GLYPH_MIN_PX) {
-      ctx.font = `${Math.round(scale * 0.55)}px system-ui, sans-serif`
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
+    // Sombra das paredes sobre o chão ao sul e a leste: dá volume sem esconder a casa.
+    if (textured) {
+      const isWall = (x: number, y: number) => x >= 0 && y >= 0 && x < w && y < h && grid[y * w + x] === '#'
+      const depth = scale * 0.28
       for (let y = y0; y < y1; y++) {
         for (let x = x0; x < x1; x++) {
-          const style = TERRAIN_STYLE[terrainOf(grid[y * w + x]).id]
-          if (!style.glyph) continue
-          ctx.fillStyle = style.glyphColor
-          ctx.fillText(style.glyph, x * scale + scale / 2, y * scale + scale / 2)
+          if (isWall(x, y) || grid[y * w + x] === '0') continue
+          const px = x * scale
+          const py = y * scale
+          if (isWall(x, y - 1)) {
+            const g = ctx.createLinearGradient(0, py, 0, py + depth)
+            g.addColorStop(0, 'rgba(0,0,0,0.45)')
+            g.addColorStop(1, 'rgba(0,0,0,0)')
+            ctx.fillStyle = g
+            ctx.fillRect(px, py, scale, depth)
+          }
+          if (isWall(x - 1, y)) {
+            const g = ctx.createLinearGradient(px, 0, px + depth, 0)
+            g.addColorStop(0, 'rgba(0,0,0,0.35)')
+            g.addColorStop(1, 'rgba(0,0,0,0)')
+            ctx.fillStyle = g
+            ctx.fillRect(px, py, depth, scale)
+          }
         }
       }
     }
 
     if (scale >= GRID_MIN_PX) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)'
+      ctx.strokeStyle = 'rgba(19,17,16,0.28)'
       ctx.lineWidth = 1
       ctx.beginPath()
       for (let x = x0; x <= x1; x++) {

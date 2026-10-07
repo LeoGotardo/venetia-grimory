@@ -78,13 +78,18 @@ export function crProficiencyBonus(cr: string): number {
   return 2 + Math.floor(Math.max(crValue(cr) - 1, 0) / 4)
 }
 
+/** O bônus que o bloco usa: o fixo, se houver, senão o do ND. */
+export function blockProficiencyBonus(block: StatBlock): number {
+  return block.proficiency_bonus ?? crProficiencyBonus(block.cr)
+}
+
 export function abilityModifier(block: StatBlock, ability: AbilityId): number {
   return calcModifier(block.abilities[ability])
 }
 
 export function saveBonus(block: StatBlock, ability: AbilityId): number {
   const proficient = block.save_proficiencies.includes(ability)
-  return abilityModifier(block, ability) + (proficient ? crProficiencyBonus(block.cr) : 0)
+  return abilityModifier(block, ability) + (proficient ? blockProficiencyBonus(block) : 0)
 }
 
 export function initiativeBonus(block: StatBlock): number {
@@ -98,7 +103,7 @@ export function skillAbility(skillId: string): AbilityId | null {
 /** Bônus sugerido ao adicionar uma perícia: modificador + proficiência. */
 export function proficientSkillBonus(block: StatBlock, skillId: string): number {
   const ability = skillAbility(skillId)
-  return (ability ? abilityModifier(block, ability) : 0) + crProficiencyBonus(block.cr)
+  return (ability ? abilityModifier(block, ability) : 0) + blockProficiencyBonus(block)
 }
 
 export function passivePerception(block: StatBlock): number {
@@ -191,6 +196,10 @@ export function normalizeStatBlock(raw: unknown): StatBlock {
     },
     languages: str(b.languages),
     cr: oneOf(typeof b.cr === 'number' ? String(b.cr) : b.cr, CHALLENGE_RATINGS, blank.cr),
+    // Opcional e só presente quando vale: os blocos do SRD não têm o campo.
+    ...(typeof b.proficiency_bonus === 'number' && Number.isFinite(b.proficiency_bonus)
+      ? { proficiency_bonus: Math.min(10, Math.max(0, Math.round(b.proficiency_bonus))) }
+      : {}),
     initiative_bonus: numOrNull(b.initiative_bonus),
     traits: list(b.traits),
     actions: list(b.actions),

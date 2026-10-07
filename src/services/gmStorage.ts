@@ -7,6 +7,10 @@ function toListItem(campaign: Campaign): CampaignListItem {
     id: campaign.id,
     name: campaign.name,
     players: campaign.party.length,
+    npcs: campaign.npcs.length,
+    encounters: campaign.encounters.length,
+    maps: campaign.maps.length,
+    active_encounter: campaign.encounters.find(e => e.status === 'active')?.name ?? null,
     updated_at: campaign.updated_at,
   }
 }
@@ -16,7 +20,18 @@ export function listCampaigns(): CampaignListItem[] {
   if (!raw) return []
 
   try {
-    return JSON.parse(raw) as CampaignListItem[]
+    const list = JSON.parse(raw) as CampaignListItem[]
+    // Índices gravados antes das contagens: completa uma vez a partir das campanhas.
+    if (list.some(item => item.npcs === undefined)) {
+      const upgraded = list.map(item => {
+        if (item.npcs !== undefined) return item
+        const campaign = loadCampaign(item.id)
+        return campaign ? toListItem(campaign) : item
+      })
+      saveList(upgraded)
+      return upgraded
+    }
+    return list
   } catch {
     console.error('[gmStorage] Lista de campanhas corrompida, reiniciando.')
     return []

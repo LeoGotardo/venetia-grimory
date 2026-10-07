@@ -30,6 +30,19 @@ describe('movimento na grade', () => {
     expect(movementCostMeters(grid(['.#', '..']), { x: 0, y: 0 }, { x: 1, y: 1 })).toBe(3)
   })
 
+  it('terrenos novos: obstáculos, água funda e quem voa ou nada', () => {
+    const forest = grid(['.t.', '.k.', '.W.'])
+    // Árvore e rocha barram quem anda; quem voa passa por cima.
+    expect(movementCostMeters(grid(['.t.']), { x: 0, y: 0 }, { x: 2, y: 0 })).toBeNull()
+    expect(movementCostMeters(grid(['.t.']), { x: 0, y: 0 }, { x: 2, y: 0 }, { mode: 'fly' })).toBe(3)
+    expect(movementCostMeters(grid(['.o.']), { x: 0, y: 0 }, { x: 2, y: 0 }, { mode: 'fly' })).toBeNull()
+    // Água funda custa o dobro a pé e o normal nadando; a ponte é chão.
+    expect(movementCostMeters(grid(['.W']), { x: 0, y: 0 }, { x: 1, y: 0 })).toBe(3)
+    expect(movementCostMeters(grid(['.W']), { x: 0, y: 0 }, { x: 1, y: 0 }, { mode: 'swim' })).toBe(1.5)
+    expect(movementCostMeters(grid(['.b']), { x: 0, y: 0 }, { x: 1, y: 0 })).toBe(1.5)
+    expect(movementCostMeters(forest, { x: 0, y: 0 }, { x: 0, y: 2 })).toBe(3)
+  })
+
   it('o alcance respeita o orçamento', () => {
     const reach = reachableCells(grid(['.....']), { x: 0, y: 0 }, 2)
     expect([...reach.keys()].sort()).toEqual([0, 1, 2])

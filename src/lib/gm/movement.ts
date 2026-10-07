@@ -36,8 +36,8 @@ export function remainingMovement(
  */
 function terrainCost(code: string, mode: MoveMode): number | null {
   const t = terrainOf(code)
-  if (mode === 'fly') return t.id === 'wall' || t.id === 'void' ? null : 1
-  if (mode === 'swim' && t.id === 'water') return 1
+  if (mode === 'fly') return t.fly ? 1 : null
+  if (mode === 'swim' && t.swim) return 1
   return t.cost
 }
 
@@ -57,7 +57,7 @@ const STEPS = [
 /**
  * Custo mínimo, em casas, para chegar a cada casa a partir de `start` sem passar
  * de `budget` (Dijkstra simples — mapas de até 100×100). Terreno difícil custa
- * 2 por casa; parede, fosso e vazio bloqueiam. Diagonal custa o mesmo que reta
+ * 2 por casa; parede, pilar, árvore, rocha, fosso e vazio bloqueiam. Diagonal custa o mesmo que reta
  * (2024), mas não corta quina de parede.
  */
 export function reachableCells(

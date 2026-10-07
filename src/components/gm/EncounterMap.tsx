@@ -273,7 +273,7 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
         </div>
       )}
 
-      <div className={playerView ? 'h-[calc(100dvh-120px)] min-h-[320px]' : 'h-[58vh] min-h-[320px] lg:h-[calc(100dvh-330px)]'}>
+      <div className={playerView ? 'h-[calc(100dvh-120px)] min-h-[320px]' : 'h-[62vh] min-h-[320px] lg:h-[calc(100dvh-250px)] lg:min-h-[520px]'}>
         <MapCanvas
           width={map.width}
           height={map.height}

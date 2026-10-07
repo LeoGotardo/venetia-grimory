@@ -32,6 +32,20 @@ export const CREATURE_TYPES = [
   'fiend', 'giant', 'humanoid', 'monstrosity', 'ooze', 'plant', 'undead',
 ] as const
 
+/**
+ * ND estimado de um NPC montado como personagem, por nível. Não há tabela
+ * oficial em 2024; a régua é o SRD (Cavaleiro ND 3 ≈ guerreiro 5, Mago ND 6 ≈
+ * mago 9, Arquimago ND 12 ≈ mago 18). Serve para o XP do encontro; o bônus de
+ * proficiência do bloco continua sendo o do nível.
+ */
+export const PC_LEVEL_CR: Record<number, string> = {
+  1: '1/2', 2: '1', 3: '2', 4: '2', 5: '3', 6: '4', 7: '5', 8: '5', 9: '6', 10: '7',
+  11: '8', 12: '8', 13: '9', 14: '10', 15: '11', 16: '12', 17: '13', 18: '14', 19: '15', 20: '16',
+}
+/** Níveis de Aumento de Valor de Atributo (o 19 é Dádiva Épica em 2024); guerreiro e ladino têm extras. */
+export const ASI_LEVELS = [4, 8, 12, 16]
+export const EXTRA_ASI_LEVELS: Record<string, number[]> = { guerreiro: [6, 14], ladino: [10] }
+
 /** Nível de Desafio → XP (tabela do Livro dos Monstros / SRD 5.2). */
 export const CR_XP: Record<string, number> = {
   '0': 10, '1/8': 25, '1/4': 50, '1/2': 100,
@@ -79,19 +93,42 @@ export const CONCENTRATION_DC_MAX = 30
  * Terrenos da grade do mapa. `code` é o caractere salvo por célula em
  * `GridMap.cells` — não mude um código existente, ele está nos mapas salvos.
  * `cost` é o multiplicador de movimento (2 = terreno difícil); `null` bloqueia.
+ * `fly`: quem voa passa por cima (só parede, pilar e vazio barram). `swim`: com
+ * deslocamento de natação, a casa custa 1. `group` organiza a paleta do editor.
  */
 export const TERRAINS = [
-  { code: '0', id: 'void', cost: null },
-  { code: '.', id: 'floor', cost: 1 },
-  { code: 'd', id: 'difficult', cost: 2 },
-  { code: 'v', id: 'vegetation', cost: 2 },
-  { code: 'w', id: 'water', cost: 2 },
-  { code: 's', id: 'stairs', cost: 1 },
-  { code: '+', id: 'door', cost: 1 },
-  { code: 'h', id: 'hazard', cost: 1 },
-  { code: 'p', id: 'pit', cost: null },
-  { code: '#', id: 'wall', cost: null },
+  { code: '0', id: 'void', cost: null, group: 'void', fly: false, swim: false },
+  // Chão
+  { code: '.', id: 'floor', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'f', id: 'wood', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'e', id: 'dirt', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'g', id: 'grass', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: 'a', id: 'sand', cost: 1, group: 'ground', fly: true, swim: false },
+  // Terreno difícil
+  { code: 'd', id: 'difficult', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'r', id: 'rubble', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'm', id: 'mud', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'n', id: 'snow', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'i', id: 'ice', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'v', id: 'vegetation', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'u', id: 'furniture', cost: 2, group: 'difficult', fly: true, swim: false },
+  // Água: sem deslocamento de natação, nadar custa o dobro
+  { code: 'w', id: 'water', cost: 2, group: 'water', fly: true, swim: true },
+  { code: 'W', id: 'deepWater', cost: 2, group: 'water', fly: true, swim: true },
+  { code: 'b', id: 'bridge', cost: 1, group: 'water', fly: true, swim: false },
+  // Construção e obstáculos
+  { code: '#', id: 'wall', cost: null, group: 'structure', fly: false, swim: false },
+  { code: 'o', id: 'pillar', cost: null, group: 'structure', fly: false, swim: false },
+  { code: '+', id: 'door', cost: 1, group: 'structure', fly: true, swim: false },
+  { code: 's', id: 'stairs', cost: 1, group: 'structure', fly: true, swim: false },
+  { code: 't', id: 'tree', cost: null, group: 'structure', fly: true, swim: false },
+  { code: 'k', id: 'boulder', cost: null, group: 'structure', fly: true, swim: false },
+  // Perigo
+  { code: 'h', id: 'hazard', cost: 1, group: 'danger', fly: true, swim: false },
+  { code: 'l', id: 'lava', cost: 1, group: 'danger', fly: true, swim: false },
+  { code: 'p', id: 'pit', cost: null, group: 'danger', fly: true, swim: false },
 ] as const
+export const TERRAIN_GROUPS = ['ground', 'difficult', 'water', 'structure', 'danger'] as const
 export const TERRAIN_VOID = '0'
 export const TERRAIN_FLOOR = '.'
 /** Uma casa da grade: 1,5 m (5 pés), diagonal inclusive — regra de 2024. */

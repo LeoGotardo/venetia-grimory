@@ -27,7 +27,7 @@ export function CombatantRow({ combatant: c, active, selected, onSelect, onIniti
   return (
     <li
       data-testid="combatente"
-      className={`flex items-stretch gap-2 rounded-[11px] border px-2 py-2 transition-colors ${
+      className={`flex items-stretch gap-2 rounded-[11px] border px-2.5 py-2.5 transition-colors ${
         active ? 'border-[#D4A017] bg-[#2a2216]' : selected ? 'border-white/[0.25] bg-[#211c18]' : 'border-white/[0.07] bg-[#1A1714]'
       } ${c.defeated ? 'opacity-50' : ''}`}
     >
@@ -37,12 +37,12 @@ export function CombatantRow({ combatant: c, active, selected, onSelect, onIniti
         value={c.initiative ?? ''}
         onChange={e => onInitiative(e.target.value === '' ? null : Number(e.target.value))}
         aria-label={`${t('gm.initiative')} — ${c.name}`}
-        className="w-12 flex-shrink-0 text-center bg-[#131110] border border-white/[0.1] rounded-[8px] text-[16px] font-bold text-[#F5F0E8] focus:outline-none focus:border-[#D4A017]"
+        className="w-14 flex-shrink-0 text-center bg-[#131110] border border-white/[0.1] rounded-[8px] text-[18px] font-bold text-[#F5F0E8] focus:outline-none focus:border-[#D4A017]"
       />
       <button onClick={onSelect} aria-pressed={selected} className="flex-1 min-w-0 text-left cursor-pointer">
         <div className="flex items-center gap-1.5 min-w-0">
           {active && <span className="text-[#D4A017]" aria-hidden="true">▶</span>}
-          <span className={`font-bold text-[15px] text-[#F5F0E8] truncate ${c.defeated ? 'line-through' : ''}`}>{c.name}</span>
+          <span className={`font-bold text-[16px] text-[#F5F0E8] truncate ${c.defeated ? 'line-through' : ''}`}>{c.name}</span>
           <span className={`flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-px rounded border ${KIND_STYLE[c.kind]}`}>
             {t(KIND_LABEL[c.kind])}
           </span>
@@ -52,11 +52,11 @@ export function CombatantRow({ combatant: c, active, selected, onSelect, onIniti
           {c.hidden && <span className="flex-shrink-0 text-[10px] text-[#A8A09B]">({t('gm.hiddenLabel')})</span>}
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-[12px] text-[#A8A09B] flex-shrink-0">{t('gm.ac')} {c.ac}</span>
-          <div className="flex-1 h-1.5 rounded-full bg-white/[0.08] overflow-hidden" aria-hidden="true">
+          <span className="text-[13px] text-[#A8A09B] flex-shrink-0">{t('gm.ac')} <b className="text-[#E8DFD0]">{c.ac}</b></span>
+          <div className="flex-1 h-2 rounded-full bg-white/[0.08] overflow-hidden" aria-hidden="true">
             <div className={`h-full ${barColor}`} style={{ width: `${pct}%` }} />
           </div>
-          <span className="text-[12px] font-semibold text-[#E8DFD0] flex-shrink-0 tabular-nums">
+          <span className="text-[14px] font-semibold text-[#E8DFD0] flex-shrink-0 tabular-nums">
             {c.hp.current}/{c.hp.max}{c.hp.temp > 0 ? ` +${c.hp.temp}` : ''}
           </span>
         </div>

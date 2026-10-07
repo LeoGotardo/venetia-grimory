@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import type { CharacterSheet, AbilityId, FreeCast, InventoryItem } from '../types'
 import { createInitialSheet } from '../lib/initialSheet'
 import { recalculate } from '../lib/recalculate'
+import { applyBackground, applyClass, applySpecies } from '../lib/characterBuild'
 import { migrateSheet } from '../lib/migrateSheet'
 import { buildSheetExport, parseSheetImport } from '../lib/sheetExport'
 import { ABILITIES, calcPrimaryClassLevel, canChooseSubclass } from '../lib/calculations'
@@ -17,7 +18,6 @@ import { getItems } from '../data/items'
 import {
   DEBOUNCE_SAVE_MS,
   MAX_EXHAUSTION,
-  FIXED_LANGUAGES_BY_CLASS,
   MULTICLASS_PROFICIENCIES,
   CASTER_TYPE,
   FEAT_SOURCE_MANUAL,
@@ -148,45 +148,8 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
 
   setCharClass: classId =>
     set(s => {
-      const charClass = gameData.classes.find(c => c.id === classId)
-      if (!charClass) return s
-
-      const existingLanguages = s.sheet.proficiencies.languages
-      const classLanguages = FIXED_LANGUAGES_BY_CLASS[classId] ?? []
-      const languages = [
-        ...existingLanguages.filter(i => !Object.values(FIXED_LANGUAGES_BY_CLASS).flat().includes(i)),
-        ...classLanguages,
-      ]
-
-      const background = gameData.backgrounds?.find(a => a.id === s.sheet.identity.background_id)
-      const backgroundSkills = background?.skills ?? []
-      const skills = { ...s.sheet.skills }
-      Object.keys(skills).forEach(skillId => {
-        if (backgroundSkills.includes(skillId)) return
-        skills[skillId] = { ...skills[skillId], proficient: false }
-      })
-
-      const sheet: CharacterSheet = {
-        ...s.sheet,
-        identity: { ...s.sheet.identity, class_id: classId, subclass_id: null, multiclasses: [] },
-        skills,
-        proficiencies: {
-          ...s.sheet.proficiencies,
-          armors: charClass.armors,
-          weapons: charClass.weapons,
-          tools: charClass.tools,
-          languages,
-        },
-        spellcasting: {
-          ...s.sheet.spellcasting,
-          spellcaster: charClass.spellcaster,
-          spellcasting_ability: charClass.spellcasting_ability ?? null,
-          cantrips_by_class: {},
-          spells_by_class: {},
-        },
-      }
-
-      return { sheet: recalculate(sheet) }
+      const sheet = applyClass(s.sheet, classId)
+      return sheet === s.sheet ? s : { sheet }
     }),
 
   setSubclass: subclassId =>
@@ -199,44 +162,8 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
 
   setSpecies: (speciesId, lineageId) =>
     set(s => {
-      const species = gameData.species?.find(e => e.id === speciesId)
-      if (!species) return s
-
-      const speciesTraits = species.traits.map(t => ({
-        name: t.name,
-        description: t.description,
-        max_uses: t.max_uses,
-        current_uses: typeof t.max_uses === 'number' ? t.max_uses : undefined,
-      }))
-
-      const lineage = lineageId
-        ? species.lineages?.find(l => l.id === lineageId)
-        : undefined
-
-      const lineageTraits = lineage?.traits?.map(t => ({
-        name: t.name,
-        description: t.description,
-        max_uses: t.max_uses,
-        current_uses: typeof t.max_uses === 'number' ? t.max_uses : undefined,
-      })) ?? []
-
-      const sheet: CharacterSheet = {
-        ...s.sheet,
-        identity: { ...s.sheet.identity, species_id: speciesId, lineage_id: lineageId ?? null },
-        // Trocar de espécie descarta o Talento de Origem concedido pela anterior.
-        feats: { list: s.sheet.feats.list.filter(f => f.source !== FEAT_SOURCE_SPECIES) },
-        species_traits: {
-          darkvision_meters: species.darkvision ?? null,
-          active_traits: [...speciesTraits, ...lineageTraits],
-          choices_made: {},
-        },
-        combat: {
-          ...s.sheet.combat,
-          speed: { ...s.sheet.combat.speed, base_meters: species.speed },
-        },
-      }
-
-      return { sheet: recalculate(sheet) }
+      const sheet = applySpecies(s.sheet, speciesId, lineageId)
+      return sheet === s.sheet ? s : { sheet }
     }),
 
   /**
@@ -307,62 +234,8 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
 
   setBackground: (backgroundId, distribution) =>
     set(s => {
-      const background = gameData.backgrounds?.find(a => a.id === backgroundId)
-      if (!background) return s
-
-      // Clear previous antecedente pericias, then apply new ones
-      const previousBackground = gameData.backgrounds?.find(a => a.id === s.sheet.identity.background_id)
-      const previousBackgroundSkills = previousBackground?.skills ?? []
-      const skills = { ...s.sheet.skills }
-      Object.keys(skills).forEach(skillId => {
-        if (previousBackgroundSkills.includes(skillId)) skills[skillId] = { ...skills[skillId], proficient: false }
-      })
-      background.skills.forEach(skillId => {
-        if (skills[skillId]) skills[skillId] = { ...skills[skillId], proficient: true }
-      })
-
-      // Remove old antecedente talent, add new one
-      const previousFeatId = previousBackground?.feat
-      const baseList = s.sheet.feats.list.filter(t => t.feat_id !== previousFeatId)
-      // "Iniciado em Magia (Clérigo)" traz a lista entre parênteses, e o catálogo
-      // de talentos guarda só "Iniciado em Magia" — sem tirar o sufixo, esses três
-      // antecedentes não concediam talento nenhum. O rótulo completo continua sendo
-      // o id gravado, porque é dele que `recalculateFreeCasts` tira a lista.
-      const featLabel = background.feat
-      const featBase = featLabel?.replace(/\s*\([^)]*\)\s*$/, '').trim()
-      const featData = gameData.origin_feats?.find(
-        t => t.id === featLabel || t.name === featLabel || t.name === featBase,
-      )
-      const featAlreadyAdded = baseList.some(t => t.feat_id === featLabel)
-      const feats = featData && !featAlreadyAdded
-        ? [...baseList, { feat_id: featLabel, name: featLabel, category: 'Origem', source: 'Antecedente', choices: {} }]
-        : baseList
-
-      // Undo previous attribute distribution, then apply new one
-      const abilities = { ...s.sheet.abilities }
-      const previousDistribution = s.sheet.identity.background_distribution ?? {}
-      Object.entries(previousDistribution).forEach(([attr, bonus]) => {
-        const a = attr as AbilityId
-        abilities[a] = { ...abilities[a], value: (abilities[a].value ?? 0) - (bonus ?? 0) }
-      })
-      Object.entries(distribution).forEach(([attr, bonus]) => {
-        const a = attr as AbilityId
-        abilities[a] = { ...abilities[a], value: (abilities[a].value ?? 0) + (bonus ?? 0) }
-      })
-
-      return {
-        sheet: recalculate({
-          ...s.sheet,
-          identity: {
-            ...s.sheet.identity,
-            background_id: backgroundId,
-            background_distribution: distribution,
-          },
-          skills,
-          feats: { list: feats },
-          abilities,
-        }),
-      }
+      const sheet = applyBackground(s.sheet, backgroundId, distribution)
+      return sheet === s.sheet ? s : { sheet }
     }),
 
   setAbilities: (values, method) =>

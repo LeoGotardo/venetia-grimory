@@ -2,14 +2,16 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGmStore } from '../../store/gmStore'
-import { GmHeader, gmSecondaryButton } from '../../components/gm/GmHeader'
+import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
 import { PlayerCard } from '../../components/gm/PlayerCard'
+import { PartySummary } from '../../components/gm/PartySummary'
 import { AddLocalPlayerModal } from '../../components/gm/AddLocalPlayerModal'
 import { NpcTab } from '../../components/gm/NpcTab'
 import { EncounterTab } from '../../components/gm/EncounterTab'
 import { MapTab } from '../../components/gm/MapTab'
 import { pickTextFile } from '../../lib/pickTextFile'
 import { deliverJson } from '../../lib/deliverJson'
+import { EmptyState, PeopleIcon } from '../../components/gm/ornaments'
 
 const TABS = ['players', 'npcs', 'encontros', 'mapas', 'notes'] as const
 type Tab = typeof TABS[number]
@@ -34,7 +36,7 @@ export function CampaignPage() {
 
   if (openedId === id && !campaign) {
     return (
-      <div className="min-h-screen bg-[#131110] font-[Manrope,system-ui]">
+      <div className="min-h-screen gm-page font-[Manrope,system-ui]">
         <GmHeader title={t('gm.area')} backTo="/mestre" />
         <p className="text-center text-[#A8A09B] py-16">{t('gm.notFound')}</p>
       </div>
@@ -60,16 +62,16 @@ export function CampaignPage() {
     void deliverJson(json, `${name}.json`)
   }
 
-  const tabs: Array<{ id: Tab; label: string }> = [
-    { id: 'players', label: t('gm.tabPlayers') },
-    { id: 'npcs', label: t('gm.tabNpcs') },
-    { id: 'encontros', label: t('gm.tabEncounters') },
-    { id: 'mapas', label: t('gm.tabMaps') },
+  const tabs: Array<{ id: Tab; label: string; count?: number }> = [
+    { id: 'players', label: t('gm.tabPlayers'), count: campaign.party.length },
+    { id: 'npcs', label: t('gm.tabNpcs'), count: campaign.npcs.length },
+    { id: 'encontros', label: t('gm.tabEncounters'), count: campaign.encounters.length },
+    { id: 'mapas', label: t('gm.tabMaps'), count: campaign.maps.length },
     { id: 'notes', label: t('gm.tabNotes') },
   ]
 
   return (
-    <div className="min-h-screen bg-[#131110] font-[Manrope,system-ui]">
+    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
       <GmHeader
         backTo="/mestre"
         title={
@@ -88,26 +90,29 @@ export function CampaignPage() {
         }
       />
 
-      <div className="max-w-[1180px] mx-auto px-4 sm:px-8 py-6 pb-20">
-        <div role="tablist" className="flex gap-1 mb-6 border-b border-white/[0.06] overflow-x-auto">
+      <div className={`${gmContainer} py-6 pb-20`}>
+        <div role="tablist" className="flex gap-1 mb-6 border-b border-white/[0.06] overflow-x-auto overflow-y-hidden no-scrollbar">
           {tabs.map(tb => (
             <button
               key={tb.id}
               role="tab"
               aria-selected={tab === tb.id}
               onClick={() => setTab(tb.id)}
-              className={`flex-shrink-0 whitespace-nowrap px-4 py-2.5 text-[14px] font-semibold border-b-2 -mb-px cursor-pointer transition-colors ${
+              className={`flex-shrink-0 whitespace-nowrap px-5 min-h-[50px] text-[16px] font-semibold border-b-2 -mb-px cursor-pointer transition-colors ${
                 tab === tb.id ? 'border-[#D4A017] text-[#F5F0E8]' : 'border-transparent text-[#A8A09B] hover:text-[#E8DFD0]'
               }`}
             >
               {tb.label}
+              {tb.count != null && tb.count > 0 && (
+                <span className="ml-2 text-[12px] font-semibold tabular-nums text-[#A8A09B]">{tb.count}</span>
+              )}
             </button>
           ))}
         </div>
 
         {tab === 'players' && (
           <section>
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className={`flex flex-wrap gap-2 mb-4 ${campaign.party.length === 0 ? 'hidden' : ''}`}>
               <button data-testid="adicionar-local" onClick={() => setPickerOpen(true)} className={gmSecondaryButton}>
                 {t('gm.addFromDevice')}
               </button>
@@ -118,21 +123,24 @@ export function CampaignPage() {
             {error && <p role="alert" className="text-[13px] text-[#d4564a] mb-4">{error}</p>}
 
             {campaign.party.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-[14px]">
-                {campaign.party.map(member => (
-                  <PlayerCard
-                    key={member.id}
-                    member={member}
-                    onReimport={() => readPlayerJson(json => reimportPlayerJson(member.id, json))}
-                    onRemove={() => removePlayer(member.id)}
-                  />
-                ))}
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+                <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
+                  {campaign.party.map(member => (
+                    <PlayerCard
+                      key={member.id}
+                      member={member}
+                      onReimport={() => readPlayerJson(json => reimportPlayerJson(member.id, json))}
+                      onRemove={() => removePlayer(member.id)}
+                    />
+                  ))}
+                </div>
+                <PartySummary party={campaign.party} />
               </div>
             ) : (
-              <div className="text-center py-14 px-6 border border-dashed border-[rgba(212,160,23,0.25)] rounded-2xl">
-                <p className="text-[#A8A09B] font-semibold">{t('gm.noPlayers')}</p>
-                <p className="text-[#A8A09B] text-sm mt-1">{t('gm.noPlayersHint')}</p>
-              </div>
+              <EmptyState icon={<PeopleIcon size={34} />} title={t('gm.noPlayers')} hint={t('gm.noPlayersHint')}>
+                <button onClick={() => setPickerOpen(true)} className={gmPrimaryButton}>{t('gm.addFromDevice')}</button>
+                <button onClick={() => readPlayerJson(importPlayerJson)} className={gmSecondaryButton}>{t('gm.importPlayer')}</button>
+              </EmptyState>
             )}
           </section>
         )}

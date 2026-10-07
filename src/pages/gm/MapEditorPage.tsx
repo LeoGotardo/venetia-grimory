@@ -5,13 +5,13 @@ import type { Campaign, GridMap } from '../../types'
 import { useGmStore } from '../../store/gmStore'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton } from '../../components/gm/GmHeader'
 import { MapCanvas } from '../../components/gm/MapCanvas'
-import { TERRAIN_STYLE } from '../../components/gm/terrainStyle'
+import { TERRAIN_STYLE, terrainSwatch } from '../../components/gm/terrainStyle'
 import { Modal } from '../../components/ui/Modal'
 import { NumberField } from '../../components/gm/fields'
 import {
   cellAt, distanceMeters, floodFill, gridDistance, lineCells, paintCells, rectCells, terrainOf, type Cell,
 } from '../../lib/gm/terrain'
-import { MAP_MAX_SIZE, MAP_MIN_SIZE, MAP_UNDO_LIMIT, TERRAINS, TERRAIN_VOID } from '../../constants'
+import { MAP_MAX_SIZE, MAP_MIN_SIZE, MAP_UNDO_LIMIT, TERRAINS, TERRAIN_GROUPS, TERRAIN_VOID } from '../../constants'
 import { NotFound } from '../NotFound'
 
 type Tool = 'brush' | 'erase' | 'rect' | 'fill' | 'label' | 'ruler' | 'pan'
@@ -266,35 +266,44 @@ function MapEditor({ campaign, map }: { campaign: Campaign; map: GridMap }) {
             </button>
           ))}
         </div>
-        <div role="radiogroup" aria-label={t('gm.terrain')} className="flex gap-1.5 overflow-x-auto pb-1">
-          {TERRAINS.filter(tr => tr.code !== TERRAIN_VOID).map(tr => {
-            const style = TERRAIN_STYLE[tr.id]
-            const active = terrain === tr.code
-            return (
-              <button
-                key={tr.code}
-                role="radio"
-                aria-checked={active}
-                data-testid={`terreno-${tr.id}`}
-                onClick={() => {
-                  setTerrain(tr.code)
-                  if (tool !== 'brush' && tool !== 'rect' && tool !== 'fill') setTool('brush')
-                }}
-                className={`flex-shrink-0 inline-flex items-center gap-1.5 rounded-[9px] pl-1.5 pr-2.5 py-1.5 text-[12px] font-semibold border cursor-pointer ${
-                  active ? 'border-[#D4A017] text-[#F5F0E8] bg-white/[0.06]' : 'border-white/[0.1] text-[#A8A09B] hover:text-[#E8DFD0]'
-                }`}
-              >
-                <span
-                  className="w-5 h-5 rounded-[5px] flex items-center justify-center text-[11px] border border-black/30"
-                  style={{ background: style.fill, color: style.glyphColor }}
-                  aria-hidden="true"
-                >
-                  {style.glyph}
-                </span>
-                {t(`gm.terrains.${tr.id}`)}
-              </button>
-            )
-          })}
+        <div role="radiogroup" aria-label={t('gm.terrain')} className="flex gap-4 overflow-x-auto pb-1.5 -mx-1 px-1">
+          {TERRAIN_GROUPS.map(group => (
+            <div key={group} className="flex-shrink-0 flex flex-col gap-1">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#A8A09B]">{t(`gm.terrainGroups.${group}`)}</span>
+              <div className="flex gap-1">
+                {TERRAINS.filter(tr => tr.group === group).map(tr => {
+                  const active = terrain === tr.code
+                  const cost = tr.cost == null ? 'blocked' : tr.cost > 1 ? 'double' : 'normal'
+                  return (
+                    <button
+                      key={tr.code}
+                      role="radio"
+                      aria-checked={active}
+                      data-testid={`terreno-${tr.id}`}
+                      title={`${t(`gm.terrains.${tr.id}`)} (${t(`gm.terrainCost.${cost}`)})`}
+                      onClick={() => {
+                        setTerrain(tr.code)
+                        if (tool !== 'brush' && tool !== 'rect' && tool !== 'fill') setTool('brush')
+                      }}
+                      className={`inline-flex items-center gap-1.5 rounded-[9px] pl-1 pr-2.5 min-h-[40px] text-[12px] font-semibold border cursor-pointer transition-colors ${
+                        active ? 'border-[#D4A017] text-[#F5F0E8] bg-[rgba(212,160,23,0.12)]' : 'border-white/[0.1] text-[#A8A09B] hover:text-[#E8DFD0]'
+                      }`}
+                    >
+                      <span
+                        className={`w-7 h-7 rounded-[6px] bg-cover border ${active ? 'border-[#D4A017]' : 'border-black/40'}`}
+                        style={{ backgroundImage: `url(${terrainSwatch(tr.id)})` }}
+                        aria-hidden="true"
+                      />
+                      <span className="whitespace-nowrap">{t(`gm.terrains.${tr.id}`)}</span>
+                      {tr.cost !== 1 && (
+                        <span className="text-[10px] font-bold text-[#A8A09B]" aria-hidden="true">{tr.cost == null ? '⊘' : '×2'}</span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

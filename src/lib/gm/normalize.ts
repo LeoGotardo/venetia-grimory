@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import type { Campaign, Combatant, Encounter, GridMap, MapLabel, Monster, Npc } from '../../types'
+import type { Campaign, Combatant, Encounter, GridMap, MapLabel, Monster, Npc, NpcProfile } from '../../types'
 import { blankCells, clampMapSize, isTerrainCode } from './terrain'
 import { CREATURE_SIZES, DEFAULT_SPEED_METERS, TERRAIN_VOID } from '../../constants'
 import { normalizeStatBlock } from './statblock'
@@ -31,8 +31,22 @@ export function normalizeNpc(raw: unknown): Npc {
     statblock: normalizeStatBlock(n.statblock),
     base_monster_id: n.base_monster_id ?? null,
     notes: n.notes ?? '',
+    profile: n.profile ? normalizeProfile(n.profile) : null,
     updated_at: n.updated_at ?? new Date().toISOString(),
   }
+}
+
+export const PROFILE_TEXT_FIELDS = [
+  'species', 'archetype', 'age', 'occupation', 'appearance', 'mannerism',
+  'personality', 'ideal', 'bond', 'flaw', 'motivation', 'secret',
+] as const
+
+export function normalizeProfile(raw: unknown): NpcProfile {
+  const p = (raw ?? {}) as Partial<Record<keyof NpcProfile, unknown>>
+  const text = (v: unknown) => (typeof v === 'string' ? v : '')
+  const profile = { gender: p.gender === 'f' || p.gender === 'm' || p.gender === 'x' ? p.gender : '' } as NpcProfile
+  for (const key of PROFILE_TEXT_FIELDS) profile[key] = text(p[key])
+  return profile
 }
 
 export function normalizeMonster(raw: unknown): Monster {

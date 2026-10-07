@@ -253,10 +253,59 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   the **turn owner** spends movement at the real path cost; dragging anyone else is a free GM
   reposition (`placeCombatant`). Beyond-speed moves are allowed with a warning — the GM decides.
   Each combatant has `move_mode` (walk/fly/swim, with `fly_m`/`swim_m` from the stat block; players
-  start with none and the GM can type them) — flying ignores ground terrain but not walls, swimming
-  makes water cost 1, and switching modes mid-turn subtracts what was already moved (2024). Other
+  start with none and the GM can type them) — each `TERRAINS` entry carries `fly` (passable when
+  flying: everything but wall, pillar and void) and `swim` (costs 1 with a swim speed: shallow and
+  deep water), so `terrainCost` never switches on terrain ids. Switching modes mid-turn subtracts what was already moved (2024). Other
   creatures are handled by `occupancyFor`: same `side`, Incapacitated, Tiny or 2+ sizes apart is
   passable as difficult terrain, anything else blocks; nobody may end a move in an occupied space.
+- Terrains are grouped (`group`, `TERRAIN_GROUPS`) for the editor palette. Rendering is in
+  `src/components/gm/terrainStyle.ts`: `fill` is the flat colour (thumbnail, zoomed out below
+  `TEXTURE_MIN_PX`), `paint` draws a procedural texture into a cached tile (`terrainTile`, keyed by
+  terrain, pixel size and one of `VARIANTS` per square via `cellVariant`, so the same map always
+  draws the same). Texture, not colour, is what tells terrains apart (accessibility). Walls cast a
+  short shadow on the squares south and east of them. Adding a terrain = new code in `TERRAINS`,
+  a `TERRAIN_STYLE` entry and `gm.terrains.*` in both catalogs (`terrain.test.ts` checks).
+- NPCs carry an optional roleplay `profile` (`NpcProfile`: gender, species, archetype, age,
+  occupation, appearance, mannerism, personality, ideal, bond, flaw, motivation, secret), normalized
+  by `normalizeProfile`. The generator (`/mestre/campanha/:id/npc/gerar`, `NpcGeneratorPage`) is pure
+  in `src/lib/gm/npcGenerator.ts`: the GM fills what they want, everything empty is rolled
+  (`generateNpc` takes an injectable RNG), the stat block is the SRD block of an archetype
+  (`NPC_ARCHETYPES` in `src/data/npcTables.ts`, common folk first) varied ±2 per ability by
+  `varyStatBlock`, which recomputes HP from the hit dice + CON, initiative and skills. Typing in a
+  field locks it against "Reroll". Names and phrase tables live in `npcTables.ts`; the PT and EN
+  phrase lists must have the same lengths (tested). `NpcProfileFields` is shared by the generator
+  and `NpcEditPage`; `NpcPortrait` shows the profile in the NPC modal and the encounter.
+- The generator has a second mode, **like a character** (`src/lib/gm/pcNpc.ts`): `resolvePcBuild`
+  fills whatever the GM left open (class weighted by `PC_CLASS_WEIGHTS`, level 1–6, subclass from
+  the class's subclass level, species, lineage, background), `buildPcSheet` builds a real
+  `CharacterSheet` with the player rules (standard array in the class's suggested order, with INT
+  raised for third casters; background +2/+1; ASIs at `ASI_LEVELS` + `EXTRA_ASI_LEVELS`; class
+  skills and rogue/bard expertise; armor from `PC_LOADOUT`/`PC_ARMOR_BY_TIER`; spells up to
+  `maxSpellCircle`), and `sheetToStatBlock` turns it into the NPC block (weapon and damage-cantrip
+  actions, Extra Attack as Multiattack, spellcasting summarized in a trait). CR comes from
+  `PC_LEVEL_CR` (an estimate, there is no official 2024 table) but the block keeps the level's
+  proficiency bonus through the optional `StatBlock.proficiency_bonus`; always read it through
+  `blockProficiencyBonus`, never `crProficiencyBonus(block.cr)` directly. The class, species and
+  background steps live in `src/lib/characterBuild.ts` (`applyClass`, `applySpecies`,
+  `applyBackground`), shared with the sheet store's setters, so the generator and the wizard
+  cannot drift apart.
+- The bestiary list (`MonsterBrowser`) groups by creature type: chips with counts filter, and with
+  no search and no category it shows collapsible shelves (`TypeGroup`, `CreatureTypeIcon`).
+- Adding to an encounter: `EncounterPage` has one button per source that opens
+  `AddCombatantsModal` on that tab (remounted by `key`), and the NPC tab has "Add to encounter"
+  (`AddToEncounterModal`, existing encounter or a new one). `QuantityAdd` confirms each add.
+- GM visual vocabulary lives in `src/components/gm/ornaments.tsx` (`SectionTitle` with the gold
+  rule, `EmptyState` that teaches with its actions inline, stroke icons) plus the `gm-page`
+  background and `gm-rule` divider in `index.css`. Cinzel only for titles; numbers, buttons and
+  lists stay in Manrope. `PRODUCT.md` holds the design brief for this area.
+- GM layout: every GM page uses `gmContainer` (`GmHeader.tsx`, up to 1480px) and fills the width
+  with a side column from `lg:` instead of a narrow centred column. Lists that open a detail use
+  master-detail on desktop and a modal on phones (`useMediaQuery('(min-width: 1024px)')`): NPC tab
+  and bestiary show the selected block in a sticky aside; the players tab has `PartySummary`
+  (party table, XP budget, languages); encounter and map tabs put creation in `CreatePanel`; the
+  encounter page keeps the turn bar on one row and, in map view, moves the initiative order into
+  the aside so the map gets the height. The campaign index (`CampaignListItem`) carries counts and
+  the running encounter for the home cards; `listCampaigns` fills them in once for older indexes.
 - "Table view" is page state in `EncounterPage`: it renders only the map (hidden combatants and
   anyone under fog removed), round and visible turn, with no GM panel, log or tools.
 - Fog is `encounter.fog`, one `0`/`1` char per square, ignored when its length no longer matches

@@ -11,6 +11,7 @@ const CharacterSheet = lazy(() => import('./pages/Sheet').then(m => ({ default: 
 const GmHome = lazy(() => import('./pages/gm/GmHome').then(m => ({ default: m.GmHome })))
 const BestiaryPage = lazy(() => import('./pages/gm/BestiaryPage').then(m => ({ default: m.BestiaryPage })))
 const MonsterEditPage = lazy(() => import('./pages/gm/MonsterEditPage').then(m => ({ default: m.MonsterEditPage })))
+const NpcGeneratorPage = lazy(() => import('./pages/gm/NpcGeneratorPage').then(m => ({ default: m.NpcGeneratorPage })))
 const NpcEditPage = lazy(() => import('./pages/gm/NpcEditPage').then(m => ({ default: m.NpcEditPage })))
 const EncounterPage = lazy(() => import('./pages/gm/EncounterPage').then(m => ({ default: m.EncounterPage })))
 const MapEditorPage = lazy(() => import('./pages/gm/MapEditorPage').then(m => ({ default: m.MapEditorPage })))
@@ -36,6 +37,7 @@ function App() {
             <Route path="/ficha/:id" element={<CharacterSheet />} />
             <Route path="/mestre" element={<GmHome />} />
             <Route path="/mestre/campanha/:id" element={<CampaignPage />} />
+            <Route path="/mestre/campanha/:id/npc/gerar" element={<NpcGeneratorPage />} />
             <Route path="/mestre/campanha/:id/npc/:npcId" element={<NpcEditPage />} />
             <Route path="/mestre/campanha/:id/encontro/:encounterId" element={<EncounterPage />} />
             <Route path="/mestre/campanha/:id/mapa/:mapId" element={<MapEditorPage />} />

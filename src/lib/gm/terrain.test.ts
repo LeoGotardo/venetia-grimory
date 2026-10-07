@@ -53,3 +53,20 @@ describe('normalizeMap', () => {
     expect(m.labels.map(l => l.text)).toEqual(['A'])
   })
 })
+
+describe('catálogo de terrenos', () => {
+  it('códigos únicos de um caractere, os antigos preservados, todo terreno com aparência e grupo', async () => {
+    const { TERRAINS, TERRAIN_GROUPS } = await import('../../constants')
+    const { TERRAIN_STYLE } = await import('../../components/gm/terrainStyle')
+    const codes = TERRAINS.map(t => t.code)
+    expect(new Set(codes).size).toBe(codes.length)
+    expect(codes.every(c => c.length === 1)).toBe(true)
+    // Códigos gravados nos mapas salvos: mudar um deles corrompe mapas antigos.
+    const legacy = { '0': 'void', '.': 'floor', d: 'difficult', v: 'vegetation', w: 'water', s: 'stairs', '+': 'door', h: 'hazard', p: 'pit', '#': 'wall' }
+    for (const [code, id] of Object.entries(legacy)) expect(TERRAINS.find(t => t.code === code)?.id).toBe(id)
+    for (const t of TERRAINS) {
+      expect(TERRAIN_STYLE[t.id], t.id).toBeDefined()
+      if (t.id !== 'void') expect(TERRAIN_GROUPS as readonly string[]).toContain(t.group)
+    }
+  })
+})

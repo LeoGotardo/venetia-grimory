@@ -61,8 +61,12 @@ interface GmState {
   reimportPlayerJson: (memberId: string, json: string) => void
   removePlayer: (memberId: string) => void
 
-  addNpc: (statblock: StatBlock, baseMonsterId?: string | null) => string
-  updateNpc: (npcId: string, change: Partial<Pick<Npc, 'statblock' | 'notes'>>) => void
+  addNpc: (
+    statblock: StatBlock,
+    baseMonsterId?: string | null,
+    extra?: Partial<Pick<Npc, 'notes' | 'profile'>>,
+  ) => string
+  updateNpc: (npcId: string, change: Partial<Pick<Npc, 'statblock' | 'notes' | 'profile'>>) => void
   duplicateNpc: (npcId: string) => string | null
   removeNpc: (npcId: string) => void
 
@@ -327,8 +331,11 @@ export const useGmStore = create<GmState>((set, get) => {
     removePlayer: memberId =>
       updateCampaign(c => ({ party: c.party.filter(m => m.id !== memberId) })),
 
-    addNpc: (statblock, baseMonsterId = null) => {
-      const npc: Npc = { id: uuidv4(), statblock, base_monster_id: baseMonsterId, notes: '', updated_at: now() }
+    addNpc: (statblock, baseMonsterId = null, extra = {}) => {
+      const npc: Npc = {
+        id: uuidv4(), statblock, base_monster_id: baseMonsterId,
+        notes: extra.notes ?? '', profile: extra.profile ?? null, updated_at: now(),
+      }
       updateCampaign(c => ({ npcs: [...c.npcs, npc] }))
       return npc.id
     },

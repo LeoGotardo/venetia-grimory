@@ -151,6 +151,25 @@ describe('NPCs da campanha', () => {
     expect(st().bestiary[0].statblock.name).toBe('Goblin')
   })
 
+  it('o perfil do NPC gerado é salvo, sobrevive ao reload e é normalizado', () => {
+    const profile = {
+      gender: 'f' as const, species: 'anao', archetype: 'guard', age: 'adult', occupation: 'Guarda do portão',
+      appearance: 'Cicatriz no queixo', mannerism: '', personality: '', ideal: '', bond: '', flaw: '',
+      motivation: 'Pagar a dívida', secret: 'Aceita suborno',
+    }
+    const id = st().addNpc(createBlankStatBlock('Berta'), null, { profile })
+    st().openCampaign(st().campaign!.id) // abrir de novo grava o pendente e relê do storage
+    const reloaded = loadCampaign(st().campaign!.id)!.npcs.find(n => n.id === id)!
+    expect(reloaded.profile).toEqual(profile)
+    st().updateNpc(id, { profile: { ...profile, secret: '' } })
+    expect(st().campaign!.npcs[0].profile!.secret).toBe('')
+    // Perfil corrompido no JSON volta com os campos de texto vazios em vez de quebrar a tela.
+    const bad = JSON.parse(st().exportCampaignJson()!)
+    bad.campaign.npcs[0].profile = { gender: 'z', species: 3 }
+    const imported = loadCampaign(st().importCampaignJson(JSON.stringify(bad)))!
+    expect(imported.npcs[0].profile).toMatchObject({ gender: '', species: '', secret: '' })
+  })
+
   it('NPCs vão junto no export da campanha', () => {
     st().addNpc(createBlankStatBlock('Capitão'))
     const id = st().importCampaignJson(st().exportCampaignJson()!)

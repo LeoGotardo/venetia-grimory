@@ -5,21 +5,25 @@ import { useGmStore } from '../../store/gmStore'
 import { Modal } from '../ui/Modal'
 import { MonsterRow, rowButton } from './MonsterRow'
 import { MonsterBrowser } from './MonsterBrowser'
+import { QuantityAdd } from './QuantityAdd'
 
-type Source = 'players' | 'npcs' | 'bestiary'
+export type CombatantSource = 'players' | 'npcs' | 'bestiary'
+type Source = CombatantSource
 
 interface AddCombatantsModalProps {
   open: boolean
   onClose: () => void
   campaign: Campaign
   encounter: Encounter
+  /** Aba inicial; o pai remonta o modal (via `key`) para trocar. */
+  initialSource?: Source
 }
 
 /** Players, NPCs da campanha e monstros do bestiário — com quantidade. */
-export function AddCombatantsModal({ open, onClose, campaign, encounter }: AddCombatantsModalProps) {
+export function AddCombatantsModal({ open, onClose, campaign, encounter, initialSource = 'players' }: AddCombatantsModalProps) {
   const { t } = useTranslation()
-  const { addPlayersToEncounter, addNpcToEncounter, addMonsterToEncounter } = useGmStore()
-  const [source, setSource] = useState<Source>('players')
+  const { addPlayersToEncounter, addNpcToEncounter, addMonsterToEncounter, bestiary } = useGmStore()
+  const [source, setSource] = useState<Source>(initialSource)
 
   const present = new Set(encounter.combatants.map(c => c.ref_id))
   const missingPlayers = campaign.party.filter(m => !present.has(m.id))
@@ -85,6 +89,7 @@ export function AddCombatantsModal({ open, onClose, campaign, encounter }: AddCo
 
       {source === 'bestiary' && (
         <MonsterBrowser
+          initialSource={bestiary.length > 0 ? 'custom' : 'srd'}
           inputClassName={MODAL_FIELD}
           actions={m => <QuantityAdd label={m.statblock.name} onAdd={count => addMonsterToEncounter(encounter.id, m.id, count)} />}
         />
@@ -99,23 +104,3 @@ function AddRow({ block, onAdd }: { block: StatBlock; onAdd: (count: number) => 
 
 const MODAL_FIELD =
   'bg-[#2D2520] border border-[#B8860B]/30 rounded px-3 py-2 text-[#F5F0E8] text-sm placeholder:text-[#A8A09B] focus:outline-none focus:border-[#B8860B]'
-
-function QuantityAdd({ label, onAdd }: { label: string; onAdd: (count: number) => void }) {
-  const { t } = useTranslation()
-  const [count, setCount] = useState(1)
-  return (
-        <>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={50}
-            value={count}
-            onChange={e => setCount(Math.min(50, Math.max(1, Math.floor(Number(e.target.value)) || 1)))}
-            aria-label={`${t('gm.quantity')} — ${label}`}
-            className="w-14 text-center bg-[#131110] border border-white/[0.1] rounded-[8px] py-1.5 text-[14px] text-[#F5F0E8]"
-          />
-          <button onClick={() => onAdd(count)} className={rowButton}>+ {t('gm.add')}</button>
-        </>
-  )
-}

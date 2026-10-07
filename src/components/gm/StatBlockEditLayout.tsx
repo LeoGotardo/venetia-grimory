@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import type { StatBlock } from '../../types'
-import { GmHeader, gmPrimaryButton } from './GmHeader'
+import { GmHeader, gmPrimaryButton, gmContainer } from './GmHeader'
 import { StatBlockEditor } from './StatBlockEditor'
 import { StatBlockCard } from './StatBlockCard'
 
@@ -47,7 +47,7 @@ export function StatBlockEditLayout({ title, backTo, initial, extra, onSave }: S
   }
 
   return (
-    <div className="min-h-screen bg-[#131110] font-[Manrope,system-ui]">
+    <div className="min-h-screen gm-page font-[Manrope,system-ui]">
       <GmHeader
         title={title}
         backTo={backTo}
@@ -58,7 +58,7 @@ export function StatBlockEditLayout({ title, backTo, initial, extra, onSave }: S
           </button>
         }
       />
-      <div className="max-w-[1180px] mx-auto px-4 sm:px-8 py-6 pb-20">
+      <div className={`${gmContainer} py-6 pb-20`}>
         {error && <p role="alert" className="text-[13px] text-[#d4564a] mb-4">{error}</p>}
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] gap-6 items-start">
           <div className="flex flex-col gap-4 min-w-0">
