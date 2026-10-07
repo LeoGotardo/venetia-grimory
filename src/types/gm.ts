@@ -267,6 +267,26 @@ export interface AreaStamp {
   rotation: number
   flip: boolean
   opacity: number
+  /** Sombra projetada ou brilho mágico; sem campo = nenhum. */
+  effect?: AreaEffect
+}
+
+export type AreaEffect = 'shadow' | 'glow'
+
+/**
+ * Ícone de informação (cidade, perigo, missão…) do game-icons.net: fica sempre
+ * de pé, com selo redondo opcional por trás. `size` é o diâmetro em unidades de mundo.
+ */
+export interface AreaIcon {
+  kind: 'icon'
+  id: string
+  layer: AreaLayerId
+  icon: string
+  x: number
+  y: number
+  size: number
+  color: string
+  badge: boolean
 }
 
 /**
@@ -329,7 +349,7 @@ export interface AreaLabel {
  * Elemento da cena. A lista é plana, com a camada em cada elemento: a ordem no
  * array é o z dentro da camada — desfazer, duplicar e trocar de camada ficam triviais.
  */
-export type AreaElement = AreaStamp | AreaPaint | AreaRegion | AreaPath | AreaLabel
+export type AreaElement = AreaStamp | AreaPaint | AreaRegion | AreaPath | AreaLabel | AreaIcon
 
 /**
  * Mapa ilustrativo, sem regra de combate: coordenadas de mundo (px a 1×), não
@@ -344,9 +364,20 @@ export interface AreaMap {
   background: { texture: string }
   layers: AreaLayerState[]
   elements: AreaElement[]
+  /** Grade só de alinhamento (sem regra de jogo). */
+  grid: AreaGrid
+  /** Miniatura JPEG (data URL) para a lista da aba Mapas; refeita pelo editor depois das edições. */
+  thumbnail?: string
   version: 1
   created_at: string
   updated_at: string
+}
+
+export interface AreaGrid {
+  kind: 'off' | 'square' | 'hex'
+  /** Lado do quadrado ou distância entre centros de hexágonos, em unidades de mundo. */
+  size: number
+  opacity: number
 }
 
 /** Resumo para a lista da aba Mapas, sem carregar os elementos. */
@@ -357,6 +388,7 @@ export interface AreaMapListItem {
   height: number
   background: string
   elements: number
+  thumbnail?: string
   updated_at: string
 }
 

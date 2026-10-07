@@ -1,10 +1,11 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { AreaElement, AreaLabelStyle, AreaLayerId, AreaPathStyle } from '../../../types'
+import type { AreaEffect, AreaElement, AreaLabelStyle, AreaLayerId, AreaPathStyle } from '../../../types'
 import { stampDef, stampUrl } from '../../../data/areaMap/stamps'
+import { iconDef, iconUrl } from '../../../data/areaMap/icons'
 import type { ZMove } from '../../../lib/gm/areaMap/scene'
 import {
-  AREA_LABEL_COLORS, AREA_LABEL_MAX_SIZE, AREA_LABEL_MIN_SIZE, AREA_LABEL_STYLES, AREA_LAYERS,
+  AREA_ICON_COLORS, AREA_ICON_MAX_SIZE, AREA_ICON_MIN_SIZE, AREA_LABEL_COLORS, AREA_LABEL_MAX_SIZE, AREA_LABEL_MIN_SIZE, AREA_LABEL_STYLES, AREA_LAYERS,
   AREA_PATH_MAX_WIDTH, AREA_PATH_MIN_WIDTH, AREA_PATH_STYLES, AREA_REGION_COLORS, AREA_STAMP_MIN_SCALE,
 } from '../../../constants'
 import { ColorSwatches, PanelLabel, Segmented, Slider, TexturePicker } from './pickers'
@@ -22,6 +23,9 @@ export interface ElementPatch {
   width?: number
   texture?: string | null
   border?: boolean
+  badge?: boolean
+  /** `undefined` tira o efeito. */
+  effect?: AreaEffect
 }
 
 interface AreaInspectorProps {
@@ -66,8 +70,10 @@ export function AreaInspector({
   }, [focusText, el.id, el.kind])
 
   const def = el.kind === 'stamp' ? stampDef(el.asset) : undefined
+  const icon = el.kind === 'icon' ? iconDef(el.icon) : undefined
   const title =
     el.kind === 'stamp' ? (def ? t(`gm.areaMap.stamps.${def.id}`) : t('gm.areaMap.missingAsset'))
+    : el.kind === 'icon' ? (icon ? t(`gm.areaMap.icons.${icon.id}`) : t('gm.areaMap.missingAsset'))
     : el.kind === 'path' ? t(`gm.areaMap.pathStyles.${el.style}`)
     : el.kind === 'label' ? (el.text || t('gm.areaMap.kinds.label'))
     : t(`gm.areaMap.kinds.${el.kind}`)
@@ -79,9 +85,10 @@ export function AreaInspector({
   return (
     <div className="flex flex-col gap-3.5">
       <div className="flex items-center gap-3">
-        {el.kind === 'stamp' && (
+        {(el.kind === 'stamp' || el.kind === 'icon') && (
           <div className="w-14 h-14 rounded-[10px] bg-white/[0.04] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
             {def && <img src={stampUrl(def)} alt="" className="max-w-[44px] max-h-[44px]" />}
+            {icon && el.kind === 'icon' && <img src={iconUrl(icon, el.color)} alt="" className="w-[34px] h-[34px]" />}
           </div>
         )}
         <div className="min-w-0">
@@ -99,6 +106,23 @@ export function AreaInspector({
             min={0.1} max={1} step={0.05} onChange={v => onLive({ opacity: v })} onCommit={onCommit} />
           <button type="button" onClick={() => onChange({ flip: !el.flip })} aria-pressed={el.flip} className={smallButton}>
             ⇋ {t('gm.areaMap.flip')}
+          </button>
+          <Segmented<'none' | AreaEffect>
+            label={t('gm.areaMap.effect')}
+            value={el.effect ?? 'none'}
+            options={(['none', 'shadow', 'glow'] as const).map(v => ({ value: v, label: t(`gm.areaMap.effects.${v}`) }))}
+            onPick={v => onChange({ effect: v === 'none' ? undefined : v })}
+          />
+        </>
+      )}
+
+      {el.kind === 'icon' && (
+        <>
+          <Slider label={t('gm.areaMap.scale')} value={el.size} display={String(Math.round(el.size))}
+            min={AREA_ICON_MIN_SIZE} max={Math.min(AREA_ICON_MAX_SIZE, 200)} step={1} onChange={v => onLive({ size: v })} onCommit={onCommit} />
+          <ColorSwatches label={t('gm.areaMap.color')} colors={AREA_ICON_COLORS} value={el.color} onPick={color => onChange({ color })} />
+          <button type="button" onClick={() => onChange({ badge: !el.badge })} aria-pressed={el.badge} className={smallButton}>
+            {t(el.badge ? 'gm.areaMap.badgeOn' : 'gm.areaMap.badgeOff')}
           </button>
         </>
       )}

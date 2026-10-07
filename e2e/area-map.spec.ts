@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test'
 
 test.describe('Mapa de área', () => {
-  test('cria um mapa de área, coloca um stamp e ele sobrevive ao reload', async ({ page }) => {
+  test('cria um mapa de área, coloca um stamp e ele sobrevive ao reload', async ({ page }, testInfo) => {
+    // Fluxo longo e o Pixel 5 emulado (DPR 2,75) renderiza bem mais devagar que o desktop.
+    test.setTimeout(60_000)
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/mestre')
     await page.getByRole('textbox', { name: 'Campaign name' }).fill('Mesa')
@@ -45,7 +47,22 @@ test.describe('Mapa de área', () => {
     await page.keyboard.press('Escape')
     await expect(status).toContainText('3 elements')
 
+    // Ícone do game-icons.
+    await page.getByTestId('assets-icon').click()
+    await page.getByTestId('icone-city').click()
+    await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.3)
+    await page.keyboard.press('Escape')
+    await expect(status).toContainText('4 elements')
+
     await page.reload()
-    await expect(page.locator('[aria-live=polite]')).toContainText('3 elements')
+    await expect(page.locator('[aria-live=polite]')).toContainText('4 elements')
+
+    // Exportar baixa um PNG no desktop (no celular a imagem vai pela folha de compartilhamento).
+    if (testInfo.project.name === 'desktop') {
+      await page.getByTestId('area-exportar-abrir').click()
+      const download = page.waitForEvent('download')
+      await page.getByTestId('area-exportar').click()
+      expect((await download).suggestedFilename()).toBe('Vale.png')
+    }
   })
 })

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import pt from '../../i18n/pt'
 import en from '../../i18n/en'
 import { STAMPS, STAMP_CATEGORIES, stampSize } from './stamps'
+import { ICONS, ICON_AUTHORS, ICON_CATEGORIES, ICONS_LICENSE } from './icons'
 import { AREA_TEXTURE_IDS } from '../../components/gm/area/areaTextures'
 import { AREA_DEFAULT_TEXTURE, AREA_LAYERS } from '../../constants'
 
@@ -44,8 +45,29 @@ describe('catálogo do mapa de área', () => {
         ...STAMP_CATEGORIES.filter(k => !(c.categories as Names)[k]).map(k => `categories.${k}`),
         ...AREA_TEXTURE_IDS.filter(k => !(c.textures as Names)[k]).map(k => `textures.${k}`),
         ...AREA_LAYERS.filter(k => !(c.layers as Names)[k]).map(k => `layers.${k}`),
+        ...ICONS.filter(i => !(c.icons as Names)[i.id]).map(i => `icons.${i.id}`),
+        ...ICON_CATEGORIES.filter(k => !(c.iconCategories as Names)[k]).map(k => `iconCategories.${k}`),
       ]
       expect(missing, lang).toEqual([])
     }
+  })
+})
+
+describe('ícones do game-icons.net', () => {
+  it('ids únicos, autor com nome de exibição e path SVG', () => {
+    const ids = ICONS.map(i => i.id)
+    expect(new Set(ids).size).toBe(ids.length)
+    for (const i of ICONS) {
+      expect(ICON_AUTHORS[i.author], i.id).toBeTruthy()
+      // Só comandos absolutos, sem arco nem S/T: o parser do Pixi desenha errado esses.
+      expect(i.d, i.id).toMatch(/^M[MLHVCQZ\d\s.\-eE]+$/)
+      expect(ICON_CATEGORIES).toContain(i.category)
+    }
+  })
+
+  it('a atribuição CC BY cita todos os autores usados', () => {
+    expect(ICONS_LICENSE.name).toBe('CC BY 3.0')
+    const used = new Set(ICONS.map(i => ICON_AUTHORS[i.author]))
+    for (const name of used) expect(ICONS_LICENSE.authors).toContain(name)
   })
 })

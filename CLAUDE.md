@@ -348,7 +348,17 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   enforces the allowed tags. Textures (`areaTextures.ts`) reuse `TERRAIN_STYLE` painters as
   seamless tiles. Editor: `AreaMapEditorPage` (`/mestre/campanha/:id/area/:mapId`), draft + undo
   snapshots like the grid editor; the `undo`/`redo` updaters must capture `committed.current`
-  *before* `restore`. Remaining phase: icons (game-icons.net, CC-BY), PNG export, grid, effects.
+  *before* `restore`. Icons (`kind: 'icon'`, upright, optional badge, tinted shared glyph) come
+  from game-icons.net (CC BY 3.0, Lorc and Delapouite) through the generated
+  `src/data/areaMap/icons.generated.ts` (`scripts/areamap/generate-icons.mjs`, see
+  `scripts/README.md`); keep the credit under the icon grid and in both READMEs. Stamps can carry
+  `effect: 'shadow' | 'glow'` (a blurred copy behind, core `BlurFilter`; fantasy stamps start
+  glowing). The optional grid (`map.grid`, square or pointy-top hex in `grid.ts`) is alignment
+  only, drawn under the labels layer; snapping is an editor toggle, not saved. `AreaStage` exposes
+  `apiRef.capture()` (whole map, no selection/frame, labels and grid optional, capped by
+  `AREA_EXPORT_MAX_PX`) used by the PNG/JPEG export (`ExportDialog` → `deliverFile`) and by the list
+  thumbnail, which the editor regenerates `AREA_THUMBNAIL_DELAY_MS` after the last edit;
+  `setAreaThumbnail` is its only writer (`commitAreaMap` keeps the store's current one).
 - `AVAILABLE_CONDITIONS` gained `Atordoado` (Stunned) — it is a 2024 condition the SRD uses.
 - UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
   `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.

@@ -29,6 +29,8 @@ interface AreaMapState {
   closeAreaMap: () => void
   /** Troca a cena do mapa aberto (o editor manda um snapshot por gesto). */
   commitAreaMap: (next: AreaMap) => void
+  /** Miniatura do mapa aberto. Único escritor de `thumbnail`: os commits do editor mantêm a atual. */
+  setAreaThumbnail: (id: string, thumbnail: string) => void
 }
 
 const now = () => new Date().toISOString()
@@ -153,7 +155,16 @@ export const useAreaMapStore = create<AreaMapState>((set, get) => ({
   commitAreaMap: next => {
     const current = get().map
     if (!current || current.id !== next.id || current === next) return
-    const map = { ...next, updated_at: now() }
+    // O rascunho do editor carrega a miniatura de quando abriu; a do store é a mais nova.
+    const map = { ...next, thumbnail: current.thumbnail, updated_at: now() }
+    set({ map })
+    queueSave(map)
+  },
+
+  setAreaThumbnail: (id, thumbnail) => {
+    const current = get().map
+    if (!current || current.id !== id || current.thumbnail === thumbnail) return
+    const map = { ...current, thumbnail }
     set({ map })
     queueSave(map)
   },

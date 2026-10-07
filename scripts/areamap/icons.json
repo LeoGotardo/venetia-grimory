@@ -1,0 +1,350 @@
+[
+  {
+    "id": "capital",
+    "source": "queen-crown",
+    "category": "settlements",
+    "author": "lorc"
+  },
+  {
+    "id": "city",
+    "source": "tower-flag",
+    "category": "settlements",
+    "author": "delapouite"
+  },
+  {
+    "id": "town",
+    "source": "village",
+    "category": "settlements",
+    "author": "delapouite"
+  },
+  {
+    "id": "hamlet",
+    "source": "house",
+    "category": "settlements",
+    "author": "delapouite"
+  },
+  {
+    "id": "camp",
+    "source": "camping-tent",
+    "category": "settlements",
+    "author": "delapouite"
+  },
+  {
+    "id": "outpost",
+    "source": "watchtower",
+    "category": "settlements",
+    "author": "delapouite"
+  },
+  {
+    "id": "temple",
+    "source": "greek-temple",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "shrine",
+    "source": "shinto-shrine",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "church",
+    "source": "church",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "tower",
+    "source": "stone-tower",
+    "category": "places",
+    "author": "lorc"
+  },
+  {
+    "id": "dungeon",
+    "source": "dungeon-gate",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "cave",
+    "source": "cave-entrance",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "mine",
+    "source": "gold-mine",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "ruins",
+    "source": "castle-ruins",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "ancientRuins",
+    "source": "ancient-ruins",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "tomb",
+    "source": "grave-flowers",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "graveyard",
+    "source": "graveyard",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "library",
+    "source": "bookshelf",
+    "category": "places",
+    "author": "delapouite"
+  },
+  {
+    "id": "tavern",
+    "source": "beer-stein",
+    "category": "places",
+    "author": "lorc"
+  },
+  {
+    "id": "forest",
+    "source": "forest",
+    "category": "resources",
+    "author": "delapouite"
+  },
+  {
+    "id": "farm",
+    "source": "wheat",
+    "category": "resources",
+    "author": "lorc"
+  },
+  {
+    "id": "quarry",
+    "source": "stone-block",
+    "category": "resources",
+    "author": "lorc"
+  },
+  {
+    "id": "fishing",
+    "source": "fishing-pole",
+    "category": "resources",
+    "author": "delapouite"
+  },
+  {
+    "id": "gold",
+    "source": "gold-stack",
+    "category": "resources",
+    "author": "delapouite"
+  },
+  {
+    "id": "iron",
+    "source": "metal-bar",
+    "category": "resources",
+    "author": "lorc"
+  },
+  {
+    "id": "crystal",
+    "source": "crystal-cluster",
+    "category": "resources",
+    "author": "lorc"
+  },
+  {
+    "id": "herbs",
+    "source": "herbs-bundle",
+    "category": "resources",
+    "author": "delapouite"
+  },
+  {
+    "id": "trade",
+    "source": "trade",
+    "category": "resources",
+    "author": "lorc"
+  },
+  {
+    "id": "port",
+    "source": "anchor",
+    "category": "transport",
+    "author": "lorc"
+  },
+  {
+    "id": "lighthouse",
+    "source": "lighthouse",
+    "category": "transport",
+    "author": "delapouite"
+  },
+  {
+    "id": "ship",
+    "source": "galleon",
+    "category": "transport",
+    "author": "lorc"
+  },
+  {
+    "id": "bridge",
+    "source": "stone-bridge",
+    "category": "transport",
+    "author": "delapouite"
+  },
+  {
+    "id": "crossroads",
+    "source": "direction-signs",
+    "category": "transport",
+    "author": "delapouite"
+  },
+  {
+    "id": "danger",
+    "source": "hazard-sign",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "deadly",
+    "source": "skull-crossed-bones",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "dragon",
+    "source": "spiked-dragon-head",
+    "category": "danger",
+    "author": "delapouite"
+  },
+  {
+    "id": "beast",
+    "source": "wolf-head",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "bandit",
+    "source": "hood",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "warZone",
+    "source": "crossed-swords",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "haunted",
+    "source": "ghost",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "cursed",
+    "source": "poison-gas",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "lair",
+    "source": "spider-web",
+    "category": "danger",
+    "author": "lorc"
+  },
+  {
+    "id": "quest",
+    "source": "scroll-unfurled",
+    "category": "rpg",
+    "author": "lorc"
+  },
+  {
+    "id": "objective",
+    "source": "flag-objective",
+    "category": "rpg",
+    "author": "delapouite"
+  },
+  {
+    "id": "boss",
+    "source": "crowned-skull",
+    "category": "rpg",
+    "author": "lorc"
+  },
+  {
+    "id": "treasure",
+    "source": "chest",
+    "category": "rpg",
+    "author": "delapouite"
+  },
+  {
+    "id": "secret",
+    "source": "locked-chest",
+    "category": "rpg",
+    "author": "lorc"
+  },
+  {
+    "id": "key",
+    "source": "key-lock",
+    "category": "rpg",
+    "author": "delapouite"
+  },
+  {
+    "id": "npc",
+    "source": "person",
+    "category": "rpg",
+    "author": "delapouite"
+  },
+  {
+    "id": "party",
+    "source": "meeple",
+    "category": "rpg",
+    "author": "delapouite"
+  },
+  {
+    "id": "magic",
+    "source": "magic-swirl",
+    "category": "magic",
+    "author": "lorc"
+  },
+  {
+    "id": "portal",
+    "source": "magic-portal",
+    "category": "magic",
+    "author": "lorc"
+  },
+  {
+    "id": "rune",
+    "source": "rune-stone",
+    "category": "magic",
+    "author": "lorc"
+  },
+  {
+    "id": "oracle",
+    "source": "crystal-ball",
+    "category": "magic",
+    "author": "lorc"
+  },
+  {
+    "id": "enchanted",
+    "source": "fairy-wand",
+    "category": "magic",
+    "author": "lorc"
+  },
+  {
+    "id": "compass",
+    "source": "compass",
+    "category": "cartography",
+    "author": "lorc"
+  },
+  {
+    "id": "marker",
+    "source": "position-marker",
+    "category": "cartography",
+    "author": "delapouite"
+  },
+  {
+    "id": "map",
+    "source": "treasure-map",
+    "category": "cartography",
+    "author": "lorc"
+  }
+]

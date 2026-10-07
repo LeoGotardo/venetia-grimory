@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import type { AreaElement, AreaLayerId, AreaLayerState, AreaMap, AreaMapListItem } from '../../../types'
 import {
-  AREA_DEFAULT_TEXTURE, AREA_LAYERS, AREA_MAP_MAX_ELEMENTS, AREA_MAP_MAX_SIZE, AREA_MAP_MIN_SIZE,
+  AREA_DEFAULT_TEXTURE, AREA_GRID_DEFAULT_SIZE, AREA_LAYERS, AREA_MAP_MAX_ELEMENTS, AREA_MAP_MAX_SIZE, AREA_MAP_MIN_SIZE,
 } from '../../../constants'
 import { translatePoints } from './shapes'
 
@@ -30,6 +30,7 @@ export function createAreaMap(campaignId: string, name: string, width: number, h
     background: { texture: AREA_DEFAULT_TEXTURE },
     layers: defaultLayers(),
     elements: [],
+    grid: { kind: 'off', size: AREA_GRID_DEFAULT_SIZE, opacity: 0.35 },
     version: 1,
     created_at: at,
     updated_at: at,
@@ -44,6 +45,7 @@ export function toAreaListItem(map: AreaMap): AreaMapListItem {
     height: map.height,
     background: map.background.texture,
     elements: map.elements.length,
+    thumbnail: map.thumbnail,
     updated_at: map.updated_at,
   }
 }
@@ -98,7 +100,7 @@ const q = (n: number) => Math.round(n * 10) / 10
 
 /** Desloca qualquer elemento: centro para stamp/texto, todos os pontos para linhas e regiões. */
 export function translateElement<T extends AreaElement>(el: T, dx: number, dy: number): T {
-  if (el.kind === 'stamp' || el.kind === 'label') return { ...el, x: q(el.x + dx), y: q(el.y + dy) }
+  if (el.kind === 'stamp' || el.kind === 'label' || el.kind === 'icon') return { ...el, x: q(el.x + dx), y: q(el.y + dy) }
   return { ...el, points: translatePoints(el.points, dx, dy).map(q) }
 }
 

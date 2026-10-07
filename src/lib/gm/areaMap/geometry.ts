@@ -1,6 +1,7 @@
-import type { AreaElement, AreaLabel, AreaMap, AreaStamp } from '../../../types'
+import type { AreaElement, AreaIcon, AreaLabel, AreaMap, AreaStamp } from '../../../types'
 import {
-  AREA_LABEL_MAX_SIZE, AREA_LABEL_MIN_SIZE, AREA_STAMP_MAX_SCALE, AREA_STAMP_MIN_SCALE,
+  AREA_ICON_MAX_SIZE, AREA_ICON_MIN_SIZE, AREA_LABEL_MAX_SIZE, AREA_LABEL_MIN_SIZE, AREA_STAMP_MAX_SCALE,
+  AREA_STAMP_MIN_SCALE,
 } from '../../../constants'
 import { drawOrder, isEditable } from './scene'
 import { boundsOf, distanceToLine, pointInPolygon, type Box } from './shapes'
@@ -52,11 +53,21 @@ export function labelBox(label: AreaLabel): OBox {
   }
 }
 
-/** Caixa de quem gira e escala pelas alças (stamp e texto); `null` para linhas e regiões. */
+export function iconBox(icon: AreaIcon): OBox {
+  return { x: icon.x, y: icon.y, rotation: 0, hw: icon.size / 2, hh: icon.size / 2 }
+}
+
+/** Caixa de quem escala pelas alças (stamp, texto, ícone); `null` para linhas e regiões. */
 export function elementBox(el: AreaElement, sizeOf: SizeOf): OBox | null {
   if (el.kind === 'stamp') return stampBox(el, sizeOf(el.asset))
   if (el.kind === 'label') return labelBox(el)
+  if (el.kind === 'icon') return iconBox(el)
   return null
+}
+
+/** Ícones ficam sempre de pé: só stamps e textos têm alça de rotação. */
+export function canRotate(el: AreaElement): boolean {
+  return el.kind === 'stamp' || el.kind === 'label'
 }
 
 export function boxContains(box: OBox, p: Point): boolean {
@@ -78,7 +89,8 @@ export function boxCorners(box: OBox): Point[] {
 export function elementBounds(el: AreaElement, sizeOf: SizeOf): Box {
   switch (el.kind) {
     case 'stamp':
-    case 'label': {
+    case 'label':
+    case 'icon': {
       const c = boxCorners(elementBox(el, sizeOf)!)
       return boundsOf(c.flatMap(p => [p.x, p.y]))
     }
@@ -98,6 +110,7 @@ function hits(el: AreaElement, p: Point, sizeOf: SizeOf, zoom: number): boolean 
   switch (el.kind) {
     case 'stamp':
     case 'label':
+    case 'icon':
       return boxContains(elementBox(el, sizeOf)!, p)
     case 'path':
       return distanceToLine(el.points, p) <= el.width / 2 + LINE_TOUCH_PX / zoom
@@ -148,8 +161,12 @@ export function clampLabelSize(size: number): number {
  * Escala uniforme ao arrastar um canto: a razão entre a distância do ponteiro
  * ao centro e a meia-diagonal da caixa. Stamp muda `scale`; texto muda `size`.
  */
-export function resizeToward(el: AreaStamp | AreaLabel, sizeOf: SizeOf, pointer: Point): { scale?: number; size?: number } {
+export function resizeToward(el: AreaStamp | AreaLabel | AreaIcon, sizeOf: SizeOf, pointer: Point): { scale?: number; size?: number } {
   const dist = Math.hypot(pointer.x - el.x, pointer.y - el.y)
+  if (el.kind === 'icon') {
+    const size = (dist / Math.SQRT2) * 2
+    return { size: Math.round(Math.min(AREA_ICON_MAX_SIZE, Math.max(AREA_ICON_MIN_SIZE, size))) }
+  }
   if (el.kind === 'stamp') {
     const { w, h } = sizeOf(el.asset)
     const diagonal = Math.hypot(w / 2, h / 2)
@@ -176,11 +193,11 @@ export function rotateHandle(box: OBox, zoom: number): Point {
   return { x: box.x + r.x, y: box.y + r.y }
 }
 
-/** Qual alça está sob o ponteiro: girar, escalar (qualquer canto) ou nenhuma. */
-export function gizmoHit(box: OBox, zoom: number, p: Point): 'rotate' | 'scale' | null {
+/** Qual alça está sob o ponteiro: girar (se `rotatable`), escalar (qualquer canto) ou nenhuma. */
+export function gizmoHit(box: OBox, zoom: number, p: Point, rotatable = true): 'rotate' | 'scale' | null {
   const reach = GIZMO_HANDLE_PX / zoom
   const near = (q: Point) => Math.hypot(q.x - p.x, q.y - p.y) <= reach
-  if (near(rotateHandle(box, zoom))) return 'rotate'
+  if (rotatable && near(rotateHandle(box, zoom))) return 'rotate'
   if (boxCorners(box).some(near)) return 'scale'
   return null
 }

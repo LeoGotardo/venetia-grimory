@@ -44,6 +44,20 @@ describe('mapas de área no IndexedDB', () => {
     expect((await loadAreaMap(id))!.elements.map(e => e.id)).toEqual(['t1', 't2', 't3'])
   })
 
+  it('a miniatura tem escritor próprio e os commits do editor não a apagam', async () => {
+    const id = await st().createAreaMap('c1', 'Vale', 1200, 900)
+    await st().openAreaMap(id)
+    const stale = st().map!
+    st().setAreaThumbnail(id, 'data:image/jpeg;base64,AAA')
+    // O rascunho do editor é de antes da miniatura existir.
+    st().commitAreaMap(addElements(stale, [tree('t1')]))
+    await flushPendingAreaMapSave()
+    expect(st().map!.thumbnail).toBe('data:image/jpeg;base64,AAA')
+    expect((await loadAreaMap(id))!.thumbnail).toBe('data:image/jpeg;base64,AAA')
+    await st().loadList('c1')
+    expect(st().list![0].thumbnail).toBe('data:image/jpeg;base64,AAA')
+  })
+
   it('mapa inexistente abre como nulo', async () => {
     expect(await st().openAreaMap('nao-existe')).toBe(false)
     expect(st().map).toBeNull()

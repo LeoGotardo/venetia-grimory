@@ -4,7 +4,8 @@ import type {
 } from '../../types'
 import { blankCells, clampMapSize, isTerrainCode } from './terrain'
 import {
-  AREA_BRUSH_DEFAULT, AREA_BRUSH_MAX, AREA_BRUSH_MIN, AREA_DEFAULT_TEXTURE, AREA_LABEL_COLORS, AREA_LABEL_STYLES,
+  AREA_BRUSH_DEFAULT, AREA_BRUSH_MAX, AREA_BRUSH_MIN, AREA_DEFAULT_TEXTURE, AREA_GRID_DEFAULT_SIZE, AREA_GRID_MAX_SIZE,
+  AREA_GRID_MIN_SIZE, AREA_ICON_COLORS, AREA_ICON_DEFAULT_SIZE, AREA_ICON_MAX_SIZE, AREA_ICON_MIN_SIZE, AREA_LABEL_COLORS, AREA_LABEL_STYLES,
   AREA_LAYERS, AREA_PATH_MAX_WIDTH, AREA_PATH_MIN_WIDTH, AREA_PATH_STYLES, AREA_REGION_COLORS,
   CREATURE_SIZES, DEFAULT_SPEED_METERS, TERRAIN_VOID,
 } from '../../constants'
@@ -174,6 +175,8 @@ export function normalizeAreaMap(raw: unknown): AreaMap {
     background: { texture: typeof m.background?.texture === 'string' ? m.background.texture : AREA_DEFAULT_TEXTURE },
     layers,
     elements,
+    grid: normalizeGrid(m.grid),
+    ...(typeof m.thumbnail === 'string' && m.thumbnail.startsWith('data:image/') ? { thumbnail: m.thumbnail } : {}),
     version: 1,
     created_at: m.created_at ?? at,
     updated_at: at,
@@ -205,6 +208,7 @@ function normalizeAreaElement(raw: unknown): AreaElement | null {
         rotation: normalizeDegrees(finite(e.rotation, 0)),
         flip: e.flip === true,
         opacity: unit(e.opacity),
+        ...(e.effect === 'shadow' || e.effect === 'glow' ? { effect: e.effect } : {}),
       }
     case 'paint': {
       const points = flatPoints(e.points, 1)
@@ -244,7 +248,24 @@ function normalizeAreaElement(raw: unknown): AreaElement | null {
         color: typeof e.color === 'string' && HEX.test(e.color) ? e.color : AREA_LABEL_COLORS[0],
       }
     }
+    case 'icon':
+      if (typeof e.icon !== 'string' || !point) return null
+      return {
+        kind: 'icon', id, layer, icon: e.icon, x: e.x as number, y: e.y as number,
+        size: Math.min(AREA_ICON_MAX_SIZE, Math.max(AREA_ICON_MIN_SIZE, finite(e.size, AREA_ICON_DEFAULT_SIZE))),
+        color: typeof e.color === 'string' && HEX.test(e.color) ? e.color : AREA_ICON_COLORS[0],
+        badge: e.badge !== false,
+      }
     default:
       return null
+  }
+}
+
+function normalizeGrid(raw: unknown): AreaMap['grid'] {
+  const g = (raw ?? {}) as Partial<AreaMap['grid']>
+  return {
+    kind: g.kind === 'square' || g.kind === 'hex' ? g.kind : 'off',
+    size: Math.min(AREA_GRID_MAX_SIZE, Math.max(AREA_GRID_MIN_SIZE, finite(g.size, AREA_GRID_DEFAULT_SIZE))),
+    opacity: unit(g.opacity, 0.35),
   }
 }

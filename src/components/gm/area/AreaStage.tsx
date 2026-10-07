@@ -1,14 +1,17 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, type Ref } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  AlphaFilter, Application, Container, Graphics, GraphicsContext, Text, Texture, TilingSprite,
+  AlphaFilter, Application, BlurFilter, Container, Graphics, GraphicsContext, Rectangle, Text, Texture, TilingSprite,
 } from 'pixi.js'
-import type { AreaElement, AreaLayerId, AreaMap, AreaStamp } from '../../../types'
+import type { AreaElement, AreaIcon, AreaLayerId, AreaMap, AreaStamp } from '../../../types'
 import { stampDef, stampSize, stampSvg } from '../../../data/areaMap/stamps'
+import { ICON_VIEWBOX, iconDef, iconSvg } from '../../../data/areaMap/icons'
+import { hexCenters, hexCorners } from '../../../lib/gm/areaMap/grid'
+import { AREA_EXPORT_MAX_PX } from '../../../constants'
 import { areaTextureTile } from './areaTextures'
 import { TILE_RESOLUTION, applyLabel, drawPaint, drawPath, drawRegion, labelStyle } from './areaStyles'
 import {
-  boxCorners, elementBounds, elementBox, rotateHandle, GIZMO_HANDLE_PX, type Point,
+  boxCorners, canRotate, elementBounds, elementBox, rotateHandle, GIZMO_HANDLE_PX, type Point,
 } from '../../../lib/gm/areaMap/geometry'
 import { fitView, panBy, screenToWorld, zoomAt, type View } from '../../../lib/gm/areaMap/viewport'
 
@@ -34,6 +37,20 @@ interface AreaStageProps {
   onUp: (world: Point) => void
   /** Um segundo dedo virou pinça: o gesto em andamento deve ser descartado. */
   onCancel: () => void
+  /** Exportação em imagem e miniatura (precisam do renderer). */
+  apiRef?: Ref<AreaStageApi>
+}
+
+export interface CaptureOptions {
+  /** Pixels por unidade de mundo (limitado por `AREA_EXPORT_MAX_PX`). */
+  scale: number
+  labels: boolean
+  grid: boolean
+}
+
+export interface AreaStageApi {
+  /** O mapa inteiro, sem seleção nem prévia, num canvas. `null` se o palco ainda não montou. */
+  capture: (options: CaptureOptions) => HTMLCanvasElement | null
 }
 
 // Um `GraphicsContext` por asset, compartilhado por todos os stamps iguais: o SVG
@@ -58,26 +75,113 @@ function assetContext(asset: string): GraphicsContext {
   return ctx
 }
 
-function applyStamp(node: Graphics, el: AreaStamp) {
+/** Stamp = contêiner com o desenho e, se houver efeito, uma cópia borrada por trás. */
+interface StampNode extends Container {
+  main: Graphics
+  fx: Graphics | null
+}
+
+const GLOW_COLOR = 0xc8b6ff
+
+function applyStamp(node: StampNode, el: AreaStamp) {
   const ctx = assetContext(el.asset)
-  if (node.context !== ctx) node.context = ctx
+  if (node.main.context !== ctx) node.main.context = ctx
   const { w, h } = stampSize(el.asset)
   node.pivot.set(w / 2, h / 2)
   node.position.set(el.x, el.y)
   node.angle = el.rotation
   node.scale.set(el.flip ? -el.scale : el.scale, el.scale)
   node.alpha = el.opacity
+
+  if (!el.effect) {
+    if (node.fx) {
+      node.fx.destroy()
+      node.fx = null
+    }
+    return
+  }
+  if (!node.fx) {
+    node.fx = new Graphics(ctx)
+    node.addChildAt(node.fx, 0)
+  }
+  const fx = node.fx
+  if (fx.context !== ctx) fx.context = ctx
+  if (el.effect === 'shadow') {
+    // Sombra projetada para baixo e à direita (luz vindo de cima à esquerda, como nas texturas).
+    fx.tint = 0x000000
+    fx.alpha = 0.4
+    fx.scale.set(1)
+    fx.position.set(w * 0.06, h * 0.08)
+    fx.filters = [new BlurFilter({ strength: 3, quality: 2 })]
+  } else {
+    fx.tint = GLOW_COLOR
+    fx.alpha = 0.85
+    fx.scale.set(1.12)
+    fx.position.set(-w * 0.06, -h * 0.06)
+    fx.filters = [new BlurFilter({ strength: 10, quality: 3 })]
+  }
+}
+
+// Glifo de cada ícone em branco, compartilhado; a cor vem do `tint` da instância.
+const iconContexts = new Map<string, GraphicsContext>()
+
+function iconContext(icon: string): GraphicsContext {
+  let ctx = iconContexts.get(icon)
+  if (ctx) return ctx
+  const def = iconDef(icon)
+  ctx = def
+    ? new GraphicsContext().svg(iconSvg(def, '#ffffff'))
+    : new GraphicsContext().circle(ICON_VIEWBOX / 2, ICON_VIEWBOX / 2, ICON_VIEWBOX * 0.3).fill({ color: 0xffffff })
+  iconContexts.set(icon, ctx)
+  return ctx
+}
+
+interface IconNode extends Container {
+  badge: Graphics
+  glyph: Graphics
+}
+
+const hexColor = (c: string) => Number.parseInt(c.slice(1), 16)
+
+function applyIcon(node: IconNode, el: AreaIcon) {
+  node.position.set(el.x, el.y)
+  const r = el.size / 2
+  node.badge.clear()
+  node.badge.visible = el.badge
+  if (el.badge) {
+    node.badge.circle(0, 0, r).fill({ color: 0x1a1714, alpha: 0.88 }).stroke({ color: hexColor(el.color), width: Math.max(1.5, r * 0.09) })
+  }
+  const ctx = iconContext(el.icon)
+  if (node.glyph.context !== ctx) node.glyph.context = ctx
+  const glyphSize = el.badge ? el.size * 0.6 : el.size
+  node.glyph.scale.set(glyphSize / ICON_VIEWBOX)
+  node.glyph.position.set(-glyphSize / 2, -glyphSize / 2)
+  node.glyph.tint = hexColor(el.color)
 }
 
 function createNode(el: AreaElement, textResolution: number): Container {
-  if (el.kind === 'stamp') return new Graphics(assetContext(el.asset))
+  if (el.kind === 'stamp') {
+    const node = new Container() as StampNode
+    node.main = new Graphics(assetContext(el.asset))
+    node.fx = null
+    node.addChild(node.main)
+    return node
+  }
+  if (el.kind === 'icon') {
+    const node = new Container() as IconNode
+    node.badge = new Graphics()
+    node.glyph = new Graphics(iconContext(el.icon))
+    node.addChild(node.badge, node.glyph)
+    return node
+  }
   if (el.kind === 'label') return new Text({ text: '', resolution: textResolution })
   return new Graphics()
 }
 
 function updateNode(node: Container, el: AreaElement) {
   switch (el.kind) {
-    case 'stamp': return applyStamp(node as Graphics, el)
+    case 'stamp': return applyStamp(node as StampNode, el)
+    case 'icon': return applyIcon(node as IconNode, el)
     case 'paint': return drawPaint(node as Graphics, el)
     case 'region': return drawRegion(node as Graphics, el)
     case 'path': return drawPath(node as Graphics, el)
@@ -105,6 +209,36 @@ function isolatePaint(group: Container, on: boolean) {
   group.filters = on ? [new AlphaFilter({ alpha: 1 })] : []
 }
 
+/**
+ * Grade só de alinhamento, logo abaixo da camada de textos. Linhas de 1 px de
+ * tela (`pixelLine`), qualquer que seja o zoom.
+ */
+function drawGrid(scene: Scene, m: AreaMap) {
+  const labelsIdx = m.layers.findIndex(l => l.id === 'labels')
+  scene.grid.zIndex = (labelsIdx < 0 ? m.layers.length : labelsIdx) - 0.5
+  scene.grid.alpha = m.grid.opacity
+  const key = `${m.grid.kind}:${m.grid.size}:${m.width}:${m.height}`
+  if (key === scene.gridKey) return
+  scene.gridKey = key
+  const g = scene.grid
+  g.clear()
+  if (m.grid.kind === 'square') {
+    for (let x = 0; x <= m.width; x += m.grid.size) g.moveTo(x, 0).lineTo(x, m.height)
+    for (let y = 0; y <= m.height; y += m.grid.size) g.moveTo(0, y).lineTo(m.width, y)
+    g.stroke({ color: 0x131110, pixelLine: true })
+  } else if (m.grid.kind === 'hex') {
+    for (const c of hexCenters(m.width, m.height, m.grid.size)) g.poly(hexCorners(c, m.grid.size), true)
+    g.stroke({ color: 0x131110, pixelLine: true })
+  }
+  // Os hexágonos passam da borda: a máscara corta no retângulo do mapa.
+  if (!g.mask) {
+    const mask = new Graphics()
+    g.parent?.addChild(mask)
+    g.mask = mask
+  }
+  ;(g.mask as Graphics).clear().rect(0, 0, m.width, m.height).fill({ color: 0xffffff })
+}
+
 interface LayerNodes {
   root: Container
   /** Pinceladas da camada. Ganha um filtro quando há borracha, para o `erase` só apagar tinta. */
@@ -120,6 +254,9 @@ interface Scene {
   nodes: Map<string, { el: AreaElement; node: Container }>
   overlay: Graphics
   ghost: Graphics
+  grid: Graphics
+  /** Chave do que a grade desenhou por último (tipo, tamanho, mapa) — redesenha só quando muda. */
+  gridKey: string
   texture: string
   textResolution: number
 }
@@ -129,7 +266,7 @@ interface Scene {
  * coordenada de mundo e avisa quem usa; o pan/zoom (roda, botões, pinça) é dele.
  * Desenha sob demanda — sem loop contínuo, para não gastar bateria no tablet.
  */
-export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel }: AreaStageProps) {
+export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel, apiRef }: AreaStageProps) {
   const { t } = useTranslation()
   const hostRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<Scene | null>(null)
@@ -154,14 +291,16 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
 
     const el = sel ? m.elements.find(e => e.id === sel) : undefined
     const box = el ? elementBox(el, stampSize) : null
-    if (box) {
+    if (box && el) {
       const corners = boxCorners(box)
       o.poly(corners.flatMap(c => [c.x, c.y])).stroke({ color: GOLD, width: 2 * px, alpha: 0.95 })
-      const handle = rotateHandle(box, zoom)
-      const top = { x: (corners[0].x + corners[1].x) / 2, y: (corners[0].y + corners[1].y) / 2 }
-      o.moveTo(top.x, top.y).lineTo(handle.x, handle.y).stroke({ color: GOLD, width: 1.5 * px })
       const r = (GIZMO_HANDLE_PX * 0.55) * px
-      o.circle(handle.x, handle.y, r).fill({ color: 0x1a1714 }).stroke({ color: GOLD, width: 2 * px })
+      if (canRotate(el)) {
+        const handle = rotateHandle(box, zoom)
+        const top = { x: (corners[0].x + corners[1].x) / 2, y: (corners[0].y + corners[1].y) / 2 }
+        o.moveTo(top.x, top.y).lineTo(handle.x, handle.y).stroke({ color: GOLD, width: 1.5 * px })
+        o.circle(handle.x, handle.y, r).fill({ color: 0x1a1714 }).stroke({ color: GOLD, width: 2 * px })
+      }
       for (const c of corners) {
         o.rect(c.x - r * 0.8, c.y - r * 0.8, r * 1.6, r * 1.6).fill({ color: GOLD }).stroke({ color: 0x1a1714, width: 1.5 * px })
       }
@@ -227,6 +366,8 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
     scene.background.height = m.height
     scene.frame.clear().rect(0, 0, m.width, m.height).stroke({ color: 0x000000, width: 3, alpha: 0.6 })
 
+    drawGrid(scene, m)
+
     m.layers.forEach((layer, i) => {
       const nodes = scene.layers.get(layer.id)
       if (!nodes) return
@@ -266,6 +407,48 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
     }
     schedule()
   }, [schedule])
+
+  useImperativeHandle(apiRef, () => ({
+    capture: ({ scale, labels, grid }) => {
+      const scene = sceneRef.current
+      if (!scene) return null
+      const m = latest.current.map
+      const resolution = Math.max(0.05, Math.min(scale, AREA_EXPORT_MAX_PX / Math.max(m.width, m.height)))
+      const labelsRoot = scene.layers.get('labels')?.root
+      const labelsLayer = m.layers.find(l => l.id === 'labels')
+      const saved = {
+        x: scene.world.x, y: scene.world.y, scale: scene.world.scale.x,
+        grid: scene.grid.visible, labels: labelsRoot?.visible ?? true, textRes: scene.textResolution,
+      }
+      // Só o mapa: sem seleção, prévia, moldura; grade e textos conforme o pedido.
+      scene.overlay.visible = false
+      scene.ghost.visible = false
+      scene.frame.visible = false
+      scene.grid.visible = grid && m.grid.kind !== 'off'
+      if (labelsRoot) labelsRoot.visible = labels && (labelsLayer?.visible ?? true)
+      const textRes = Math.min(8, Math.max(1, Math.ceil(resolution * 2)))
+      for (const { node } of scene.nodes.values()) if (node instanceof Text) node.resolution = textRes
+      scene.world.position.set(0, 0)
+      scene.world.scale.set(1)
+      try {
+        return scene.app.renderer.extract.canvas({
+          target: scene.world,
+          frame: new Rectangle(0, 0, m.width, m.height),
+          resolution,
+          clearColor: '#131110',
+        }) as HTMLCanvasElement
+      } finally {
+        scene.world.position.set(saved.x, saved.y)
+        scene.world.scale.set(saved.scale)
+        scene.overlay.visible = true
+        scene.frame.visible = true
+        scene.grid.visible = saved.grid
+        if (labelsRoot) labelsRoot.visible = saved.labels
+        for (const { node } of scene.nodes.values()) if (node instanceof Text) node.resolution = saved.textRes
+        schedule()
+      }
+    },
+  }), [schedule])
 
   /** Fontes carregadas depois do primeiro desenho: os textos são medidos de novo. */
   const refreshLabels = useCallback(() => {
@@ -333,6 +516,8 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
         layers.set(layer.id, { root, paint })
         world.addChild(root)
       }
+      const grid = new Graphics()
+      world.addChild(grid)
       const ghost = new Graphics()
       ghost.alpha = 0.55
       ghost.zIndex = 1000
@@ -342,7 +527,7 @@ export function AreaStage({ map, selectedId, panMode, ghostAsset, brushSize, onD
       app.stage.addChild(world)
 
       sceneRef.current = {
-        app, world, background, frame: frameG, layers, nodes: new Map(), overlay, ghost, texture: '', textResolution: 1,
+        app, world, background, frame: frameG, layers, nodes: new Map(), overlay, ghost, grid, gridKey: '', texture: '', textResolution: 1,
       }
       sync()
       void Promise.all([

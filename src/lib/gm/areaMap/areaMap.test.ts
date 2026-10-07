@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import type { AreaLabel, AreaMap, AreaPaint, AreaPath, AreaRegion, AreaStamp } from '../../../types'
+import type { AreaElement, AreaIcon, AreaLabel, AreaMap, AreaPaint, AreaPath, AreaRegion, AreaStamp } from '../../../types'
 import {
   addElements, createAreaMap, drawOrder, duplicateElements, isEditable, moveLayer, moveToLayer,
   removeElements, reorderElement, setLayer, translateElement, updateElements,
 } from './scene'
 import {
-  boxContains, boxCorners, elementBounds, gizmoHit, hitTest, labelBox, resizeToward, rotateHandle, rotationToward, stampBox,
+  boxContains, boxCorners, canRotate, elementBounds, gizmoHit, hitTest, labelBox, resizeToward, rotateHandle, rotationToward, stampBox,
 } from './geometry'
 import { boundsOf, dashLine, distanceToLine, pointInPolygon, simplify, smooth } from './shapes'
+import { MAX_GRID_CELLS, hexCenters, hexCorners, hexRowHeight, snapToGrid } from './grid'
 import { fitView, screenToWorld, worldToScreen, zoomAt } from './viewport'
 import { normalizeAreaMap } from '../normalize'
 import { AREA_LAYERS, AREA_MAP_MAX_ELEMENTS, AREA_MAP_MAX_SIZE, AREA_STAMP_MAX_SCALE } from '../../../constants'
@@ -31,7 +32,7 @@ const paint = (id: string, points: number[]): AreaPaint => ({
   kind: 'paint', id, layer: 'terrain', texture: 'grass', size: 40, points, erase: false,
 })
 
-function mapWith(...els: Array<AreaStamp | AreaPath | AreaRegion | AreaLabel | AreaPaint>): AreaMap {
+function mapWith(...els: AreaElement[]): AreaMap {
   return addElements(createAreaMap('c1', 'Vale', 1000, 800), els)
 }
 
@@ -175,6 +176,47 @@ describe('formas', () => {
   })
 })
 
+describe('grade', () => {
+  it('quadrada encaixa no centro da casa; desligada não mexe', () => {
+    const square = { kind: 'square' as const, size: 50, opacity: 1 }
+    expect(snapToGrid({ x: 12, y: 99 }, square)).toEqual({ x: 25, y: 75 })
+    expect(snapToGrid({ x: 12, y: 99 }, { ...square, kind: 'off' })).toEqual({ x: 12, y: 99 })
+  })
+
+  it('hexagonal encaixa no centro mais próximo, com as linhas ímpares deslocadas', () => {
+    const hex = { kind: 'hex' as const, size: 60, opacity: 1 }
+    const row = hexRowHeight(60)
+    expect(snapToGrid({ x: 4, y: 3 }, hex)).toEqual({ x: 0, y: 0 })
+    const odd = snapToGrid({ x: 33, y: row + 2 }, hex)
+    expect(odd.x).toBeCloseTo(30)
+    expect(odd.y).toBeCloseTo(row)
+  })
+
+  it('hexágono tem 6 vértices à distância do raio e a grade grande demais não desenha', () => {
+    const corners = hexCorners({ x: 0, y: 0 }, 60)
+    expect(corners).toHaveLength(12)
+    expect(corners[0]).toBeCloseTo(0)
+    expect(corners[1]).toBeCloseTo(-60 / Math.sqrt(3))
+    expect(hexCenters(600, 400, 60).length).toBeGreaterThan(50)
+    expect(hexCenters(100000, 100000, 16).length).toBe(0)
+    expect(MAX_GRID_CELLS).toBeGreaterThan(1000)
+  })
+})
+
+describe('ícones', () => {
+  const icon = (over: Partial<AreaIcon> = {}): AreaIcon => ({
+    kind: 'icon', id: 'i', layer: 'labels', icon: 'city', x: 100, y: 100, size: 40, color: '#f5f0e8', badge: true, ...over,
+  })
+
+  it('ficam de pé, escalam pelo canto e são tocáveis', () => {
+    expect(canRotate(icon())).toBe(false)
+    expect(canRotate(stamp('s'))).toBe(true)
+    expect(resizeToward(icon({ x: 0, y: 0 }), sizeOf, { x: 30, y: 30 })).toEqual({ size: 60 })
+    expect(hitTest(mapWith(icon()), { x: 110, y: 110 }, sizeOf)).toBe('i')
+    expect(translateElement(icon(), 5, 5)).toMatchObject({ x: 105, y: 105 })
+  })
+})
+
 describe('viewport', () => {
   it('converte ida e volta e dá zoom mantendo o ponto sob o ponteiro', () => {
     const v = { zoom: 2, x: 10, y: 20 }
@@ -225,9 +267,20 @@ describe('normalizeAreaMap', () => {
         { kind: 'region', id: 'r2', points: [0, 0, 1, 0, 1, 1], color: 'nada' },
         { kind: 'path', id: 'c', style: 'teleférico', points: [0, 0, 5, 5] },
         { kind: 'label', id: 'l', text: 'Vila', x: 1, y: 2, style: 'gigante', size: -3 },
+        { kind: 'icon', id: 'i', icon: 'city', x: 1, y: 2, size: 9999, badge: false, color: 'x' },
+        { kind: 'icon', id: 'sem-icone', x: 1, y: 2 },
+        { ...stamp('fx'), effect: 'glow' },
+        { ...stamp('fx-ruim'), effect: 'explosão' },
       ],
+      grid: { kind: 'hex', size: 2, opacity: 9 },
+      thumbnail: 'javascript:alert(1)',
     })
-    expect(m.elements.map(e => e.id)).toEqual(['p', 'r2', 'c', 'l'])
+    expect(m.elements.map(e => e.id)).toEqual(['p', 'r2', 'c', 'l', 'i', 'fx', 'fx-ruim'])
+    expect(m.elements[4]).toMatchObject({ size: 400, badge: false, color: '#f5f0e8' })
+    expect(m.elements[5]).toMatchObject({ effect: 'glow' })
+    expect(m.elements[6]).not.toHaveProperty('effect')
+    expect(m.grid).toEqual({ kind: 'hex', size: 16, opacity: 1 })
+    expect(m).not.toHaveProperty('thumbnail')
     expect(m.elements[0]).toMatchObject({ size: 400, erase: false })
     expect(m.elements[1]).toMatchObject({ texture: null, color: '#b5392f', border: false })
     expect(m.elements[2]).toMatchObject({ style: 'dirtRoad', width: 18 })

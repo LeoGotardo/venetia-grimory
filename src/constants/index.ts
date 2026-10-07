@@ -186,6 +186,22 @@ export const AREA_LABEL_STYLES = {
 export const AREA_LABEL_MIN_SIZE = 8
 export const AREA_LABEL_MAX_SIZE = 400
 export const AREA_LABEL_COLORS = ['#f5f0e8', '#2a1d10', '#d4a017', '#b5392f', '#9fd0ea'] as const
+/** Ícones: diâmetro padrão e limites (unidades de mundo). Cores do glifo/selo. */
+export const AREA_ICON_DEFAULT_SIZE = 48
+export const AREA_ICON_MIN_SIZE = 12
+export const AREA_ICON_MAX_SIZE = 400
+export const AREA_ICON_COLORS = ['#f5f0e8', '#d4a017', '#b5392f', '#3f7fa8', '#4f8a3a', '#8f6bff', '#2a1d10'] as const
+/** Grade de alinhamento. */
+export const AREA_GRID_DEFAULT_SIZE = 64
+export const AREA_GRID_MIN_SIZE = 16
+export const AREA_GRID_MAX_SIZE = 1000
+/** Exportação em imagem: lado máximo em pixels (cabe na textura de GPU de celular). */
+export const AREA_EXPORT_MAX_PX = 8192
+export const AREA_EXPORT_JPEG_QUALITY = 0.92
+/** Miniatura da lista: lado maior em pixels, qualidade JPEG e espera depois da última edição. */
+export const AREA_THUMBNAIL_PX = 360
+export const AREA_THUMBNAIL_QUALITY = 0.72
+export const AREA_THUMBNAIL_DELAY_MS = 1500
 /** Zoom do editor: pixels de tela por unidade de mundo. */
 export const AREA_MIN_ZOOM = 0.05
 export const AREA_MAX_ZOOM = 8

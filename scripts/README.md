@@ -111,3 +111,21 @@ Destreza: CD 13", "Falha:", "Sucesso: Metade do dano.", "Sangrando", "Vantagem".
 
 A parte estruturada (tipo, tamanho, tendência, perícias, condições, tipos de dano) é traduzida
 pelo próprio gerador. Distâncias saem em metros (5 ft = 1,5 m), como no resto do app.
+
+# Ícones do mapa de área
+
+`src/data/areaMap/icons.generated.ts` é **gerado** — não edite à mão.
+
+```bash
+node scripts/areamap/generate-icons.mjs
+```
+
+- **Fonte:** `@iconify-json/game-icons` (devDependency), o game-icons.net inteiro, CC BY 3.0.
+- **Curadoria:** `scripts/areamap/icons.json` — id nosso, nome no game-icons, categoria e autor.
+  O autor é a pasta do ícone no repositório `game-icons/icons`. Só entram nomes que existem em
+  **uma pasta só**: alguns (`key`, `castle`, `tombstone`) existem em dois autores, e aí não dá
+  para saber qual versão o pacote traz nem a quem atribuir. Hoje são todos de Lorc e Delapouite.
+- **Paths:** o gerador passa tudo por `svgpath` (devDependency) — absoluto, sem arcos e sem
+  atalhos de curva. O parser SVG do Pixi 8 desenha errado arcos e `S`/`T`: 10 dos 58 ícones saíam
+  do quadro. `src/data/areaMap/catalog.test.ts` confere isso e os nomes em pt/en.
+- Ícone novo = entrada no JSON, nome em `gm.areaMap.icons.*` nos dois catálogos, e rodar o gerador.

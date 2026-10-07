@@ -139,8 +139,11 @@ export function MapTab({ campaign }: { campaign: Campaign }) {
   )
 }
 
-/** Miniatura simples do mapa de área: o material do fundo (o desenho completo fica no editor). */
+/** Miniatura do mapa de área: o JPEG que o editor gera; antes dele, o material do fundo. */
 function AreaThumbnail({ item }: { item: AreaMapListItem }) {
+  if (item.thumbnail) {
+    return <img src={item.thumbnail} alt="" className="w-full aspect-[3/2] object-contain rounded-[8px] bg-[#0d0b0a]" />
+  }
   return (
     <div
       aria-hidden="true"
