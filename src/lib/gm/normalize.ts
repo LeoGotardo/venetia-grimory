@@ -81,6 +81,7 @@ export function normalizeEncounter(raw: unknown): Encounter {
     combatants,
     round: typeof e.round === 'number' ? e.round : 0,
     turn_id: combatants.some(c => c.id === e.turn_id) ? e.turn_id! : null,
+    strict_movement: e.strict_movement === true,
     log: Array.isArray(e.log) ? e.log : [],
     created_at: e.created_at ?? at,
     updated_at: at,

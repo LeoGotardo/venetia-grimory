@@ -251,7 +251,10 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   combatant's turn starts (`freshTurn`). Pathing is Dijkstra in `src/lib/gm/movement.ts`
   (difficult = 2 per square, walls/pits/void block, diagonals don't cut wall corners). Dragging
   the **turn owner** spends movement at the real path cost; dragging anyone else is a free GM
-  reposition (`placeCombatant`). Beyond-speed moves are allowed with a warning — the GM decides.
+  reposition (`placeCombatant`). Beyond-speed moves are allowed with a warning — the GM decides —
+  unless the encounter's `strict_movement` ("Enforce movement") is on and combat is active: then
+  `checkMove` (`movement.ts`) refuses drops with no real path for everyone and beyond the remaining
+  movement for the turn owner (setup placement stays free; off by default, old saves normalize to off).
   Each combatant has `move_mode` (walk/fly/swim, with `fly_m`/`swim_m` from the stat block; players
   start with none and the GM can type them) — each `TERRAINS` entry carries `fly` (passable when
   flying: everything but wall, pillar and void) and `swim` (costs 1 with a swim speed: shallow and
@@ -322,7 +325,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   (merged creatures, lost "Hit:"/"Failure:" labels); fixed copies live in `scripts/srd/overrides/`,
   `scripts/srd/crosscheck.mjs` compares the output with a second CC-BY conversion, and the PT text
   comes from the global EN→PT dictionaries in `scripts/srd/monsters-pt.json` (see `scripts/README.md`).
-- **Area maps** (non-combat, `docs/venetia-area-map-spec.md`) are a separate system from the grid:
+- **Area maps** (non-combat, `docs/venetia-area-map-spec.md`, shown as **Beta** in the UI) are a separate system from the grid:
   world coordinates, a flat `elements` list where each element carries its `layer` (array order =
   z inside the layer), `layers` state (visible/locked/opacity, array order = draw order; `labels`
   is last so no territory covers a name). Element kinds: `stamp`, `label` (oriented box, gizmo

@@ -166,3 +166,40 @@ export function occupancyFor(mover: Combatant, combatants: Combatant[], mapWidth
   }
   return occupancy
 }
+
+export type MoveCheck =
+  | { ok: true; cost: number | null }
+  | { ok: false; reason: 'occupied' | 'noPath' | 'tooFar' }
+
+export interface MoveRules {
+  /** `encounter.strict_movement` com o combate em andamento. */
+  strict: boolean
+  /** O movimento é de quem tem a vez (gasta deslocamento). */
+  turnOwner: boolean
+}
+
+/**
+ * Pode soltar o token em `to`? Ninguém para em casa ocupada. No modo estrito,
+ * todo mundo precisa de um caminho de verdade (parede, vazio e quina bloqueiam;
+ * voar e nadar mudam o custo) e quem tem a vez não passa do que resta do
+ * deslocamento. Fora do modo estrito vale tudo, e o custo (se houver caminho)
+ * ainda serve para descontar o movimento de quem tem a vez.
+ */
+export function checkMove(
+  map: Pick<GridMap, 'width' | 'height' | 'cells'>,
+  mover: Combatant,
+  to: Cell,
+  combatants: Combatant[],
+  rules: MoveRules,
+): MoveCheck {
+  if (!mover.position) return { ok: true, cost: null }
+  if (combatantAt(combatants.filter(c => c.id !== mover.id), to)) return { ok: false, reason: 'occupied' }
+  const cost = movementCostMeters(map, mover.position, to, {
+    mode: mover.move_mode,
+    occupancy: occupancyFor(mover, combatants, map.width),
+  })
+  if (!rules.strict) return { ok: true, cost }
+  if (cost == null) return { ok: false, reason: 'noPath' }
+  if (rules.turnOwner && cost > remainingMovement(mover) + 1e-9) return { ok: false, reason: 'tooFar' }
+  return { ok: true, cost }
+}

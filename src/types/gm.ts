@@ -211,6 +211,12 @@ export interface Encounter {
   round: number
   /** Combatente da vez, por id — reordenar a lista não muda de quem é o turno. */
   turn_id: string | null
+  /**
+   * Respeitar terreno e deslocamento no mapa durante o combate: quem tem a vez só
+   * para dentro do alcance que resta e ninguém atravessa parede. Desligado, o
+   * mestre move livre (o comportamento de antes).
+   */
+  strict_movement: boolean
   log: EncounterLogEntry[]
   created_at: string
   updated_at: string

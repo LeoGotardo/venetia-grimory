@@ -7,6 +7,7 @@ import { useAreaMapStore } from '../../store/areaMapStore'
 import { GmHeader, gmContainer, gmSecondaryButton } from '../../components/gm/GmHeader'
 import { AppFooter } from '../../components/ui/AppFooter'
 import { AreaStage, type AreaStageApi, type StagePointerInfo } from '../../components/gm/area/AreaStage'
+import { BetaBadge } from '../../components/gm/MapTab'
 import { AssetBrowser, type PickedAsset } from '../../components/gm/area/AssetBrowser'
 import { ExportDialog, type ExportOptions } from '../../components/gm/area/ExportDialog'
 import { LayersPanel } from '../../components/gm/area/LayersPanel'
@@ -704,6 +705,7 @@ function Editor({ initial }: { initial: AreaMap }) {
           }
           actions={
             <>
+              <span title={t('gm.areaMap.betaNotice')}><BetaBadge className="hidden sm:inline-flex mr-1" /></span>
               <button onClick={undo} disabled={past.length === 0} aria-label={t('gm.undo')} className={gmSecondaryButton}>↶</button>
               <button onClick={redo} disabled={future.length === 0} aria-label={t('gm.redo')} className={gmSecondaryButton}>↷</button>
               <button onClick={() => setExportOpen(true)} data-testid="area-exportar-abrir" aria-label={t('gm.areaMap.exportTitle')} className={gmSecondaryButton}>

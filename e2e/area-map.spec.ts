@@ -12,6 +12,7 @@ test.describe('Mapa de área', () => {
     await page.getByRole('tab', { name: /Maps/ }).click()
 
     await page.getByTestId('mapa-tipo-area').click()
+    await expect(page.getByTestId('aviso-beta')).toContainText('In beta')
     await page.getByTestId('mapa-nome').fill('Vale')
     await page.getByTestId('mapa-criar').click()
     await expect(page).toHaveURL(/\/area\//)

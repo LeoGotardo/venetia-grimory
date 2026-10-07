@@ -132,6 +132,7 @@ interface GmState {
   toggleDash: (encounterId: string, combatantId: string) => void
   /** `null` desliga a névoa. */
   setFog: (encounterId: string, fog: string | null) => void
+  setStrictMovement: (encounterId: string, on: boolean) => void
 
   /** Catálogo do SRD 5.2.1 no idioma em que foi carregado. Só leitura. */
   srd: { language: string; monsters: Monster[] } | null
@@ -420,7 +421,7 @@ export const useGmStore = create<GmState>((set, get) => {
       const at = now()
       const encounter: Encounter = {
         id: uuidv4(), name: name.trim(), status: 'preparing', map_id: null, fog: null, combatants: [], round: 0,
-        turn_id: null, log: [], created_at: at, updated_at: at,
+        turn_id: null, strict_movement: false, log: [], created_at: at, updated_at: at,
       }
       updateCampaign(c => ({ encounters: [...c.encounters, encounter] }))
       return encounter.id
@@ -627,6 +628,9 @@ export const useGmStore = create<GmState>((set, get) => {
       })),
 
     setFog: (encounterId, fog) => updateEncounter(encounterId, e => (e.fog === fog ? e : { ...e, fog })),
+
+    setStrictMovement: (encounterId, on) =>
+      updateEncounter(encounterId, e => (e.strict_movement === on ? e : { ...e, strict_movement: on })),
 
     createMap: (name, width, height) => {
       const at = now()

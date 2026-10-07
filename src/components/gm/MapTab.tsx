@@ -59,9 +59,16 @@ export function MapTab({ campaign }: { campaign: Campaign }) {
           }`}
         >
           {t(k === 'combat' ? 'gm.areaMap.kindCombat' : 'gm.areaMap.kindArea')}
+          {k === 'area' && <BetaBadge className="ml-1.5" />}
         </button>
       ))}
     </div>
+  )
+
+  const betaNotice = kind === 'area' && (
+    <p role="note" data-testid="aviso-beta" className="rounded-[10px] border border-[rgba(212,160,23,0.35)] bg-[rgba(212,160,23,0.08)] px-3 py-2.5 text-[13px] leading-snug text-[#EAD9B0]">
+      <strong className="font-semibold">{t('gm.areaMap.betaTitle')}</strong>{' '}{t('gm.areaMap.betaNotice')}
+    </p>
   )
 
   return (
@@ -84,6 +91,7 @@ export function MapTab({ campaign }: { campaign: Campaign }) {
                         : <AreaThumbnail item={entry.map} />}
                       <span className="absolute left-2 top-2 rounded-full bg-[#131110]/85 border border-white/[0.12] px-2 py-0.5 text-[11px] font-semibold text-[#EAD9B0]">
                         {t(entry.kind === 'combat' ? 'gm.areaMap.kindCombat' : 'gm.areaMap.kindArea')}
+                        {entry.kind === 'area' && ` · ${t('gm.areaMap.beta')}`}
                       </span>
                     </div>
                     <div>
@@ -131,11 +139,21 @@ export function MapTab({ campaign }: { campaign: Campaign }) {
           placeholder={t('gm.mapName')}
           inputTestId="mapa-nome"
           buttonTestId="mapa-criar"
-          extra={kindChoice}
+          extra={<>{kindChoice}{betaNotice}</>}
           onCreate={name => void handleCreate(name)}
         />
       </div>
     </section>
+  )
+}
+
+/** Selo "Beta" do mapa de área (ainda em desenvolvimento). */
+export function BetaBadge({ className = '' }: { className?: string }) {
+  const { t } = useTranslation()
+  return (
+    <span className={`inline-flex items-center rounded-full border border-[rgba(212,160,23,0.5)] bg-[rgba(212,160,23,0.12)] px-1.5 py-px text-[10px] font-bold uppercase tracking-wider text-[#D4A017] align-middle ${className}`}>
+      {t('gm.areaMap.beta')}
+    </span>
   )
 }
 

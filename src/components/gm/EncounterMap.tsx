@@ -6,7 +6,7 @@ import { MapCanvas } from './MapCanvas'
 import { TOKEN_FILL, tokenInitials } from './tokenStyle'
 import { distanceMeters, gridDistance, inBounds, lineCells, paintCells, type Cell } from '../../lib/gm/terrain'
 import {
-  combatantAt, movementCostMeters, occupancyFor, reachableCells, remainingMovement, sizeSquares, speedSquares,
+  checkMove, combatantAt, occupancyFor, reachableCells, remainingMovement, sizeSquares, speedSquares, type MoveCheck,
 } from '../../lib/gm/movement'
 import { FOG_HIDDEN, FOG_REVEALED } from '../../constants'
 
@@ -26,11 +26,13 @@ const same = (a: Cell | null, b: Cell | null) => !!a && !!b && a.x === b.x && a.
 
 /**
  * Combate no mapa. Arrastar o token de quem tem a vez gasta movimento (com o
- * custo real do caminho); arrastar outro é reposicionamento livre do mestre.
+ * custo real do caminho); arrastar outro é reposicionamento do mestre. Com
+ * "respeitar deslocamento" ligado e o combate em andamento, ninguém atravessa
+ * parede e quem tem a vez não passa do que lhe resta (`checkMove`).
  */
 export function EncounterMap({ encounter, map, selectedId, onSelect, playerView, onPlayerViewChange }: EncounterMapProps) {
   const { t, i18n } = useTranslation()
-  const { placeCombatant, moveCombatant, setFog } = useGmStore()
+  const { placeCombatant, moveCombatant, setFog, setStrictMovement } = useGmStore()
   const [tool, setTool] = useState<Tool>('tokens')
   const [drag, setDrag] = useState<{ id: string; from: Cell; to: Cell } | null>(null)
   const [ruler, setRuler] = useState<{ a: Cell; b: Cell } | null>(null)
@@ -38,6 +40,8 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
   const [fogDraft, setFogDraft] = useState<string | null>(null)
   const dragRef = useRef<{ id: string; from: Cell; to: Cell } | null>(null)
   const fogRef = useRef<string | null>(null)
+  /** Por que o último arraste foi recusado (some no próximo toque). */
+  const [refused, setRefused] = useState<Exclude<MoveCheck, { ok: true }>['reason'] | null>(null)
   const lastFog = useRef<Cell | null>(null)
 
   const cellCount = map.width * map.height
@@ -50,11 +54,10 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
     c.position && !(playerView && (c.hidden || !isRevealed(c.position))))
 
   const turnOwner = encounter.status === 'active' ? encounter.combatants.find(c => c.id === encounter.turn_id) ?? null : null
-  /** Modo e ocupação de quem se move: o caminho muda conforme voa/nada e quem está no meio. */
-  const moveOptionsFor = (mover: Combatant) => ({
-    mode: mover.move_mode,
-    occupancy: occupancyFor(mover, encounter.combatants, map.width),
-  })
+  /** O modo estrito só vale com o combate andando: na preparação o mestre posiciona livre. */
+  const strict = encounter.strict_movement && encounter.status === 'active'
+  const checkFor = (mover: Combatant, to: Cell): MoveCheck =>
+    checkMove(map, mover, to, encounter.combatants, { strict, turnOwner: mover.id === turnOwner?.id })
 
   const reach = useMemo(() => {
     if (!turnOwner?.position || tool !== 'tokens') return null
@@ -85,6 +88,7 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
   }
 
   function handleDown(cell: Cell) {
+    setRefused(null)
     if (tool === 'ruler') {
       setRuler({ a: selected?.position ?? cell, b: cell })
       return
@@ -125,10 +129,13 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
     if (!d || same(d.from, d.to)) return
     const mover = encounter.combatants.find(c => c.id === d.id)
     if (!mover) return
-    const blocker = combatantAt(encounter.combatants.filter(c => c.id !== d.id), d.to)
-    if (blocker) return
-    const cost = movementCostMeters(map, d.from, d.to, moveOptionsFor(mover))
-    if (mover.id === turnOwner?.id && cost != null) moveCombatant(encounter.id, mover.id, d.to, cost)
+    const check = checkFor(mover, d.to)
+    if (!check.ok) {
+      // O token volta para onde estava; o status diz o motivo.
+      setRefused(check.reason)
+      return
+    }
+    if (mover.id === turnOwner?.id && check.cost != null) moveCombatant(encounter.id, mover.id, d.to, check.cost)
     else placeCombatant(encounter.id, mover.id, d.to)
   }
 
@@ -172,6 +179,13 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
         ctx.stroke()
         ctx.setLineDash([])
         drawToken(ctx, mover, drag.to, scale, { active: false, selected: true, ghost: false, showHp: false })
+        // Destino que o modo estrito vai recusar: moldura vermelha antes de soltar.
+        if (!checkFor(mover, drag.to).ok) {
+          const side = sizeSquares(mover) * scale
+          ctx.strokeStyle = '#e0533f'
+          ctx.lineWidth = 3
+          ctx.strokeRect(drag.to.x * scale + 1.5, drag.to.y * scale + 1.5, side - 3, side - 3)
+        }
       }
     }
 
@@ -198,8 +212,10 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
   let status = ''
   if (drag && !same(drag.from, drag.to)) {
     const mover = encounter.combatants.find(c => c.id === drag.id)
-    const cost = mover ? movementCostMeters(map, drag.from, drag.to, moveOptionsFor(mover)) : null
-    if (cost == null) status = t('gm.noPath')
+    const check = mover ? checkFor(mover, drag.to) : null
+    const cost = check?.ok ? check.cost : null
+    if (check && !check.ok) status = t(`gm.moveRefused.${check.reason}`)
+    else if (cost == null) status = t('gm.noPath')
     else if (mover && mover.id === turnOwner?.id) {
       const left = remainingMovement(mover)
       status = t(cost > left ? 'gm.moveTooFar' : 'gm.moveReading', {
@@ -208,6 +224,8 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
     } else status = t('gm.rulerReading', { squares: gridDistance(drag.from, drag.to), meters: cost.toLocaleString(i18n.language) })
   } else if (ruler && !same(ruler.a, ruler.b)) {
     status = t('gm.rulerReading', { squares: gridDistance(ruler.a, ruler.b), meters: distanceMeters(ruler.a, ruler.b).toLocaleString(i18n.language) })
+  } else if (refused) {
+    status = t(`gm.moveRefused.${refused}`)
   } else if (selected && !selected.position) {
     status = t('gm.placeHint')
   }
@@ -240,6 +258,15 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
           </button>
         ))}
         <span className="w-px h-5 bg-white/[0.1] mx-1" aria-hidden="true" />
+        <button
+          aria-pressed={encounter.strict_movement}
+          data-testid="respeitar-deslocamento"
+          title={t('gm.strictMovementHint')}
+          onClick={() => setStrictMovement(encounter.id, !encounter.strict_movement)}
+          className={toolButton(encounter.strict_movement)}
+        >
+          {t('gm.strictMovement')}
+        </button>
         <button aria-pressed={!!fog} onClick={toggleFog} className={toolButton(!!fog)}>{t('gm.fog')}</button>
         {fog && (
           <>
