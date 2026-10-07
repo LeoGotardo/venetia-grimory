@@ -97,6 +97,9 @@ export interface Npc {
   updated_at: string
 }
 
+export type MoveMode = 'walk' | 'fly' | 'swim'
+export type CombatSide = 'party' | 'enemy'
+
 /**
  * Participante de um encontro. Os números de combate são do encontro: dano no
  * player aqui não escreve na ficha dele. NPCs e monstros levam uma cópia do
@@ -128,6 +131,16 @@ export interface Combatant {
   size: CreatureSize
   /** Deslocamento a pé, em metros. */
   speed_m: number
+  /** Voo e natação (metros); `null` = a criatura não tem esse deslocamento. */
+  fly_m: number | null
+  swim_m: number | null
+  /** Modo do movimento no mapa: muda o deslocamento usado e o custo do terreno. */
+  move_mode: MoveMode
+  /**
+   * Lado no combate. Aliados atravessam o espaço uns dos outros (como terreno
+   * difícil); inimigos bloqueiam — regra "Moving Around Other Creatures" de 2024.
+   */
+  side: CombatSide
   /** Metros andados no turno atual — zera quando o turno dele começa. */
   movement_used_m: number
   /** Disparada neste turno: dobra o deslocamento disponível. */

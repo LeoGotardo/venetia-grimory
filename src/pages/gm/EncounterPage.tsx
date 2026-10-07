@@ -48,6 +48,7 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
   const [view, setView] = useState<'list' | 'map'>('map')
   // No celular o painel é um modal: tocar num token para arrastar não deve abri-lo.
   const [panelOpen, setPanelOpen] = useState(false)
+  const [tableView, setTableView] = useState(false)
   const map = campaign.maps.find(m => m.id === encounter.map_id) ?? null
   const showMap = map != null && view === 'map'
 
@@ -79,6 +80,29 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
       onMap={map != null}
     />
   )
+
+  // Visão da mesa: a tela vira só o mapa, para virar o tablet para os jogadores.
+  if (tableView && map) {
+    const visibleTurn = active && current && !current.hidden
+    return (
+      <div className="min-h-screen bg-black font-[Manrope,system-ui] px-3 sm:px-6 py-3 flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[16px] font-extrabold text-[#D4A017] truncate">
+            {encounterStatusLabel(encounter, t)}{visibleTurn ? ` · ${t('gm.turnOf', { name: current.name })}` : ''}
+          </span>
+          <button onClick={() => setTableView(false)} className={gmSecondaryButton}>{t('gm.exitPlayerView')}</button>
+        </div>
+        <EncounterMap
+          encounter={encounter}
+          map={map}
+          selectedId={null}
+          onSelect={() => {}}
+          playerView
+          onPlayerViewChange={setTableView}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-[#131110] font-[Manrope,system-ui]">
@@ -186,6 +210,8 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
                 map={map}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
+                playerView={false}
+                onPlayerViewChange={setTableView}
               />
             )}
             {showMap && !isDesktop && selected && (

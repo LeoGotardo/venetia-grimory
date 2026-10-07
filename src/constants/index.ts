@@ -107,6 +107,11 @@ export const CREATURE_SIZE_SQUARES: Record<string, number> = {
 }
 /** Deslocamento quando a ficha não informa (o padrão das espécies de 2024). */
 export const DEFAULT_SPEED_METERS = 9
+/**
+ * Condições que incluem Incapacitado (2024): quem está com uma delas pode ter o
+ * espaço atravessado até por inimigos.
+ */
+export const INCAPACITATING_CONDITIONS = ['Incapacitado', 'Inconsciente', 'Paralisado', 'Petrificado', 'Atordoado']
 export const FOG_REVEALED = '1'
 export const FOG_HIDDEN = '0'
 

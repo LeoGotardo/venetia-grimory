@@ -17,8 +17,14 @@ import { EditorSection, Field, NumberField, SelectField, TextField } from './fie
 
 interface StatBlockEditorProps {
   value: StatBlock
-  onChange: (value: StatBlock) => void
+  /**
+   * Atualização funcional: cada campo parte do rascunho mais recente, não do
+   * valor do último render — duas mudanças antes de um re-render não se perdem.
+   */
+  onChange: (update: (prev: StatBlock) => StatBlock) => void
 }
+
+type Change = Partial<StatBlock> | ((prev: StatBlock) => Partial<StatBlock>)
 
 type SenseKey = keyof StatBlock['senses']
 type ExtraSpeed = 'fly' | 'swim' | 'climb' | 'burrow'
@@ -26,7 +32,8 @@ type ExtraSpeed = 'fly' | 'swim' | 'climb' | 'burrow'
 /** Formulário do bloco de estatísticas. Controlado: quem usa guarda o rascunho. */
 export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
   const { t, i18n } = useTranslation()
-  const set = (change: Partial<StatBlock>) => onChange({ ...b, ...change })
+  const set = (change: Change) =>
+    onChange(prev => ({ ...prev, ...(typeof change === 'function' ? change(prev) : change) }))
 
   const hpAverageFromFormula = (() => {
     const parsed = parseDice(b.hp.formula)
@@ -68,13 +75,13 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <NumberField label={t('gm.ac')} value={b.ac} min={0} onChange={ac => set({ ac: ac ?? 10 })} />
           <TextField className="sm:col-span-3" label={t('gm.acNote')} value={b.ac_note} placeholder={t('gm.acNotePlaceholder')} onChange={ac_note => set({ ac_note })} />
-          <NumberField label={t('gm.hpAverage')} value={b.hp.average} min={1} onChange={average => set({ hp: { ...b.hp, average: average ?? 1 } })} />
-          <TextField label={t('gm.hpFormula')} value={b.hp.formula} placeholder="2d8+2" onChange={formula => set({ hp: { ...b.hp, formula } })} />
+          <NumberField label={t('gm.hpAverage')} value={b.hp.average} min={1} onChange={average => set(p => ({ hp: { ...p.hp, average: average ?? 1 } }))} />
+          <TextField label={t('gm.hpFormula')} value={b.hp.formula} placeholder="2d8+2" onChange={formula => set(p => ({ hp: { ...p.hp, formula } }))} />
           <div className="flex items-end">
             <button
               type="button"
               disabled={hpAverageFromFormula == null || hpAverageFromFormula === b.hp.average}
-              onClick={() => hpAverageFromFormula != null && set({ hp: { ...b.hp, average: Math.max(1, hpAverageFromFormula) } })}
+              onClick={() => hpAverageFromFormula != null && set(p => ({ hp: { ...p.hp, average: Math.max(1, hpAverageFromFormula) } }))}
               className="w-full text-[12px] font-semibold text-[#E8DFD0] bg-white/5 hover:bg-white/10 border border-white/[0.1] rounded-[8px] px-2 py-2 cursor-pointer disabled:opacity-40 disabled:cursor-default"
             >
               {t('gm.hpUseAverage')}{hpAverageFromFormula != null ? ` (${hpAverageFromFormula})` : ''}
@@ -89,7 +96,7 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
           />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <NumberField label={`${t('gm.speedWalk')} (${t('gm.metersUnit')})`} value={b.speed.walk} min={0} onChange={walk => set({ speed: { ...b.speed, walk: walk ?? 0 } })} />
+          <NumberField label={`${t('gm.speedWalk')} (${t('gm.metersUnit')})`} value={b.speed.walk} min={0} onChange={walk => set(p => ({ speed: { ...p.speed, walk: walk ?? 0 } }))} />
           {(['fly', 'swim', 'climb', 'burrow'] as ExtraSpeed[]).map(key => (
             <NumberField
               key={key}
@@ -97,13 +104,13 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
               value={b.speed[key]}
               nullable
               min={0}
-              onChange={v => set({ speed: { ...b.speed, [key]: v } })}
+              onChange={v => set(p => ({ speed: { ...p.speed, [key]: v } }))}
             />
           ))}
         </div>
         {b.speed.fly != null && (
           <label className="flex items-center gap-2 text-[13px] text-[#E8DFD0]">
-            <input type="checkbox" checked={b.speed.hover} onChange={e => set({ speed: { ...b.speed, hover: e.target.checked } })} />
+            <input type="checkbox" checked={b.speed.hover} onChange={e => set(p => ({ speed: { ...p.speed, hover: e.target.checked } }))} />
             {t('gm.hover')}
           </label>
         )}
@@ -119,17 +126,20 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
                 min={1}
                 max={30}
                 fallback={10}
-                onChange={v => set({ abilities: { ...b.abilities, [a]: v ?? 10 } })}
+                onChange={v => set(p => ({ abilities: { ...p.abilities, [a]: v ?? 10 } }))}
               />
               <label className="flex items-center gap-1.5 text-[11px] text-[#A8A09B]" title={t('gm.saveProficient')}>
                 <input
                   type="checkbox"
                   checked={b.save_proficiencies.includes(a)}
-                  onChange={e => set({
-                    save_proficiencies: e.target.checked
-                      ? ABILITIES.filter(x => x === a || b.save_proficiencies.includes(x))
-                      : b.save_proficiencies.filter(x => x !== a),
-                  })}
+                  onChange={e => {
+                    const checked = e.target.checked
+                    set(p => ({
+                      save_proficiencies: checked
+                        ? ABILITIES.filter(x => x === a || p.save_proficiencies.includes(x))
+                        : p.save_proficiencies.filter(x => x !== a),
+                    }))
+                  }}
                 />
                 {t('gm.saveShort')}
               </label>
@@ -148,12 +158,15 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
                   type="number"
                   aria-label={gameData.skills.find(s => s.id === id)?.name ?? id}
                   value={bonus}
-                  onChange={e => Number.isFinite(Number(e.target.value)) && set({ skills: { ...b.skills, [id]: Number(e.target.value) } })}
+                  onChange={e => {
+                    const value = Number(e.target.value)
+                    if (Number.isFinite(value)) set(p => ({ skills: { ...p.skills, [id]: value } }))
+                  }}
                   className="w-20 bg-[#131110] border border-white/[0.1] rounded-[8px] px-2 py-1.5 text-[14px] text-[#F5F0E8]"
                 />
                 <RemoveButton
                   label={t('gm.removeFeature')}
-                  onClick={() => set({ skills: Object.fromEntries(Object.entries(b.skills).filter(([k]) => k !== id)) })}
+                  onClick={() => set(p => ({ skills: Object.fromEntries(Object.entries(p.skills).filter(([k]) => k !== id)) }))}
                 />
               </div>
             ))}
@@ -161,7 +174,7 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
               <select
                 value=""
                 aria-label={t('gm.addSkill')}
-                onChange={e => e.target.value && set({ skills: { ...b.skills, [e.target.value]: proficientSkillBonus(b, e.target.value) } })}
+                onChange={e => e.target.value && set(p => ({ skills: { ...p.skills, [e.target.value]: proficientSkillBonus(b, e.target.value) } }))}
                 className="bg-[#131110] border border-dashed border-white/[0.15] rounded-[8px] px-2.5 py-2 text-[14px] text-[#A8A09B]"
               >
                 <option value="">{t('gm.addSkill')}</option>
@@ -186,11 +199,11 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
                   key={c}
                   type="button"
                   aria-pressed={on}
-                  onClick={() => set({
-                    condition_immunities: on
-                      ? b.condition_immunities.filter(x => x !== c)
-                      : AVAILABLE_CONDITIONS.filter(x => x === c || b.condition_immunities.includes(x)),
-                  })}
+                  onClick={() => set(p => ({
+                    condition_immunities: p.condition_immunities.includes(c)
+                      ? p.condition_immunities.filter(x => x !== c)
+                      : AVAILABLE_CONDITIONS.filter(x => x === c || p.condition_immunities.includes(x)),
+                  }))}
                   className={`text-[12px] font-semibold rounded-full px-2.5 py-1 border cursor-pointer transition-colors ${
                     on ? 'bg-[#D4A017]/20 border-[#D4A017] text-[#F5F0E8]' : 'bg-transparent border-white/[0.12] text-[#A8A09B] hover:text-[#E8DFD0]'
                   }`}
@@ -215,7 +228,7 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
               value={b.senses[key]}
               nullable
               min={0}
-              onChange={v => set({ senses: { ...b.senses, [key]: v } })}
+              onChange={v => set(p => ({ senses: { ...p.senses, [key]: v } }))}
             />
           ))}
         </div>
@@ -227,7 +240,7 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
           key={list}
           list={list}
           features={b[list]}
-          onChange={features => set({ [list]: features } as Partial<StatBlock>)}
+          onChange={update => set(p => ({ [list]: update(p[list]) }) as Partial<StatBlock>)}
           legendaryUses={list === 'legendary_actions' ? b.legendary_uses : undefined}
           onLegendaryUses={legendary_uses => set({ legendary_uses })}
         />
@@ -252,7 +265,7 @@ function RemoveButton({ label, onClick }: { label: string; onClick: () => void }
 interface FeatureListEditorProps {
   list: FeatureList
   features: StatBlockFeature[]
-  onChange: (features: StatBlockFeature[]) => void
+  onChange: (update: (prev: StatBlockFeature[]) => StatBlockFeature[]) => void
   legendaryUses?: number | null
   onLegendaryUses: (uses: number | null) => void
 }
@@ -260,9 +273,12 @@ interface FeatureListEditorProps {
 function FeatureListEditor({ list, features, onChange, legendaryUses, onLegendaryUses }: FeatureListEditorProps) {
   const { t } = useTranslation()
   const update = (id: string, change: Partial<StatBlockFeature>) =>
-    onChange(features.map(f => (f.id === id ? { ...f, ...change } : f)))
-  const moveUp = (idx: number) =>
-    onChange([...features.slice(0, idx - 1), features[idx], features[idx - 1], ...features.slice(idx + 1)])
+    onChange(prev => prev.map(f => (f.id === id ? { ...f, ...change } : f)))
+  const moveUp = (id: string) =>
+    onChange(prev => {
+      const idx = prev.findIndex(f => f.id === id)
+      return idx > 0 ? [...prev.slice(0, idx - 1), prev[idx], prev[idx - 1], ...prev.slice(idx + 1)] : prev
+    })
 
   return (
     <EditorSection title={t(`gm.lists.${list}`)}>
@@ -284,14 +300,14 @@ function FeatureListEditor({ list, features, onChange, legendaryUses, onLegendar
             {idx > 0 && (
               <button
                 type="button"
-                onClick={() => moveUp(idx)}
+                onClick={() => moveUp(f.id)}
                 aria-label={t('gm.moveUp')}
                 className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-[8px] text-[#A8A09B] bg-white/5 border border-white/[0.1] hover:text-[#E8DFD0] cursor-pointer"
               >
                 ↑
               </button>
             )}
-            <RemoveButton label={t('gm.removeFeature')} onClick={() => onChange(features.filter(x => x.id !== f.id))} />
+            <RemoveButton label={t('gm.removeFeature')} onClick={() => onChange(prev => prev.filter(x => x.id !== f.id))} />
           </div>
           <TextField label={t('gm.featureText')} value={f.description} multiline onChange={description => update(f.id, { description })} />
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -318,7 +334,7 @@ function FeatureListEditor({ list, features, onChange, legendaryUses, onLegendar
       ))}
       <button
         type="button"
-        onClick={() => onChange([...features, createBlankFeature()])}
+        onClick={() => onChange(prev => [...prev, createBlankFeature()])}
         className="self-start text-[13px] font-semibold text-[#D4A017] hover:text-[#E8C25A] cursor-pointer"
       >
         + {t('gm.addFeature')}

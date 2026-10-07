@@ -26,8 +26,8 @@ export function StatBlockEditLayout({ title, backTo, initial, extra, onSave }: S
   const [dirty, setDirty] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  function change(next: StatBlock) {
-    setDraft(next)
+  function change(update: (prev: StatBlock) => StatBlock) {
+    setDraft(update)
     setDirty(true)
     setError(null)
   }

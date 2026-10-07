@@ -6,9 +6,16 @@ import { translateTerm } from '../../data/rules/translation'
 import { FEATURE_LISTS } from '../../lib/gm/statblock'
 import { formatModifier } from '../../lib/calculations'
 import { AVAILABLE_CONDITIONS } from '../../constants'
-import { remainingMovement } from '../../lib/gm/movement'
+import { modeSpeed, remainingMovement } from '../../lib/gm/movement'
+import type { MoveMode } from '../../types'
 import { NumberField } from './fields'
 import { rowButton, rowDangerButton } from './MonsterRow'
+
+const MOVE_MODES: Array<{ id: MoveMode; key: string }> = [
+  { id: 'walk', key: 'gm.moveWalk' },
+  { id: 'fly', key: 'gm.moveFly' },
+  { id: 'swim', key: 'gm.moveSwim' },
+]
 
 interface CombatantPanelProps {
   encounterId: string
@@ -99,9 +106,28 @@ export function CombatantPanel({ encounterId, combatant: c, onViewBlock, onRemov
           <span className="tabular-nums">
             {t('gm.movementLeft', {
               left: remainingMovement(c).toLocaleString(i18n.language),
-              total: (c.speed_m * (c.dash ? 2 : 1)).toLocaleString(i18n.language),
+              total: (modeSpeed(c) * (c.dash ? 2 : 1)).toLocaleString(i18n.language),
             })}
           </span>
+          <div role="radiogroup" aria-label={t('gm.moveMode')} className="inline-flex rounded-[8px] border border-white/[0.1] overflow-hidden">
+            {MOVE_MODES.map(m => {
+              const available = m.id === 'walk' || (m.id === 'fly' ? c.fly_m : c.swim_m) != null
+              return (
+                <button
+                  key={m.id}
+                  role="radio"
+                  aria-checked={c.move_mode === m.id}
+                  disabled={!available}
+                  onClick={() => updateCombatant(encounterId, c.id, { move_mode: m.id })}
+                  className={`px-2.5 py-1 text-[12px] font-semibold cursor-pointer disabled:opacity-30 disabled:cursor-default ${
+                    c.move_mode === m.id ? 'bg-[#D4A017] text-[#131110]' : 'bg-white/5 text-[#E8DFD0]'
+                  }`}
+                >
+                  {t(m.key)}
+                </button>
+              )
+            })}
+          </div>
           <label className="flex items-center gap-2">
             <input type="checkbox" checked={c.dash} onChange={() => toggleDash(encounterId, c.id)} />
             {t('gm.dash')}
@@ -127,7 +153,43 @@ export function CombatantPanel({ encounterId, combatant: c, onViewBlock, onRemov
         </label>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      {onMap && (
+        <div className="grid grid-cols-3 gap-3">
+          <NumberField
+            label={`${t('gm.moveWalk')} (${t('gm.metersUnit')})`}
+            value={c.speed_m}
+            min={0}
+            onChange={v => updateCombatant(encounterId, c.id, { speed_m: v ?? 0 })}
+          />
+          <NumberField
+            label={`${t('gm.moveFly')} (${t('gm.metersUnit')})`}
+            value={c.fly_m}
+            nullable
+            min={0}
+            onChange={v => updateCombatant(encounterId, c.id, { fly_m: v, ...(v == null && c.move_mode === 'fly' ? { move_mode: 'walk' as const } : {}) })}
+          />
+          <NumberField
+            label={`${t('gm.moveSwim')} (${t('gm.metersUnit')})`}
+            value={c.swim_m}
+            nullable
+            min={0}
+            onChange={v => updateCombatant(encounterId, c.id, { swim_m: v, ...(v == null && c.move_mode === 'swim' ? { move_mode: 'walk' as const } : {}) })}
+          />
+        </div>
+      )}
+
+      <div className="grid grid-cols-3 gap-3">
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#A8A09B]">{t('gm.side')}</span>
+          <select
+            value={c.side}
+            onChange={e => updateCombatant(encounterId, c.id, { side: e.target.value as Combatant['side'] })}
+            className="w-full bg-[#131110] border border-white/[0.1] rounded-[8px] px-2.5 py-2 text-[14px] text-[#F5F0E8]"
+          >
+            <option value="party">{t('gm.sideParty')}</option>
+            <option value="enemy">{t('gm.sideEnemy')}</option>
+          </select>
+        </label>
         <NumberField label={t('gm.ac')} value={c.ac} min={0} onChange={v => updateCombatant(encounterId, c.id, { ac: v ?? c.ac })} />
         <NumberField label={t('gm.hpMax')} value={c.hp.max} min={1} onChange={v => v != null && updateCombatant(encounterId, c.id, { hp_max: v })} />
       </div>

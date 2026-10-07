@@ -6,7 +6,7 @@ import { MapCanvas } from './MapCanvas'
 import { TOKEN_FILL, tokenInitials } from './tokenStyle'
 import { distanceMeters, gridDistance, inBounds, lineCells, paintCells, type Cell } from '../../lib/gm/terrain'
 import {
-  combatantAt, movementCostMeters, reachableCells, remainingMovement, sizeSquares, speedSquares,
+  combatantAt, movementCostMeters, occupancyFor, reachableCells, remainingMovement, sizeSquares, speedSquares,
 } from '../../lib/gm/movement'
 import { FOG_HIDDEN, FOG_REVEALED } from '../../constants'
 
@@ -17,6 +17,9 @@ interface EncounterMapProps {
   map: GridMap
   selectedId: string | null
   onSelect: (id: string | null) => void
+  /** Visão da mesa: só o que os jogadores podem ver, sem ferramentas nem interação. */
+  playerView: boolean
+  onPlayerViewChange: (on: boolean) => void
 }
 
 const same = (a: Cell | null, b: Cell | null) => !!a && !!b && a.x === b.x && a.y === b.y
@@ -25,11 +28,10 @@ const same = (a: Cell | null, b: Cell | null) => !!a && !!b && a.x === b.x && a.
  * Combate no mapa. Arrastar o token de quem tem a vez gasta movimento (com o
  * custo real do caminho); arrastar outro é reposicionamento livre do mestre.
  */
-export function EncounterMap({ encounter, map, selectedId, onSelect }: EncounterMapProps) {
+export function EncounterMap({ encounter, map, selectedId, onSelect, playerView, onPlayerViewChange }: EncounterMapProps) {
   const { t, i18n } = useTranslation()
   const { placeCombatant, moveCombatant, setFog } = useGmStore()
   const [tool, setTool] = useState<Tool>('tokens')
-  const [playerView, setPlayerView] = useState(false)
   const [drag, setDrag] = useState<{ id: string; from: Cell; to: Cell } | null>(null)
   const [ruler, setRuler] = useState<{ a: Cell; b: Cell } | null>(null)
   const [hover, setHover] = useState<Cell | null>(null)
@@ -48,10 +50,20 @@ export function EncounterMap({ encounter, map, selectedId, onSelect }: Encounter
     c.position && !(playerView && (c.hidden || !isRevealed(c.position))))
 
   const turnOwner = encounter.status === 'active' ? encounter.combatants.find(c => c.id === encounter.turn_id) ?? null : null
+  /** Modo e ocupação de quem se move: o caminho muda conforme voa/nada e quem está no meio. */
+  const moveOptionsFor = (mover: Combatant) => ({
+    mode: mover.move_mode,
+    occupancy: occupancyFor(mover, encounter.combatants, map.width),
+  })
+
   const reach = useMemo(() => {
     if (!turnOwner?.position || tool !== 'tokens') return null
-    return reachableCells(map, turnOwner.position, speedSquares(remainingMovement(turnOwner)))
-  }, [turnOwner, map, tool])
+    const options = { mode: turnOwner.move_mode, occupancy: occupancyFor(turnOwner, encounter.combatants, map.width) }
+    const cells = reachableCells(map, turnOwner.position, speedSquares(remainingMovement(turnOwner)), options)
+    // Dá para atravessar o espaço de um aliado, mas não parar nele.
+    for (const idx of options.occupancy.keys()) cells.delete(idx)
+    return cells
+  }, [turnOwner, map, tool, encounter.combatants])
 
   const selected = encounter.combatants.find(c => c.id === selectedId) ?? null
   const unplaced = encounter.combatants.filter(c => !c.position && !c.defeated)
@@ -115,7 +127,7 @@ export function EncounterMap({ encounter, map, selectedId, onSelect }: Encounter
     if (!mover) return
     const blocker = combatantAt(encounter.combatants.filter(c => c.id !== d.id), d.to)
     if (blocker) return
-    const cost = movementCostMeters(map, d.from, d.to)
+    const cost = movementCostMeters(map, d.from, d.to, moveOptionsFor(mover))
     if (mover.id === turnOwner?.id && cost != null) moveCombatant(encounter.id, mover.id, d.to, cost)
     else placeCombatant(encounter.id, mover.id, d.to)
   }
@@ -186,7 +198,7 @@ export function EncounterMap({ encounter, map, selectedId, onSelect }: Encounter
   let status = ''
   if (drag && !same(drag.from, drag.to)) {
     const mover = encounter.combatants.find(c => c.id === drag.id)
-    const cost = movementCostMeters(map, drag.from, drag.to)
+    const cost = mover ? movementCostMeters(map, drag.from, drag.to, moveOptionsFor(mover)) : null
     if (cost == null) status = t('gm.noPath')
     else if (mover && mover.id === turnOwner?.id) {
       const left = remainingMovement(mover)
@@ -213,7 +225,7 @@ export function EncounterMap({ encounter, map, selectedId, onSelect }: Encounter
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-1.5">
+      {!playerView && <div className="flex flex-wrap items-center gap-1.5">
         {tools.map(tl => (
           <button
             key={tl.id}
@@ -235,10 +247,10 @@ export function EncounterMap({ encounter, map, selectedId, onSelect }: Encounter
             <button onClick={() => setFog(encounter.id, FOG_HIDDEN.repeat(cellCount))} className={toolButton(false)}>{t('gm.fogHideAll')}</button>
           </>
         )}
-        <button aria-pressed={playerView} onClick={() => setPlayerView(v => !v)} className={toolButton(playerView)}>
+        <button aria-pressed={playerView} onClick={() => onPlayerViewChange(!playerView)} className={toolButton(playerView)}>
           {t('gm.playerView')}
         </button>
-      </div>
+      </div>}
 
       {unplaced.length > 0 && !playerView && (
         <div className="flex flex-wrap items-center gap-1.5">
@@ -261,13 +273,13 @@ export function EncounterMap({ encounter, map, selectedId, onSelect }: Encounter
         </div>
       )}
 
-      <div className="h-[58vh] min-h-[320px] lg:h-[calc(100dvh-330px)]">
+      <div className={playerView ? 'h-[calc(100dvh-120px)] min-h-[320px]' : 'h-[58vh] min-h-[320px] lg:h-[calc(100dvh-330px)]'}>
         <MapCanvas
           width={map.width}
           height={map.height}
           cells={map.cells}
           labels={map.labels}
-          panMode={tool === 'pan'}
+          panMode={tool === 'pan' || playerView}
           onCellDown={handleDown}
           onCellMove={handleMove}
           onCellUp={handleUp}
@@ -276,7 +288,7 @@ export function EncounterMap({ encounter, map, selectedId, onSelect }: Encounter
           drawOverlay={drawOverlay}
         />
       </div>
-      <p className="min-h-[18px] text-[12px] text-[#A8A09B] tabular-nums" aria-live="polite">{status}</p>
+      {!playerView && <p className="min-h-[18px] text-[12px] text-[#A8A09B] tabular-nums" aria-live="polite">{status}</p>}
     </div>
   )
 }

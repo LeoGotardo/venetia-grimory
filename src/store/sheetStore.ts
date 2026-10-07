@@ -1138,6 +1138,8 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
   },
 
   loadSheet: id => {
+    // Sem isso, reabrir a ficha antes do debounce leria o storage sem a última edição.
+    flushPendingSheetSave()
     const sheet = loadSheetFromStorage(id)
     if (!sheet) return
     const list = listSheets()
@@ -1161,13 +1163,31 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
 }))
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null
+let pendingSave: (() => void) | null = null
+
+/** Grava agora o que estava esperando o debounce. */
+export function flushPendingSheetSave() {
+  if (saveTimeout) clearTimeout(saveTimeout)
+  saveTimeout = null
+  pendingSave?.()
+  pendingSave = null
+}
 
 useSheetStore.subscribe(state => {
   if (!state.sheetId) return
 
   if (saveTimeout) clearTimeout(saveTimeout)
 
-  saveTimeout = setTimeout(() => {
-    saveSheet(state.sheetId!, state.sheet, state.completeSheet)
-  }, DEBOUNCE_SAVE_MS)
+  const { sheetId, sheet, completeSheet } = state
+  pendingSave = () => saveSheet(sheetId, sheet, completeSheet)
+  saveTimeout = setTimeout(flushPendingSheetSave, DEBOUNCE_SAVE_MS)
 })
+
+// Fechar a aba, recarregar ou mandar o app para segundo plano dentro do debounce
+// perderia a última edição da ficha: grava na hora quando a página some.
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', flushPendingSheetSave)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushPendingSheetSave()
+  })
+}

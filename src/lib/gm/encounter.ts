@@ -6,12 +6,12 @@ import { CONCENTRATION_DC_MAX, CONCENTRATION_DC_MIN, CONDITION_UNCONSCIOUS, DEFA
 
 // ── Montagem ──────────────────────────────────────────────────────────────────
 
-type CombatantBase = Omit<Combatant, 'kind' | 'ref_id' | 'name' | 'init_bonus' | 'ac' | 'hp' | 'statblock' | 'level' | 'size' | 'speed_m'>
+type CombatantBase = Omit<Combatant, 'kind' | 'ref_id' | 'name' | 'init_bonus' | 'ac' | 'hp' | 'statblock' | 'level' | 'size' | 'speed_m' | 'fly_m' | 'swim_m' | 'side'>
 
 function baseCombatant(): CombatantBase {
   return {
     id: uuidv4(), initiative: null, conditions: [], concentration: false, hidden: false, defeated: false,
-    notes: '', position: null, movement_used_m: 0, dash: false,
+    notes: '', position: null, movement_used_m: 0, dash: false, move_mode: 'walk',
   }
 }
 
@@ -31,6 +31,10 @@ export function combatantFromPlayer(member: PartyMember): Combatant {
     // A ficha não guarda tamanho; as espécies jogáveis de 2024 são Pequenas ou Médias (1 casa).
     size: 'medium',
     speed_m: sheet.combat.speed._total_meters || DEFAULT_SPEED_METERS,
+    // A ficha não guarda voo nem natação; o mestre ajusta no encontro se precisar.
+    fly_m: null,
+    swim_m: null,
+    side: 'party',
   }
 }
 
@@ -52,6 +56,10 @@ export function combatantFromStatBlock(
     level: null,
     size: block.size,
     speed_m: block.speed.walk,
+    fly_m: block.speed.fly,
+    swim_m: block.speed.swim,
+    // NPC aliado existe, mas o caso comum é contra a mesa; o painel troca o lado.
+    side: 'enemy',
   }
 }
 

@@ -87,7 +87,7 @@ interface GmState {
   updateCombatant: (
     encounterId: string,
     combatantId: string,
-    change: Partial<Pick<Combatant, 'name' | 'initiative' | 'ac' | 'notes' | 'hidden'>> & { hp_max?: number },
+    change: Partial<Pick<Combatant, 'name' | 'initiative' | 'ac' | 'notes' | 'hidden' | 'speed_m' | 'fly_m' | 'swim_m' | 'move_mode' | 'side'>> & { hp_max?: number },
   ) => void
   /** `npcs` rola só monstros e NPCs; `missing` só quem ainda não tem iniciativa. */
   rollInitiatives: (encounterId: string, scope: 'all' | 'npcs' | 'missing', random?: () => number) => void

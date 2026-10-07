@@ -85,7 +85,9 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   not inline in the store or components.
 - The store subscribes to itself (bottom of `sheetStore.ts`) and debounce-saves
   (`DEBOUNCE_SAVE_MS`, in `src/constants`) to `localStorage` via `src/services/sheetStorage.ts`
-  any time `sheetId` is set — components never call storage directly.
+  any time `sheetId` is set — components never call storage directly. The pending save is flushed
+  on `pagehide`/`visibilitychange` and before `loadSheet` (`flushPendingSheetSave`): closing or
+  backgrounding the app inside the debounce used to lose the last edit.
 - `src/lib/initialSheet.ts` is the factory for a brand-new blank sheet (`createInitialSheet`).
 
 ### Game data: canonical Portuguese modules + a whole-string translation layer
@@ -221,6 +223,8 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   importing a pack replaces entries with the same id.
 - The statblock editor (`StatBlockEditLayout`) keeps a local draft and writes to the store only
   on Save, with a live `StatBlockCard` preview beside it from `lg:`.
+  `StatBlockEditor.onChange` takes an updater (`prev => next`), never a value built from the
+  last render — two field changes between renders used to drop the first.
 - Encounters live inside the campaign (`campaign.encounters`). A `Combatant` carries its own
   numbers and, for NPCs/monsters, a **copy** of the statblock — encounter HP never writes back to
   a player's sheet, and editing the bestiary doesn't change a running fight. The turn is tracked
@@ -248,6 +252,13 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   (difficult = 2 per square, walls/pits/void block, diagonals don't cut wall corners). Dragging
   the **turn owner** spends movement at the real path cost; dragging anyone else is a free GM
   reposition (`placeCombatant`). Beyond-speed moves are allowed with a warning — the GM decides.
+  Each combatant has `move_mode` (walk/fly/swim, with `fly_m`/`swim_m` from the stat block; players
+  start with none and the GM can type them) — flying ignores ground terrain but not walls, swimming
+  makes water cost 1, and switching modes mid-turn subtracts what was already moved (2024). Other
+  creatures are handled by `occupancyFor`: same `side`, Incapacitated, Tiny or 2+ sizes apart is
+  passable as difficult terrain, anything else blocks; nobody may end a move in an occupied space.
+- "Table view" is page state in `EncounterPage`: it renders only the map (hidden combatants and
+  anyone under fog removed), round and visible turn, with no GM panel, log or tools.
 - Fog is `encounter.fog`, one `0`/`1` char per square, ignored when its length no longer matches
   the map (resized). GM view dims hidden squares; "table view" blacks them out and hides hidden
   combatants and anyone standing in fog.

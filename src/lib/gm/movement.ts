@@ -1,5 +1,5 @@
-import type { Combatant, GridMap } from '../../types'
-import { CREATURE_SIZE_SQUARES, GRID_CELL_METERS } from '../../constants'
+import type { Combatant, GridMap, MoveMode } from '../../types'
+import { CREATURE_SIZES, CREATURE_SIZE_SQUARES, GRID_CELL_METERS, INCAPACITATING_CONDITIONS } from '../../constants'
 import { inBounds, terrainOf, type Cell } from './terrain'
 
 /** Casas inteiras que um deslocamento em metros permite (9 m → 6). */
@@ -11,13 +11,42 @@ export function sizeSquares(c: Pick<Combatant, 'size'>): number {
   return CREATURE_SIZE_SQUARES[c.size] ?? 1
 }
 
-/** Metros que ainda restam no turno: deslocamento (×2 com Disparada) menos o já andado. */
-export function remainingMovement(c: Pick<Combatant, 'speed_m' | 'dash' | 'movement_used_m'>): number {
-  return Math.max(0, c.speed_m * (c.dash ? 2 : 1) - c.movement_used_m)
+/** Deslocamento do modo atual; sem voo/natação, o modo não tem deslocamento (0). */
+export function modeSpeed(c: Pick<Combatant, 'speed_m' | 'fly_m' | 'swim_m' | 'move_mode'>): number {
+  if (c.move_mode === 'fly') return c.fly_m ?? 0
+  if (c.move_mode === 'swim') return c.swim_m ?? 0
+  return c.speed_m
 }
 
-function cost(map: Pick<GridMap, 'width' | 'cells'>, x: number, y: number): number | null {
-  return terrainOf(map.cells[y * map.width + x]).cost
+/**
+ * Metros que ainda restam no turno: deslocamento do modo atual (×2 com
+ * Disparada) menos o já andado. Trocar de modo no meio do turno desconta o que
+ * já foi andado do novo deslocamento — é a regra de 2024.
+ */
+export function remainingMovement(
+  c: Pick<Combatant, 'speed_m' | 'fly_m' | 'swim_m' | 'move_mode' | 'dash' | 'movement_used_m'>,
+): number {
+  return Math.max(0, modeSpeed(c) * (c.dash ? 2 : 1) - c.movement_used_m)
+}
+
+/**
+ * Custo de entrar numa casa, por modo. Voando, o chão não importa (terreno
+ * difícil, água e fosso custam 1); só parede e vazio bloqueiam. Nadando, a água
+ * custa 1 em vez de 2. `null` bloqueia.
+ */
+function terrainCost(code: string, mode: MoveMode): number | null {
+  const t = terrainOf(code)
+  if (mode === 'fly') return t.id === 'wall' || t.id === 'void' ? null : 1
+  if (mode === 'swim' && t.id === 'water') return 1
+  return t.cost
+}
+
+/** Casa ocupada por outra criatura: `pass` = atravessável como terreno difícil; `block` = não passa. */
+export type Occupancy = Map<number, 'pass' | 'block'>
+
+export interface MoveOptions {
+  mode?: MoveMode
+  occupancy?: Occupancy
 }
 
 const STEPS = [
@@ -35,7 +64,19 @@ export function reachableCells(
   map: Pick<GridMap, 'width' | 'height' | 'cells'>,
   start: Cell,
   budget: number,
+  options: MoveOptions = {},
 ): Map<number, number> {
+  const mode = options.mode ?? 'walk'
+  const occupancy = options.occupancy
+  const cost = (x: number, y: number): number | null => {
+    const idx = y * map.width + x
+    const base = terrainCost(map.cells[idx], mode)
+    const occupied = occupancy?.get(idx)
+    if (base == null || occupied === 'block') return null
+    // Espaço de outra criatura conta como terreno difícil — não acumula com o do chão.
+    return occupied === 'pass' ? Math.max(base, 2) : base
+  }
+
   const best = new Map<number, number>()
   if (!inBounds(map, start)) return best
   const startIdx = start.y * map.width + start.x
@@ -55,9 +96,12 @@ export function reachableCells(
       const nx = x + dx
       const ny = y + dy
       if (!inBounds(map, { x: nx, y: ny })) continue
-      const step = cost(map, nx, ny)
+      const step = cost(nx, ny)
       if (step == null) continue
-      if (dx !== 0 && dy !== 0 && (cost(map, x + dx, y) == null || cost(map, x, y + dy) == null)) continue
+      // Diagonal não corta quina de parede (as criaturas no caminho não contam aqui).
+      if (dx !== 0 && dy !== 0
+        && (terrainCost(map.cells[y * map.width + x + dx], mode) == null
+          || terrainCost(map.cells[(y + dy) * map.width + x], mode) == null)) continue
       const total = spent + step
       if (total > budget) continue
       const nIdx = ny * map.width + nx
@@ -75,8 +119,9 @@ export function movementCostMeters(
   map: Pick<GridMap, 'width' | 'height' | 'cells'>,
   from: Cell,
   to: Cell,
+  options: MoveOptions = {},
 ): number | null {
-  const reach = reachableCells(map, from, map.width * map.height * 2)
+  const reach = reachableCells(map, from, map.width * map.height * 2, options)
   const squares = reach.get(to.y * map.width + to.x)
   return squares == null ? null : squares * GRID_CELL_METERS
 }
@@ -93,4 +138,31 @@ export function occupiedCells(c: Pick<Combatant, 'position' | 'size'>): Cell[] {
 /** Quem está nesta casa (o primeiro da lista, se houver sobreposição). */
 export function combatantAt(combatants: Combatant[], cell: Cell): Combatant | null {
   return combatants.find(c => occupiedCells(c).some(o => o.x === cell.x && o.y === cell.y)) ?? null
+}
+
+function sizeIndex(c: Pick<Combatant, 'size'>): number {
+  return CREATURE_SIZES.indexOf(c.size)
+}
+
+/**
+ * Quais casas os outros combatentes ocupam, do ponto de vista de quem se move.
+ * Dá para atravessar (como terreno difícil) um aliado, uma criatura Incapacitada,
+ * uma Miúda, ou uma com 2+ tamanhos de diferença; os demais bloqueiam. Derrotados
+ * não ocupam espaço. Parar no espaço de outra criatura continua proibido — isso
+ * é com quem solta o token.
+ */
+export function occupancyFor(mover: Combatant, combatants: Combatant[], mapWidth: number): Occupancy {
+  const occupancy: Occupancy = new Map()
+  for (const other of combatants) {
+    if (other.id === mover.id || other.defeated || !other.position) continue
+    const passable = other.side === mover.side
+      || other.conditions.some(c => INCAPACITATING_CONDITIONS.includes(c))
+      || other.size === 'tiny'
+      || Math.abs(sizeIndex(other) - sizeIndex(mover)) >= 2
+    for (const cell of occupiedCells(other)) {
+      const idx = cell.y * mapWidth + cell.x
+      if (occupancy.get(idx) !== 'block') occupancy.set(idx, passable ? 'pass' : 'block')
+    }
+  }
+  return occupancy
 }

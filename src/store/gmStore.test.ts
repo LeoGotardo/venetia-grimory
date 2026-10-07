@@ -385,3 +385,23 @@ describe('SRD no bestiário e no encontro', () => {
     expect(st().campaign!.encounters[0].combatants.map(c => c.name)).toEqual(['Ogre 1', 'Ogre 2'])
   })
 })
+
+describe('modo e lado do combatente', () => {
+  const first = () => st().campaign!.encounters[0].combatants[0]
+
+  beforeEach(() => {
+    localStorage.clear()
+    useGmStore.setState({ campaigns: [], campaign: null, bestiary: [] })
+    st().openCampaign(st().createCampaign('Mesa'))
+  })
+
+  it('o combatente leva voo e natação do bloco; modo e lado são editáveis', () => {
+    const block = createBlankStatBlock('Harpia')
+    block.speed = { ...block.speed, fly: 12, swim: null }
+    const encounterId = st().createEncounter('Luta')
+    st().addNpcToEncounter(encounterId, st().addNpc(block))
+    expect(first()).toMatchObject({ fly_m: 12, swim_m: null, move_mode: 'walk', side: 'enemy' })
+    st().updateCombatant(encounterId, first().id, { move_mode: 'fly', side: 'party', swim_m: 6 })
+    expect(first()).toMatchObject({ move_mode: 'fly', side: 'party', swim_m: 6 })
+  })
+})

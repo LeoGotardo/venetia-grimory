@@ -88,6 +88,10 @@ function normalizeCombatant(raw: unknown): Combatant {
       : null,
     size: CREATURE_SIZES.includes(c.size as typeof CREATURE_SIZES[number]) ? c.size! : 'medium',
     speed_m: typeof c.speed_m === 'number' ? c.speed_m : DEFAULT_SPEED_METERS,
+    fly_m: typeof c.fly_m === 'number' ? c.fly_m : c.statblock?.speed?.fly ?? null,
+    swim_m: typeof c.swim_m === 'number' ? c.swim_m : c.statblock?.speed?.swim ?? null,
+    move_mode: c.move_mode === 'fly' || c.move_mode === 'swim' ? c.move_mode : 'walk',
+    side: c.side === 'party' || c.side === 'enemy' ? c.side : c.kind === 'player' ? 'party' : 'enemy',
     movement_used_m: typeof c.movement_used_m === 'number' ? c.movement_used_m : 0,
     dash: c.dash === true,
   }
