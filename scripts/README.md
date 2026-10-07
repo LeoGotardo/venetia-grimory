@@ -72,3 +72,42 @@ NOTES="Correções" npm run release      # notas sem abrir o editor
 
 A keystore precisa de backup fora da máquina: o Android recusa atualização assinada
 por outra chave.
+
+# Catálogo de monstros do SRD 5.2.1
+
+`src/data/monsters/{en,pt}/*.ts` são **gerados** — não edite à mão. A fonte é a conversão em
+markdown do SRD 5.2.1 (CC-BY-4.0) de `github.com/oldmanumby/dnd.srd.5.2.1`, um arquivo por criatura.
+
+```bash
+curl -sL -o /tmp/srd.zip https://github.com/oldmanumby/dnd.srd.5.2.1/archive/refs/heads/main.zip
+unzip -q /tmp/srd.zip -d /tmp/srd
+node scripts/srd/generate-monsters.mjs /tmp/srd/dnd.srd.5.2.1-main
+npx vitest run src/data/monsters.test.ts
+
+# conferência contra a outra conversão (downfallx), opcional mas recomendada
+curl -sL -o /tmp/df-monsters.md https://raw.githubusercontent.com/downfallx/dnd-5e-srd-markdown/master/monsters-A-Z.md
+curl -sL -o /tmp/df-animals.md https://raw.githubusercontent.com/downfallx/dnd-5e-srd-markdown/master/animals.md
+node scripts/srd/crosscheck.mjs /tmp/df-monsters.md /tmp/df-animals.md
+```
+
+**Overrides.** A conversão principal tem defeitos de paginação do PDF: criaturas coladas umas
+nas outras, cabeçalho cortado, rótulos perdidos ("Hit:", "Failure:"), frases cortadas. Cada caso
+achado tem uma versão corrigida em `scripts/srd/overrides/<Arquivo>.md`, que o gerador usa no
+lugar da fonte. A maioria foi montada com `scripts/srd/downfallx-to-override.py` a partir da
+conversão `github.com/downfallx/dnd-5e-srd-markdown`; na dúvida entre as duas, o desempate é o
+PDF oficial (`media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf` — o Riding Horse
+tem Car 7, não 8). O gerador falha se um arquivo tiver dois cabeçalhos de criatura, e
+`src/data/monsters.test.ts` falha com restos de marcação, rótulos perdidos ou distâncias em pés.
+
+**Tradução.** `scripts/srd/monsters-pt.json` tem três dicionários globais, inglês → português:
+`names` (criaturas e habilidades), `texts` (descrições, com o inglês já em metros) e `misc`
+(idiomas, etiquetas, resistências, usos, equipamento). Um texto repetido em vários monstros é
+traduzido uma vez. O que faltar sai em inglês no catálogo PT — o teste de texto acusa. Ao
+trocar um override, o texto inglês muda e a tradução antiga vira obsoleta: apague-a e traduza a
+nova. Ao traduzir, todo número do inglês precisa aparecer no português (CD, dano, alcance) e a
+terminologia segue o resto do app: condições com os nomes de `AVAILABLE_CONDITIONS`, magias com os
+nomes do catálogo de magias PT, "Jogada de Ataque Corpo a Corpo", "Acerto:", "Salvaguarda de
+Destreza: CD 13", "Falha:", "Sucesso: Metade do dano.", "Sangrando", "Vantagem".
+
+A parte estruturada (tipo, tamanho, tendência, perícias, condições, tipos de dano) é traduzida
+pelo próprio gerador. Distâncias saem em metros (5 ft = 1,5 m), como no resto do app.

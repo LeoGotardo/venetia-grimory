@@ -97,11 +97,114 @@ export interface Npc {
   updated_at: string
 }
 
+/**
+ * Participante de um encontro. Os números de combate são do encontro: dano no
+ * player aqui não escreve na ficha dele. NPCs e monstros levam uma cópia do
+ * bloco (`statblock`) para rolar as ações sem depender do original.
+ */
+export interface Combatant {
+  id: string
+  kind: 'player' | 'npc' | 'monster'
+  /** Id do PartyMember, Npc ou Monster de origem. */
+  ref_id: string | null
+  name: string
+  initiative: number | null
+  init_bonus: number
+  ac: number
+  hp: { current: number; max: number; temp: number }
+  /** Nomes canônicos de `AVAILABLE_CONDITIONS`. */
+  conditions: string[]
+  concentration: boolean
+  /** Escondido dos players (para quando houver tela da mesa). */
+  hidden: boolean
+  /** Fora da ordem de turnos; continua na lista. */
+  defeated: boolean
+  statblock: StatBlock | null
+  /** Para o cálculo de dificuldade: nível do player. */
+  level: number | null
+  notes: string
+  /** Casa do canto superior esquerdo no mapa do encontro; `null` = fora do mapa. */
+  position: { x: number; y: number } | null
+  size: CreatureSize
+  /** Deslocamento a pé, em metros. */
+  speed_m: number
+  /** Metros andados no turno atual — zera quando o turno dele começa. */
+  movement_used_m: number
+  /** Disparada neste turno: dobra o deslocamento disponível. */
+  dash: boolean
+}
+
+/**
+ * Registro do combate. Estruturado, não texto pronto: a interface monta a frase
+ * no idioma atual, então trocar de idioma não deixa o log pela metade.
+ */
+export type EncounterLogEntry = { id: string; round: number } & (
+  | { kind: 'start' }
+  | { kind: 'end' }
+  | { kind: 'round' }
+  | { kind: 'turn'; actor: string }
+  | { kind: 'damage'; actor: string; amount: number; hp: number }
+  | { kind: 'heal'; actor: string; amount: number; hp: number }
+  | { kind: 'temp'; actor: string; amount: number }
+  | { kind: 'condition'; actor: string; condition: string; on: boolean }
+  | { kind: 'defeated'; actor: string; on: boolean }
+  | { kind: 'concentration'; actor: string; dc: number }
+  | { kind: 'initiative'; actor: string; roll: number; total: number }
+  | { kind: 'attack'; actor: string; feature: string; roll: number; total: number; crit: boolean; fumble: boolean }
+  | { kind: 'damage_roll'; actor: string; feature: string; rolls: number[]; total: number; crit: boolean; damage_type: string }
+)
+
+export type EncounterStatus = 'preparing' | 'active' | 'finished'
+
+export interface Encounter {
+  id: string
+  name: string
+  status: EncounterStatus
+  /** Mapa da campanha onde a luta acontece. */
+  map_id: string | null
+  /**
+   * Névoa de guerra: um caractere por casa do mapa, `1` = revelada. `null` =
+   * sem névoa. Trocar o tamanho do mapa invalida (volta a `null`).
+   */
+  fog: string | null
+  combatants: Combatant[]
+  round: number
+  /** Combatente da vez, por id — reordenar a lista não muda de quem é o turno. */
+  turn_id: string | null
+  log: EncounterLogEntry[]
+  created_at: string
+  updated_at: string
+}
+
+export interface MapLabel {
+  id: string
+  x: number
+  y: number
+  text: string
+}
+
+/**
+ * Mapa em grade. `cells` tem um caractere por casa (`TERRAINS[].code`), linha a
+ * linha: um mapa 60×40 cabe em 2,4 KB e vai inteiro no export da campanha.
+ */
+export interface GridMap {
+  id: string
+  name: string
+  width: number
+  height: number
+  cells: string
+  labels: MapLabel[]
+  created_at: string
+  updated_at: string
+}
+
 export interface Campaign {
   id: string
   name: string
   party: PartyMember[]
   npcs: Npc[]
+  encounters: Encounter[]
+  maps: GridMap[]
   notes: string
   created_at: string
   updated_at: string

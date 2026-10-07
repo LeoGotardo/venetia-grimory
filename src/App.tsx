@@ -12,6 +12,8 @@ const GmHome = lazy(() => import('./pages/gm/GmHome').then(m => ({ default: m.Gm
 const BestiaryPage = lazy(() => import('./pages/gm/BestiaryPage').then(m => ({ default: m.BestiaryPage })))
 const MonsterEditPage = lazy(() => import('./pages/gm/MonsterEditPage').then(m => ({ default: m.MonsterEditPage })))
 const NpcEditPage = lazy(() => import('./pages/gm/NpcEditPage').then(m => ({ default: m.NpcEditPage })))
+const EncounterPage = lazy(() => import('./pages/gm/EncounterPage').then(m => ({ default: m.EncounterPage })))
+const MapEditorPage = lazy(() => import('./pages/gm/MapEditorPage').then(m => ({ default: m.MapEditorPage })))
 const CampaignPage = lazy(() => import('./pages/gm/CampaignPage').then(m => ({ default: m.CampaignPage })))
 
 function PageLoader() {
@@ -35,6 +37,8 @@ function App() {
             <Route path="/mestre" element={<GmHome />} />
             <Route path="/mestre/campanha/:id" element={<CampaignPage />} />
             <Route path="/mestre/campanha/:id/npc/:npcId" element={<NpcEditPage />} />
+            <Route path="/mestre/campanha/:id/encontro/:encounterId" element={<EncounterPage />} />
+            <Route path="/mestre/campanha/:id/mapa/:mapId" element={<MapEditorPage />} />
             <Route path="/mestre/bestiario" element={<BestiaryPage />} />
             <Route path="/mestre/bestiario/:monsterId" element={<MonsterEditPage />} />
             <Route path="*" element={<NotFound />} />

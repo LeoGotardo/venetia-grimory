@@ -32,7 +32,7 @@ export function StatBlockCard({ block }: StatBlockCardProps) {
   const m = (n: number | null) => (n == null ? null : t('gm.meters', { n }))
 
   const subtitle = [
-    `${t(`gm.sizes.${block.size}`)} ${t(`gm.creatureTypes.${block.creature_type}`)}${block.tags ? ` (${block.tags})` : ''}`,
+    `${t('gm.sizeType', { size: t(`gm.sizes.${block.size}`), type: t(`gm.creatureTypes.${block.creature_type}`) })}${block.tags ? ` (${block.tags})` : ''}`,
     block.alignment,
   ].filter(Boolean).join(', ')
 
@@ -99,7 +99,7 @@ export function StatBlockCard({ block }: StatBlockCardProps) {
         <Line label={t('gm.sensesLabel')}>{senses}</Line>
         <Line label={t('gm.languages')}>{block.languages || '—'}</Line>
         <Line label={t('gm.cr')}>
-          {t('gm.crLine', { cr: block.cr, xp: crToXp(block.cr).toLocaleString(), pb: crProficiencyBonus(block.cr) })}
+          {t('gm.crLine', { cr: block.cr, xp: crToXp(block.cr).toLocaleString(i18n.language), pb: crProficiencyBonus(block.cr) })}
         </Line>
       </div>
 
@@ -128,7 +128,12 @@ export function StatBlockCard({ block }: StatBlockCardProps) {
 
 function FeatureText({ feature: f }: { feature: StatBlockFeature }) {
   const { t } = useTranslation()
-  const mechanics = [
+  // Texto do SRD já descreve ataque, dano e CD; repetir em linha separada só polui.
+  const compact = f.description.replace(/\s+/g, '')
+  const textCoversMechanics = f.damage
+    ? compact.includes(f.damage)
+    : f.save_dc != null && compact.includes(String(f.save_dc))
+  const mechanics = textCoversMechanics ? '' : [
     f.attack_bonus != null ? t('gm.toHit', { bonus: formatModifier(f.attack_bonus) }) : null,
     f.damage ? t('gm.damageLine', { dice: f.damage, type: f.damage_type }).replace(' .', '.') : null,
     f.save_dc != null && f.save_ability

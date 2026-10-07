@@ -12,7 +12,7 @@ import { StatBlockModal } from './StatBlockModal'
 export function NpcTab({ campaign }: { campaign: Campaign }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { bestiary, addNpc, duplicateNpc, removeNpc } = useGmStore()
+  const { addNpc, duplicateNpc, removeNpc } = useGmStore()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [viewing, setViewing] = useState<Npc | null>(null)
   const base = `/mestre/campanha/${campaign.id}/npc`
@@ -60,9 +60,8 @@ export function NpcTab({ campaign }: { campaign: Campaign }) {
       <MonsterPickerModal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
-        monsters={bestiary}
         onPick={monster => {
-          addNpc(structuredClone(monster.statblock), monster.id)
+          addNpc(structuredClone(monster.statblock), monster.source === 'custom' ? monster.id : null)
           setPickerOpen(false)
         }}
       />

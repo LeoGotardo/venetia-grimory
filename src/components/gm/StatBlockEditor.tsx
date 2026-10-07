@@ -57,7 +57,7 @@ export function StatBlockEditor({ value: b, onChange }: StatBlockEditorProps) {
           <SelectField
             label={t('gm.cr')}
             value={b.cr}
-            options={CHALLENGE_RATINGS.map(cr => ({ value: cr, label: `${cr} (${crToXp(cr).toLocaleString()} XP)` }))}
+            options={CHALLENGE_RATINGS.map(cr => ({ value: cr, label: `${cr} (${crToXp(cr).toLocaleString(i18n.language)} XP)` }))}
             onChange={cr => set({ cr })}
           />
         </div>

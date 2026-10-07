@@ -5,7 +5,7 @@ import { saveSheet } from '../services/sheetStorage'
 import { loadCampaign, listCampaigns } from '../services/gmStorage'
 import { buildSheetExport } from '../lib/sheetExport'
 import { DEBOUNCE_SAVE_MS } from '../constants'
-import { createBlankStatBlock } from '../lib/gm/statblock'
+import { createBlankFeature, createBlankStatBlock } from '../lib/gm/statblock'
 
 const st = () => useGmStore.getState()
 const party = () => st().campaign!.party
@@ -182,5 +182,206 @@ describe('bestiário', () => {
     expect(st().bestiary.map(m => [m.statblock.name, m.statblock.ac])).toEqual([['Goblin', 13], ['Orc', 10]])
     expect(st().bestiary[0].id).toBe(id)
     expect(() => st().importMonsterPack('{}')).toThrow()
+  })
+})
+
+describe('encontros', () => {
+  const enc = () => st().campaign!.encounters[0]
+  const byName = (name: string) => enc().combatants.find(c => c.name === name)!
+  const kinds = () => enc().log.map(l => l.kind)
+
+  beforeEach(() => {
+    localStorage.clear()
+    useGmStore.setState({ campaigns: [], campaign: null, bestiary: [] })
+    st().openCampaign(st().createCampaign('Mesa'))
+  })
+
+  function setup() {
+    localSheet('s1', 'Grukk')
+    st().addLocalPlayer('s1')
+    const goblin = createBlankStatBlock('Goblin')
+    goblin.cr = '1/4'
+    goblin.hp = { average: 7, formula: '2d6' }
+    goblin.actions = [{ ...createBlankFeature(), id: 'cim', name: 'Cimitarra', attack_bonus: 4, damage: '1d6+2', damage_type: 'cortante' }]
+    const monsterId = st().saveMonster(goblin)
+    const encounterId = st().createEncounter('Emboscada')
+    st().addPlayersToEncounter(encounterId, [st().campaign!.party[0].id])
+    st().addPlayersToEncounter(encounterId, [st().campaign!.party[0].id])
+    st().addMonsterToEncounter(encounterId, monsterId, 2)
+    return encounterId
+  }
+
+  it('monta com players (sem repetir) e monstros numerados', () => {
+    setup()
+    expect(enc().combatants.map(c => [c.kind, c.name])).toEqual([
+      ['player', 'Grukk'], ['monster', 'Goblin 1'], ['monster', 'Goblin 2'],
+    ])
+    expect(byName('Goblin 1').hp).toEqual({ current: 7, max: 7, temp: 0 })
+  })
+
+  it('rola iniciativa, ordena e passa os turnos com rodadas', () => {
+    const id = setup()
+    st().updateCombatant(id, byName('Grukk').id, { initiative: 25 })
+    st().rollInitiatives(id, 'npcs', () => 0)
+    expect(enc().combatants.map(c => c.name)).toEqual(['Grukk', 'Goblin 1', 'Goblin 2'])
+    st().startEncounter(id)
+    expect(enc().turn_id).toBe(byName('Grukk').id)
+    st().nextTurn(id); st().nextTurn(id); st().nextTurn(id)
+    expect([enc().round, enc().turn_id]).toEqual([2, byName('Grukk').id])
+    expect(kinds()).toContain('round')
+  })
+
+  it('dano derrota o monstro e a vez pula para o próximo', () => {
+    const id = setup()
+    st().rollInitiatives(id, 'all', () => 0.5)
+    st().updateCombatant(id, byName('Grukk').id, { initiative: 1 })
+    st().startEncounter(id)
+    const current = enc().turn_id
+    expect(current).toBe(byName('Goblin 1').id)
+    st().damageCombatant(id, current!, 50)
+    expect(enc().combatants.find(c => c.id === current)!.hp.current).toBe(0)
+    expect(enc().turn_id).not.toBe(current)
+    st().healCombatant(id, current!, 3)
+    expect(kinds().slice(-2)).toEqual(['heal', 'defeated'])
+  })
+
+  it('dano em quem concentra devolve a CD e registra', () => {
+    const id = setup()
+    const target = byName('Grukk').id
+    st().toggleConcentration(id, target)
+    expect(st().damageCombatant(id, target, 30)).toBe(15)
+    expect(kinds()).toEqual(['damage', 'concentration'])
+  })
+
+  it('rola uma ação do bloco: crítico dobra os dados', () => {
+    const id = setup()
+    st().rollFeature(id, byName('Goblin 1').id, 'cim', () => 0.99)
+    const [attack, damage] = enc().log
+    expect(attack).toMatchObject({ kind: 'attack', roll: 20, total: 24, crit: true })
+    expect(damage).toMatchObject({ kind: 'damage_roll', rolls: [6, 6], total: 14, damage_type: 'cortante' })
+  })
+
+  it('cópia do bloco no encontro não muda quando o bestiário muda', () => {
+    const id = setup()
+    const monster = st().bestiary[0]
+    st().saveMonster({ ...monster.statblock, ac: 99 }, monster.id)
+    expect(byName('Goblin 1').ac).toBe(10)
+    expect(enc().id).toBe(id)
+  })
+
+  it('o log fica limitado', () => {
+    const id = setup()
+    for (let i = 0; i < 120; i++) st().rollInitiatives(id, 'all')
+    expect(enc().log.length).toBe(200)
+  })
+})
+
+describe('mapas', () => {
+  const map = () => st().campaign!.maps[0]
+
+  beforeEach(() => {
+    localStorage.clear()
+    useGmStore.setState({ campaigns: [], campaign: null })
+    st().openCampaign(st().createCampaign('Mesa'))
+  })
+
+  it('cria vazio dentro dos limites e grava a grade', () => {
+    const id = st().createMap('Masmorra', 3, 500)
+    expect([map().width, map().height, map().cells.length]).toEqual([5, 100, 500])
+    st().setMapCells(id, '.'.repeat(500))
+    expect(map().cells).toBe('.'.repeat(500))
+    st().setMapCells(id, '...')
+    expect(map().cells).toBe('.'.repeat(500))
+  })
+
+  it('redimensionar descarta rótulos que ficaram de fora', () => {
+    const id = st().createMap('Masmorra', 10, 10)
+    st().addMapLabel(id, 1, 1, ' Altar ')
+    st().addMapLabel(id, 8, 8, 'Porta')
+    st().addMapLabel(id, 2, 2, '   ')
+    st().resizeMap(id, 6, 6)
+    expect(map().labels.map(l => l.text)).toEqual(['Altar'])
+    expect(map().cells.length).toBe(36)
+  })
+
+  it('duplica com ids novos e vai junto no export', () => {
+    const id = st().createMap('A', 5, 5)
+    st().addMapLabel(id, 0, 0, 'x')
+    const copy = st().duplicateMap(id, 'B')!
+    const maps = st().campaign!.maps
+    expect(maps.map(m => m.name)).toEqual(['A', 'B'])
+    expect(maps[1].labels[0].id).not.toBe(maps[0].labels[0].id)
+    st().deleteMap(id)
+    const imported = loadCampaign(st().importCampaignJson(st().exportCampaignJson()!))!
+    expect(imported.maps.map(m => m.id)).toEqual([copy])
+  })
+})
+
+describe('encontro no mapa', () => {
+  const enc = () => st().campaign!.encounters[0]
+  const first = () => enc().combatants[0]
+
+  beforeEach(() => {
+    localStorage.clear()
+    useGmStore.setState({ campaigns: [], campaign: null, bestiary: [] })
+    st().openCampaign(st().createCampaign('Mesa'))
+  })
+
+  function setup() {
+    const mapId = st().createMap('Sala', 10, 10)
+    const encounterId = st().createEncounter('Luta')
+    const a = createBlankStatBlock('Ogro')
+    a.size = 'large'
+    a.speed.walk = 12
+    st().addNpcToEncounter(encounterId, st().addNpc(a))
+    st().addNpcToEncounter(encounterId, st().addNpc(createBlankStatBlock('Goblin')))
+    st().setEncounterMap(encounterId, mapId)
+    return { encounterId, mapId }
+  }
+
+  it('o combatente leva tamanho e deslocamento do bloco', () => {
+    setup()
+    expect(first()).toMatchObject({ size: 'large', speed_m: 12, position: null, movement_used_m: 0 })
+  })
+
+  it('mover soma o gasto; o turno seguinte do mesmo zera e tira a Disparada', () => {
+    const { encounterId } = setup()
+    st().updateCombatant(encounterId, first().id, { initiative: 20 })
+    st().startEncounter(encounterId)
+    st().placeCombatant(encounterId, first().id, { x: 1, y: 1 })
+    st().moveCombatant(encounterId, first().id, { x: 3, y: 1 }, 3)
+    st().toggleDash(encounterId, first().id)
+    expect(first()).toMatchObject({ position: { x: 3, y: 1 }, movement_used_m: 3, dash: true })
+    st().nextTurn(encounterId)
+    st().nextTurn(encounterId)
+    expect(first()).toMatchObject({ movement_used_m: 0, dash: false })
+  })
+
+  it('trocar de mapa tira todos do mapa e desliga a névoa', () => {
+    const { encounterId } = setup()
+    st().placeCombatant(encounterId, first().id, { x: 1, y: 1 })
+    st().setFog(encounterId, '0'.repeat(100))
+    st().setEncounterMap(encounterId, st().createMap('Outra', 5, 5))
+    expect(first().position).toBeNull()
+    expect(enc().fog).toBeNull()
+  })
+})
+
+describe('SRD no bestiário e no encontro', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    useGmStore.setState({ campaigns: [], campaign: null, bestiary: [], srd: null })
+    st().openCampaign(st().createCampaign('Mesa'))
+  })
+
+  it('carrega por idioma, copia para o bestiário e entra direto no encontro', async () => {
+    await st().loadSrd('en')
+    expect(st().srd?.monsters).toHaveLength(330)
+    const copy = st().copySrdToBestiary('srd-goblin-warrior')!
+    expect(st().bestiary.find(m => m.id === copy)).toMatchObject({ source: 'custom', statblock: { name: 'Goblin Warrior' } })
+
+    const encounterId = st().createEncounter('Luta')
+    st().addMonsterToEncounter(encounterId, 'srd-ogre', 2)
+    expect(st().campaign!.encounters[0].combatants.map(c => c.name)).toEqual(['Ogre 1', 'Ogre 2'])
   })
 })

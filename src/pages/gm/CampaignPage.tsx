@@ -6,10 +6,12 @@ import { GmHeader, gmSecondaryButton } from '../../components/gm/GmHeader'
 import { PlayerCard } from '../../components/gm/PlayerCard'
 import { AddLocalPlayerModal } from '../../components/gm/AddLocalPlayerModal'
 import { NpcTab } from '../../components/gm/NpcTab'
+import { EncounterTab } from '../../components/gm/EncounterTab'
+import { MapTab } from '../../components/gm/MapTab'
 import { pickTextFile } from '../../lib/pickTextFile'
 import { deliverJson } from '../../lib/deliverJson'
 
-const TABS = ['players', 'npcs', 'notes'] as const
+const TABS = ['players', 'npcs', 'encontros', 'mapas', 'notes'] as const
 type Tab = typeof TABS[number]
 
 export function CampaignPage() {
@@ -61,6 +63,8 @@ export function CampaignPage() {
   const tabs: Array<{ id: Tab; label: string }> = [
     { id: 'players', label: t('gm.tabPlayers') },
     { id: 'npcs', label: t('gm.tabNpcs') },
+    { id: 'encontros', label: t('gm.tabEncounters') },
+    { id: 'mapas', label: t('gm.tabMaps') },
     { id: 'notes', label: t('gm.tabNotes') },
   ]
 
@@ -85,14 +89,14 @@ export function CampaignPage() {
       />
 
       <div className="max-w-[1180px] mx-auto px-4 sm:px-8 py-6 pb-20">
-        <div role="tablist" className="flex gap-1 mb-6 border-b border-white/[0.06]">
+        <div role="tablist" className="flex gap-1 mb-6 border-b border-white/[0.06] overflow-x-auto">
           {tabs.map(tb => (
             <button
               key={tb.id}
               role="tab"
               aria-selected={tab === tb.id}
               onClick={() => setTab(tb.id)}
-              className={`px-4 py-2.5 text-[14px] font-semibold border-b-2 -mb-px cursor-pointer transition-colors ${
+              className={`flex-shrink-0 whitespace-nowrap px-4 py-2.5 text-[14px] font-semibold border-b-2 -mb-px cursor-pointer transition-colors ${
                 tab === tb.id ? 'border-[#D4A017] text-[#F5F0E8]' : 'border-transparent text-[#A8A09B] hover:text-[#E8DFD0]'
               }`}
             >
@@ -134,6 +138,10 @@ export function CampaignPage() {
         )}
 
         {tab === 'npcs' && <NpcTab campaign={campaign} />}
+
+        {tab === 'encontros' && <EncounterTab campaign={campaign} />}
+
+        {tab === 'mapas' && <MapTab campaign={campaign} />}
 
         {tab === 'notes' && (
           <textarea

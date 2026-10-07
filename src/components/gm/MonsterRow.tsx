@@ -16,7 +16,7 @@ export function MonsterRow({ block, actions, onClick }: MonsterRowProps) {
     <div className="min-w-0 flex-1 text-left">
       <div className="font-bold text-[15px] text-[#F5F0E8] truncate">{block.name || t('gm.unnamed')}</div>
       <div className="text-[12px] text-[#A8A09B]">
-        {t(`gm.sizes.${block.size}`)} {t(`gm.creatureTypes.${block.creature_type}`)} · {t('gm.cr')} {block.cr} · {t('gm.ac')} {block.ac} · {t('gm.hp')} {block.hp.average}
+        {t('gm.sizeType', { size: t(`gm.sizes.${block.size}`), type: t(`gm.creatureTypes.${block.creature_type}`) })} · {t('gm.cr')} {block.cr} · {t('gm.ac')} {block.ac} · {t('gm.hp')} {block.hp.average}
       </div>
     </div>
   )
