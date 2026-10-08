@@ -15,6 +15,7 @@ import { AreaInspector, type ElementPatch } from '../../components/gm/area/AreaI
 import { AreaToolOptions, type AreaTool, type ToolSettings } from '../../components/gm/area/AreaToolOptions'
 import { PanelLabel, Segmented, Slider, TexturePicker } from '../../components/gm/area/pickers'
 import { textureLayer } from '../../components/gm/area/areaStyles'
+import { loadMaterials } from '../../components/gm/area/materials'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
 import { stampDef, stampSize } from '../../data/areaMap/stamps'
 import { iconDef } from '../../data/areaMap/icons'
@@ -25,13 +26,14 @@ import {
   setLayer, translateElement, updateElements, type ZMove,
 } from '../../lib/gm/areaMap/scene'
 import {
-  canRotate, elementBox, elementsInRect, gizmoHit, hitTest, moveVertex, quantize, resizeToward, rotationToward, vertexHit,
+  canRotate, clampScale, elementBox, elementsInRect, gizmoHit, hitTest, moveVertex, quantize, resizeToward, rotationToward, vertexHit,
   type Point,
 } from '../../lib/gm/areaMap/geometry'
 import { quantizePoints, simplify, type Box } from '../../lib/gm/areaMap/shapes'
 import { snapToGrid } from '../../lib/gm/areaMap/grid'
 import {
-  AREA_BRUSH_DEFAULT, AREA_GRID_MAX_SIZE, AREA_GRID_MIN_SIZE, AREA_ICON_COLORS, AREA_ICON_DEFAULT_SIZE,
+  AREA_BRUSH_DEFAULT, AREA_BRUSH_OPACITY_DEFAULT, AREA_ICON_MAX_SIZE, AREA_ICON_MIN_SIZE, AREA_LABEL_MAX_SIZE,
+  AREA_LABEL_MIN_SIZE, AREA_GRID_MAX_SIZE, AREA_GRID_MIN_SIZE, AREA_ICON_COLORS, AREA_ICON_DEFAULT_SIZE,
   AREA_THUMBNAIL_DELAY_MS, AREA_THUMBNAIL_PX, AREA_THUMBNAIL_QUALITY, AREA_EXPORT_JPEG_QUALITY, AREA_LABEL_COLORS, AREA_LABEL_STYLES, AREA_MAP_MAX_SIZE, AREA_MAP_MIN_SIZE, AREA_PATH_STYLES,
   AREA_REGION_COLORS, AREA_REGION_TERRITORY_OPACITY, AREA_SIMPLIFY_PX, AREA_STROKE_STEP_PX, MAP_UNDO_LIMIT,
 } from '../../constants'
@@ -76,6 +78,10 @@ const DEFAULT_SETTINGS: ToolSettings = {
   pathWidth: AREA_PATH_STYLES.dirtRoad.width,
   labelStyle: 'city',
   multiSelect: false,
+  brushEdge: 'rough',
+  brushOpacity: AREA_BRUSH_OPACITY_DEFAULT,
+  stampScale: 1,
+  iconSize: AREA_ICON_DEFAULT_SIZE,
 }
 
 /** `/mestre/campanha/:id/area/:mapId` — editor do mapa de área. */
@@ -125,6 +131,13 @@ function Editor({ initial }: { initial: AreaMap }) {
   const [size, setSize] = useState({ w: initial.width, h: initial.height })
   const drag = useRef<Drag | null>(null)
   const stroke = useRef<Stroke | null>(null)
+
+  // O material escolhido no pincel ou na região já começa a baixar: o traço sai com a imagem, não a cor média.
+  useEffect(() => {
+    void loadMaterials([settings.brushTexture, settings.regionTexture])
+  }, [settings.brushTexture, settings.regionTexture])
+  /** Id do traço em andamento, para o palco desenhá-lo ao vivo (o ref não re-renderiza). */
+  const [liveId, setLiveId] = useState<string | null>(null)
 
   const setDraft = useCallback((next: AreaMap) => {
     draftRef.current = next
@@ -254,6 +267,16 @@ function Editor({ initial }: { initial: AreaMap }) {
       } else if (key === 'escape') {
         setSelectedId(null)
         chooseTool('select')
+      } else if (selectedIds.length && (key === '+' || key === '=' || key === ']' || key === '-' || key === '_' || key === '[')) {
+        // Aumentar/diminuir 10% o que tem tamanho (objeto, ícone, texto) na seleção.
+        e.preventDefault()
+        const k = key === '+' || key === '=' || key === ']' ? 1.1 : 1 / 1.1
+        commit(updateElements(draftRef.current, selectedIds, el => {
+          if (el.kind === 'stamp') return { ...el, scale: clampScale(Math.round(el.scale * k * 100) / 100) }
+          if (el.kind === 'icon') return { ...el, size: Math.min(AREA_ICON_MAX_SIZE, Math.max(AREA_ICON_MIN_SIZE, Math.round(el.size * k))) }
+          if (el.kind === 'label') return { ...el, size: Math.min(AREA_LABEL_MAX_SIZE, Math.max(AREA_LABEL_MIN_SIZE, Math.round(el.size * k))) }
+          return el
+        }))
       } else if (selectedIds.length && key.startsWith('arrow')) {
         e.preventDefault()
         const step = NUDGE * (e.shiftKey ? 10 : 1)
@@ -281,9 +304,15 @@ function Editor({ initial }: { initial: AreaMap }) {
     const s = settings
     switch (tool) {
       case 'brush':
-        return { kind: 'paint', id, layer: textureLayer(s.brushTexture), texture: s.brushTexture, size: s.brushSize, points, erase: false }
+        return {
+          kind: 'paint', id, layer: textureLayer(s.brushTexture), texture: s.brushTexture, size: s.brushSize, points,
+          erase: false, edge: s.brushEdge, opacity: s.brushOpacity,
+        }
       case 'erase':
-        return { kind: 'paint', id, layer: s.eraseLayer, texture: s.brushTexture, size: s.brushSize, points, erase: true }
+        return {
+          kind: 'paint', id, layer: s.eraseLayer, texture: s.brushTexture, size: s.brushSize, points,
+          erase: true, edge: s.brushEdge, opacity: s.brushOpacity,
+        }
       case 'path':
         return { kind: 'path', id, layer: AREA_PATH_STYLES[s.pathStyle].layer, style: s.pathStyle, width: s.pathWidth, points }
       case 'region':
@@ -314,14 +343,14 @@ function Editor({ initial }: { initial: AreaMap }) {
         const def = stampDef(asset.id)
         el = {
           kind: 'stamp', id: uuidv4(), layer: def?.layer ?? 'decor', asset: asset.id,
-          x: at.x, y: at.y, scale: 1, rotation: 0, flip: false, opacity: 1,
+          x: at.x, y: at.y, scale: settings.stampScale, rotation: 0, flip: false, opacity: 1,
           // Objetos mágicos já entram brilhando.
           ...(def?.category === 'fantasy' ? { effect: 'glow' as const } : {}),
         } satisfies AreaStamp
       } else {
         el = {
           kind: 'icon', id: uuidv4(), layer: 'labels', icon: asset.id,
-          x: at.x, y: at.y, size: AREA_ICON_DEFAULT_SIZE, color: AREA_ICON_COLORS[0], badge: true,
+          x: at.x, y: at.y, size: settings.iconSize, color: AREA_ICON_COLORS[0],
         } satisfies AreaIcon
       }
       const next = addElements(m, [el])
@@ -343,8 +372,9 @@ function Editor({ initial }: { initial: AreaMap }) {
         alert(t('gm.areaMap.limitReached'))
         return true
       }
-      setDraft(next)
       stroke.current = { id: el.id, last: world, zoom: info.zoom }
+      setLiveId(el.id)
+      setDraft(next)
       return true
     }
 
@@ -457,6 +487,7 @@ function Editor({ initial }: { initial: AreaMap }) {
     const s = stroke.current
     if (s) {
       stroke.current = null
+      setLiveId(null)
       const el = draftRef.current.elements.find(e => e.id === s.id)
       if (!el || !('points' in el)) return
       const points = quantizePoints(simplify(el.points, AREA_SIMPLIFY_PX / s.zoom))
@@ -485,6 +516,7 @@ function Editor({ initial }: { initial: AreaMap }) {
   function handleCancel() {
     if (stroke.current || (drag.current?.moved && drag.current.mode !== 'marquee')) setDraft(committed.current)
     stroke.current = null
+    setLiveId(null)
     drag.current = null
     setMarquee(null)
   }
@@ -527,7 +559,12 @@ function Editor({ initial }: { initial: AreaMap }) {
   )
 
   const toolOptions = (
-    <AreaToolOptions tool={tool} settings={settings} onChange={patch => setSettings(s => ({ ...s, ...patch }))} />
+    <AreaToolOptions
+      tool={tool}
+      settings={settings}
+      placeKind={tool === 'place' && asset ? asset.kind : null}
+      onChange={patch => setSettings(s => ({ ...s, ...patch }))}
+    />
   )
 
   const sizeChanged = size.w !== draft.width || size.h !== draft.height
@@ -664,6 +701,7 @@ function Editor({ initial }: { initial: AreaMap }) {
       panMode={tool === 'pan'}
       ghostAsset={tool === 'place' && asset?.kind === 'stamp' ? asset.id : null}
       brushSize={tool === 'brush' || tool === 'erase' ? settings.brushSize : null}
+      liveId={liveId}
       onDown={handleDown}
       onMove={handleMove}
       onUp={handleUp}

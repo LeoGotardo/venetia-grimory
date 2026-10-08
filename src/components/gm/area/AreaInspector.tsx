@@ -23,7 +23,6 @@ export interface ElementPatch {
   width?: number
   texture?: string | null
   border?: boolean
-  badge?: boolean
   /** `undefined` tira o efeito. */
   effect?: AreaEffect
 }
@@ -100,7 +99,7 @@ export function AreaInspector({
       {el.kind === 'stamp' && (
         <>
           <Slider label={t('gm.areaMap.scale')} value={Math.min(el.scale, SLIDER_MAX_SCALE)} display={pct(el.scale)}
-            min={AREA_STAMP_MIN_SCALE} max={SLIDER_MAX_SCALE} step={0.05} onChange={v => onLive({ scale: v })} onCommit={onCommit} />
+            min={AREA_STAMP_MIN_SCALE} max={SLIDER_MAX_SCALE} step={0.05} buttons={0.1} onChange={v => onLive({ scale: v })} onCommit={onCommit} />
           {rotation(el.rotation)}
           <Slider label={t('gm.areaMap.opacity')} value={el.opacity} display={pct(el.opacity)}
             min={0.1} max={1} step={0.05} onChange={v => onLive({ opacity: v })} onCommit={onCommit} />
@@ -119,11 +118,8 @@ export function AreaInspector({
       {el.kind === 'icon' && (
         <>
           <Slider label={t('gm.areaMap.scale')} value={el.size} display={String(Math.round(el.size))}
-            min={AREA_ICON_MIN_SIZE} max={Math.min(AREA_ICON_MAX_SIZE, 200)} step={1} onChange={v => onLive({ size: v })} onCommit={onCommit} />
+            min={AREA_ICON_MIN_SIZE} max={AREA_ICON_MAX_SIZE} step={1} buttons={8} onChange={v => onLive({ size: v })} onCommit={onCommit} />
           <ColorSwatches label={t('gm.areaMap.color')} colors={AREA_ICON_COLORS} value={el.color} onPick={color => onChange({ color })} />
-          <button type="button" onClick={() => onChange({ badge: !el.badge })} aria-pressed={el.badge} className={smallButton}>
-            {t(el.badge ? 'gm.areaMap.badgeOn' : 'gm.areaMap.badgeOff')}
-          </button>
         </>
       )}
 
@@ -148,7 +144,7 @@ export function AreaInspector({
             onPick={style => onChange({ style })}
           />
           <Slider label={t('gm.areaMap.labelSize')} value={el.size} display={String(Math.round(el.size))}
-            min={AREA_LABEL_MIN_SIZE} max={Math.min(AREA_LABEL_MAX_SIZE, 200)} step={1} onChange={v => onLive({ size: v })} onCommit={onCommit} />
+            min={AREA_LABEL_MIN_SIZE} max={Math.min(AREA_LABEL_MAX_SIZE, 200)} step={1} buttons={4} onChange={v => onLive({ size: v })} onCommit={onCommit} />
           {rotation(el.rotation)}
           <ColorSwatches label={t('gm.areaMap.color')} colors={AREA_LABEL_COLORS} value={el.color} onPick={color => onChange({ color })} />
         </>

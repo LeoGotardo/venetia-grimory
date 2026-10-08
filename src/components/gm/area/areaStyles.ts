@@ -1,26 +1,29 @@
-import { FillPattern, Graphics, Matrix, Text, Texture } from 'pixi.js'
-import type { AreaLabel, AreaLabelStyle, AreaLayerId, AreaPaint, AreaPath, AreaPathStyle, AreaRegion } from '../../../types'
+import { FillPattern, Graphics, Matrix, Text } from 'pixi.js'
+import type { AreaLabel, AreaLabelStyle, AreaLayerId, AreaPath, AreaPathStyle, AreaRegion } from '../../../types'
 import { dashLine, smooth } from '../../../lib/gm/areaMap/shapes'
-import { areaTextureTile } from './areaTextures'
+import { textureFill } from './areaTextures'
+import { TILE_RESOLUTION, materialTexture } from './materials'
+
+export { TILE_RESOLUTION }
 
 /**
  * Como cada tipo de elemento vira desenho no Pixi. Fica separado do palco para
  * o palco só cuidar de sincronizar e de ponteiro.
  */
 
-/** Resolução dos ladrilhos (px por unidade de mundo) — o mesmo do fundo. */
-export const TILE_RESOLUTION = 2
-
 const patterns = new Map<string, FillPattern>()
 
 /**
  * Padrão repetido de um material, em coordenadas de mundo: duas pinceladas da
- * mesma textura se emendam sem costura, onde quer que comecem.
+ * mesma textura se emendam sem costura, onde quer que comecem. `null` enquanto
+ * a imagem pintada baixa (quem desenha usa a cor média).
  */
-export function texturePattern(id: string): FillPattern {
+export function texturePattern(id: string): FillPattern | null {
   let pattern = patterns.get(id)
   if (!pattern) {
-    pattern = new FillPattern(Texture.from(areaTextureTile(id, TILE_RESOLUTION)), 'repeat')
+    const tex = materialTexture(id)
+    if (!tex) return null
+    pattern = new FillPattern(tex, 'repeat')
     pattern.setTransform(new Matrix().scale(1 / TILE_RESOLUTION, 1 / TILE_RESOLUTION))
     patterns.set(id, pattern)
   }
@@ -39,35 +42,13 @@ function trace(g: Graphics, flat: readonly number[]) {
   for (let i = 2; i + 1 < flat.length; i += 2) g.lineTo(flat[i], flat[i + 1])
 }
 
-/**
- * Pincelada: uma passada larga e translúcida por baixo da passada cheia — a
- * borda sai suave sem filtro de desfoque. A borracha usa o mesmo traço com
- * blend `erase` (o grupo de tinta da camada é isolado por um filtro, então ela
- * só apaga tinta).
- */
-export function drawPaint(g: Graphics, el: AreaPaint) {
-  g.clear()
-  g.blendMode = el.erase ? 'erase' : 'normal'
-  const line = el.points.length >= 4 ? smooth(el.points, 2) : el.points
-  const fill = el.erase ? undefined : texturePattern(el.texture)
-  const color = el.erase ? 0xffffff : undefined
-  const passes: Array<[number, number]> = [[1.25, 0.45], [1, 1]]
-  for (const [k, alpha] of passes) {
-    if (line.length < 4) {
-      g.circle(line[0], line[1], (el.size * k) / 2).fill(fill ? { fill, alpha } : { color, alpha })
-      continue
-    }
-    trace(g, line)
-    g.stroke({ width: el.size * k, alpha, cap: 'round', join: 'round', ...(fill ? { fill } : { color }) })
-  }
-}
-
 export function drawRegion(g: Graphics, el: AreaRegion) {
   g.clear()
   const outline = smooth(el.points, 2, true)
   g.poly(outline, true)
-  if (el.texture) g.fill({ fill: texturePattern(el.texture), alpha: el.opacity })
-  else g.fill({ color: hex(el.color), alpha: el.opacity })
+  const pattern = el.texture ? texturePattern(el.texture) : null
+  if (pattern) g.fill({ fill: pattern, alpha: el.opacity })
+  else g.fill({ color: hex(el.texture ? textureFill(el.texture) : el.color), alpha: el.opacity })
   if (!el.border) return
   if (el.texture) {
     g.poly(outline, true).stroke({ width: 3, color: 0x2a1d10, alpha: 0.55, join: 'round' })

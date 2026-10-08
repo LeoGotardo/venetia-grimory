@@ -1,16 +1,18 @@
-import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef, type Ref } from 'react'
+import { useCallback, useEffect, useImperativeHandle, useLayoutEffect, useReducer, useRef, type Ref } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  AlphaFilter, Application, BlurFilter, Container, Graphics, GraphicsContext, Rectangle, Text, Texture, TilingSprite,
+  Application, BlurFilter, Container, Graphics, GraphicsContext, Rectangle, Sprite, Text, Texture, TilingSprite,
 } from 'pixi.js'
-import type { AreaElement, AreaIcon, AreaLayerId, AreaMap, AreaStamp } from '../../../types'
+import type { AreaElement, AreaIcon, AreaLayerId, AreaMap, AreaPaint, AreaRegion, AreaStamp } from '../../../types'
 import { stampDef, stampSize, stampSvg } from '../../../data/areaMap/stamps'
 import { ICON_VIEWBOX, iconDef, iconSvg } from '../../../data/areaMap/icons'
 import { hexCenters, hexCorners } from '../../../lib/gm/areaMap/grid'
-import type { Box } from '../../../lib/gm/areaMap/shapes'
+import { smooth, type Box } from '../../../lib/gm/areaMap/shapes'
 import { AREA_EXPORT_MAX_PX } from '../../../constants'
-import { areaTextureTile } from './areaTextures'
-import { TILE_RESOLUTION, applyLabel, drawPaint, drawPath, drawRegion, labelStyle } from './areaStyles'
+import { textureFill } from './areaTextures'
+import { isMaterialReady, loadMaterials, materialTexture, usedMaterials } from './materials'
+import { TILE_RESOLUTION, applyLabel, drawPath, drawRegion, labelStyle } from './areaStyles'
+import { PaintLayer, bakeRegion } from './paintLayer'
 import {
   boxCorners, canRotate, elementBounds, elementBox, rotateHandle, GIZMO_HANDLE_PX, VERTEX_HANDLE_PX, type Point,
 } from '../../../lib/gm/areaMap/geometry'
@@ -34,6 +36,8 @@ interface AreaStageProps {
   ghostAsset: string | null
   /** Círculo do pincel/borracha seguindo o ponteiro, em unidades de mundo. */
   brushSize: number | null
+  /** Elemento sendo desenhado agora (traço ao vivo): pincelada vai para a máscara ao vivo, região fica vetorial. */
+  liveId: string | null
   /** Devolve `false` quando o toque não interessa à ferramenta: o gesto vira arraste do mapa. */
   onDown: (world: Point, info: StagePointerInfo) => boolean
   onMove: (world: Point, info: StagePointerInfo) => void
@@ -136,44 +140,80 @@ function applyStamp(node: StampNode, el: AreaStamp) {
   if (node.fx) node.addChildAt(node.fx, 0)
 }
 
-// Glifo de cada ícone em branco, compartilhado; a cor vem do `tint` da instância.
+// Glifo de cada ícone em branco, e o mesmo traçado como contorno; a cor vem do `tint` da instância.
 const iconContexts = new Map<string, GraphicsContext>()
+/** Largura do contorno de contraste, no viewBox 512 do ícone. */
+const ICON_OUTLINE = 24
 
-function iconContext(icon: string): GraphicsContext {
-  let ctx = iconContexts.get(icon)
+function iconContext(icon: string, outline: boolean): GraphicsContext {
+  const key = `${icon}:${outline ? 'o' : 'f'}`
+  let ctx = iconContexts.get(key)
   if (ctx) return ctx
   const def = iconDef(icon)
-  ctx = def
-    ? new GraphicsContext().svg(iconSvg(def, '#ffffff'))
-    : new GraphicsContext().circle(ICON_VIEWBOX / 2, ICON_VIEWBOX / 2, ICON_VIEWBOX * 0.3).fill({ color: 0xffffff })
-  iconContexts.set(icon, ctx)
+  if (!def) {
+    ctx = new GraphicsContext().circle(ICON_VIEWBOX / 2, ICON_VIEWBOX / 2, ICON_VIEWBOX * 0.3)
+    ctx = outline ? ctx.stroke({ color: 0xffffff, width: ICON_OUTLINE }) : ctx.fill({ color: 0xffffff })
+  } else {
+    ctx = new GraphicsContext().svg(outline
+      ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ICON_VIEWBOX} ${ICON_VIEWBOX}"><path fill="none" stroke="#ffffff" stroke-width="${ICON_OUTLINE}" stroke-linejoin="round" d="${def.d}"/></svg>`
+      : iconSvg(def, '#ffffff'))
+  }
+  iconContexts.set(key, ctx)
   return ctx
 }
 
+/** Ícone = só o símbolo: o contorno fino de contraste fica atrás e o glifo na cor escolhida por cima. */
 interface IconNode extends Container {
-  badge: Graphics
+  outline: Graphics
   glyph: Graphics
 }
 
 const hexColor = (c: string) => Number.parseInt(c.slice(1), 16)
 
-function applyIcon(node: IconNode, el: AreaIcon) {
-  node.position.set(el.x, el.y)
-  const r = el.size / 2
-  node.badge.clear()
-  node.badge.visible = el.badge
-  if (el.badge) {
-    node.badge.circle(0, 0, r).fill({ color: 0x1a1714, alpha: 0.88 }).stroke({ color: hexColor(el.color), width: Math.max(1.5, r * 0.09) })
-  }
-  const ctx = iconContext(el.icon)
-  if (node.glyph.context !== ctx) node.glyph.context = ctx
-  const glyphSize = el.badge ? el.size * 0.6 : el.size
-  node.glyph.scale.set(glyphSize / ICON_VIEWBOX)
-  node.glyph.position.set(-glyphSize / 2, -glyphSize / 2)
-  node.glyph.tint = hexColor(el.color)
+/** Contorno contrastante: glifo claro ganha contorno escuro e vice-versa. */
+function contrastFor(color: string): number {
+  const n = hexColor(color)
+  const lum = (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+  return lum > 0.55 ? 0x1a1208 : 0xf5f0e8
 }
 
-function createNode(el: AreaElement, textResolution: number): Container {
+function applyIcon(node: IconNode, el: AreaIcon) {
+  node.position.set(el.x, el.y)
+  for (const [g, outline] of [[node.outline, true], [node.glyph, false]] as const) {
+    const ctx = iconContext(el.icon, outline)
+    if (g.context !== ctx) g.context = ctx
+    g.scale.set(el.size / ICON_VIEWBOX)
+    g.position.set(-el.size / 2, -el.size / 2)
+  }
+  node.glyph.tint = hexColor(el.color)
+  node.outline.tint = contrastFor(el.color)
+  node.outline.alpha = 0.75
+}
+
+/** Região com textura e borda macia (assada) — some quando a região é desenhada ao vivo. */
+interface SoftRegionNode extends Container {
+  baked: Sprite | null
+  border: Graphics
+}
+
+function applySoftRegion(node: SoftRegionNode, el: AreaRegion & { texture: string }, scene: Scene, mapW: number, mapH: number) {
+  node.baked?.destroy({ texture: true, textureSource: true })
+  node.baked = bakeRegion(scene.app.renderer, el, mapW, mapH)
+  if (node.baked) node.addChildAt(node.baked, 0)
+  node.alpha = el.opacity
+  node.border.clear()
+  if (el.border) node.border.poly(smooth(el.points, 2, true), true).stroke({ width: 3, color: 0x2a1d10, alpha: 0.55, join: 'round' })
+}
+
+/** Como o elemento é desenhado: a região com textura muda de estrutura entre ao vivo (vetor) e pronta (assada). */
+type Variant = AreaElement['kind'] | 'softRegion'
+
+function variantOf(el: AreaElement, liveId: string | null): Variant {
+  // Com o material ainda baixando, a região fica vetorial (cor média) e é assada quando ele chega.
+  return el.kind === 'region' && el.texture && el.id !== liveId && isMaterialReady(el.texture) ? 'softRegion' : el.kind
+}
+
+function createNode(el: AreaElement, variant: Variant, textResolution: number): Container {
   if (el.kind === 'stamp') {
     const node = new Container() as StampNode
     node.main = new Graphics(assetContext(el.asset))
@@ -184,23 +224,34 @@ function createNode(el: AreaElement, textResolution: number): Container {
   }
   if (el.kind === 'icon') {
     const node = new Container() as IconNode
-    node.badge = new Graphics()
-    node.glyph = new Graphics(iconContext(el.icon))
-    node.addChild(node.badge, node.glyph)
+    node.outline = new Graphics(iconContext(el.icon, true))
+    node.glyph = new Graphics(iconContext(el.icon, false))
+    node.addChild(node.outline, node.glyph)
+    return node
+  }
+  if (variant === 'softRegion') {
+    const node = new Container() as SoftRegionNode
+    node.baked = null
+    node.border = new Graphics()
+    node.addChild(node.border)
     return node
   }
   if (el.kind === 'label') return new Text({ text: '', resolution: textResolution })
   return new Graphics()
 }
 
-function updateNode(node: Container, el: AreaElement) {
+function updateNode(node: Container, el: AreaElement, variant: Variant, scene: Scene, map: AreaMap) {
+  if (variant === 'softRegion' && el.kind === 'region' && el.texture) {
+    return applySoftRegion(node as SoftRegionNode, el as AreaRegion & { texture: string }, scene, map.width, map.height)
+  }
   switch (el.kind) {
     case 'stamp': return applyStamp(node as StampNode, el)
     case 'icon': return applyIcon(node as IconNode, el)
-    case 'paint': return drawPaint(node as Graphics, el)
     case 'region': return drawRegion(node as Graphics, el)
     case 'path': return drawPath(node as Graphics, el)
     case 'label': return applyLabel(node as Text, el)
+    // Pinceladas não têm nó próprio: vão para a camada de tinta (`PaintLayer`).
+    case 'paint': return
   }
 }
 
@@ -211,17 +262,6 @@ function updateNode(node: Container, el: AreaElement) {
 function textResolutionFor(zoom: number): number {
   const target = zoom * (window.devicePixelRatio || 1)
   return Math.min(4, Math.max(1, 2 ** Math.ceil(Math.log2(Math.max(target, 1)))))
-}
-
-/**
- * Põe (ou tira) um filtro neutro no grupo de tinta: com ele o grupo é desenhado
- * numa textura à parte, e o blend `erase` da borracha só apaga tinta — sem ele
- * apagaria o fundo também.
- */
-function isolatePaint(group: Container, on: boolean) {
-  if (on === !!group.filters?.length) return
-  // AlphaFilter com alpha 1 em vez de PassthroughFilter: o deste Pixi (8.22) quebra ao montar o shader WGSL.
-  group.filters = on ? [new AlphaFilter({ alpha: 1 })] : []
 }
 
 /**
@@ -256,8 +296,25 @@ function drawGrid(scene: Scene, m: AreaMap) {
 
 interface LayerNodes {
   root: Container
-  /** Pinceladas da camada. Ganha um filtro quando há borracha, para o `erase` só apagar tinta. */
+  /** Grupo da tinta da camada, por baixo dos outros elementos. */
   paint: Container
+  /** Tinta raster da camada; criada na primeira pincelada. */
+  painter: PaintLayer | null
+}
+
+/**
+ * Tinta raster da camada: cria o `PaintLayer` na primeira pincelada e o mantém em
+ * dia. Só assa até a primeira pincelada cujo material ainda baixa — o resto entra
+ * depois, como traço acrescentado, quando ele chegar.
+ */
+function syncPaint(scene: Scene, layer: LayerNodes, all: AreaPaint[], live: AreaPaint | null, m: AreaMap) {
+  const cut = all.findIndex(p => !p.erase && !isMaterialReady(p.texture))
+  const paints = cut < 0 ? all : all.slice(0, cut)
+  if (!layer.painter && (paints.length || live)) {
+    layer.painter = new PaintLayer(scene.app.renderer)
+    layer.paint.addChild(layer.painter.view)
+  }
+  layer.painter?.sync(paints, live, m.width, m.height)
 }
 
 interface Scene {
@@ -266,7 +323,9 @@ interface Scene {
   background: TilingSprite
   frame: Graphics
   layers: Map<AreaLayerId, LayerNodes>
-  nodes: Map<string, { el: AreaElement; node: Container }>
+  nodes: Map<string, { el: AreaElement; node: Container; variant: Variant }>
+  /** Tamanho do mapa da última sincronização: região assada depende dele (resolução). */
+  mapSize: string
   overlay: Graphics
   ghost: Graphics
   grid: Graphics
@@ -281,7 +340,7 @@ interface Scene {
  * coordenada de mundo e avisa quem usa; o pan/zoom (roda, botões, pinça) é dele.
  * Desenha sob demanda — sem loop contínuo, para não gastar bateria no tablet.
  */
-export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel, apiRef }: AreaStageProps) {
+export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brushSize, liveId, onDown, onMove, onUp, onCancel, apiRef }: AreaStageProps) {
   const { t } = useTranslation()
   const hostRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<Scene | null>(null)
@@ -289,10 +348,11 @@ export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brus
   const fittedFor = useRef<string | null>(null)
   const frame = useRef<number | null>(null)
   const hover = useRef<Point | null>(null)
+  const [materialsTick, materialsLoaded] = useReducer((n: number) => n + 1, 0)
 
-  const latest = useRef({ map, selectedIds, marquee, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel })
+  const latest = useRef({ map, selectedIds, marquee, panMode, ghostAsset, brushSize, liveId, onDown, onMove, onUp, onCancel })
   useLayoutEffect(() => {
-    latest.current = { map, selectedIds, marquee, panMode, ghostAsset, brushSize, onDown, onMove, onUp, onCancel }
+    latest.current = { map, selectedIds, marquee, panMode, ghostAsset, brushSize, liveId, onDown, onMove, onUp, onCancel }
   })
 
   const drawOverlay = useCallback(() => {
@@ -395,9 +455,16 @@ export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brus
     if (!scene) return
     const m = latest.current.map
 
-    if (scene.texture !== m.background.texture) {
-      scene.texture = m.background.texture
-      scene.background.texture = Texture.from(areaTextureTile(m.background.texture, TILE_RESOLUTION))
+    // Materiais pintados baixam sob demanda; quando chegarem, sincroniza de novo.
+    const missing = [...usedMaterials(m)].filter(id => !isMaterialReady(id))
+    if (missing.length) void loadMaterials(missing).then(materialsLoaded)
+
+    const bg = materialTexture(m.background.texture)
+    const bgKey = `${m.background.texture}:${bg ? 'pronta' : 'cor'}`
+    if (scene.texture !== bgKey) {
+      scene.texture = bgKey
+      scene.background.texture = bg ?? Texture.WHITE
+      scene.background.tint = bg ? 0xffffff : Number.parseInt(textureFill(m.background.texture).slice(1), 16)
     }
     scene.background.width = m.width
     scene.background.height = m.height
@@ -413,35 +480,42 @@ export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brus
       nodes.root.alpha = layer.opacity
     })
 
+    const live = latest.current.liveId
+    const sizeKey = `${m.width}x${m.height}`
+    const resized = scene.mapSize !== sizeKey
+    scene.mapSize = sizeKey
     const alive = new Set<string>()
-    const erasing = new Set<AreaLayerId>()
+    const paints = new Map<AreaLayerId, AreaPaint[]>()
+    const livePaint = new Map<AreaLayerId, AreaPaint>()
     m.elements.forEach((el, i) => {
       alive.add(el.id)
+      if (el.kind === 'paint') {
+        if (el.id === live) livePaint.set(el.layer, el)
+        else paints.set(el.layer, [...(paints.get(el.layer) ?? []), el])
+        return
+      }
+      const variant = variantOf(el, live)
       const existing = scene.nodes.get(el.id)
       let node = existing?.node
-      if (!node || existing!.el.kind !== el.kind) {
-        node?.destroy()
-        node = createNode(el, scene.textResolution)
-        scene.nodes.set(el.id, { el, node })
-        updateNode(node, el)
-      } else if (existing!.el !== el) {
+      if (!node || existing!.variant !== variant) {
+        node?.destroy({ children: true })
+        node = createNode(el, variant, scene.textResolution)
+        scene.nodes.set(el.id, { el, node, variant })
+        updateNode(node, el, variant, scene, m)
+      } else if (existing!.el !== el || (resized && variant === 'softRegion')) {
         existing!.el = el
-        updateNode(node, el)
+        updateNode(node, el, variant, scene, m)
       }
-      const layer = scene.layers.get(el.layer)!
-      const parent = el.kind === 'paint' ? layer.paint : layer.root
+      const parent = scene.layers.get(el.layer)!.root
       if (node.parent !== parent) parent.addChild(node)
       node.zIndex = i
-      if (el.kind === 'paint' && el.erase) erasing.add(el.layer)
     })
     for (const [id, entry] of scene.nodes) {
       if (alive.has(id)) continue
-      entry.node.destroy()
+      entry.node.destroy({ children: true })
       scene.nodes.delete(id)
     }
-    for (const [id, layer] of scene.layers) {
-      isolatePaint(layer.paint, erasing.has(id))
-    }
+    for (const [id, layer] of scene.layers) syncPaint(scene, layer, paints.get(id) ?? [], livePaint.get(id) ?? null, m)
     schedule()
   }, [schedule])
 
@@ -515,6 +589,8 @@ export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brus
     let observer: ResizeObserver | null = null
 
     void app.init({
+      // A mistura por altura da tinta é um shader GLSL; sem WebGPU, não precisa de duas versões.
+      preference: 'webgl',
       width: Math.max(1, host.clientWidth),
       height: Math.max(1, host.clientHeight),
       background: 0x131110,
@@ -550,7 +626,7 @@ export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brus
         paint.sortableChildren = true
         paint.zIndex = -1
         root.addChild(paint)
-        layers.set(layer.id, { root, paint })
+        layers.set(layer.id, { root, paint, painter: null })
         world.addChild(root)
       }
       const grid = new Graphics()
@@ -564,7 +640,7 @@ export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brus
       app.stage.addChild(world)
 
       sceneRef.current = {
-        app, world, background, frame: frameG, layers, nodes: new Map(), overlay, ghost, grid, gridKey: '', texture: '', textResolution: 1,
+        app, world, background, frame: frameG, layers, nodes: new Map(), mapSize: '', overlay, ghost, grid, gridKey: '', texture: '', textResolution: 1,
       }
       sync()
       void Promise.all([
@@ -600,13 +676,19 @@ export function AreaStage({ map, selectedIds, marquee, panMode, ghostAsset, brus
       if (frame.current != null) cancelAnimationFrame(frame.current)
       frame.current = null
       if (sceneRef.current) {
+        // As texturas de tinta e de região assada não são filhas de ninguém: liberam a GPU à parte.
+        for (const layer of sceneRef.current.layers.values()) layer.painter?.destroy()
+        for (const { node, variant } of sceneRef.current.nodes.values()) {
+          if (variant === 'softRegion') (node as SoftRegionNode).baked?.destroy({ texture: true, textureSource: true })
+        }
         sceneRef.current = null
         app.destroy(true, { children: true })
       }
     }
   }, [sync, fit, schedule, refreshLabels])
 
-  useEffect(sync, [map, sync])
+  // `materialsTick` muda quando uma textura pintada termina de baixar: sincroniza de novo.
+  useEffect(sync, [map, sync, materialsTick])
   useEffect(schedule, [selectedIds, marquee, ghostAsset, brushSize, panMode, schedule])
 
   // Roda do mouse: zoom em torno do cursor. `passive: false` para impedir a rolagem da página.

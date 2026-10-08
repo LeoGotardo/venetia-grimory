@@ -160,6 +160,9 @@ export const AREA_STAMP_MAX_SCALE = 10
 export const AREA_BRUSH_MIN = 8
 export const AREA_BRUSH_MAX = 400
 export const AREA_BRUSH_DEFAULT = 80
+/** Força padrão do pincel (opacidade dos carimbos) e o mínimo aceito. */
+export const AREA_BRUSH_OPACITY_DEFAULT = 1
+export const AREA_BRUSH_OPACITY_MIN = 0.05
 /** Distância mínima (em px de tela) entre dois pontos gravados de um traço. */
 export const AREA_STROKE_STEP_PX = 4
 /** Tolerância da simplificação de traços (Ramer-Douglas-Peucker), em px de tela. */
@@ -189,10 +192,10 @@ export const AREA_LABEL_MIN_SIZE = 8
 export const AREA_LABEL_MAX_SIZE = 400
 export const AREA_LABEL_COLORS = ['#f5f0e8', '#2a1d10', '#d4a017', '#b5392f', '#9fd0ea'] as const
 /** Ícones: diâmetro padrão e limites (unidades de mundo). Cores do glifo/selo. */
-export const AREA_ICON_DEFAULT_SIZE = 48
+export const AREA_ICON_DEFAULT_SIZE = 56
 export const AREA_ICON_MIN_SIZE = 12
 export const AREA_ICON_MAX_SIZE = 400
-export const AREA_ICON_COLORS = ['#f5f0e8', '#d4a017', '#b5392f', '#3f7fa8', '#4f8a3a', '#8f6bff', '#2a1d10'] as const
+export const AREA_ICON_COLORS = ['#2a1d10', '#f5f0e8', '#d4a017', '#b5392f', '#3f7fa8', '#4f8a3a', '#8f6bff'] as const
 /** Grade de alinhamento. */
 export const AREA_GRID_DEFAULT_SIZE = 64
 export const AREA_GRID_MIN_SIZE = 16

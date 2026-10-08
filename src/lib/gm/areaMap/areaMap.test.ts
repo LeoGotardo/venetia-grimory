@@ -8,6 +8,7 @@ import {
   boxContains, boxCorners, canRotate, elementBounds, elementsInRect, moveVertex, vertexHit, gizmoHit, hitTest, labelBox, resizeToward, rotateHandle, rotationToward, stampBox,
 } from './geometry'
 import { boundsOf, dashLine, distanceToLine, pointInPolygon, simplify, smooth } from './shapes'
+import { DAB_SPACING, dabsAlong, strokeSeed } from './brush'
 import { MAX_GRID_CELLS, hexCenters, hexCorners, hexRowHeight, snapToGrid } from './grid'
 import { fitView, screenToWorld, worldToScreen, zoomAt } from './viewport'
 import { normalizeAreaMap } from '../normalize'
@@ -29,7 +30,7 @@ const label = (over: Partial<AreaLabel> = {}): AreaLabel => ({
   kind: 'label', id: 'l', layer: 'labels', text: 'Vila', x: 100, y: 100, size: 20, rotation: 0, style: 'note', color: '#f5f0e8', ...over,
 })
 const paint = (id: string, points: number[]): AreaPaint => ({
-  kind: 'paint', id, layer: 'terrain', texture: 'grass', size: 40, points, erase: false,
+  kind: 'paint', id, layer: 'terrain', texture: 'grass', size: 40, points, erase: false, edge: 'rough', opacity: 1,
 })
 
 function mapWith(...els: AreaElement[]): AreaMap {
@@ -233,7 +234,7 @@ describe('grade', () => {
 
 describe('ícones', () => {
   const icon = (over: Partial<AreaIcon> = {}): AreaIcon => ({
-    kind: 'icon', id: 'i', layer: 'labels', icon: 'city', x: 100, y: 100, size: 40, color: '#f5f0e8', badge: true, ...over,
+    kind: 'icon', id: 'i', layer: 'labels', icon: 'city', x: 100, y: 100, size: 40, color: '#f5f0e8', ...over,
   })
 
   it('ficam de pé, escalam pelo canto e são tocáveis', () => {
@@ -242,6 +243,34 @@ describe('ícones', () => {
     expect(resizeToward(icon({ x: 0, y: 0 }), sizeOf, { x: 30, y: 30 })).toEqual({ size: 60 })
     expect(hitTest(mapWith(icon()), { x: 110, y: 110 }, sizeOf)).toBe('i')
     expect(translateElement(icon(), 5, 5)).toMatchObject({ x: 105, y: 105 })
+  })
+})
+
+describe('pincel', () => {
+  it('carimba a cada fração do tamanho, desde o primeiro ponto', () => {
+    const dabs = dabsAlong([0, 0, 100, 0], 100, 'soft', 1)
+    expect(dabs[0]).toMatchObject({ x: 0, y: 0, rotation: 0, scale: 1 })
+    expect(dabs).toHaveLength(Math.floor(100 / (100 * DAB_SPACING.soft)) + 1)
+    expect(dabs[1].x).toBeCloseTo(10)
+    // A sobra de um segmento continua no seguinte: o espaçamento não reinicia nas quinas.
+    const bent = dabsAlong([0, 0, 15, 0, 15, 15], 100, 'soft', 1)
+    expect(bent.map(d => [Math.round(d.x), Math.round(d.y)])).toEqual([[0, 0], [10, 0], [15, 5], [15, 15]])
+  })
+
+  it('ponto único vira um carimbo; orgânica gira e varia de tamanho', () => {
+    expect(dabsAlong([5, 5], 40, 'rough', 1)).toHaveLength(1)
+    const rough = dabsAlong([0, 0, 400, 0], 50, 'rough', strokeSeed('traço'))
+    expect(new Set(rough.map(d => d.rotation.toFixed(3))).size).toBeGreaterThan(rough.length / 2)
+    for (const d of rough) expect(d.scale).toBeGreaterThanOrEqual(0.86)
+  })
+
+  it('determinístico e com prefixo estável: estender o traço só acrescenta carimbos', () => {
+    const seed = strokeSeed('abc')
+    const short = dabsAlong([0, 0, 80, 0], 40, 'rough', seed)
+    const long = dabsAlong([0, 0, 80, 0, 160, 40], 40, 'rough', seed)
+    expect(long.slice(0, short.length)).toEqual(short)
+    expect(dabsAlong([0, 0, 80, 0], 40, 'rough', seed)).toEqual(short)
+    expect(strokeSeed('abc')).not.toBe(strokeSeed('abd'))
   })
 })
 
@@ -295,7 +324,7 @@ describe('normalizeAreaMap', () => {
         { kind: 'region', id: 'r2', points: [0, 0, 1, 0, 1, 1], color: 'nada' },
         { kind: 'path', id: 'c', style: 'teleférico', points: [0, 0, 5, 5] },
         { kind: 'label', id: 'l', text: 'Vila', x: 1, y: 2, style: 'gigante', size: -3 },
-        { kind: 'icon', id: 'i', icon: 'city', x: 1, y: 2, size: 9999, badge: false, color: 'x' },
+        { kind: 'icon', id: 'i', icon: 'city', x: 1, y: 2, size: 9999, badge: true, color: 'x' },
         { kind: 'icon', id: 'sem-icone', x: 1, y: 2 },
         { ...stamp('fx'), effect: 'glow' },
         { ...stamp('fx-ruim'), effect: 'explosão' },
@@ -304,12 +333,15 @@ describe('normalizeAreaMap', () => {
       thumbnail: 'javascript:alert(1)',
     })
     expect(m.elements.map(e => e.id)).toEqual(['p', 'r2', 'c', 'l', 'i', 'fx', 'fx-ruim'])
-    expect(m.elements[4]).toMatchObject({ size: 400, badge: false, color: '#f5f0e8' })
+    expect(m.elements[4]).toMatchObject({ size: 400, color: '#2a1d10' })
+    // O selo redondo saiu: ícone é só o símbolo, e o campo antigo some.
+    expect(m.elements[4]).not.toHaveProperty('badge')
     expect(m.elements[5]).toMatchObject({ effect: 'glow' })
     expect(m.elements[6]).not.toHaveProperty('effect')
     expect(m.grid).toEqual({ kind: 'hex', size: 16, opacity: 1 })
     expect(m).not.toHaveProperty('thumbnail')
-    expect(m.elements[0]).toMatchObject({ size: 400, erase: false })
+    // Pincelada de antes da ponta existir vira a suave (a mais parecida com o traço redondo antigo).
+    expect(m.elements[0]).toMatchObject({ size: 400, erase: false, edge: 'soft', opacity: 1 })
     expect(m.elements[1]).toMatchObject({ texture: null, color: '#b5392f', border: false })
     expect(m.elements[2]).toMatchObject({ style: 'dirtRoad', width: 18 })
     expect(m.elements[3]).toMatchObject({ style: 'city', size: 8, color: '#f5f0e8' })
