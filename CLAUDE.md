@@ -48,6 +48,16 @@ it downloads into `cacheDir/updates/`, sends the user to the "install unknown ap
 `canRequestPackageInstalls()` is false, and hands the file to the system installer via the existing
 `FileProvider`. Debug builds skip the check (different signing key — the installer would refuse).
 
+The Android back button goes through `@capacitor/app`: without a `backButton` listener Capacitor 8
+just finishes the Activity and the whole app closes. `BackButtonBridge` (inside `BrowserRouter`)
+runs the top handler of a stack in `src/lib/backButton.ts`, registered with `useBackHandler(active,
+handler, layer)`: `overlay` first (every `Modal`, the export menu, the area editor's bottom sheet on
+phones, the encounter's table view), then `page` — `GmHeader` registers its own back (same
+destination and same "discard changes?" as the header button), the sheet goes home and the wizard
+steps back one step. With nothing registered it goes up a route (`parentPath`), and on the home
+screen it minimizes the app (`minimizeApp`, what Android does with a root Activity). A new overlay
+or a screen with its own back button needs a `useBackHandler`, or the hardware back skips it.
+
 Launcher icon and splash are generated from `assets/` (`icon-only.png`, `icon-foreground.png`,
 `icon-background.png`, `splash.png`, `splash-dark.png`, background `#1A1612`) with
 `npx capacitor-assets generate --android` — rerun it after changing any of them; until it runs,

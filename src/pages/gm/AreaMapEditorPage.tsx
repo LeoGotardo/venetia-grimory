@@ -17,6 +17,7 @@ import { PanelLabel, Segmented, Slider, TexturePicker } from '../../components/g
 import { textureLayer } from '../../components/gm/area/areaStyles'
 import { loadMaterials } from '../../components/gm/area/materials'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
+import { useBackHandler } from '../../hooks/useBackHandler'
 import { stampDef, stampSize } from '../../data/areaMap/stamps'
 import { iconDef } from '../../data/areaMap/icons'
 import { deliverFile } from '../../lib/deliverFile'
@@ -128,6 +129,8 @@ function Editor({ initial }: { initial: AreaMap }) {
   /** Texto recém-criado: o inspector foca o campo para digitar o nome. */
   const [focusLabel, setFocusLabel] = useState<string | null>(null)
   const [sheet, setSheet] = useState<SheetTab | null>('assets')
+  // No celular o painel de baixo fecha com o voltar, antes de sair do editor.
+  useBackHandler(!isDesktop && sheet !== null, () => setSheet(null))
   const [size, setSize] = useState({ w: initial.width, h: initial.height })
   const drag = useRef<Drag | null>(null)
   const stroke = useRef<Stroke | null>(null)

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
+import { useBackHandler } from '../../hooks/useBackHandler'
 
 interface ModalProps {
   open: boolean
@@ -14,6 +15,9 @@ export function Modal({ open, onClose, title, children, wide }: ModalProps) {
   const { t } = useTranslation()
   const panelRef = useRef<HTMLDivElement>(null)
   const titleId = title ? 'modal-title' : undefined
+
+  // Voltar do Android fecha o modal antes de sair da tela
+  useBackHandler(open, onClose)
 
   // Escape to close
   useEffect(() => {

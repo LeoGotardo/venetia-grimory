@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSheetPdf } from '../../hooks/useSheetPdf'
+import { useBackHandler } from '../../hooks/useBackHandler'
 import { deliverViaShare } from '../../lib/platform'
 
 interface ExportMenuProps {
@@ -13,6 +14,7 @@ export function ExportMenu({ onExportJson }: ExportMenuProps) {
   const { generatePdf, preparePdf, generating, error } = useSheetPdf()
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  useBackHandler(isOpen, () => setIsOpen(false))
 
   // No app e no celular o arquivo sai pela folha de compartilhamento do sistema,
   // que já oferece imprimir — então a opção de impressão direta some.

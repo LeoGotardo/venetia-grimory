@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSheetStore } from '../store/sheetStore'
+import { useBackHandler } from '../hooks/useBackHandler'
 import { ConfigModal } from '../components/ui/ConfigModal'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { Step01Level } from '../components/wizard/Step01Level'
@@ -41,6 +42,8 @@ export function Wizard() {
   const { currentStep, setStep, newSheet, sheetId } = useSheetStore()
   const [maxStep, setMaxStep] = useState(currentStep)
   const [configOpen, setConfigOpen] = useState(false)
+  // Voltar do Android: um passo atrás, como o "Voltar" de cada passo; no primeiro, a Home.
+  useBackHandler(true, () => (currentStep > 1 ? setStep(currentStep - 1) : navigate('/')), 'page')
 
   useEffect(() => {
     if (!sheetId) newSheet()
