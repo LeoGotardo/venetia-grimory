@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import type { Campaign, Encounter } from '../../types'
 import { useGmStore } from '../../store/gmStore'
 import { useMediaQuery } from '../../hooks/useMediaQuery'
+import { useBackHandler } from '../../hooks/useBackHandler'
 import { GmHeader, gmPrimaryButton, gmSecondaryButton, gmContainer } from '../../components/gm/GmHeader'
 import { AppFooter } from '../../components/ui/AppFooter'
 import { CombatantRow } from '../../components/gm/CombatantRow'
@@ -51,6 +52,7 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
   // No celular o painel é um modal: tocar num token para arrastar não deve abri-lo.
   const [panelOpen, setPanelOpen] = useState(false)
   const [tableView, setTableView] = useState(false)
+  useBackHandler(tableView, () => setTableView(false))
   const map = campaign.maps.find(m => m.id === encounter.map_id) ?? null
   const showMap = map != null && view === 'map'
 

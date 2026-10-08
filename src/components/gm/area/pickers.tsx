@@ -59,24 +59,48 @@ export function ColorSwatches({ colors, value, onPick, label }: {
   )
 }
 
-/** Controle deslizante com o valor à direita do rótulo; `onCommit` fecha o gesto no desfazer. */
-export function Slider({ label, value, display, min, max, step, onChange, onCommit }: {
+/**
+ * Controle deslizante com o valor à direita do rótulo; `onCommit` fecha o gesto
+ * no desfazer. `step` liga botões −/+ (mais fáceis de acertar com o dedo).
+ */
+export function Slider({ label, value, display, min, max, step, onChange, onCommit, buttons }: {
   label: string; value: number; display: string; min: number; max: number; step: number
   onChange: (v: number) => void; onCommit?: () => void
+  /** Passo dos botões −/+; sem ele, só o controle deslizante. */
+  buttons?: number
 }) {
+  const { t } = useTranslation()
+  const nudge = (dir: 1 | -1) => {
+    const next = Math.min(max, Math.max(min, Math.round((value + dir * buttons!) * 1000) / 1000))
+    if (next === value) return
+    onChange(next)
+    onCommit?.()
+  }
+  const stepClass =
+    'w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-[8px] bg-white/5 border border-white/[0.1] text-[16px] font-bold text-[#E8DFD0] hover:bg-white/10 cursor-pointer disabled:opacity-30 disabled:cursor-default'
+  const range = (
+    <input
+      type="range" min={min} max={max} step={step} value={value}
+      aria-label={label}
+      onChange={e => onChange(Number(e.target.value))}
+      onPointerUp={onCommit}
+      onKeyUp={onCommit}
+      className="w-full accent-[#D4A017]"
+    />
+  )
   return (
-    <label className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1">
       <span className="flex justify-between text-[11px] font-semibold uppercase tracking-wider text-[#A8A09B]">
         {label}<span className="tabular-nums normal-case tracking-normal text-[#E8DFD0]">{display}</span>
       </span>
-      <input
-        type="range" min={min} max={max} step={step} value={value}
-        onChange={e => onChange(Number(e.target.value))}
-        onPointerUp={onCommit}
-        onKeyUp={onCommit}
-        className="w-full accent-[#D4A017]"
-      />
-    </label>
+      {buttons ? (
+        <div className="flex items-center gap-1.5">
+          <button type="button" onClick={() => nudge(-1)} disabled={value <= min} aria-label={t('gm.areaMap.smaller', { name: label })} className={stepClass}>−</button>
+          {range}
+          <button type="button" onClick={() => nudge(1)} disabled={value >= max} aria-label={t('gm.areaMap.bigger', { name: label })} className={stepClass}>+</button>
+        </div>
+      ) : range}
+    </div>
   )
 }
 

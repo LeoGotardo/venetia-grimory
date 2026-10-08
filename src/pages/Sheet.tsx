@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../store/sheetStore'
 import { loadSheet as validateSheet } from '../services/sheetStorage'
 import { useSheetExport } from '../hooks/useSheetExport'
+import { useBackHandler } from '../hooks/useBackHandler'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { CombatPanel } from '../components/sheet/CombatPanel'
 import { AbilitiesPanel } from '../components/sheet/AbilitiesPanel'
@@ -42,6 +43,7 @@ export function CharacterSheet() {
   const [tab, setTab] = useState<Tab>('sheet')
   const [configOpen, setConfigOpen] = useState(false)
   const [levelUpOpen, setLevelUpOpen] = useState(false)
+  useBackHandler(true, () => navigate('/'), 'page')
   const [xpInput, setXpInput] = useState('')
   const [hpDelta, setHpDelta] = useState('')
 

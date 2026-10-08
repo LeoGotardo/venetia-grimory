@@ -280,8 +280,9 @@ export interface AreaStamp {
 export type AreaEffect = 'shadow' | 'glow'
 
 /**
- * Ícone de informação (cidade, perigo, missão…) do game-icons.net: fica sempre
- * de pé, com selo redondo opcional por trás. `size` é o diâmetro em unidades de mundo.
+ * Ícone de informação (cidade, perigo, missão…) do game-icons.net: só o
+ * símbolo, sempre de pé, com um contorno fino de contraste para ler sobre
+ * qualquer chão. `size` é o lado em unidades de mundo.
  */
 export interface AreaIcon {
   kind: 'icon'
@@ -292,13 +293,15 @@ export interface AreaIcon {
   y: number
   size: number
   color: string
-  badge: boolean
 }
+
+/** Ponta do pincel: orgânica (beira irregular), suave (degradê redondo) ou dura. */
+export type AreaBrushEdge = 'rough' | 'soft' | 'hard'
 
 /**
  * Pincelada de textura. Guarda só a linha central (`[x, y, x, y, …]`, já
- * simplificada) e a espessura — o contorno sai na hora de desenhar. `erase`
- * apaga a tinta da própria camada que estiver por baixo.
+ * simplificada), a espessura, a ponta e a força — os carimbos saem na hora de
+ * desenhar. `erase` apaga a tinta da própria camada que estiver por baixo.
  */
 export interface AreaPaint {
   kind: 'paint'
@@ -308,6 +311,9 @@ export interface AreaPaint {
   size: number
   points: number[]
   erase: boolean
+  edge: AreaBrushEdge
+  /** Força do pincel, 0–1: quanto a textura cobre o que está embaixo. */
+  opacity: number
 }
 
 /** Região fechada: textura (`texture`) ou cor lisa translúcida, com borda tracejada opcional. */

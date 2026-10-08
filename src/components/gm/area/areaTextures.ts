@@ -1,20 +1,47 @@
 import type { TerrainId } from '../../../lib/gm/terrain'
 import { TERRAIN_STYLE, mulberry, speckle, stroke, type Painter } from '../terrainStyle'
+import { PAINTED_TEXTURE_FILLS } from '../../../data/areaMap/paintedTextures.generated'
 
 /**
- * Materiais que preenchem o fundo (e, nas próximas fases, regiões e pinceladas)
- * do mapa de área. A maioria reaproveita a textura de um terreno do mapa de
- * combate (`TERRAIN_STYLE`): o ladrilho junta 4×4 casas pintadas com sementes
- * diferentes e repete o desenho nas 8 vizinhanças, então emenda sem costura.
+ * Materiais do mapa de área (fundo, pincel, regiões). Quem tem imagem pintada
+ * em `src/assets/area-textures/` (geradas no Gemini e tratadas por
+ * `scripts/areamap/process-textures.sh`) usa a imagem; quem não tem — e todos
+ * enquanto a imagem carrega — usa a textura procedural: o desenho de um terreno
+ * do mapa de combate (`TERRAIN_STYLE`) num ladrilho de 4×4 casas com sementes
+ * diferentes, repetido nas 8 vizinhanças para emendar sem costura.
  */
 
 interface AreaTextureDef {
   id: string
-  /** Terreno do mapa de combate cuja textura é usada. */
+  /** Terreno do mapa de combate cuja textura procedural é usada. */
   terrain?: TerrainId
   fill?: string
   paint?: Painter
 }
+
+// Imagens pintadas, com URL (hash do Vite) e fora do bundle JS — só baixam quando usadas.
+const paintedFiles = import.meta.glob<string>('../../../assets/area-textures/*.webp', { eager: true, query: '?url', import: 'default' })
+
+interface PaintedTexture {
+  url: string
+  thumb: string
+}
+
+const PAINTED = new Map<string, PaintedTexture>()
+for (const [path, url] of Object.entries(paintedFiles)) {
+  const file = path.split('/').pop()!
+  if (file.endsWith('.thumb.webp')) continue
+  const id = file.replace(/\.webp$/, '')
+  const thumb = paintedFiles[path.replace(/\.webp$/, '.thumb.webp')]
+  if (thumb) PAINTED.set(id, { url, thumb })
+}
+
+/** URL da imagem pintada do material, ou `null` se ele só tem a procedural. */
+export function paintedTextureUrl(id: string): string | null {
+  return PAINTED.get(id)?.url ?? null
+}
+
+export const PAINTED_TEXTURE_IDS = [...PAINTED.keys()]
 
 const parchment: Painter = (ctx, s, r) => {
   speckle('rgba(120,90,40,0.12)', 10, 0.05)(ctx, s, r)
@@ -47,19 +74,26 @@ const ash: Painter = (ctx, s, r) => {
   speckle('rgba(255,120,40,0.35)', 2, 0.03)(ctx, s, r)
 }
 
+/** Ordem da paleta: por família (relva, mata, chão, pedra, frio, água, fogo, magia, papel). */
 export const AREA_TEXTURES: readonly AreaTextureDef[] = [
   { id: 'grass', terrain: 'grass' },
+  { id: 'darkGrass', terrain: 'grass' },
+  { id: 'dryGrass', terrain: 'grass' },
   { id: 'forest', terrain: 'vegetation' },
+  { id: 'jungle', terrain: 'vegetation' },
+  { id: 'deadForest', terrain: 'rubble' },
+  { id: 'swamp', terrain: 'mud' },
   { id: 'dirt', terrain: 'dirt' },
+  { id: 'mud', terrain: 'mud' },
   { id: 'sand', terrain: 'sand' },
   { id: 'rock', terrain: 'rubble' },
   { id: 'stone', terrain: 'floor' },
-  { id: 'mud', terrain: 'mud' },
   { id: 'snow', terrain: 'snow' },
   { id: 'ice', terrain: 'ice' },
   { id: 'water', terrain: 'water' },
   { id: 'deepWater', terrain: 'deepWater' },
   { id: 'ash', fill: '#3a3330', paint: ash },
+  { id: 'volcanicRock', terrain: 'rubble' },
   { id: 'magic', fill: '#2c2342', paint: magic },
   { id: 'parchment', fill: '#c9b48a', paint: parchment },
 ]
@@ -68,10 +102,10 @@ export const AREA_TEXTURE_IDS = AREA_TEXTURES.map(t => t.id)
 
 const byId = new Map(AREA_TEXTURES.map(t => [t.id, t]))
 
-/** Cor lisa do material (miniatura da lista, carregamento). */
+/** Cor lisa do material (miniatura, carregamento): a média da imagem pintada, ou a da procedural. */
 export function textureFill(id: string): string {
   const def = byId.get(id) ?? byId.get('grass')!
-  return def.fill ?? TERRAIN_STYLE[def.terrain!].fill
+  return PAINTED_TEXTURE_FILLS[def.id] ?? def.fill ?? TERRAIN_STYLE[def.terrain!].fill
 }
 
 /** Casas por lado em um ladrilho. */
@@ -140,8 +174,10 @@ export function areaTextureTile(id: string, resolution = 2): HTMLCanvasElement {
 
 const swatches = new Map<string, string>()
 
-/** Amostra para a paleta (data URL), desenhada uma vez por material. */
+/** Amostra para a paleta: a miniatura da imagem pintada ou, sem ela, a procedural (data URL). */
 export function areaTextureSwatch(id: string): string {
+  const painted = PAINTED.get(id)
+  if (painted) return painted.thumb
   let url = swatches.get(id)
   if (!url) {
     url = areaTextureTile(id, 1).toDataURL()

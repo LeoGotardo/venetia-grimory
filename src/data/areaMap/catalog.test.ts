@@ -3,7 +3,8 @@ import pt from '../../i18n/pt'
 import en from '../../i18n/en'
 import { STAMPS, STAMP_CATEGORIES, stampSize } from './stamps'
 import { ICONS, ICON_AUTHORS, ICON_CATEGORIES, ICONS_LICENSE } from './icons'
-import { AREA_TEXTURE_IDS } from '../../components/gm/area/areaTextures'
+import { AREA_TEXTURE_IDS, PAINTED_TEXTURE_IDS, areaTextureSwatch, paintedTextureUrl } from '../../components/gm/area/areaTextures'
+import { PAINTED_TEXTURE_FILLS } from './paintedTextures.generated'
 import { AREA_DEFAULT_TEXTURE, AREA_LAYERS } from '../../constants'
 
 type Names = Record<string, string>
@@ -69,5 +70,19 @@ describe('ícones do game-icons.net', () => {
     expect(ICONS_LICENSE.name).toBe('CC BY 3.0')
     const used = new Set(ICONS.map(i => ICON_AUTHORS[i.author]))
     for (const name of used) expect(ICONS_LICENSE.authors).toContain(name)
+  })
+})
+
+describe('texturas pintadas', () => {
+  it('cada imagem é de um material conhecido, com miniatura e cor média', () => {
+    expect(PAINTED_TEXTURE_IDS.length).toBeGreaterThan(0)
+    for (const id of PAINTED_TEXTURE_IDS) {
+      expect(AREA_TEXTURE_IDS, id).toContain(id)
+      expect(paintedTextureUrl(id), id).toMatch(/\.webp/)
+      expect(areaTextureSwatch(id), id).toMatch(/\.thumb\.webp/)
+      expect(PAINTED_TEXTURE_FILLS[id], id).toMatch(/^#[0-9A-F]{6}$/i)
+    }
+    // O manifesto de cores e as imagens andam juntos (o script gera os dois).
+    expect(Object.keys(PAINTED_TEXTURE_FILLS).sort()).toEqual([...PAINTED_TEXTURE_IDS].sort())
   })
 })

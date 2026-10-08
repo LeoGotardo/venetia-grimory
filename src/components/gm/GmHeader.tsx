@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { SettingsButton } from '../ui/SettingsButton'
+import { useBackHandler } from '../../hooks/useBackHandler'
 
 interface GmHeaderProps {
   title: ReactNode
@@ -15,12 +16,15 @@ interface GmHeaderProps {
 export function GmHeader({ title, backTo, onBack, actions }: GmHeaderProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const back = () => (onBack ? onBack() : navigate(backTo))
+  // O voltar do Android vai para o mesmo lugar (e pede a mesma confirmação) que este botão.
+  useBackHandler(true, back, 'page')
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between gap-3 h-[64px] px-4 sm:px-8 xl:px-12 bg-[#161311] border-b border-white/[0.06]">
       <div className="flex items-center gap-3 min-w-0">
         <button
-          onClick={() => (onBack ? onBack() : navigate(backTo))}
+          onClick={back}
           aria-label={t('gm.back')}
           className="w-[40px] h-[40px] flex-shrink-0 rounded-[10px] bg-white/5 border border-white/[0.09] text-[#A8A09B] hover:text-[#E8DFD0] flex items-center justify-center cursor-pointer transition-colors"
         >

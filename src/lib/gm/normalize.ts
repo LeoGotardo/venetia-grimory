@@ -4,7 +4,7 @@ import type {
 } from '../../types'
 import { blankCells, clampMapSize, isTerrainCode } from './terrain'
 import {
-  AREA_BRUSH_DEFAULT, AREA_BRUSH_MAX, AREA_BRUSH_MIN, AREA_DEFAULT_TEXTURE, AREA_GRID_DEFAULT_SIZE, AREA_GRID_MAX_SIZE,
+  AREA_BRUSH_DEFAULT, AREA_BRUSH_MAX, AREA_BRUSH_MIN, AREA_BRUSH_OPACITY_MIN, AREA_DEFAULT_TEXTURE, AREA_GRID_DEFAULT_SIZE, AREA_GRID_MAX_SIZE,
   AREA_GRID_MIN_SIZE, AREA_ICON_COLORS, AREA_ICON_DEFAULT_SIZE, AREA_ICON_MAX_SIZE, AREA_ICON_MIN_SIZE, AREA_LABEL_COLORS, AREA_LABEL_STYLES,
   AREA_LAYERS, AREA_PATH_MAX_WIDTH, AREA_PATH_MIN_WIDTH, AREA_PATH_STYLES, AREA_REGION_COLORS,
   CREATURE_SIZES, DEFAULT_SPEED_METERS, TERRAIN_VOID,
@@ -217,6 +217,9 @@ function normalizeAreaElement(raw: unknown): AreaElement | null {
       return {
         kind: 'paint', id, layer, texture: e.texture, points, erase: e.erase === true,
         size: Math.min(AREA_BRUSH_MAX, Math.max(AREA_BRUSH_MIN, finite(e.size, AREA_BRUSH_DEFAULT))),
+        // Traços de antes da ponta existir eram redondos e de borda curta: o mais parecido é a suave.
+        edge: e.edge === 'rough' || e.edge === 'hard' ? e.edge : 'soft',
+        opacity: Math.min(1, Math.max(AREA_BRUSH_OPACITY_MIN, finite(e.opacity, 1))),
       }
     }
     case 'region': {
@@ -255,7 +258,6 @@ function normalizeAreaElement(raw: unknown): AreaElement | null {
         kind: 'icon', id, layer, icon: e.icon, x: e.x as number, y: e.y as number,
         size: Math.min(AREA_ICON_MAX_SIZE, Math.max(AREA_ICON_MIN_SIZE, finite(e.size, AREA_ICON_DEFAULT_SIZE))),
         color: typeof e.color === 'string' && HEX.test(e.color) ? e.color : AREA_ICON_COLORS[0],
-        badge: e.badge !== false,
       }
     default:
       return null

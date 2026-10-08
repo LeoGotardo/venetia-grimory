@@ -129,3 +129,27 @@ node scripts/areamap/generate-icons.mjs
   atalhos de curva. O parser SVG do Pixi 8 desenha errado arcos e `S`/`T`: 10 dos 58 ícones saíam
   do quadro. `src/data/areaMap/catalog.test.ts` confere isso e os nomes em pt/en.
 - Ícone novo = entrada no JSON, nome em `gm.areaMap.icons.*` nos dois catálogos, e rodar o gerador.
+
+# Texturas pintadas do mapa de área
+
+`src/assets/area-textures/*.webp` e `src/data/areaMap/paintedTextures.generated.ts` são **gerados** —
+não edite à mão.
+
+```bash
+scripts/areamap/process-textures.sh   # requer ImageMagick 6/7 com WebP
+```
+
+- **Entrada:** `assets/texture/<id>.jpeg`, 1024×1024, geradas no Gemini. O id é o do material em
+  `src/components/gm/area/areaTextures.ts`.
+- **Iluminação:** o Gemini assou a "luz de cima à esquerda" na imagem inteira, e repetida ela vira um
+  xadrez. O script multiplica pela cor média e divide por uma versão muito desfocada da própria imagem
+  (com repetição nas bordas). `FLAT` aperta o desfoque por textura: a `darkGrass` tinha manchas de
+  escala média.
+- **Emenda:** só para as texturas listadas em `SEAM`. A faixa de 160 px da borda vem da versão rolada
+  pela metade, misturada ao miolo. As texturas que já emendam ficam fora, porque a mistura criaria
+  fantasmas de pedras e copas.
+- **Saída:** WebP de 1024 px (o ladrilho cobre 512 unidades de mundo, 2 px por unidade, igual à
+  procedural), mais a miniatura de 128 px e a cor média de cada uma.
+- **Material novo:** imagem em `assets/texture/`, entrada em `AREA_TEXTURES`, nome em
+  `gm.areaMap.textures.*` nos dois catálogos, e rodar o script. `catalog.test.ts` confere que imagem,
+  miniatura, cor e material batem.

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ErrorBoundary } from './pages/ServerError'
 import { NotFound } from './pages/NotFound'
 import { UpdatePrompt } from './components/ui/UpdatePrompt'
+import { BackButtonBridge } from './components/ui/BackButtonBridge'
 import { useTranslation } from 'react-i18next'
 
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })))
@@ -31,6 +32,7 @@ function App() {
   return (
     <ErrorBoundary>
       <BrowserRouter>
+        <BackButtonBridge />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />

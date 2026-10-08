@@ -48,6 +48,16 @@ it downloads into `cacheDir/updates/`, sends the user to the "install unknown ap
 `canRequestPackageInstalls()` is false, and hands the file to the system installer via the existing
 `FileProvider`. Debug builds skip the check (different signing key — the installer would refuse).
 
+The Android back button goes through `@capacitor/app`: without a `backButton` listener Capacitor 8
+just finishes the Activity and the whole app closes. `BackButtonBridge` (inside `BrowserRouter`)
+runs the top handler of a stack in `src/lib/backButton.ts`, registered with `useBackHandler(active,
+handler, layer)`: `overlay` first (every `Modal`, the export menu, the area editor's bottom sheet on
+phones, the encounter's table view), then `page` — `GmHeader` registers its own back (same
+destination and same "discard changes?" as the header button), the sheet goes home and the wizard
+steps back one step. With nothing registered it goes up a route (`parentPath`), and on the home
+screen it minimizes the app (`minimizeApp`, what Android does with a root Activity). A new overlay
+or a screen with its own back button needs a `useBackHandler`, or the hardware back skips it.
+
 Launcher icon and splash are generated from `assets/` (`icon-only.png`, `icon-foreground.png`,
 `icon-background.png`, `splash.png`, `splash-dark.png`, background `#1A1612`) with
 `npx capacitor-assets generate --android` — rerun it after changing any of them; until it runs,
@@ -342,16 +352,39 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   Pure logic in `src/lib/gm/areaMap/` (`scene`, `geometry`, `shapes`, `viewport`), normalized by
   `normalizeAreaMap`. Rendering is PixiJS 8 in `AreaStage` (on-demand renders, no ticker; one
   shared `GraphicsContext` per asset; Text resolution follows zoom). Drawing per kind is in
-  `areaStyles.ts`: textures are world-space `FillPattern`s, the brush is a textured round stroke
-  with a translucent wider pass for a soft edge, and the eraser is the same stroke with blend
-  `erase` inside the layer's paint group, isolated by an `AlphaFilter` — Pixi 8.22's
-  `PassthroughFilter` throws while building its WGSL program, don't switch back. Stamps are our
+  `areaStyles.ts`, except paint: brush strokes are **raster**, like Inkarnate (`paintLayer.ts`).
+  Each layer with paint keeps a baked RenderTexture; a stroke is stamped as brush-tip "dabs"
+  (`brush.ts` `dabsAlong`, seeded per stroke id so it always redraws the same; tips in
+  `brushTips.ts`: organic/soft/hard) into a soft mask with blend `max`, then the world-aligned
+  material goes through it with **height blending** (`heightBlend.ts`, a `Mesh` with a GLSL
+  shader — hence `preference: 'webgl'`): height is the texel's luminance against the material's
+  mean colour (`PAINTED_TEXTURE_FILLS`), it shifts the mask's 0.5 threshold, so crowns, stones and
+  ridges cross first and the edge follows the texture instead of a ghostly alpha fade; `RIM` adds
+  foam on water/ice and a contact shadow on forests. Dab alpha is always 1 — strength is the
+  shader's `uOpacity`, or a stroke under 50% would never cross the threshold. `Mesh.destroy` does
+  not free geometry or shader: use `destroyHeightBlend`. Erase strokes are the same mask (short
+  ramp, no height) with blend `erase` on the baked texture. Only appended strokes are composited;
+  anything else rebakes the layer. The stroke being drawn (`liveId`) goes to a reused map-sized
+  live mask, stamping only new dabs per move, through the same shader, so it never jumps on release.
+  `setMask({ mask: null })` does **not** clear a mask — set `.mask = null` (a destroyed live mask
+  left on the baked sprite broke every later frame). Textured regions are baked too (blurred
+  polygon mask through the same height blend, `bakeRegion`) except while being drawn. A brush
+  stroke that starts outside the map is a pan (`onDown` declines it), not a lost stroke. Icons are the glyph alone with a thin
+  contrasting outline (no badge). Measure editor performance on a production build (`vite
+  preview`): dev-mode React adds ~50 ms renders that don't exist in the app. Stamps are our
   own SVG in `src/data/areaMap/stamps.ts`; Pixi's SVG parser reads `polygon points` as integers
   only, so `pixiSafe` rewrites polygons as paths and rounds coordinates — `catalog.test.ts`
-  enforces the allowed tags. Textures (`areaTextures.ts`) reuse `TERRAIN_STYLE` painters as
-  seamless tiles. Editor: `AreaMapEditorPage` (`/mestre/campanha/:id/area/:mapId`), draft + undo
+  enforces the allowed tags. Materials (`areaTextures.ts`) are **painted images** where one exists
+  (`src/assets/area-textures/<id>.webp` + `.thumb.webp`, made in Gemini from `assets/texture/<id>.jpeg`
+  by `scripts/areamap/process-textures.sh`, which flattens the baked-in lighting and fixes the
+  seams; it also writes the average colours to `paintedTextures.generated.ts`), else the procedural
+  `TERRAIN_STYLE` tile. `materials.ts` loads painted ones on demand (`Assets.load` with mipmaps):
+  `materialTexture` returns `null` until ready, the stage shows the average colour meanwhile, bakes
+  paint only up to the first stroke whose material is still loading, keeps a textured region vector
+  until its material arrives, and re-syncs through `materialsTick`. Both kinds share 2 px per
+  world unit (`TILE_RESOLUTION`), so one tile scale fits all. Editor: `AreaMapEditorPage` (`/mestre/campanha/:id/area/:mapId`), draft + undo
   snapshots like the grid editor; the `undo`/`redo` updaters must capture `committed.current`
-  *before* `restore`. Icons (`kind: 'icon'`, upright, optional badge, tinted shared glyph) come
+  *before* `restore`. Icons (`kind: 'icon'`, upright, glyph only, tinted shared glyph) come
   from game-icons.net (CC BY 3.0, Lorc and Delapouite) through the generated
   `src/data/areaMap/icons.generated.ts` (`scripts/areamap/generate-icons.mjs`, see
   `scripts/README.md`); keep the credit under the icon grid and in both READMEs. Stamps can carry
