@@ -17,3 +17,9 @@ docs/*.pdf
 
 # APKs gerados por scripts/build-android-release.sh
 /*.apk
+
+# Segredos e vínculo local com a Vercel — nunca no git (o repo é público)
+.env*
+!.env.example
+.vercel
+.env*.local

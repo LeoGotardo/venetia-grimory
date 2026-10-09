@@ -1,0 +1,11 @@
+# Nunca enviar segredos nem o que não entra no deploy
+.env*
+!.env.example
+android
+assets
+docs
+dist
+e2e
+playwright-report
+test-results
+*.apk
