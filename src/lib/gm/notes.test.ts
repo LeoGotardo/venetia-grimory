@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { Monster, Npc, PartyMember } from '../../types'
 import {
   applyNoteFormat, findMentionQuery, findMentionTarget, insertMention, mentionMarkdown, mentionTargets, mentionsIn, noteMatches,
-  noteSummary, parseMentionHref, searchMentionTargets, sortNotes, toggleLinePrefix, toggleTaskAt, wrapSelection,
+  noteSummary, parseMentionHref, shareableNote, searchMentionTargets, sortNotes, toggleLinePrefix, toggleTaskAt, wrapSelection,
 } from './notes'
 import { createBlankStatBlock } from './statblock'
 import { makeSheet } from '../../test/fixtures'
@@ -133,7 +133,7 @@ describe('resumo e busca das notas', () => {
   })
 
   it('ordena pela edição mais recente', () => {
-    const n = (id: string, updated_at: string) => ({ id, title: '', body: '', created_at: '', updated_at })
+    const n = (id: string, updated_at: string) => ({ id, title: '', body: '', shared: false, created_at: '', updated_at })
     expect(sortNotes([n('a', '2026-01-01'), n('b', '2026-03-01'), n('c', '2026-02-01')]).map(x => x.id)).toEqual(['b', 'c', 'a'])
   })
 })
@@ -159,5 +159,27 @@ describe('alvos de menção', () => {
       'Goblin Xamã', 'Goblin', 'Grukk, o Goblin', 'Hobgoblin',
     ])
     expect(searchMentionTargets(targets, '', 2).map(x => x.name)).toEqual(['Aria', 'Grukk, o Goblin'])
+  })
+})
+
+describe('nota compartilhada com a mesa', () => {
+  const note = {
+    title: '',
+    body: '# Rumores\nO [Grukk](npc:n1) viu [Aria](player:p1) com o [Dragão](monster:srd-x). Veja [mapa](https://x.com).',
+    updated_at: 't',
+  }
+
+  it('citação vira o nome atual em negrito; link comum fica', () => {
+    const names: Record<string, string> = { n1: 'Grukk, o Rei Goblin', p1: 'Aria' }
+    const shared = shareableNote(note, m => names[m.id] ?? null)
+    expect(shared.body).toBe('# Rumores\nO **Grukk, o Rei Goblin** viu **Aria** com o **Dragão**. Veja [mapa](https://x.com).')
+    expect(shared.body).not.toMatch(/npc:|player:|monster:/)
+    expect(shared.title).toBe('Rumores')
+  })
+
+  it('nome com marcação é escapado e o rótulo escapado é lido de volta', () => {
+    const shared = shareableNote({ title: 'T', body: '[Lobo \\[alfa\\]](monster:m)', updated_at: 't' }, () => null)
+    expect(shared.body).toBe('**Lobo \\[alfa\\]**')
+    expect(shareableNote({ title: 'T', body: '[x](npc:a)', updated_at: 't' }, () => '*Sombra*').body).toBe('**\\*Sombra\\***')
   })
 })

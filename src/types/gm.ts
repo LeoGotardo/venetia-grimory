@@ -417,6 +417,8 @@ export interface CampaignNote {
   id: string
   title: string
   body: string
+  /** Compartilhada com a mesa: com a sala aberta, os players a leem (sem os links das citações). */
+  shared: boolean
   created_at: string
   updated_at: string
 }

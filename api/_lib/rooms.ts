@@ -6,7 +6,7 @@ import {
 import { parseRoomRoll } from '../../src/lib/room/rolls.js'
 import { rollDice } from '../../src/lib/gm/dice.js'
 import type {
-  RoomDoc, RoomError, RoomEvent, RoomInfo, RoomJoined, RoomMember, RoomRole, TableState,
+  RoomDoc, RoomError, RoomEvent, RoomInfo, RoomJoined, RoomMember, RoomRole, SharedNote, TableState,
 } from '../../src/lib/room/protocol.js'
 import { db, isUniqueViolation, toIso } from './db.js'
 import { RoomFailure } from './http.js'
@@ -219,6 +219,17 @@ export async function docsSince(roomId: string, since: number): Promise<RoomDoc[
     where room_id = ${roomId} and version > ${since}
     order by version`
   return rows.map(toDoc)
+}
+
+/** Mestre: publica uma nota compartilhada (o schema já limitou título e texto). */
+export async function putNote(member: AuthedMember, id: string, note: SharedNote): Promise<RoomDoc> {
+  if (member.role !== 'gm') throw new RoomFailure('forbidden')
+  return putDoc(member, 'note', id, JSON.stringify(note))
+}
+
+export async function clearNote(member: AuthedMember, id: string): Promise<RoomDoc | null> {
+  if (member.role !== 'gm') throw new RoomFailure('forbidden')
+  return buryDoc(member.room.id, 'note', id)
 }
 
 /** O player saiu ou foi removido: a ficha dele vira lápide (o mestre fica com a última cópia). */

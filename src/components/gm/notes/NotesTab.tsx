@@ -7,6 +7,7 @@ import { useGmStore } from '../../../store/gmStore'
 import { useMediaQuery } from '../../../hooks/useMediaQuery'
 import { useBackHandler } from '../../../hooks/useBackHandler'
 import { useMentionTargets } from '../../../hooks/useMentionTargets'
+import { campaignRoom, useRoomStore } from '../../../store/roomStore'
 import { gmPrimaryButton } from '../GmHeader'
 import { EmptyState, PlusIcon, ScrollIcon } from '../ornaments'
 import { NoteList } from './NoteList'
@@ -34,6 +35,7 @@ export function NotesTab({ campaign }: { campaign: Campaign }) {
   const requested = campaign.notes.find(n => n.id === searchParams.get(NOTE_PARAM)) ?? null
   const selected = requested ?? (isDesktop ? notes[0] ?? null : null)
   const { targets, srdReady, requestSrd } = useMentionTargets(campaign, selected?.body ?? '')
+  const hasRoom = useRoomStore(s => campaignRoom(s.memberships, campaign.id) != null)
 
   function select(id: string | null) {
     setSearchParams(prev => {
@@ -91,6 +93,7 @@ export function NotesTab({ campaign }: { campaign: Campaign }) {
           onSuggest={requestSrd}
           onDelete={() => handleDelete(selected)}
           onBack={isDesktop ? undefined : () => select(null)}
+          canShare={hasRoom || selected.shared}
         />
       )}
       <MentionPreviewModal target={preview} campaign={campaign} onClose={() => setPreview(null)} />

@@ -148,6 +148,29 @@ export function toggleTaskAt(text: string, offset: number): string {
   return text.slice(0, box) + (match[1] === ' ' ? 'x' : ' ') + text.slice(box + 1)
 }
 
+/** Escapa o que o markdown leria como marcação num nome solto (`*`, `_`, colchetes…). */
+function escapeMarkdown(text: string): string {
+  return text.replace(/[\\`*_[\]#<>|~]/g, '\\$&')
+}
+
+const MENTION_LINK = new RegExp(`\\[((?:\\\\.|[^\\]\\\\])*)\\]\\((${MENTION_KINDS.join('|')}):([\\w-]+)\\)`, 'g')
+
+/**
+ * A nota como vai para a mesa: os players não têm as fichas de NPCs e
+ * monstros do mestre, então cada citação vira o nome em negrito — o atual, se
+ * `nameOf` souber, senão o texto do link. O título vazio vira o deduzido.
+ */
+export function shareableNote(
+  note: Pick<CampaignNote, 'title' | 'body' | 'updated_at'>,
+  nameOf: (mention: Mention) => string | null,
+): { title: string; body: string; updated_at: string } {
+  const body = note.body.replace(MENTION_LINK, (_whole, label: string, kind: MentionKind, id: string) => {
+    const name = nameOf({ kind, id }) ?? label.replace(/\\(.)/g, '$1')
+    return `**${escapeMarkdown(name)}**`
+  })
+  return { title: noteSummary(note).title, body, updated_at: note.updated_at }
+}
+
 /** Uma linha sem a sintaxe de markdown, para títulos e resumos. Links e menções viram o texto deles. */
 function plainLine(line: string): string {
   return line

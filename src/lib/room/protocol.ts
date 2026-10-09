@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import {
   ROOM_CHAT_MAX, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, ROOM_DISPLAY_NAME_MAX, ROOM_NAME_MAX,
-  ROOM_ROLL_EXPRESSION_MAX, ROOM_ROLL_LABEL_MAX, ROOM_TOKEN_MAX_LENGTH,
+  ROOM_NOTE_BODY_MAX, ROOM_NOTE_TITLE_MAX, ROOM_ROLL_EXPRESSION_MAX, ROOM_ROLL_LABEL_MAX, ROOM_TOKEN_MAX_LENGTH,
 } from './constants.js'
 
 /** Lado do maior mapa de grade (`MAP_MAX_SIZE` do app) — repetido aqui porque o servidor não lê `src/constants`. */
@@ -126,6 +126,14 @@ export type TableState = z.infer<typeof tableStateSchema>
 export type TableCombatant = z.infer<typeof tableCombatantSchema>
 export type TableHealth = typeof TABLE_HEALTH[number]
 
+/** Nota que o mestre compartilhou: markdown já sem os links das citações. */
+export const sharedNoteSchema = z.object({
+  title: z.string().max(ROOM_NOTE_TITLE_MAX),
+  body: z.string().max(ROOM_NOTE_BODY_MAX),
+  updated_at: z.string().max(40),
+})
+export type SharedNote = z.infer<typeof sharedNoteSchema>
+
 /**
  * Evento do log da sala (rolagem ou mensagem). `private` = só o mestre e o
  * autor recebem. A rolagem é feita no servidor: `rolls` e `total` não vêm do cliente.
@@ -177,6 +185,9 @@ export const clientMessageSchema = z.discriminatedUnion('t', [
     private: z.boolean(),
   }),
   z.object({ t: z.literal('chat'), text: z.string().trim().min(1).max(ROOM_CHAT_MAX), private: z.boolean() }),
+  /** Mestre: publica (ou atualiza) uma nota compartilhada; `id` é o da nota na campanha. */
+  z.object({ t: z.literal('note_put'), id: z.string().min(1).max(100), note: sharedNoteSchema }),
+  z.object({ t: z.literal('note_clear'), id: z.string().min(1).max(100) }),
 ])
 export type ClientMessage = z.infer<typeof clientMessageSchema>
 

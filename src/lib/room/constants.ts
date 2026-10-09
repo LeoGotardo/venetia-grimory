@@ -38,6 +38,11 @@ export const ROOM_TABLE_PUSH_DEBOUNCE_MS = 250
 /** A sala tem uma mesa só: o encontro que o mestre está transmitindo. */
 export const ROOM_TABLE_DOC_ID = 'main'
 
+/** Notas compartilhadas: maior texto aceito e espera depois da última edição antes de publicar. */
+export const ROOM_NOTE_TITLE_MAX = 200
+export const ROOM_NOTE_BODY_MAX = 100_000
+export const ROOM_NOTE_PUSH_DEBOUNCE_MS = 600
+
 /** Rolagens e chat. */
 export const ROOM_CHAT_MAX = 500
 export const ROOM_ROLL_EXPRESSION_MAX = 60

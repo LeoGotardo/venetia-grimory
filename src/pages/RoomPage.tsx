@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useRoomStore } from '../store/roomStore'
@@ -15,10 +15,13 @@ import { EmptyState, MapIcon, SectionTitle } from '../components/gm/ornaments'
 import { TableView } from '../components/room/TableView'
 import { RoomLog } from '../components/room/RoomLog'
 import { useMediaQuery } from '../hooks/useMediaQuery'
+
+// O markdown das notas só carrega quando a aba Notas abre.
+const SharedNotes = lazy(() => import('../components/room/SharedNotes').then(m => ({ default: m.SharedNotes })))
 import { docKey } from '../lib/room/docs'
 import { ROOM_TABLE_DOC_ID } from '../constants'
 
-type RoomTab = 'table' | 'log' | 'room'
+type RoomTab = 'table' | 'log' | 'notes' | 'room'
 
 /**
  * Sala vista pelo player: estado da conexão, quem está na mesa, a própria ficha
@@ -72,9 +75,11 @@ export function RoomPage() {
   }
 
   const panel: RoomTab = isDesktop && tab === 'table' ? 'log' : tab
+  const noteDocs = connected ? Object.values(docs).filter(doc => doc.kind === 'note') : []
   const tabs: Array<{ id: RoomTab; label: string }> = [
     ...(isDesktop ? [] : [{ id: 'table' as const, label: t('room.table') }]),
     { id: 'log', label: t('room.log.title') },
+    { id: 'notes', label: noteDocs.length > 0 ? `${t('gm.tabNotes')} ${noteDocs.length}` : t('gm.tabNotes') },
     { id: 'room', label: t('room.title') },
   ]
   const table = <TableView doc={connected ? docs[docKey({ kind: 'table', id: ROOM_TABLE_DOC_ID })] : undefined} />
@@ -124,6 +129,11 @@ export function RoomPage() {
                   <RoomLog />
                 </div>
               )}
+                {panel === 'notes' && (
+                  <Suspense fallback={<p className="text-center text-[#A8A09B] py-8 animate-pulse">{t('loading.loading')}</p>}>
+                    <SharedNotes docs={noteDocs} />
+                  </Suspense>
+                )}
                 {panel === 'room' && (
                   <div className="flex flex-col gap-6">
                     <section>

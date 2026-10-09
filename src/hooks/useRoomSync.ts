@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
-import { ROOM_SHEET_PUSH_DEBOUNCE_MS, ROOM_TABLE_DOC_ID, ROOM_TABLE_PUSH_DEBOUNCE_MS } from '../constants'
+import {
+  ROOM_NOTE_PUSH_DEBOUNCE_MS, ROOM_SHEET_PUSH_DEBOUNCE_MS, ROOM_TABLE_DOC_ID, ROOM_TABLE_PUSH_DEBOUNCE_MS,
+} from '../constants'
 import { useRoomStore } from '../store/roomStore'
 import { useSheetStore } from '../store/sheetStore'
 import { useGmStore } from '../store/gmStore'
@@ -7,6 +9,7 @@ import { loadSheet } from '../services/sheetStorage'
 import type { RoomSheetEntry } from '../lib/gm/party'
 import { buildTableState } from '../lib/gm/tableView'
 import { docKey } from '../lib/room/docs'
+import { findMentionTarget, mentionTargets, shareableNote } from '../lib/gm/notes'
 
 /** Participação da sala conectada (a do socket aberto), se houver. */
 function useActiveMembership() {
@@ -86,4 +89,35 @@ export function useGmTableBroadcast() {
     const timer = setTimeout(() => publishTable(encounter ? buildTableState(encounter, map) : null), ROOM_TABLE_PUSH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
   }, [online, linked, encounter, map, hasTable, publishTable])
+}
+
+/**
+ * Mestre: a sala espelha as notas marcadas como compartilhadas — publica cada
+ * uma (com as citações já viradas nome) e tira as que deixaram de ser
+ * compartilhadas ou foram apagadas.
+ */
+export function useGmSharedNotes() {
+  const membership = useActiveMembership()
+  const online = useRoomStore(s => s.status === 'online')
+  const docs = useRoomStore(s => s.docs)
+  const publishNote = useRoomStore(s => s.publishNote)
+  const campaign = useGmStore(s => s.campaign)
+  const bestiary = useGmStore(s => s.bestiary)
+  const srd = useGmStore(s => s.srd)
+  const linked = membership?.role === 'gm' && campaign != null && membership.campaign_id === campaign.id
+
+  useEffect(() => {
+    if (!online || !linked || !campaign) return
+    const timer = setTimeout(() => {
+      const targets = mentionTargets(campaign.party, campaign.npcs, bestiary, srd?.monsters ?? [])
+      const nameOf = (mention: Parameters<typeof findMentionTarget>[1]) => findMentionTarget(targets, mention)?.name || null
+      const shared = campaign.notes.filter(note => note.shared)
+      for (const note of shared) publishNote(note.id, shareableNote(note, nameOf))
+      const sharedIds = new Set(shared.map(note => note.id))
+      for (const doc of Object.values(docs)) {
+        if (doc.kind === 'note' && !sharedIds.has(doc.id)) publishNote(doc.id, null)
+      }
+    }, ROOM_NOTE_PUSH_DEBOUNCE_MS)
+    return () => clearTimeout(timer)
+  }, [online, linked, campaign, bestiary, srd, docs, publishNote])
 }

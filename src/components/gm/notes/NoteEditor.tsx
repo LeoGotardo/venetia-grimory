@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next'
 import type { CampaignNote } from '../../../types'
 import { toggleTaskAt, type Mention, type MentionTarget } from '../../../lib/gm/notes'
 import { useGmStore } from '../../../store/gmStore'
-import { rowDangerButton } from '../MonsterRow'
+import { rowButton, rowDangerButton } from '../MonsterRow'
+import { PeopleIcon } from '../ornaments'
 import { MarkdownNote } from './MarkdownNote'
 import { NoteWriter } from './NoteWriter'
 
@@ -17,10 +18,12 @@ interface NoteEditorProps {
   onDelete: () => void
   /** Só no celular, onde a nota aberta toma o lugar da lista. */
   onBack?: () => void
+  /** A campanha tem sala aberta: mostra "Compartilhar com a mesa". */
+  canShare: boolean
 }
 
 /** Uma nota: título, alternância Escrever/Ler e o texto. Nota vazia já abre escrevendo. */
-export function NoteEditor({ note, targets, renderMention, onSuggest, onDelete, onBack }: NoteEditorProps) {
+export function NoteEditor({ note, targets, renderMention, onSuggest, onDelete, onBack, canShare }: NoteEditorProps) {
   const { t } = useTranslation()
   const updateNote = useGmStore(s => s.updateNote)
   const isBlank = !note.title && !note.body
@@ -59,6 +62,18 @@ export function NoteEditor({ note, targets, renderMention, onSuggest, onDelete, 
           ))}
         </div>
         <span className="flex-1" />
+        {canShare && (
+          <button
+            data-testid="nota-compartilhar"
+            aria-pressed={note.shared}
+            onClick={() => updateNote(note.id, { shared: !note.shared })}
+            title={note.shared ? t('gm.note.sharedHint') : t('gm.note.share')}
+            className={`${rowButton} gap-1.5 ${note.shared ? '!border-[#D4A017] !bg-[rgba(212,160,23,0.14)] !text-[#E8C25A]' : ''}`}
+          >
+            <PeopleIcon size={15} />
+            <span className="hidden sm:inline">{note.shared ? t('gm.note.shared') : t('gm.note.share')}</span>
+          </button>
+        )}
         <button onClick={onDelete} className={rowDangerButton}>{t('gm.note.delete')}</button>
       </div>
 

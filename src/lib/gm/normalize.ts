@@ -40,7 +40,7 @@ export function normalizeCampaign(raw: unknown): Campaign {
  */
 function normalizeNotes(raw: unknown, at: string): CampaignNote[] {
   if (typeof raw === 'string') {
-    return raw.trim() ? [{ id: uuidv4(), title: '', body: raw, created_at: at, updated_at: at }] : []
+    return raw.trim() ? [{ id: uuidv4(), title: '', body: raw, shared: false, created_at: at, updated_at: at }] : []
   }
   return Array.isArray(raw) ? raw.map(note => normalizeNote(note, at)) : []
 }
@@ -52,6 +52,7 @@ function normalizeNote(raw: unknown, at: string): CampaignNote {
     id: typeof n.id === 'string' && n.id ? n.id : uuidv4(),
     title: typeof n.title === 'string' ? n.title : '',
     body: typeof n.body === 'string' ? n.body : '',
+    shared: n.shared === true,
     created_at: created,
     updated_at: typeof n.updated_at === 'string' ? n.updated_at : created,
   }

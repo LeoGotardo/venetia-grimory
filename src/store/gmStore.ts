@@ -56,7 +56,7 @@ interface GmState {
   renameCampaign: (name: string) => void
   /** Nota vazia nova; devolve o id. */
   createNote: () => string
-  updateNote: (noteId: string, change: Partial<Pick<CampaignNote, 'title' | 'body'>>) => void
+  updateNote: (noteId: string, change: Partial<Pick<CampaignNote, 'title' | 'body' | 'shared'>>) => void
   deleteNote: (noteId: string) => void
   deleteCampaign: (id: string) => void
 
@@ -321,7 +321,7 @@ export const useGmStore = create<GmState>((set, get) => {
 
     createNote: () => {
       const at = now()
-      const note: CampaignNote = { id: uuidv4(), title: '', body: '', created_at: at, updated_at: at }
+      const note: CampaignNote = { id: uuidv4(), title: '', body: '', shared: false, created_at: at, updated_at: at }
       updateCampaign(c => ({ notes: [...c.notes, note] }))
       return note.id
     },

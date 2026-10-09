@@ -483,6 +483,13 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   `/r 1d20+5 Label` rolls, see `parseComposer`) appears inline on `RoomPage` (tabs Table | Rolls |
   Room, the table pinned left on desktop) and everywhere else in the floating `RoomDock` with an
   unread count.
+- Shared notes: `CampaignNote.shared` (normalized to `false`), toggled in `NoteEditor` only when
+  the campaign has a room. `useGmSharedNotes` mirrors the shared set as docs `note:<noteId>`
+  (`note_put`/`note_clear`, GM-only on the server): each goes through `shareableNote`
+  (`src/lib/gm/notes.ts`), which turns every mention into its **current** name in bold —
+  players have no access to the GM's NPCs/monsters — and unsharing or deleting tombstones the
+  doc. Players read them in the room's Notes tab (`SharedNotes`, lazy so react-markdown stays out
+  of `RoomPage`).
 - `vercel.json` pins functions to `gru1` (São Paulo), next to the Neon database (`sa-east-1`):
   from the default `iad1` every event paid several cross-continent round trips (median 703 ms per
   roll vs 52 ms pinned). Keep the function region next to the database.

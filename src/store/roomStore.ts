@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { CharacterSheet } from '../types'
 import { ROOM_SHEET_MAX_BYTES, ROOM_TABLE_MAX_BYTES } from '../constants'
-import { tableStateSchema, type RoomJoined, type TableState } from '../lib/room/protocol'
+import { sharedNoteSchema, tableStateSchema, type RoomJoined, type SharedNote, type TableState } from '../lib/room/protocol'
 import { EMPTY_ROOM_VIEW, applyServerMessage, type RoomView } from '../lib/room/session'
 import { readMemberships, writeMemberships, type RoomMembership } from '../services/roomStorage'
 import { roomApi, roomSocketUrl } from '../services/roomApi'
@@ -43,12 +43,15 @@ interface RoomState extends RoomView {
   roll: (expression: string, label: string, isPrivate: boolean) => boolean
   /** Mensagem no chat da sala. Devolve se mandou. */
   say: (text: string, isPrivate: boolean) => boolean
+  /** Mestre: publica a nota compartilhada (`null` tira da sala). Igual à última enviada, não manda. */
+  publishNote: (id: string, note: SharedNote | null) => void
 }
 
 let socket: RoomSocket | null = null
 /** JSON da última ficha e da última mesa enviadas nesta conexão — reconectar zera, porque o envio pode ter se perdido. */
 let lastPushedSheet: string | null = null
 let lastPushedTable: string | null = null
+const lastPushedNotes = new Map<string, string>()
 
 function membershipFrom(joined: RoomJoined, extra: Pick<RoomMembership, 'campaign_id' | 'sheet_id'>): RoomMembership {
   return {
@@ -122,6 +125,7 @@ export const useRoomStore = create<RoomState>((set, get) => {
           if (next === 'online') {
             lastPushedSheet = null
             lastPushedTable = null
+            lastPushedNotes.clear()
           }
           set({ status: next })
         },
@@ -198,6 +202,18 @@ export const useRoomStore = create<RoomState>((set, get) => {
 
     say: (text, isPrivate) =>
       get().status === 'online' && socket != null && socket.send({ t: 'chat', text, private: isPrivate }),
+
+    publishNote: (id, note) => {
+      if (!socket || get().status !== 'online') return
+      const json = note ? JSON.stringify(note) : 'clear'
+      if (lastPushedNotes.get(id) === json) return
+      const check = note ? sharedNoteSchema.safeParse(note) : null
+      if (check && !check.success) {
+        console.error('[salas] Nota grande demais para a sala; não foi publicada.', check.error)
+        return
+      }
+      if (socket.send(note ? { t: 'note_put', id, note } : { t: 'note_clear', id })) lastPushedNotes.set(id, json)
+    },
   }
 })
 

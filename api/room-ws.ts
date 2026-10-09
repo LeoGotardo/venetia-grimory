@@ -9,8 +9,8 @@ import {
   ROOM_CHANNEL_PREFIX, createSubscriber, markOffline, markOnline, onlineMembers, overRateLimit, publish, roomChannel,
 } from './_lib/redis.js'
 import {
-  addChat, addRoll, clearTable, docsSince, eventsSince, listMembers, memberByToken, putSheet, putTable, touchMember,
-  type AuthedMember,
+  addChat, addRoll, clearNote, clearTable, docsSince, eventsSince, listMembers, memberByToken, putNote, putSheet,
+  putTable, touchMember, type AuthedMember,
 } from './_lib/rooms.js'
 import { RoomFailure } from './_lib/http.js'
 
@@ -164,7 +164,9 @@ async function handle(session: Session, data: RawData) {
   try {
     const doc = message.t === 'sheet_put' ? await putSheet(member, message.sheet)
       : message.t === 'table_put' ? await putTable(member, message.table)
-      : await clearTable(member)
+      : message.t === 'table_clear' ? await clearTable(member)
+      : message.t === 'note_put' ? await putNote(member, message.id, message.note)
+      : await clearNote(member, message.id)
     if (doc) await publish(member.room.id, { t: 'doc', doc })
   } catch (err) {
     // Grande demais ou papel errado (player transmitindo mesa): erro do cliente, não derruba a sessão.

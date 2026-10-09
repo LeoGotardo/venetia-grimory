@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import type { CampaignNote } from '../../../types'
 import { noteSummary } from '../../../lib/gm/notes'
 import { gmPrimaryButton } from '../GmHeader'
-import { PlusIcon } from '../ornaments'
+import { PeopleIcon, PlusIcon } from '../ornaments'
 
 interface NoteListProps {
   notes: CampaignNote[]
@@ -61,8 +61,14 @@ function NoteRow({ note, selected, onOpen }: { note: CampaignNote; selected: boo
         selected ? 'border-[#D4A017] bg-[rgba(212,160,23,0.08)]' : 'border-white/[0.07] bg-[#1A1714] hover:border-[rgba(212,160,23,0.3)]'
       }`}
     >
-      <span className={`block font-bold text-[16px] truncate ${title ? 'text-[#F5F0E8]' : 'text-[#A8A09B] italic'}`}>
-        {title || t('gm.note.untitled')}
+      <span className={`flex items-center gap-1.5 font-bold text-[16px] ${title ? 'text-[#F5F0E8]' : 'text-[#A8A09B] italic'}`}>
+        <span className="truncate">{title || t('gm.note.untitled')}</span>
+        {note.shared && (
+          <span title={t('gm.note.shared')} className="flex-shrink-0 text-[#E8C25A]">
+            <PeopleIcon size={14} />
+            <span className="sr-only">{t('gm.note.shared')}</span>
+          </span>
+        )}
       </span>
       {snippet && <span className="block text-[13px] text-[#E8DFD0] mt-0.5 line-clamp-2">{snippet}</span>}
       <span className="block text-[12px] text-[#A8A09B] mt-1 tabular-nums">{new Date(note.updated_at).toLocaleDateString()}</span>
