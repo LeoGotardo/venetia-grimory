@@ -80,3 +80,18 @@ export const SkullIcon = (p: IconProps) => (
 export const ChevronIcon = ({ open, ...p }: IconProps & { open?: boolean }) => (
   <Icon {...p} style={{ transform: open ? 'rotate(90deg)' : undefined, transition: 'transform 180ms cubic-bezier(0.22,1,0.36,1)' }}><path d="m9 6 6 6-6 6" /></Icon>
 )
+export const ScrollIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M7 4h11a2 2 0 0 1 2 2v1h-4" /><path d="M16 7v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1h10" /><path d="M7 4a2 2 0 0 0-2 2v11M9 9h4M9 13h4" /></Icon>
+)
+export const ListIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M9 6h11M9 12h11M9 18h11" /><circle cx="4.5" cy="6" r=".9" fill="currentColor" /><circle cx="4.5" cy="12" r=".9" fill="currentColor" /><circle cx="4.5" cy="18" r=".9" fill="currentColor" /></Icon>
+)
+export const ChecklistIcon = (p: IconProps) => (
+  <Icon {...p}><rect x="3" y="4" width="5" height="5" rx="1" /><path d="m3.8 15.5 1.7 1.7 3-3.2M11 6.5h10M11 15.5h10" /></Icon>
+)
+export const QuoteIcon = (p: IconProps) => (
+  <Icon {...p}><path d="M4 5v14M9 8h11M9 12h11M9 16h7" /></Icon>
+)
+export const AtIcon = (p: IconProps) => (
+  <Icon {...p}><circle cx="12" cy="12" r="3.6" /><path d="M15.6 12v1.6a2.6 2.6 0 0 0 5.2 0V12a8.8 8.8 0 1 0-3.5 7" /></Icon>
+)

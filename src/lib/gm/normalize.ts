@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import type {
-  AreaElement, AreaLabelStyle, AreaLayerId, AreaLayerState, AreaMap, AreaPathStyle, Campaign, Combatant, Encounter, GridMap, MapLabel, Monster, Npc, NpcProfile,
+  AreaElement, AreaLabelStyle, AreaLayerId, AreaLayerState, AreaMap, AreaPathStyle, Campaign, CampaignNote, Combatant, Encounter, GridMap, MapLabel,
+  Monster, Npc, NpcProfile,
 } from '../../types'
 import { blankCells, clampMapSize, isTerrainCode } from './terrain'
 import {
@@ -27,9 +28,32 @@ export function normalizeCampaign(raw: unknown): Campaign {
     npcs: Array.isArray(c.npcs) ? c.npcs.map(normalizeNpc) : [],
     encounters: Array.isArray(c.encounters) ? c.encounters.map(normalizeEncounter) : [],
     maps: Array.isArray(c.maps) ? c.maps.map(normalizeMap) : [],
-    notes: c.notes ?? '',
+    notes: normalizeNotes(c.notes, at),
     created_at: c.created_at ?? at,
     updated_at: at,
+  }
+}
+
+/**
+ * Até a versão com várias notas, a campanha tinha um texto só (`notes: string`):
+ * ele vira a primeira nota, sem título — a lista usa a primeira linha no lugar.
+ */
+function normalizeNotes(raw: unknown, at: string): CampaignNote[] {
+  if (typeof raw === 'string') {
+    return raw.trim() ? [{ id: uuidv4(), title: '', body: raw, created_at: at, updated_at: at }] : []
+  }
+  return Array.isArray(raw) ? raw.map(note => normalizeNote(note, at)) : []
+}
+
+function normalizeNote(raw: unknown, at: string): CampaignNote {
+  const n = (raw ?? {}) as Partial<CampaignNote>
+  const created = typeof n.created_at === 'string' ? n.created_at : at
+  return {
+    id: typeof n.id === 'string' && n.id ? n.id : uuidv4(),
+    title: typeof n.title === 'string' ? n.title : '',
+    body: typeof n.body === 'string' ? n.body : '',
+    created_at: created,
+    updated_at: typeof n.updated_at === 'string' ? n.updated_at : created,
   }
 }
 

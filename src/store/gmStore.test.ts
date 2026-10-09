@@ -178,6 +178,35 @@ describe('NPCs da campanha', () => {
   })
 })
 
+describe('notas da campanha', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    useGmStore.setState({ campaigns: [], campaign: null })
+    st().openCampaign(st().createCampaign('Mesa'))
+  })
+
+  it('cria, edita e apaga, carimbando a edição', () => {
+    const a = st().createNote()
+    const b = st().createNote()
+    const before = st().campaign!.notes[0].updated_at
+    st().updateNote(a, { title: 'Sessão 1', body: 'Falar com [Grukk](npc:x)' })
+    expect(st().campaign!.notes[0]).toMatchObject({ id: a, title: 'Sessão 1', body: 'Falar com [Grukk](npc:x)' })
+    expect(st().campaign!.notes[0].updated_at >= before).toBe(true)
+    st().deleteNote(a)
+    expect(st().campaign!.notes.map(n => n.id)).toEqual([b])
+  })
+
+  it('as menções sobrevivem ao export: NPCs e players mantêm o id', async () => {
+    const npc = st().addNpc(createBlankStatBlock('Grukk'))
+    const note = st().createNote()
+    st().updateNote(note, { body: `[Grukk](npc:${npc})` })
+    const id = await st().importCampaignJson((await st().exportCampaignJson())!)
+    const imported = loadCampaign(id)!
+    expect(imported.npcs[0].id).toBe(npc)
+    expect(imported.notes[0].body).toBe(`[Grukk](npc:${npc})`)
+  })
+})
+
 describe('bestiário', () => {
   beforeEach(() => {
     localStorage.clear()

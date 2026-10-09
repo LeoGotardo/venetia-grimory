@@ -10,8 +10,9 @@ import { gmSecondaryButton } from './GmHeader'
 
 interface PlayerCardProps {
   member: PartyMember
-  onReimport: () => void
-  onRemove: () => void
+  /** Sem `onReimport` e `onRemove` o cartão é só consulta (ex.: menção numa nota). */
+  onReimport?: () => void
+  onRemove?: () => void
 }
 
 /** Resumo de um player para o mestre: o que se consulta durante a sessão. */
@@ -20,6 +21,7 @@ export function PlayerCard({ member, onReimport, onRemove }: PlayerCardProps) {
   const navigate = useNavigate()
   const p = summarizePlayer(member.snapshot)
   const name = p.name || t('gm.noName')
+  const canOpenSheet = member.source === 'local' && member.sheet_id != null
 
   const primaryLevel = calcPrimaryClassLevel(p.level, p.multiclasses)
   const classes = [
@@ -85,25 +87,29 @@ export function PlayerCard({ member, onReimport, onRemove }: PlayerCardProps) {
         )}
       </div>
 
-      <div className="flex gap-2 mt-auto">
-        {member.source === 'local' && member.sheet_id ? (
-          <button onClick={() => navigate(`/ficha/${member.sheet_id}`)} className={`${gmSecondaryButton} flex-1 justify-center`}>
-            {t('gm.openSheet')}
-          </button>
-        ) : (
-          <button onClick={onReimport} className={`${gmSecondaryButton} flex-1 justify-center`}>
-            {t('gm.reimport')}
-          </button>
-        )}
-        <button
-          onClick={() => {
-            if (confirm(t('gm.removeConfirm', { name }))) onRemove()
-          }}
-          className="min-h-[42px] text-[14px] font-semibold text-[#b56a6a] bg-[rgba(181,57,47,0.1)] border border-[rgba(181,57,47,0.28)] hover:bg-[rgba(181,57,47,0.2)] rounded-[10px] px-3.5 py-2 cursor-pointer transition-colors"
-        >
-          {t('gm.remove')}
-        </button>
-      </div>
+      {(canOpenSheet || onReimport || onRemove) && (
+        <div className="flex gap-2 mt-auto">
+          {canOpenSheet ? (
+            <button onClick={() => navigate(`/ficha/${member.sheet_id}`)} className={`${gmSecondaryButton} flex-1 justify-center`}>
+              {t('gm.openSheet')}
+            </button>
+          ) : onReimport && (
+            <button onClick={onReimport} className={`${gmSecondaryButton} flex-1 justify-center`}>
+              {t('gm.reimport')}
+            </button>
+          )}
+          {onRemove && (
+            <button
+              onClick={() => {
+                if (confirm(t('gm.removeConfirm', { name }))) onRemove()
+              }}
+              className="min-h-[42px] text-[14px] font-semibold text-[#b56a6a] bg-[rgba(181,57,47,0.1)] border border-[rgba(181,57,47,0.28)] hover:bg-[rgba(181,57,47,0.2)] rounded-[10px] px-3.5 py-2 cursor-pointer transition-colors"
+            >
+              {t('gm.remove')}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -85,5 +85,18 @@ describe('normalizeCampaign', () => {
   it('campanha da Fase 1 (sem npcs) ganha lista vazia', () => {
     const c = normalizeCampaign({ id: 'c', name: 'A', party: [], notes: '', created_at: 't', updated_at: 't' })
     expect(c.npcs).toEqual([])
+    expect(c.notes).toEqual([])
+  })
+
+  it('o texto único de notas antigo vira a primeira nota', () => {
+    const c = normalizeCampaign({ id: 'c', name: 'A', party: [], notes: 'ganchos\nsegredos', created_at: 't', updated_at: 'u' })
+    expect(c.notes).toEqual([{ id: expect.any(String), title: '', body: 'ganchos\nsegredos', created_at: 'u', updated_at: 'u' }])
+  })
+
+  it('notas novas passam e as quebradas são completadas', () => {
+    const note = { id: 'n1', title: 'Sessão 1', body: '# oi', created_at: 'a', updated_at: 'b' }
+    const c = normalizeCampaign({ id: 'c', notes: [note, { title: 3 }] })
+    expect(c.notes[0]).toEqual(note)
+    expect(c.notes[1]).toMatchObject({ id: expect.any(String), title: '', body: '' })
   })
 })

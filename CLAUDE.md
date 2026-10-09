@@ -403,6 +403,22 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   (`vertexHit`/`moveVertex`). Asset favorites are a per-device convenience in localStorage
   (`STORAGE_KEY_AREA_FAVORITES`). The GM home card adds area maps to the campaign's map count
   via `countAreaMapsByCampaign` (index keys only).
+- **Notes** (`campaign.notes: CampaignNote[]`, `{ id, title, body, created_at, updated_at }`) are
+  markdown. Campaigns saved before this had a single `notes: string`; `normalizeCampaign` turns a
+  non-empty one into the first (untitled) note. Mentions are plain markdown links with our own
+  schemes — `[Grukk](npc:<id>)`, `player:<PartyMember.id>`, `monster:<id>` (bestiary uuid or SRD
+  `srd-*` id) — never rename a scheme (`MENTION_KINDS`), they're in saved notes. The link text is
+  the name at mention time; the chip shows the current name, strikes through a deleted target and
+  opens `MentionPreviewModal` (player card with "Open sheet" for local players, stat block with
+  "Edit" for NPCs and bestiary monsters). Export/import keeps NPC and member ids, so mentions
+  survive it. Pure logic in `src/lib/gm/notes.ts` (mention parse/insert, `@` query, toolbar
+  edits, `toggleTaskAt` for checklist clicks in read mode, summary/search); typing `@` turns the
+  sticky toolbar into a suggestion strip (`useNoteTextarea`), and `useMentionTargets` loads the SRD
+  only when suggesting or when a shown note cites a monster outside the bestiary. Rendering is
+  `react-markdown` + `remark-gfm` in `MarkdownNote` — raw HTML shows as text, `urlTransform` lets
+  only the mention schemes past `defaultUrlTransform`, and the element components live at module
+  level (inline ones would remount the note every render). `NotesTab` is lazy-loaded from
+  `CampaignPage` so the markdown libs stay out of the page chunk; the open note is `?nota=<id>`.
 - `AVAILABLE_CONDITIONS` gained `Atordoado` (Stunned) — it is a 2024 condition the SRD uses.
 - UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
   `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.

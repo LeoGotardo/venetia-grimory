@@ -404,6 +404,18 @@ export interface AreaMapListItem {
   updated_at: string
 }
 
+/**
+ * Nota do mestre, em markdown. Menções a players, NPCs e monstros são links
+ * com esquema próprio — `[Grukk](npc:<id>)` — montados por `src/lib/gm/notes.ts`.
+ */
+export interface CampaignNote {
+  id: string
+  title: string
+  body: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Campaign {
   id: string
   name: string
@@ -411,7 +423,8 @@ export interface Campaign {
   npcs: Npc[]
   encounters: Encounter[]
   maps: GridMap[]
-  notes: string
+  /** Campanhas antigas guardavam um texto só; `normalizeCampaign` o transforma na primeira nota. */
+  notes: CampaignNote[]
   created_at: string
   updated_at: string
 }

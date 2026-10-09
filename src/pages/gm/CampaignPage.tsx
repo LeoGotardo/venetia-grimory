@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGmStore } from '../../store/gmStore'
@@ -15,6 +15,9 @@ import { pickTextFile } from '../../lib/pickTextFile'
 import { deliverJson } from '../../lib/deliverJson'
 import { EmptyState, PeopleIcon } from '../../components/gm/ornaments'
 
+// O markdown (react-markdown + remark-gfm) só carrega quando a aba Notas abre.
+const NotesTab = lazy(() => import('../../components/gm/notes/NotesTab').then(m => ({ default: m.NotesTab })))
+
 const TABS = ['players', 'npcs', 'encontros', 'mapas', 'notes'] as const
 type Tab = typeof TABS[number]
 
@@ -22,7 +25,7 @@ export function CampaignPage() {
   const { t } = useTranslation()
   const { id } = useParams<{ id: string }>()
   const {
-    campaign, openedId, openCampaign, renameCampaign, setCampaignNotes,
+    campaign, openedId, openCampaign, renameCampaign,
     addLocalPlayer, importPlayerJson, reimportPlayerJson, removePlayer, exportCampaignJson,
   } = useGmStore()
   // A aba fica na URL (`?aba=npcs`): voltar do editor de NPC cai na aba certa.
@@ -76,7 +79,7 @@ export function CampaignPage() {
     { id: 'npcs', label: t('gm.tabNpcs'), count: campaign.npcs.length },
     { id: 'encontros', label: t('gm.tabEncounters'), count: campaign.encounters.length },
     { id: 'mapas', label: t('gm.tabMaps'), count: campaign.maps.length + (areaMapsOf === campaign.id ? areaMaps?.length ?? 0 : 0) },
-    { id: 'notes', label: t('gm.tabNotes') },
+    { id: 'notes', label: t('gm.tabNotes'), count: campaign.notes.length },
   ]
 
   return (
@@ -161,13 +164,9 @@ export function CampaignPage() {
         {tab === 'mapas' && <MapTab campaign={campaign} />}
 
         {tab === 'notes' && (
-          <textarea
-            value={campaign.notes}
-            onChange={e => setCampaignNotes(e.target.value)}
-            placeholder={t('gm.notesPlaceholder')}
-            aria-label={t('gm.tabNotes')}
-            className="w-full min-h-[50vh] bg-[#1A1714] border border-[rgba(212,160,23,0.2)] rounded-[14px] p-4 text-[15px] leading-relaxed text-[#F5F0E8] placeholder:text-[#A8A09B] focus:outline-none focus:border-[#D4A017] resize-y"
-          />
+          <Suspense fallback={<p className="text-center text-[#A8A09B] py-16 animate-pulse">{t('loading.loading')}</p>}>
+            <NotesTab campaign={campaign} />
+          </Suspense>
         )}
       </div>
 

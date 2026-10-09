@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type {
-  Campaign, CampaignListItem, CharacterSheet, Combatant, Encounter, EncounterLogEntry, GridMap,
+  Campaign, CampaignListItem, CampaignNote, CharacterSheet, Combatant, Encounter, EncounterLogEntry, GridMap,
   Monster, Npc, PartyMember, StatBlock,
 } from '../types'
 import { recalculate } from '../lib/recalculate'
@@ -52,7 +52,10 @@ interface GmState {
   openCampaign: (id: string) => boolean
   closeCampaign: () => void
   renameCampaign: (name: string) => void
-  setCampaignNotes: (notes: string) => void
+  /** Nota vazia nova; devolve o id. */
+  createNote: () => string
+  updateNote: (noteId: string, change: Partial<Pick<CampaignNote, 'title' | 'body'>>) => void
+  deleteNote: (noteId: string) => void
   deleteCampaign: (id: string) => void
 
   /** Adiciona uma ficha deste aparelho; recusa se ela não existir ou já estiver na mesa. */
@@ -274,7 +277,7 @@ export const useGmStore = create<GmState>((set, get) => {
         npcs: [],
         encounters: [],
         maps: [],
-        notes: '',
+        notes: [],
         created_at: at,
         updated_at: at,
       }
@@ -299,7 +302,19 @@ export const useGmStore = create<GmState>((set, get) => {
 
     renameCampaign: name => updateCampaign(() => ({ name })),
 
-    setCampaignNotes: notes => updateCampaign(() => ({ notes })),
+    createNote: () => {
+      const at = now()
+      const note: CampaignNote = { id: uuidv4(), title: '', body: '', created_at: at, updated_at: at }
+      updateCampaign(c => ({ notes: [...c.notes, note] }))
+      return note.id
+    },
+
+    updateNote: (noteId, change) =>
+      updateCampaign(c => ({
+        notes: c.notes.map(n => (n.id === noteId ? { ...n, ...change, updated_at: now() } : n)),
+      })),
+
+    deleteNote: noteId => updateCampaign(c => ({ notes: c.notes.filter(n => n.id !== noteId) })),
 
     deleteCampaign: id => {
       cancelPendingSave(id)

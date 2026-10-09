@@ -92,6 +92,18 @@ export const MAX_ENCOUNTER_LOG = 200
 export const CONCENTRATION_DC_MAX = 30
 
 /**
+ * Notas do mestre. Os tipos de menção são o esquema do link salvo no markdown
+ * (`[Grukk](npc:<id>)`) — nunca renomear um, ele está nas notas gravadas.
+ */
+export const MENTION_KINDS = ['player', 'npc', 'monster'] as const
+/** Sugestões mostradas ao digitar `@` e o tamanho máximo do texto buscado depois dele. */
+export const MENTION_SUGGESTION_LIMIT = 8
+export const MENTION_QUERY_MAX = 40
+/** Caracteres do título deduzido da primeira linha e do resumo na lista de notas. */
+export const NOTE_TITLE_FALLBACK_LENGTH = 60
+export const NOTE_SNIPPET_LENGTH = 140
+
+/**
  * Terrenos da grade do mapa. `code` é o caractere salvo por célula em
  * `GridMap.cells` — não mude um código existente, ele está nos mapas salvos.
  * `cost` é o multiplicador de movimento (2 = terreno difícil); `null` bloqueia.
