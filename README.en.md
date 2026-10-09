@@ -70,10 +70,13 @@ WebView's, inside the app). It runs as a website and as an Android app packaged 
   printing (blank where values change during play).
 - **Backup** of each character as JSON, for export and import.
 - **Interface and game data** in Portuguese and English.
+- **Online rooms:** the GM opens a room for the campaign and players join with a 6-letter code.
+  Each player's sheet reaches the GM live, the GM broadcasts the encounter (only what is visible),
+  and there are server-side dice rolls, chat and shared notes.
 
 **Who it's for:** D&D 5.5 players and DMs who want to build a character without getting a rule
 wrong and track it at the table, on a computer or a phone, with no sign-up and no internet once
-loaded.
+loaded (online rooms need internet).
 
 ---
 
@@ -98,7 +101,11 @@ npm install
 npm run dev            # http://localhost:5173
 ```
 
-There is no `.env`: the app reads no environment variables.
+The app works without a `.env`. Only **online rooms** need a `.env.local` with `DATABASE_URL`,
+`DATABASE_URL_UNPOOLED` (Neon) and `REDIS_URL` (Upstash). The integration's variables are
+*Sensitive* and `vercel env pull` writes them empty: copy the values from the Neon and Upstash
+dashboards. Then run `npm run db:migrate`. `npm run dev` also serves the `api/` functions (HTTP and
+the room WebSocket), because `vercel dev` does not forward WebSockets.
 
 **Tests**
 
@@ -132,8 +139,9 @@ The app has two production targets, published independently.
 - The Vercel project `venetia-grimory` is linked to the repository through the Git integration.
 - Every push to `main` produces a production deploy at **https://venetia.leogotardo.com.br**.
   Branches and PRs get preview deploys.
-- Vercel runs `npm run build` and serves `dist/`. `vercel.json` only rewrites every route to
-  `index.html`, because routing is client-side (`/novo`, `/ficha/:id`).
+- Vercel runs `npm run build` and serves `dist/`. `vercel.json` rewrites the app routes to
+  `index.html` (routing is client-side), pins the `api/` functions to `gru1` next to the database,
+  and schedules the daily cron that deletes stale rooms (`CRON_SECRET` in production variables).
 
 **Android: GitHub Releases**
 
@@ -243,6 +251,7 @@ The PDF templates (~4.5 MB each) and `pdf-lib` are only downloaded when the user
 | `npm run test:e2e:ui` | Playwright interactive mode |
 | `npm run test:e2e:report` | opens the last Playwright HTML report |
 | `npm run release` | releases an APK version (see below) |
+| `npm run db:migrate` | applies `db/migrations/*.sql` to the database in `.env.local` |
 
 **Shell and Node** (`scripts/`)
 
@@ -349,7 +358,9 @@ In the browser, the data is visible under DevTools → *Application* → *Local 
 | `vitest.config.ts`, `vitest.setup.ts` | unit tests (node environment, `localStorage` stub) |
 | `playwright.config.ts` | e2e (desktop and mobile projects; port via `E2E_PORT`) |
 | `eslint.config.js` | lint |
-| `vercel.json` | SPA rewrite |
+| `vercel.json` | SPA rewrite, function region, cron |
+| `api/`, `tsconfig.api.json` | online room functions (`.js` imports: Vercel doesn't bundle them) |
+| `db/migrations/` | room schema in Postgres |
 | `capacitor.config.ts` | `appId`, `appName`, `webDir` |
 | `android/app/build.gradle` | `applicationId`; version read from `-PversionCode` and `-PversionName` |
 | `android/variables.gradle` | `minSdk 24`, `compileSdk`/`targetSdk 36` |
@@ -381,7 +392,8 @@ On Android, the WebView's `localStorage` lives in
 
 ### Logins and passwords
 
-The app has **no login, no users and no server**. There is no root, SSH or remote access to
+The app has **no login and no users**; the only server is the online rooms backend (Vercel
+Functions, Neon and Upstash), where each device joins with a random token. There is no root, SSH or remote access to
 configure: the web build is static hosting on Vercel, and the Android app asks for no permission
 beyond `INTERNET`.
 
@@ -394,6 +406,8 @@ The access that does exist is for administering the project:
 | Domain | `leogotardo.com.br` DNS pointing `venetia` at Vercel | owner's registrar |
 | Feedback form | Google Forms (`FEEDBACK_FORM_URL`; structure in `docs/bug-report-form.json`) | owner's Google account |
 | Release keystore | `~/venetia-release.jks`, alias `venetia` | **the password is not in the repository** |
+| Rooms database and Redis | Neon and Upstash, via the Vercel integration | *Sensitive* variables; copy from the dashboard into `.env.local` |
+| Cron secret | Vercel → `CRON_SECRET` variable (Production) | without it the cleanup does not run |
 | Workflow secrets | GitHub → Settings → Secrets → Actions | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` |
 
 > [!WARNING]

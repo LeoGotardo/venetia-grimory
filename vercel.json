@@ -1,5 +1,8 @@
 {
   "regions": ["gru1"],
+  "crons": [
+    { "path": "/api/cron/cleanup-rooms", "schedule": "0 7 * * *" }
+  ],
   "rewrites": [
     { "source": "/((?!api/|@)[^.]*)", "destination": "/index.html" }
   ]

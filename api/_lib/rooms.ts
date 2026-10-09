@@ -1,7 +1,7 @@
 import { createHash, randomBytes, randomInt } from 'node:crypto'
 import { generateRoomCode } from '../../src/lib/room/code.js'
 import {
-  ROOM_LOG_MAX, ROOM_MAX_MEMBERS, ROOM_SHEET_MAX_BYTES, ROOM_TABLE_DOC_ID, ROOM_TABLE_MAX_BYTES, ROOM_TOKEN_BYTES,
+  ROOM_CLOSED_RETENTION_DAYS, ROOM_IDLE_DAYS, ROOM_LOG_MAX, ROOM_MAX_MEMBERS, ROOM_SHEET_MAX_BYTES, ROOM_TABLE_DOC_ID, ROOM_TABLE_MAX_BYTES, ROOM_TOKEN_BYTES,
 } from '../../src/lib/room/constants.js'
 import { parseRoomRoll } from '../../src/lib/room/rolls.js'
 import { rollDice } from '../../src/lib/gm/dice.js'
@@ -119,8 +119,23 @@ export async function listMembers(roomId: string): Promise<RoomMember[]> {
   return rows.map(toMember)
 }
 
-export async function touchMember(memberId: string): Promise<void> {
-  await db()`update room_members set last_seen_at = now() where id = ${memberId}`
+/** Conectar conta como uso: a sala de uma mesa que só joga (sem escrever nada) não cai na limpeza. */
+export async function touchMember(member: AuthedMember): Promise<void> {
+  await db()`update room_members set last_seen_at = now() where id = ${member.id}`
+  await db()`update rooms set updated_at = now() where id = ${member.room.id}`
+}
+
+/**
+ * Limpeza do cron: salas fechadas há `ROOM_CLOSED_RETENTION_DAYS` e salas sem
+ * uso há `ROOM_IDLE_DAYS` somem com membros, documentos e eventos (cascata).
+ */
+export async function deleteStaleRooms(): Promise<number> {
+  const rows = await db()`
+    delete from rooms
+    where (closed_at is not null and closed_at < now() - make_interval(days => ${ROOM_CLOSED_RETENTION_DAYS}))
+       or updated_at < now() - make_interval(days => ${ROOM_IDLE_DAYS})
+    returning id`
+  return rows.length
 }
 
 export async function closeRoom(gm: AuthedMember): Promise<void> {

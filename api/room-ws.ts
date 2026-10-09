@@ -115,7 +115,7 @@ async function authenticate(session: Session, token: string, requestedSince: num
   const docs = changed.filter(doc => docVisibleTo(doc, member) && (since > 0 || !doc.deleted))
   const events = logged.filter(event => eventVisibleTo(event, member))
   send(session.socket, { t: 'ready', room, member, members, online, version, docs, full: since === 0, events })
-  touchMember(result.id).catch(err => console.error('[room-ws] Falha ao gravar last_seen_at.', err))
+  touchMember(result).catch(err => console.error('[room-ws] Falha ao gravar last_seen_at.', err))
 }
 
 async function handle(session: Session, data: RawData) {

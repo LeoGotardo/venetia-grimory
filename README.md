@@ -71,9 +71,12 @@ como site e como app Android empacotado com Capacitor.
   para impressão (sem o que muda em jogo).
 - **Backup** de cada personagem como JSON, para exportar e importar.
 - **Interface e dados de jogo** em português e inglês.
+- **Salas online:** o mestre abre uma sala para a campanha e os players entram com um código de 6
+  letras. A ficha de cada player chega ao vivo ao mestre, o mestre transmite o encontro (só o que é
+  visível), há rolagens feitas no servidor, chat e notas compartilhadas.
 
 **Para quem:** jogadores e mestres de D&D 5.5 que querem montar um personagem sem errar regra e
-acompanhá-lo na mesa, no computador ou no celular, sem cadastro e sem internet depois de carregado.
+acompanhá-lo na mesa, no computador ou no celular, sem cadastro e sem internet depois de carregado (as salas online precisam de internet).
 
 ---
 
@@ -98,7 +101,11 @@ npm install
 npm run dev            # http://localhost:5173
 ```
 
-Não há `.env`: o app não lê nenhuma variável de ambiente.
+O app funciona sem `.env`. Só as **salas online** precisam de um `.env.local` com `DATABASE_URL`,
+`DATABASE_URL_UNPOOLED` (Neon) e `REDIS_URL` (Upstash). As variáveis da integração são
+*Sensitive* e o `vercel env pull` as traz vazias: copie os valores dos painéis da Neon e do Upstash.
+Depois rode `npm run db:migrate`. O `npm run dev` serve também as funções de `api/` (HTTP e o
+WebSocket da sala), porque o `vercel dev` não repassa WebSocket.
 
 **Testes**
 
@@ -132,8 +139,9 @@ O app tem dois alvos de produção, publicados de formas independentes.
 - O projeto Vercel `venetia-grimory` está ligado ao repositório pela integração Git.
 - Todo push na `main` gera um deploy de produção em **https://venetia.leogotardo.com.br**. Branches
   e PRs geram deploys de preview.
-- A Vercel roda `npm run build` e serve `dist/`. O `vercel.json` só reescreve todas as rotas para
-  `index.html`, porque o roteamento é do lado do cliente (`/novo`, `/ficha/:id`).
+- A Vercel roda `npm run build` e serve `dist/`. O `vercel.json` reescreve as rotas do app para
+  `index.html` (o roteamento é do lado do cliente), fixa as funções de `api/` em `gru1`, ao lado do
+  banco, e agenda o cron diário que apaga salas paradas (`CRON_SECRET` nas variáveis de produção).
 
 **Android: GitHub Releases**
 
@@ -243,6 +251,7 @@ Os modelos de PDF (~4,5 MB cada) e o `pdf-lib` só são baixados quando o usuár
 | `npm run test:e2e:ui` | Playwright no modo interativo |
 | `npm run test:e2e:report` | abre o último relatório HTML do Playwright |
 | `npm run release` | lança uma versão do APK (veja abaixo) |
+| `npm run db:migrate` | aplica `db/migrations/*.sql` no banco do `.env.local` |
 
 **Shell e Node** (`scripts/`)
 
@@ -346,7 +355,9 @@ No navegador, os dados podem ser vistos em DevTools → *Application* → *Local
 | `vitest.config.ts`, `vitest.setup.ts` | testes unitários (ambiente node, stub de `localStorage`) |
 | `playwright.config.ts` | e2e (projetos desktop e mobile; porta em `E2E_PORT`) |
 | `eslint.config.js` | lint |
-| `vercel.json` | rewrite SPA |
+| `vercel.json` | rewrite SPA, região das funções, cron |
+| `api/`, `tsconfig.api.json` | funções das salas online (imports com `.js`: a Vercel não empacota) |
+| `db/migrations/` | schema das salas no Postgres |
 | `capacitor.config.ts` | `appId`, `appName`, `webDir` |
 | `android/app/build.gradle` | `applicationId`; versão lida de `-PversionCode` e `-PversionName` |
 | `android/variables.gradle` | `minSdk 24`, `compileSdk`/`targetSdk 36` |
@@ -378,7 +389,8 @@ No Android, o `localStorage` do WebView fica em
 
 ### Login e senhas
 
-O app **não tem login, usuários nem servidor**. Não há root, SSH nem acesso remoto a configurar: a
+O app **não tem login nem usuários**; o único servidor é o das salas online (funções da Vercel,
+Neon e Upstash), em que cada aparelho entra com um token aleatório. Não há root, SSH nem acesso remoto a configurar: a
 web é hospedagem estática na Vercel e o app Android não pede nenhuma permissão além de `INTERNET`.
 
 Os acessos que existem são os de administração do projeto:
@@ -390,6 +402,8 @@ Os acessos que existem são os de administração do projeto:
 | Domínio | DNS de `leogotardo.com.br` apontando `venetia` para a Vercel | registrador do dono |
 | Formulário de feedback | Google Forms (`FEEDBACK_FORM_URL`; estrutura em `docs/bug-report-form.json`) | conta Google do dono |
 | Keystore de release | `~/venetia-release.jks`, alias `venetia` | **a senha não fica no repositório** |
+| Banco e Redis das salas | Neon e Upstash, pela integração da Vercel | variáveis *Sensitive*; copie do painel para o `.env.local` |
+| Segredo do cron | Vercel → variável `CRON_SECRET` (Production) | sem ele a limpeza não roda |
 | Secrets do workflow | GitHub → Settings → Secrets → Actions | `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` |
 
 > [!WARNING]

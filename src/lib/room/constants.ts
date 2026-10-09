@@ -58,6 +58,10 @@ export const ROOM_LOG_ON_READY = 100
 export const ROOM_EVENT_RATE_LIMIT = 20
 export const ROOM_EVENT_RATE_WINDOW_S = 10
 
+/** Limpeza diária (cron): sala fechada some depois de alguns dias; sala sem uso, depois de um mês. */
+export const ROOM_CLOSED_RETENTION_DAYS = 7
+export const ROOM_IDLE_DAYS = 30
+
 /** Tentativas de entrar numa sala por IP, por janela — barra quem tenta adivinhar códigos. */
 export const ROOM_JOIN_RATE_LIMIT = 10
 export const ROOM_JOIN_RATE_WINDOW_S = 60
