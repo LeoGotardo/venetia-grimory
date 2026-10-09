@@ -7,7 +7,9 @@ import type {
 import { recalculate } from '../lib/recalculate'
 import { migrateSheet } from '../lib/migrateSheet'
 import { parseSheetImport } from '../lib/sheetExport'
-import { buildCampaignExport, parseCampaignAreaMaps, parseCampaignImport } from '../lib/gm/party'
+import {
+  buildCampaignExport, mergeRoomPlayers, parseCampaignAreaMaps, parseCampaignImport, type RoomSheetEntry,
+} from '../lib/gm/party'
 import { buildMonsterPack, parseMonsterPack } from '../lib/gm/statblock'
 import { normalizeAreaMap, normalizeCampaign } from '../lib/gm/normalize'
 import { loadSrdMonsters } from '../data/monsters'
@@ -65,6 +67,10 @@ interface GmState {
   /** Troca o snapshot de um player importado por um JSON novo. Lança se o JSON for inválido. */
   reimportPlayerJson: (memberId: string, json: string) => void
   removePlayer: (memberId: string) => void
+  /** Fichas que chegaram da sala online (ver `mergeRoomPlayers`). Sem mudança, não regrava. */
+  syncRoomPlayers: (entries: RoomSheetEntry[]) => void
+  /** A sala foi fechada: os players dela ficam como importados, com a última ficha. */
+  detachRoomPlayers: () => void
 
   addNpc: (
     statblock: StatBlock,
@@ -170,6 +176,17 @@ function cancelPendingSave(id: string) {
 
 function sheetFromJson(json: string): CharacterSheet {
   return recalculate(migrateSheet(parseSheetImport(json).sheet))
+}
+
+/** Ficha crua da sala: passa pelo mesmo caminho de uma importada; `null` se não for ficha. */
+function sheetFromRoom(raw: unknown): CharacterSheet | null {
+  if (!raw || typeof raw !== 'object' || !('identity' in raw)) return null
+  try {
+    return recalculate(migrateSheet(raw as CharacterSheet))
+  } catch (err) {
+    console.error('[gmStore] Ficha da sala ilegível.', err)
+    return null
+  }
 }
 
 function newMember(source: PartyMember['source'], sheet: CharacterSheet, sheetId: string | null): PartyMember {
@@ -350,6 +367,15 @@ export const useGmStore = create<GmState>((set, get) => {
 
     removePlayer: memberId =>
       updateCampaign(c => ({ party: c.party.filter(m => m.id !== memberId) })),
+
+    syncRoomPlayers: entries => {
+      const { campaign } = get()
+      if (!campaign) return
+      const party = mergeRoomPlayers(campaign.party, entries, sheetFromRoom, now())
+      if (party !== campaign.party) updateCampaign(() => ({ party }))
+    },
+
+    detachRoomPlayers: () => get().syncRoomPlayers([]),
 
     addNpc: (statblock, baseMonsterId = null, extra = {}) => {
       const npc: Npc = {
@@ -710,8 +736,8 @@ export const useGmStore = create<GmState>((set, get) => {
       const campaign: Campaign = {
         ...imported,
         id: uuidv4(),
-        // As fichas locais de outro aparelho não existem aqui: viram snapshot.
-        party: imported.party.map(m => ({ ...m, source: 'imported', sheet_id: null })),
+        // As fichas locais (e as da sala) de outro aparelho não existem aqui: viram snapshot.
+        party: imported.party.map(m => ({ ...m, source: 'imported', sheet_id: null, room_member_id: null, room_version: null })),
         updated_at: now(),
       }
       // Ids novos: importar duas vezes a mesma campanha não pode sobrescrever os mapas da primeira.

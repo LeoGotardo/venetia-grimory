@@ -1,4 +1,5 @@
-import type { AbilityId, AreaMap, Campaign, CharacterSheet } from '../../types'
+import { v4 as uuidv4 } from 'uuid'
+import type { AbilityId, AreaMap, Campaign, CharacterSheet, PartyMember } from '../../types'
 import { ABILITIES, calcPassivePerception } from '../calculations'
 import { CAMPAIGN_EXPORT_FORMAT, CAMPAIGN_EXPORT_VERSION } from '../../constants'
 
@@ -79,4 +80,55 @@ export function parseCampaignImport(json: string): Campaign {
 export function parseCampaignAreaMaps(json: string): unknown[] {
   const data = JSON.parse(json) as Partial<CampaignExport> | null
   return Array.isArray(data?.area_maps) ? data.area_maps : []
+}
+
+/** Ficha de um player na sala online, já lida do documento. */
+export interface RoomSheetEntry {
+  memberId: string
+  version: number
+  sheet: unknown
+}
+
+/**
+ * Leva as fichas da sala para a mesa do mestre. Player novo entra como
+ * `room`; ficha com versão nova troca o snapshot; quem não tem mais ficha na
+ * sala (saiu, foi removido) vira `imported` com a última cópia, como a ficha
+ * local apagada. `toSheet` normaliza o dado cru e devolve `null` se não for
+ * ficha. Devolve o mesmo array quando nada muda, para não regravar a campanha.
+ */
+export function mergeRoomPlayers(
+  party: PartyMember[],
+  entries: RoomSheetEntry[],
+  toSheet: (raw: unknown) => CharacterSheet | null,
+  at: string,
+): PartyMember[] {
+  const byMember = new Map(entries.map(entry => [entry.memberId, entry]))
+  let changed = false
+
+  const next = party.map((member): PartyMember => {
+    if (member.source !== 'room' || !member.room_member_id) return member
+    const entry = byMember.get(member.room_member_id)
+    if (!entry) {
+      changed = true
+      return { ...member, source: 'imported', room_member_id: null, room_version: null, imported_at: at, updated_at: at }
+    }
+    if (entry.version === member.room_version) return member
+    const sheet = toSheet(entry.sheet)
+    if (!sheet) return member
+    changed = true
+    return { ...member, snapshot: sheet, room_version: entry.version, updated_at: at }
+  })
+
+  const linked = new Set(next.flatMap(member => (member.room_member_id ? [member.room_member_id] : [])))
+  for (const entry of entries) {
+    if (linked.has(entry.memberId)) continue
+    const sheet = toSheet(entry.sheet)
+    if (!sheet) continue
+    changed = true
+    next.push({
+      id: uuidv4(), source: 'room', sheet_id: null, snapshot: sheet, imported_at: at, updated_at: at,
+      room_member_id: entry.memberId, room_version: entry.version,
+    })
+  }
+  return changed ? next : party
 }

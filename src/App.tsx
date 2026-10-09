@@ -4,6 +4,7 @@ import { ErrorBoundary } from './pages/ServerError'
 import { NotFound } from './pages/NotFound'
 import { UpdatePrompt } from './components/ui/UpdatePrompt'
 import { BackButtonBridge } from './components/ui/BackButtonBridge'
+import { useRoomSyncEnabled } from './hooks/useRoomSyncEnabled'
 import { useTranslation } from 'react-i18next'
 
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })))
@@ -17,6 +18,8 @@ const NpcEditPage = lazy(() => import('./pages/gm/NpcEditPage').then(m => ({ def
 const EncounterPage = lazy(() => import('./pages/gm/EncounterPage').then(m => ({ default: m.EncounterPage })))
 const MapEditorPage = lazy(() => import('./pages/gm/MapEditorPage').then(m => ({ default: m.MapEditorPage })))
 const AreaMapEditorPage = lazy(() => import('./pages/gm/AreaMapEditorPage').then(m => ({ default: m.AreaMapEditorPage })))
+const RoomSyncBridge = lazy(() => import('./components/room/RoomSyncBridge').then(m => ({ default: m.RoomSyncBridge })))
+const RoomPage = lazy(() => import('./pages/RoomPage').then(m => ({ default: m.RoomPage })))
 const CampaignPage = lazy(() => import('./pages/gm/CampaignPage').then(m => ({ default: m.CampaignPage })))
 
 function PageLoader() {
@@ -29,15 +32,22 @@ function PageLoader() {
 }
 
 function App() {
+  const roomSync = useRoomSyncEnabled()
   return (
     <ErrorBoundary>
       <BrowserRouter>
         <BackButtonBridge />
+        {roomSync && (
+          <Suspense fallback={null}>
+            <RoomSyncBridge />
+          </Suspense>
+        )}
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/novo" element={<Wizard />} />
             <Route path="/ficha/:id" element={<CharacterSheet />} />
+            <Route path="/sala/:code" element={<RoomPage />} />
             <Route path="/mestre" element={<GmHome />} />
             <Route path="/mestre/campanha/:id" element={<CampaignPage />} />
             <Route path="/mestre/campanha/:id/npc/gerar" element={<NpcGeneratorPage />} />

@@ -19,6 +19,7 @@ import { encounterStatusLabel } from '../../lib/gm/encounterStatus'
 import { Modal } from '../../components/ui/Modal'
 import { encounterBudget, encounterXp } from '../../lib/gm/difficulty'
 import { NotFound } from '../NotFound'
+import { BroadcastButton } from '../../components/room/BroadcastButton'
 
 /** `/mestre/campanha/:id/encontro/:encounterId` — o rastreador de combate. */
 export function EncounterPage() {
@@ -152,9 +153,12 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
           />
         }
         actions={
-          <button data-testid="adicionar-combatentes" onClick={() => setAddSource('players')} className={gmSecondaryButton}>
-            <PlusIcon size={15} /> <span className="hidden sm:inline">{t('gm.addCombatants')}</span>
-          </button>
+          <>
+            <BroadcastButton campaignId={campaign.id} encounterId={encounter.id} />
+            <button data-testid="adicionar-combatentes" onClick={() => setAddSource('players')} className={gmSecondaryButton}>
+              <PlusIcon size={15} /> <span className="hidden sm:inline">{t('gm.addCombatants')}</span>
+            </button>
+          </>
         }
       />
 

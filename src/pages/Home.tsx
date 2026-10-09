@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../store/sheetStore'
@@ -10,12 +10,19 @@ import { AppFooter } from '../components/ui/AppFooter'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
 import { gameData } from '../data/rules'
+import { useRoomSyncEnabled } from '../hooks/useRoomSyncEnabled'
+
+// Salas online sob demanda: zod e o store da sala ficam fora da tela inicial de quem não usa.
+const JoinRoomModal = lazy(() => import('../components/room/JoinRoomModal').then(m => ({ default: m.JoinRoomModal })))
+const HomeRoomList = lazy(() => import('../components/room/HomeRoomList').then(m => ({ default: m.HomeRoomList })))
 
 export function Home() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { savedSheets, newSheet, loadSheet, deleteSheet, loadSavedList } = useSheetStore()
   const { exportById, importSheet } = useSheetExport()
+  const hasRooms = useRoomSyncEnabled()
+  const [joinOpen, setJoinOpen] = useState(false)
 
   useEffect(() => { loadSavedList() }, [loadSavedList])
 
@@ -47,6 +54,16 @@ export function Home() {
           <span className="font-extrabold tracking-[0.04em] text-sm text-[#E8DFD0]">Venetia</span>
         </div>
         <div className="flex items-center gap-2">
+        <button
+          data-testid="entrar-sala"
+          onClick={() => setJoinOpen(true)}
+          aria-label={t('room.join')}
+          className="inline-flex items-center gap-[7px] h-[34px] text-[13px] font-semibold text-[#E8DFD0] bg-white/5 hover:bg-white/10 border border-[rgba(212,160,23,0.25)] hover:border-[rgba(212,160,23,0.5)] rounded-[9px] px-3 cursor-pointer transition-colors"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l4-4-4-4M14 12H4"/></svg>
+          <span aria-hidden="true" className="hidden sm:inline">{t('room.join')}</span>
+          <span aria-hidden="true" className="sm:hidden">{t('room.button')}</span>
+        </button>
         <button
           data-testid="area-mestre"
           onClick={() => navigate('/mestre')}
@@ -91,6 +108,12 @@ export function Home() {
           </button>
         </div>
 
+        {hasRooms && (
+          <Suspense fallback={null}>
+            <HomeRoomList />
+          </Suspense>
+        )}
+
         {/* Section header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-[11px]">
@@ -120,6 +143,11 @@ export function Home() {
         )}
       </div>
 
+      {joinOpen && (
+        <Suspense fallback={null}>
+          <JoinRoomModal open onClose={() => setJoinOpen(false)} />
+        </Suspense>
+      )}
       <AppFooter />
     </div>
   )

@@ -15,11 +15,16 @@ import type { CREATURE_SIZES, CREATURE_TYPES } from '../constants'
  */
 export interface PartyMember {
   id: string
-  source: 'local' | 'imported'
+  /** `room`: ficha ao vivo de um player na sala online; vira `imported` quando ele sai. */
+  source: 'local' | 'imported' | 'room'
   sheet_id: string | null
   snapshot: CharacterSheet
   imported_at: string
   updated_at: string
+  /** Membro da sala de onde a ficha chega (só `source: 'room'`). */
+  room_member_id?: string | null
+  /** Versão do documento da sala já aplicada — a mesma versão não regrava a campanha. */
+  room_version?: number | null
 }
 
 export type CreatureSize = typeof CREATURE_SIZES[number]

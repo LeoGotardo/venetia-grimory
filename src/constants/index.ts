@@ -381,3 +381,12 @@ export const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases/latest`
 export const LATEST_RELEASE_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`
 export const UPDATE_CHECK_TIMEOUT_MS = 8000
+
+// Salas online. As constantes do protocolo moram em src/lib/room (as funções da Vercel também as leem).
+export * from '../lib/room/constants'
+/** Participações deste aparelho em salas (código, papel, token) — chave em português, como as outras. */
+export const STORAGE_KEY_ROOMS = 'dnd_salas'
+/** Servidor das salas para o app Android, que roda em `https://localhost` e não tem a API na mesma origem. */
+export const ROOM_API_URL_APP = 'https://venetia.leogotardo.com.br'
+/** Espera de uma chamada HTTP da sala antes de desistir. */
+export const ROOM_HTTP_TIMEOUT_MS = 15_000

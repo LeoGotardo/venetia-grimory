@@ -13,15 +13,22 @@ interface PlayerCardProps {
   /** Sem `onReimport` e `onRemove` o cartão é só consulta (ex.: menção numa nota). */
   onReimport?: () => void
   onRemove?: () => void
+  /** Player da sala online: `true`/`false` mostra o ponto de conectado; `undefined` não mostra. */
+  online?: boolean
 }
 
 /** Resumo de um player para o mestre: o que se consulta durante a sessão. */
-export function PlayerCard({ member, onReimport, onRemove }: PlayerCardProps) {
+export function PlayerCard({ member, onReimport, onRemove, online }: PlayerCardProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const p = summarizePlayer(member.snapshot)
   const name = p.name || t('gm.noName')
   const canOpenSheet = member.source === 'local' && member.sheet_id != null
+  const sourceLabel = member.source === 'local'
+    ? t('gm.sourceLocal')
+    : member.source === 'room'
+      ? t(online ? 'gm.sourceRoomOnline' : 'gm.sourceRoomOffline')
+      : t('gm.sourceImported', { date: new Date(member.imported_at).toLocaleDateString() })
 
   const primaryLevel = calcPrimaryClassLevel(p.level, p.multiclasses)
   const classes = [
@@ -52,9 +59,10 @@ export function PlayerCard({ member, onReimport, onRemove }: PlayerCardProps) {
           </div>
           <div className="text-[12px] text-[#A8A09B] mt-1">
             {p.player ? `${p.player} · ` : ''}
-            {member.source === 'local'
-              ? t('gm.sourceLocal')
-              : t('gm.sourceImported', { date: new Date(member.imported_at).toLocaleDateString() })}
+            {online != null && (
+              <span aria-hidden="true" className={`inline-block w-2 h-2 rounded-full mr-1.5 align-middle ${online ? 'bg-[#6FBF73]' : 'bg-white/20'}`} />
+            )}
+            {sourceLabel}
           </div>
         </div>
       </div>

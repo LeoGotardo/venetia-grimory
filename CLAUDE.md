@@ -4,15 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Grimório de Venetia** — a D&D 5.5 (2024 edition) character creator SPA. No backend; all
-persistence is `localStorage`. Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand +
+**Grimório de Venetia** — a D&D 5.5 (2024 edition) character creator SPA. Sheets and campaigns
+persist locally (`localStorage`/IndexedDB); the only backend is the online rooms (`api/`, Vercel
+Functions + Neon Postgres + Upstash Redis — see "Online rooms" below). Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand +
 React Router v7 + Framer Motion + uuid + i18next + pdf-lib. Also packaged as an Android app via
 Capacitor (`/android`).
 
 ## Commands
 
 ```bash
-npm run dev       # Vite dev server
+npm run dev       # Vite dev server — also serves api/ (HTTP + room WebSocket) from .env.local
+npm run db:migrate # apply db/migrations/*.sql to the Neon database in .env.local
 npm run build      # tsc -b (typecheck, project references) && vite build
 npm test           # vitest run — unit tests for the rules layer, the store and the catalog
 npm run lint        # eslint .
@@ -422,6 +424,78 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - `AVAILABLE_CONDITIONS` gained `Atordoado` (Stunned) — it is a 2024 condition the SRD uses.
 - UI strings live under `gm.*`. Shared helpers: `pickTextFile` (`src/lib/pickTextFile.ts`) and
   `deliverJson` (`src/lib/deliverJson.ts`), also used by `useSheetExport`.
+
+### Online rooms (`/sala/:code`, `api/`, phases in `~/.claude/plans/crispy-orbiting-micali.md`)
+
+- The GM opens a room per campaign (`RoomPanel`, "Room" button on `CampaignPage`); players join
+  from Home with a 6-char code (`ROOM_CODE_ALPHABET`, no I/O/0/1) and a local sheet, landing on
+  `RoomPage`. No accounts: each device gets a random token, the DB stores only its sha256
+  (`room_members.token_hash`). The campaign stays local-first; the room only holds what is
+  published.
+- Server: `api/rooms/[action].ts` (one function: create, join, close, kick, leave) and
+  `api/room-ws.ts` (WebSocket: first frame `auth {token, since}` → `ready`; presence; fan-out).
+  Writes publish on Redis channel `room:<id>`; every function instance with sockets in that room
+  is SUBSCRIBEd (ioredis over `REDIS_URL`) and forwards. Neon (`@neondatabase/serverless`) is the
+  source of truth; `rooms.version` + `version > since` is how a reconnecting client catches up.
+  Presence is a Redis hash with expiry timestamps renewed by the client's `ping`.
+  Shared helpers live in `api/_lib/` (the `_` keeps them from becoming functions).
+- **Vercel does not bundle `api/`**: Node loads each file as ESM, so every relative import in
+  `api/` and in anything it imports must end in `.js` (`tsconfig.api.json` is `nodenext` and
+  fails the build otherwise). Shared code therefore lives in `src/lib/room/` (protocol schemas in
+  zod, code, constants, the pure `applyServerMessage` reducer) with `.js` imports and no imports
+  from the rest of `src/`; `src/constants` re-exports the room constants for the app.
+- Client: `roomApi` (HTTP, `RoomApiError` → `room.errors.<code>`), `RoomSocket` (reconnect with
+  `ROOM_RECONNECT_DELAYS_MS`, heartbeat, `ROOM_CLOSE` codes end the session — the Hobby plan
+  cuts a socket at 300 s, so reconnecting is normal), `roomStore` (memberships in `dnd_salas`,
+  one active socket; `useRoomConnection` connects and does not disconnect on unmount).
+  `roomApiBase()` is same-origin on the web and `ROOM_API_URL_APP` inside the APK
+  (`VITE_API_BASE_URL` overrides). CORS is `*` on purpose: auth is a bearer token, never a cookie.
+- Room data is **documents** (`room_docs`, `RoomDoc`: whole-value replace, `deleted` tombstone)
+  keyed `kind:id`; `docVisibleTo` (`src/lib/room/docs.ts`) is applied by the server before any
+  doc reaches a socket — a `sheet` goes only to the GM and its owner. `ready` carries the docs
+  changed since `since` (`full` when since was 0); `applyServerMessage` keeps them in `docs`.
+- Live sheets: the player's sheet is pushed (`sheet_put`, ≤ `ROOM_SHEET_MAX_BYTES`) on every
+  `ready` and on each edit (`usePlayerSheetPush`, debounced, deduped per connection). The GM side
+  (`useGmRoomParty`) runs only while `online` — before `ready` the doc list is empty and would
+  read as "everyone left" — and calls `gmStore.syncRoomPlayers` → `mergeRoomPlayers`
+  (`src/lib/gm/party.ts`): `PartyMember.source: 'room'` with `room_member_id`/`room_version`,
+  same version is a no-op, a vanished doc (kick/leave tombstone) becomes `imported` with the last
+  copy, and closing the room calls `detachRoomPlayers`. Room players have no "Remove" on their
+  card (they'd come back on the next edit) — the GM removes them from the room. The GM still
+  never writes into a player's sheet.
+- Table broadcast: `BroadcastButton` on `EncounterPage` stores `broadcast_encounter_id` on the GM
+  membership; `useGmTableBroadcast` rebuilds and publishes (`table_put`, doc `table:main`,
+  debounced, deduped) on every encounter/map change and clears it (`table_clear`) when switched
+  off or the encounter is gone. **Redaction happens on the GM device** in `buildTableState`
+  (`src/lib/gm/tableView.ts`): hidden combatants and anyone whose top-left square is fogged are
+  dropped (also from `turn_id`), terrain and labels under fog become `TERRAIN_VOID`/removed,
+  enemies carry only `healthBand` (2024 Bloodied = ≤ half), exact HP only for `kind: 'player'`,
+  no stat blocks or notes — the server and players never get the rest. Free text is clipped to
+  `TABLE_LIMITS` and `publishTable` validates against `tableStateSchema` first, because a frame
+  that fails the schema makes the server close the socket (4400). Players render it read-only
+  with `TableView`/`TableMap` (`MapCanvas` + the shared `drawToken` from `drawToken.ts`).
+- Rolls and chat are **events** (`room_events`, `RoomEvent`; append-only, pruned to
+  `ROOM_LOG_MAX`; `ready` sends the last `ROOM_LOG_ON_READY` on a full sync). Dice are rolled **on
+  the server** with `crypto.randomInt` (`addRoll`), after `parseRoomRoll` caps the expression
+  (total dice, sides, bonus); the client never sends a result. `private` events reach only the GM
+  and the author (`eventVisibleTo`, applied by the server). Each member is rate-limited
+  (`ROOM_EVENT_RATE_LIMIT` per `ROOM_EVENT_RATE_WINDOW_S`). `RoomLog` (log + quick dice + composer;
+  `/r 1d20+5 Label` rolls, see `parseComposer`) appears inline on `RoomPage` (tabs Table | Rolls |
+  Room, the table pinned left on desktop) and everywhere else in the floating `RoomDock` with an
+  unread count.
+- `vercel.json` pins functions to `gru1` (São Paulo), next to the Neon database (`sa-east-1`):
+  from the default `iad1` every event paid several cross-continent round trips (median 703 ms per
+  roll vs 52 ms pinned). Keep the function region next to the database.
+- The bridges live in `RoomSyncBridge`, lazy-mounted in `App` only when `roomSyncGate` says this
+  device uses rooms (stored membership or one just created); Home lazy-loads `JoinRoomModal` and
+  `HomeRoomList` the same way, so zod and the room store stay off the landing page.
+- `vercel.json` rewrites only extension-less, non-`/api`, non-`/@` paths to `index.html`; a
+  catch-all also swallowed `/api` and Vite's module requests under `vercel dev`.
+- Local dev: `npm run dev` runs `api/` inside Vite (`apiDevServer` in `vite.config.ts`, loading
+  `.env.local` into the server process) because `vercel dev` does not forward WebSocket
+  upgrades. The integration's env vars are *Sensitive*: `vercel env pull` writes them empty, so
+  `.env.local` must be filled from the Neon and Upstash dashboards. Never prefix a DB/Redis var
+  with `VITE_` (it would ship in the bundle and the APK); `.env*` is gitignored and `.vercelignore`d.
 
 ### localStorage key schema and legacy migration
 

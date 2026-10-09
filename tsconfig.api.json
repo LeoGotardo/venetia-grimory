@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.api.tsbuildinfo",
+    "target": "es2023",
+    "lib": ["ES2023"],
+    "module": "nodenext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /*
+     * A Vercel não empacota as funções: o Node carrega cada arquivo como ESM, e import
+     * sem extensão quebra (ERR_MODULE_NOT_FOUND). `nodenext` exige o `.js` aqui e em
+     * tudo de src/lib que as funções importarem — o Vite resolve `.js` para o `.ts`.
+     */
+    "moduleResolution": "nodenext",
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["api", "scripts/db"]
+}

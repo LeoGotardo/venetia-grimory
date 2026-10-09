@@ -14,6 +14,9 @@ import { MapTab } from '../../components/gm/MapTab'
 import { pickTextFile } from '../../lib/pickTextFile'
 import { deliverJson } from '../../lib/deliverJson'
 import { EmptyState, PeopleIcon } from '../../components/gm/ornaments'
+import { RoomPanel } from '../../components/room/RoomPanel'
+import { campaignRoom, useRoomStore } from '../../store/roomStore'
+import { useRoomConnection } from '../../hooks/useRoomConnection'
 
 // O markdown (react-markdown + remark-gfm) só carrega quando a aba Notas abre.
 const NotesTab = lazy(() => import('../../components/gm/notes/NotesTab').then(m => ({ default: m.NotesTab })))
@@ -33,6 +36,12 @@ export function CampaignPage() {
   const tab: Tab = TABS.find(x => x === searchParams.get('aba')) ?? 'players'
   const setTab = (next: Tab) => setSearchParams(next === 'players' ? {} : { aba: next }, { replace: true })
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [roomOpen, setRoomOpen] = useState(false)
+  const { memberships, activeRoomId, status: roomStatus, online: roomPeers } = useRoomStore()
+  const room = id ? campaignRoom(memberships, id) : null
+  // Com a sala aberta, o mestre fica conectado enquanto mexe na campanha.
+  useRoomConnection(room?.room_id ?? null)
+  const roomOnline = room != null && activeRoomId === room.room_id && roomStatus === 'online'
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -96,9 +105,17 @@ export function CampaignPage() {
           />
         }
         actions={
-          <button onClick={() => void handleExport()} className={gmSecondaryButton}>
-            {t('gm.exportCampaign')}
-          </button>
+          <>
+            <button data-testid="sala-mestre" onClick={() => setRoomOpen(true)} className={gmSecondaryButton}>
+              {room && (
+                <span aria-hidden="true" className={`w-2 h-2 rounded-full ${roomOnline ? 'bg-[#6FBF73]' : 'bg-[#E8C25A]'}`} />
+              )}
+              {t('room.button')}
+            </button>
+            <button onClick={() => void handleExport()} className={gmSecondaryButton}>
+              {t('gm.exportCampaign')}
+            </button>
+          </>
         }
       />
 
@@ -142,7 +159,9 @@ export function CampaignPage() {
                       key={member.id}
                       member={member}
                       onReimport={() => readPlayerJson(json => reimportPlayerJson(member.id, json))}
-                      onRemove={() => removePlayer(member.id)}
+                      // Player da sala sai pela sala (Remover no painel); tirar daqui ele voltaria na próxima edição.
+                      onRemove={member.source === 'room' ? undefined : () => removePlayer(member.id)}
+                      online={member.source === 'room' ? roomOnline && roomPeers.includes(member.room_member_id ?? '') : undefined}
                     />
                   ))}
                 </div>
@@ -170,6 +189,7 @@ export function CampaignPage() {
         )}
       </div>
 
+      <RoomPanel open={roomOpen} onClose={() => setRoomOpen(false)} campaign={campaign} />
       <AddLocalPlayerModal
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
