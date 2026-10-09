@@ -1,6 +1,7 @@
 import type { Combatant, Encounter, GridMap } from '../../types'
 import { TABLE_LIMITS, type TableCombatant, type TableHealth, type TableState } from '../room/protocol'
-import { FOG_REVEALED, TERRAIN_VOID } from '../../constants'
+import { TERRAIN_VOID } from '../../constants'
+import { VIS_SEEN, VIS_UNKNOWN, tableVision, type TableVision } from './vision'
 
 /**
  * Faixa de vida de 2024: "Sangrando" é estar com metade ou menos dos PV. O
@@ -16,17 +17,20 @@ const clip = (text: string, max: number) => text.slice(0, max)
 
 /**
  * O que vai para a tela dos players, montado no aparelho do mestre — o
- * servidor e os players nunca recebem o resto. Mesma regra da "visão da mesa":
- * somem os ocultos e quem está sob a névoa (pela casa do canto, como no mapa);
- * o terreno e os rótulos sob a névoa também somem, para o JSON não entregar a
- * sala secreta. Inimigos levam só a faixa de vida; PV exato, só os players.
+ * servidor e os players nunca recebem o resto. No mapa vale a visão do grupo
+ * (`tableVision`): só aparece quem está numa casa em vista (pela casa do canto)
+ * e não foi escondido pelo mestre; casa nunca vista vai com o terreno apagado
+ * e sem rótulos, para o JSON não entregar a sala secreta. Inimigos levam só a
+ * faixa de vida; PV exato, só os players. `vision` evita recalcular quando
+ * quem chama já calculou (para gravar a exploração).
  */
-export function buildTableState(encounter: Encounter, map: GridMap | null): TableState {
-  const cellCount = map ? map.width * map.height : 0
-  const fog = map && encounter.fog?.length === cellCount ? encounter.fog : null
-  const revealed = (x: number, y: number) => !fog || fog[y * map!.width + x] === FOG_REVEALED
-
-  const visible = encounter.combatants.filter(c => !c.hidden && (!c.position || !map || revealed(c.position.x, c.position.y)))
+export function buildTableState(
+  encounter: Encounter,
+  map: GridMap | null,
+  vision: TableVision | null = map ? tableVision(encounter, map) : null,
+): TableState {
+  const stateAt = (x: number, y: number) => (map && vision ? vision.vis[y * map.width + x] : VIS_SEEN)
+  const visible = encounter.combatants.filter(c => !c.hidden && (!c.position || stateAt(c.position.x, c.position.y) === VIS_SEEN))
   const turnVisible = encounter.status === 'active' && visible.some(c => c.id === encounter.turn_id)
 
   return {
@@ -39,12 +43,13 @@ export function buildTableState(encounter: Encounter, map: GridMap | null): Tabl
     map: map && {
       width: map.width,
       height: map.height,
-      cells: fog ? [...map.cells].map((code, i) => (fog[i] === FOG_REVEALED ? code : TERRAIN_VOID)).join('') : map.cells,
+      cells: vision ? [...map.cells].map((code, i) => (vision.vis[i] === VIS_UNKNOWN ? TERRAIN_VOID : code)).join('') : map.cells,
       labels: map.labels
-        .filter(l => revealed(l.x, l.y))
+        .filter(l => stateAt(l.x, l.y) !== VIS_UNKNOWN)
         .slice(0, TABLE_LIMITS.labels)
         .map(({ x, y, text }) => ({ x, y, text: clip(text, TABLE_LIMITS.label) })),
-      fog,
+      fog: null,
+      vis: vision?.vis ?? null,
     },
   }
 }

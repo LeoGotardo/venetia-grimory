@@ -245,6 +245,11 @@ export interface GridMap {
   height: number
   cells: string
   labels: MapLabel[]
+  /**
+   * O que a mesa já viu deste mapa (`'1'` por casa explorada), somado a cada
+   * transmissão de um encontro nele. Tamanho diferente de `cells` = ignorado.
+   */
+  explored?: string | null
   created_at: string
   updated_at: string
 }

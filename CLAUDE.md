@@ -324,8 +324,14 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - "Table view" is page state in `EncounterPage`: it renders only the map (hidden combatants and
   anyone under fog removed), round and visible turn, with no GM panel, log or tools.
 - Fog is `encounter.fog`, one `0`/`1` char per square, ignored when its length no longer matches
-  the map (resized). GM view dims hidden squares; "table view" blacks them out and hides hidden
-  combatants and anyone standing in fog.
+  the map (resized). GM view dims hidden squares. What the **table** sees (the GM's "table view"
+  and the room broadcast alike) is `tableVision` (`src/lib/gm/vision.ts`): line of sight from every
+  party-side token on the map (not defeated/hidden), blocked by `TERRAINS[].opaque` (void, wall,
+  pillar, tree, boulder — doors are not), a diagonal step can't slip between two opaque squares,
+  intersected with the GM's fog. Everything ever in sight accumulates in `GridMap.explored`
+  (per map, so it carries over to later encounters on it; reset on resize or by "Forget explored").
+  Three states per square: in sight, remembered (terrain dimmed, no creatures), unknown (black,
+  terrain wiped from the broadcast). No party token on the map = only what was already explored.
 - The SRD 5.2.1 catalog (`src/data/monsters/{en,pt}/`, 330 monsters) is **generated** by
   `scripts/srd/generate-monsters.mjs` — see `scripts/README.md`; never hand-edit it. It is loaded
   lazily per language (`loadSrdMonsters`, store `srd` + `loadSrd`) and is read-only: copying a
@@ -467,8 +473,10 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   membership; `useGmTableBroadcast` rebuilds and publishes (`table_put`, doc `table:main`,
   debounced, deduped) on every encounter/map change and clears it (`table_clear`) when switched
   off or the encounter is gone. **Redaction happens on the GM device** in `buildTableState`
-  (`src/lib/gm/tableView.ts`): hidden combatants and anyone whose top-left square is fogged are
-  dropped (also from `turn_id`), terrain and labels under fog become `TERRAIN_VOID`/removed,
+  (`src/lib/gm/tableView.ts`): hidden combatants and anyone whose top-left square is not in the
+  party's sight (`tableVision`) are dropped (also from `turn_id`), terrain and labels on squares
+  never seen become `TERRAIN_VOID`/removed (the map carries `vis`; `fog` goes as `null` and old
+  clients ignore `vis`), the bridge saves the grown `explored` back onto the map,
   enemies carry only `healthBand` (2024 Bloodied = ≤ half), exact HP only for `kind: 'player'`,
   no stat blocks or notes — the server and players never get the rest. Free text is clipped to
   `TABLE_LIMITS` and `publishTable` validates against `tableStateSchema` first, because a frame
@@ -493,6 +501,12 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - `vercel.json` pins functions to `gru1` (São Paulo), next to the Neon database (`sa-east-1`):
   from the default `iad1` every event paid several cross-continent round trips (median 703 ms per
   roll vs 52 ms pinned). Keep the function region next to the database.
+- Rolling from the sheet: `RollButton` (checks, saves, skills, initiative and the attack list now
+  shown in `CombatPanel`) renders only when the open sheet is the one in a connected room. The sheet
+  never imports the room store: the bridge publishes a roller into `src/services/roomRoller.ts`
+  (`useSheetRoller` reads it), `d20Roll` builds the expression, and `RoomDock` toasts the player's
+  own fresh rolls. `usePlayerAutoConnect` connects when the app opens straight on a sheet that is in
+  a room — before, only the room/campaign pages opened the socket.
 - The bridges live in `RoomSyncBridge`, lazy-mounted in `App` only when `roomSyncGate` says this
   device uses rooms (stored membership or one just created); Home lazy-loads `JoinRoomModal` and
   `HomeRoomList` the same way, so zod and the room store stay off the landing page.
@@ -500,7 +514,14 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   catch-all also swallowed `/api` and Vite's module requests under `vercel dev`.
 - Local dev: `npm run dev` runs `api/` inside Vite (`apiDevServer` in `vite.config.ts`, loading
   `.env.local` into the server process) because `vercel dev` does not forward WebSocket
-  upgrades. The integration's env vars are *Sensitive*: `vercel env pull` writes them empty, so
+  upgrades. `resolveApiFile` maps `/api/a/b` to `api/a/b.ts` or the folder's `[param].ts`, like
+  Vercel, so a new function needs no plugin change.
+- Cleanup: `api/cron/cleanup-rooms.ts` runs daily (`crons` in `vercel.json`, 07:00 UTC) and
+  deletes rooms closed for `ROOM_CLOSED_RETENTION_DAYS` or idle for `ROOM_IDLE_DAYS` (cascade
+  takes members, docs and events). It refuses to run without `CRON_SECRET` (a Sensitive
+  production variable — Vercel sends it as `Authorization: Bearer`). `touchMember` bumps
+  `rooms.updated_at` on every authenticated connect, so a table that only plays (no writes) is
+  not "idle". The integration's env vars are *Sensitive*: `vercel env pull` writes them empty, so
   `.env.local` must be filled from the Neon and Upstash dashboards. Never prefix a DB/Redis var
   with `VITE_` (it would ship in the bundle and the APK); `.env*` is gitignored and `.vercelignore`d.
 

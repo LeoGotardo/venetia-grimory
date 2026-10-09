@@ -109,38 +109,39 @@ export const NOTE_SNIPPET_LENGTH = 140
  * `cost` é o multiplicador de movimento (2 = terreno difícil); `null` bloqueia.
  * `fly`: quem voa passa por cima (só parede, pilar e vazio barram). `swim`: com
  * deslocamento de natação, a casa custa 1. `group` organiza a paleta do editor.
+ * `opaque`: bloqueia a linha de visão da mesa (`src/lib/gm/vision.ts`); porta não bloqueia.
  */
 export const TERRAINS = [
-  { code: '0', id: 'void', cost: null, group: 'void', fly: false, swim: false },
+  { code: '0', id: 'void', cost: null, group: 'void', fly: false, swim: false, opaque: true },
   // Chão
-  { code: '.', id: 'floor', cost: 1, group: 'ground', fly: true, swim: false },
-  { code: 'f', id: 'wood', cost: 1, group: 'ground', fly: true, swim: false },
-  { code: 'e', id: 'dirt', cost: 1, group: 'ground', fly: true, swim: false },
-  { code: 'g', id: 'grass', cost: 1, group: 'ground', fly: true, swim: false },
-  { code: 'a', id: 'sand', cost: 1, group: 'ground', fly: true, swim: false },
+  { code: '.', id: 'floor', cost: 1, group: 'ground', fly: true, swim: false, opaque: false },
+  { code: 'f', id: 'wood', cost: 1, group: 'ground', fly: true, swim: false, opaque: false },
+  { code: 'e', id: 'dirt', cost: 1, group: 'ground', fly: true, swim: false, opaque: false },
+  { code: 'g', id: 'grass', cost: 1, group: 'ground', fly: true, swim: false, opaque: false },
+  { code: 'a', id: 'sand', cost: 1, group: 'ground', fly: true, swim: false, opaque: false },
   // Terreno difícil
-  { code: 'd', id: 'difficult', cost: 2, group: 'difficult', fly: true, swim: false },
-  { code: 'r', id: 'rubble', cost: 2, group: 'difficult', fly: true, swim: false },
-  { code: 'm', id: 'mud', cost: 2, group: 'difficult', fly: true, swim: false },
-  { code: 'n', id: 'snow', cost: 2, group: 'difficult', fly: true, swim: false },
-  { code: 'i', id: 'ice', cost: 2, group: 'difficult', fly: true, swim: false },
-  { code: 'v', id: 'vegetation', cost: 2, group: 'difficult', fly: true, swim: false },
-  { code: 'u', id: 'furniture', cost: 2, group: 'difficult', fly: true, swim: false },
+  { code: 'd', id: 'difficult', cost: 2, group: 'difficult', fly: true, swim: false, opaque: false },
+  { code: 'r', id: 'rubble', cost: 2, group: 'difficult', fly: true, swim: false, opaque: false },
+  { code: 'm', id: 'mud', cost: 2, group: 'difficult', fly: true, swim: false, opaque: false },
+  { code: 'n', id: 'snow', cost: 2, group: 'difficult', fly: true, swim: false, opaque: false },
+  { code: 'i', id: 'ice', cost: 2, group: 'difficult', fly: true, swim: false, opaque: false },
+  { code: 'v', id: 'vegetation', cost: 2, group: 'difficult', fly: true, swim: false, opaque: false },
+  { code: 'u', id: 'furniture', cost: 2, group: 'difficult', fly: true, swim: false, opaque: false },
   // Água: sem deslocamento de natação, nadar custa o dobro
-  { code: 'w', id: 'water', cost: 2, group: 'water', fly: true, swim: true },
-  { code: 'W', id: 'deepWater', cost: 2, group: 'water', fly: true, swim: true },
-  { code: 'b', id: 'bridge', cost: 1, group: 'water', fly: true, swim: false },
+  { code: 'w', id: 'water', cost: 2, group: 'water', fly: true, swim: true, opaque: false },
+  { code: 'W', id: 'deepWater', cost: 2, group: 'water', fly: true, swim: true, opaque: false },
+  { code: 'b', id: 'bridge', cost: 1, group: 'water', fly: true, swim: false, opaque: false },
   // Construção e obstáculos
-  { code: '#', id: 'wall', cost: null, group: 'structure', fly: false, swim: false },
-  { code: 'o', id: 'pillar', cost: null, group: 'structure', fly: false, swim: false },
-  { code: '+', id: 'door', cost: 1, group: 'structure', fly: true, swim: false },
-  { code: 's', id: 'stairs', cost: 1, group: 'structure', fly: true, swim: false },
-  { code: 't', id: 'tree', cost: null, group: 'structure', fly: true, swim: false },
-  { code: 'k', id: 'boulder', cost: null, group: 'structure', fly: true, swim: false },
+  { code: '#', id: 'wall', cost: null, group: 'structure', fly: false, swim: false, opaque: true },
+  { code: 'o', id: 'pillar', cost: null, group: 'structure', fly: false, swim: false, opaque: true },
+  { code: '+', id: 'door', cost: 1, group: 'structure', fly: true, swim: false, opaque: false },
+  { code: 's', id: 'stairs', cost: 1, group: 'structure', fly: true, swim: false, opaque: false },
+  { code: 't', id: 'tree', cost: null, group: 'structure', fly: true, swim: false, opaque: true },
+  { code: 'k', id: 'boulder', cost: null, group: 'structure', fly: true, swim: false, opaque: true },
   // Perigo
-  { code: 'h', id: 'hazard', cost: 1, group: 'danger', fly: true, swim: false },
-  { code: 'l', id: 'lava', cost: 1, group: 'danger', fly: true, swim: false },
-  { code: 'p', id: 'pit', cost: null, group: 'danger', fly: true, swim: false },
+  { code: 'h', id: 'hazard', cost: 1, group: 'danger', fly: true, swim: false, opaque: false },
+  { code: 'l', id: 'lava', cost: 1, group: 'danger', fly: true, swim: false, opaque: false },
+  { code: 'p', id: 'pit', cost: null, group: 'danger', fly: true, swim: false, opaque: false },
 ] as const
 export const TERRAIN_GROUPS = ['ground', 'difficult', 'water', 'structure', 'danger'] as const
 export const TERRAIN_VOID = '0'

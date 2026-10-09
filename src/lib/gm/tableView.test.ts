@@ -17,9 +17,9 @@ function enc(combatants: Combatant[], extra: Partial<Encounter> = {}): Encounter
   }
 }
 
-/** Mapa 3×2 de grama (`1`), com um rótulo em cada linha. */
+/** Mapa 3×2 de chão (`.`), com um rótulo em cada linha. */
 const map: GridMap = {
-  id: 'm1', name: '', width: 3, height: 2, cells: '111111',
+  id: 'm1', name: '', width: 3, height: 2, cells: '......',
   labels: [{ id: 'l1', x: 0, y: 0, text: 'Entrada' }, { id: 'l2', x: 2, y: 1, text: 'Tesouro' }],
   created_at: '', updated_at: '',
 }
@@ -42,23 +42,37 @@ describe('mesa transmitida aos players', () => {
     expect(JSON.stringify(table)).not.toContain('Assassino')
   })
 
-  it('quem está sob a névoa some, e o terreno e os rótulos de lá também', () => {
-    const fog = '110' + '000' // só as duas primeiras casas da linha de cima estão reveladas
-    const table = buildTableState(enc([
-      monster('Visível', { position: { x: 1, y: 0 } }),
-      monster('Na névoa', { position: { x: 2, y: 1 } }),
-      monster('Fora do mapa'),
-    ], { fog }), { ...map, cells: '123456' })
-    expect(table.combatants.map(c => c.id)).toEqual(['Visível', 'Fora do mapa'])
-    expect(table.map?.cells).toBe('120000')
+  const ally = (x: number, y: number): Combatant => ({ ...monster('Aria'), kind: 'player', side: 'party', statblock: null, position: { x, y } })
+
+  it('fora da visão do grupo: criatura, terreno e rótulos não saem', () => {
+    // Parede na coluna 1: o grupo, à esquerda, não vê a coluna 2.
+    const walled: GridMap = { ...map, cells: '.#a' + 'e#f' }
+    const table = buildTableState(enc([ally(0, 0), monster('Atrás da parede', { position: { x: 2, y: 1 } })]), walled)
+    expect(table.combatants.map(c => c.id)).toEqual(['Aria'])
+    expect(table.map?.vis).toBe('220' + '220')
+    expect(table.map?.cells).toBe('.#0' + 'e#0')
     expect(table.map?.labels).toEqual([{ x: 0, y: 0, text: 'Entrada' }])
-    expect(JSON.stringify(table)).not.toContain('Tesouro')
+    expect(JSON.stringify(table)).not.toMatch(/Tesouro|Atrás/)
+  })
+
+  it('área explorada aparece como lembrada, sem as criaturas que estão lá', () => {
+    const walled: GridMap = { ...map, cells: '.#a' + 'e#f', explored: '111' + '111' }
+    const table = buildTableState(enc([ally(0, 0), monster('Lembrado', { position: { x: 2, y: 1 } })]), walled)
+    expect(table.map?.vis).toBe('221' + '221')
+    expect(table.map?.cells).toBe('.#a' + 'e#f')
+    expect(table.map?.labels.map(l => l.text)).toEqual(['Entrada', 'Tesouro'])
+    expect(table.combatants.map(c => c.id)).toEqual(['Aria'])
+  })
+
+  it('a névoa do mestre ainda esconde, mesmo em linha de visão', () => {
+    const table = buildTableState(enc([ally(0, 0), monster('Na névoa', { position: { x: 2, y: 1 } })], { fog: '110' + '110' }), map)
+    expect(table.combatants.map(c => c.id)).toEqual(['Aria'])
+    expect(table.map?.cells).toBe('..0' + '..0')
   })
 
   it('névoa de outro tamanho (mapa redimensionado) é ignorada, como no mapa do mestre', () => {
-    const table = buildTableState(enc([monster('A', { position: { x: 2, y: 1 } })], { fog: '0' }), map)
-    expect(table.combatants).toHaveLength(1)
-    expect(table.map?.fog).toBeNull()
+    const table = buildTableState(enc([ally(0, 0), monster('A', { position: { x: 2, y: 1 } })], { fog: '0' }), map)
+    expect(table.combatants).toHaveLength(2)
   })
 
   it('inimigo leva só a faixa de vida; player leva o PV; bloco e notas nunca saem', () => {
@@ -82,7 +96,7 @@ describe('mesa transmitida aos players', () => {
   })
 
   it('sai no formato que o servidor aceita', () => {
-    const table = buildTableState(enc([monster('Goblin', { position: { x: 0, y: 0 } })], { fog: '100000' }), map)
+    const table = buildTableState(enc([ally(1, 1), monster('Goblin', { position: { x: 0, y: 0 } })], { fog: '110110' }), map)
     expect(tableStateSchema.safeParse(table).success).toBe(true)
   })
 })

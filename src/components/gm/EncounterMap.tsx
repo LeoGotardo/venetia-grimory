@@ -10,6 +10,7 @@ import {
   checkMove, combatantAt, occupancyFor, reachableCells, remainingMovement, sizeSquares, speedSquares, type MoveCheck,
 } from '../../lib/gm/movement'
 import { FOG_HIDDEN, FOG_REVEALED } from '../../constants'
+import { VIS_REMEMBERED, VIS_SEEN, tableVision } from '../../lib/gm/vision'
 
 type Tool = 'tokens' | 'ruler' | 'reveal' | 'hide' | 'pan'
 
@@ -33,7 +34,7 @@ const same = (a: Cell | null, b: Cell | null) => !!a && !!b && a.x === b.x && a.
  */
 export function EncounterMap({ encounter, map, selectedId, onSelect, playerView, onPlayerViewChange }: EncounterMapProps) {
   const { t, i18n } = useTranslation()
-  const { placeCombatant, moveCombatant, setFog, setStrictMovement } = useGmStore()
+  const { placeCombatant, moveCombatant, setFog, setStrictMovement, setMapExplored } = useGmStore()
   const [tool, setTool] = useState<Tool>('tokens')
   const [drag, setDrag] = useState<{ id: string; from: Cell; to: Cell } | null>(null)
   const [ruler, setRuler] = useState<{ a: Cell; b: Cell } | null>(null)
@@ -48,11 +49,17 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
   const cellCount = map.width * map.height
   // Névoa de outro tamanho (o mapa foi redimensionado) é ignorada.
   const fog = encounter.fog?.length === cellCount ? fogDraft ?? encounter.fog : null
-  const isRevealed = (c: Cell) => !fog || fog[c.y * map.width + c.x] === FOG_REVEALED
 
-  // Na visão da mesa somem os ocultos e quem está sob a névoa.
-  const visible = encounter.combatants.filter(c =>
-    c.position && !(playerView && (c.hidden || !isRevealed(c.position))))
+  // Visão da mesa: a mesma dos players (linha de visão do grupo, exploração, névoa). Cara de calcular.
+  const vision = useMemo(
+    () => (playerView ? tableVision({ combatants: encounter.combatants, fog }, map) : null),
+    [playerView, encounter.combatants, fog, map],
+  )
+  const visible = encounter.combatants.filter(c => {
+    if (!c.position) return false
+    if (!vision) return true
+    return !c.hidden && vision.vis[c.position.y * map.width + c.position.x] === VIS_SEEN
+  })
 
   const turnOwner = encounter.status === 'active' ? encounter.combatants.find(c => c.id === encounter.turn_id) ?? null : null
   /** O modo estrito só vale com o combate andando: na preparação o mestre posiciona livre. */
@@ -155,8 +162,14 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
       for (const idx of reach.keys()) ctx.fillRect((idx % map.width) * scale, Math.floor(idx / map.width) * scale, scale, scale)
     }
 
-    if (fog) {
-      ctx.fillStyle = playerView ? '#000' : 'rgba(0,0,0,0.55)'
+    if (vision) {
+      for (let i = 0; i < cellCount; i++) {
+        if (vision.vis[i] === VIS_SEEN) continue
+        ctx.fillStyle = vision.vis[i] === VIS_REMEMBERED ? 'rgba(0,0,0,0.6)' : '#000'
+        ctx.fillRect((i % map.width) * scale, Math.floor(i / map.width) * scale, scale, scale)
+      }
+    } else if (fog) {
+      ctx.fillStyle = 'rgba(0,0,0,0.55)'
       for (let i = 0; i < cellCount; i++) {
         if (fog[i] === FOG_HIDDEN) ctx.fillRect((i % map.width) * scale, Math.floor(i / map.width) * scale, scale, scale)
       }
@@ -278,6 +291,15 @@ export function EncounterMap({ encounter, map, selectedId, onSelect, playerView,
         <button aria-pressed={playerView} onClick={() => onPlayerViewChange(!playerView)} className={toolButton(playerView)}>
           {t('gm.playerView')}
         </button>
+        {map.explored?.includes('1') && (
+          <button
+            onClick={() => confirm(t('gm.forgetExploredConfirm')) && setMapExplored(map.id, null)}
+            title={t('gm.forgetExploredHint')}
+            className={toolButton(false)}
+          >
+            {t('gm.forgetExplored')}
+          </button>
+        )}
       </div>}
 
       {unplaced.length > 0 && !playerView && (

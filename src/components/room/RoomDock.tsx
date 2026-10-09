@@ -1,10 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useRoomStore } from '../../store/roomStore'
 import { useBackHandler } from '../../hooks/useBackHandler'
 import { DiceIcon } from '../gm/ornaments'
+import type { RoomEvent } from '../../lib/room/protocol'
 import { RoomLog } from './RoomLog'
+
+/** Quanto tempo o resultado da própria rolagem fica à vista, e o quanto ela pode ser antiga para aparecer. */
+const OWN_ROLL_TOAST_MS = 4000
+const OWN_ROLL_FRESH_MS = 15_000
 
 /**
  * Rolagens e chat da sala em qualquer tela (ficha, encontro, campanha): um
@@ -20,6 +25,21 @@ export function RoomDock() {
   const [seenVersion, setSeenVersion] = useState(0)
   useBackHandler(open, () => setOpen(false))
 
+  // Resultado da rolagem que eu acabei de fazer (pela ficha, por exemplo), sem abrir o painel.
+  const lastOwnRoll = events.findLast(e => e.kind === 'roll' && e.actor_member_id === me?.member_id) ?? null
+  const [toast, setToast] = useState<RoomEvent | null>(null)
+  useEffect(() => {
+    if (!lastOwnRoll || open) return
+    const age = Date.now() - Date.parse(lastOwnRoll.created_at)
+    if (age > OWN_ROLL_FRESH_MS) return
+    const show = setTimeout(() => setToast(lastOwnRoll), 0)
+    const hide = setTimeout(() => setToast(current => (current === lastOwnRoll ? null : current)), OWN_ROLL_TOAST_MS)
+    return () => {
+      clearTimeout(show)
+      clearTimeout(hide)
+    }
+  }, [lastOwnRoll, open])
+
   const latest = events.at(-1)?.version ?? 0
   // Aberto, tudo é visto; o que eu mesmo mandei nunca conta como novidade.
   const seen = open ? latest : seenVersion
@@ -34,6 +54,18 @@ export function RoomDock() {
 
   return (
     <>
+      {!open && toast?.kind === 'roll' && (
+        <div
+          role="status"
+          className="fixed z-40 right-4 bottom-[88px] max-w-[260px] rounded-[12px] border border-[rgba(212,160,23,0.4)] bg-[#1A1714] shadow-xl px-3.5 py-2.5 flex items-center gap-3 font-[Manrope,system-ui]"
+        >
+          <span className="min-w-0">
+            <span className="block text-[13px] text-[#F5F0E8] truncate">{toast.payload.label || toast.payload.expression}</span>
+            <span className="block text-[11px] text-[#A8A09B] tabular-nums truncate">{toast.payload.expression}: {toast.payload.rolls.join(' + ')}</span>
+          </span>
+          <span className="text-[26px] font-extrabold tabular-nums text-[#E8C25A]">{toast.payload.total}</span>
+        </div>
+      )}
       {!open && (
         <button
           data-testid="sala-dock"

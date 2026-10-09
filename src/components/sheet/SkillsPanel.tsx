@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { formatModifier } from '../../lib/calculations'
 import { gameData } from '../../data/rules'
+import { RollButton } from './RollButton'
 
 export function SkillsPanel() {
   const { sheet } = useSheetStore()
@@ -30,6 +31,7 @@ export function SkillsPanel() {
               <span className={`text-sm font-bold min-w-[2.5rem] text-right ${isHigh ? 'text-green-400' : (val ?? 0) > 0 ? 'text-[#F5F0E8]' : 'text-[#A8A09B]'}`} aria-live="polite">
                 {val !== null && val !== undefined ? formatModifier(val) : '—'}
               </span>
+              <RollButton label={p.name} modifier={val} />
             </div>
           )
         })}

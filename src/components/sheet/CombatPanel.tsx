@@ -4,6 +4,7 @@ import { useSheetStore } from '../../store/sheetStore'
 import { formatModifier } from '../../lib/calculations'
 import { DieBadge } from '../ui/Badge'
 import Button from '../ui/Button'
+import { RollButton } from './RollButton'
 
 const INPUT_BASE = 'bg-[#2D2520] border border-[#B8860B]/30 rounded px-2 py-1 text-[#F5F0E8] text-sm text-center focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B]'
 
@@ -19,11 +20,11 @@ export function CombatPanel() {
   const currentHp = hp.current
   const hpPct = maxHp > 0 ? (currentHp / maxHp) * 100 : 0
 
-  type Stat = { label: string; value: string | number; sub?: string; hero?: boolean }
+  type Stat = { label: string; value: string | number; sub?: string; hero?: boolean; roll?: number | null }
   const stats: Stat[] = [
     { label: t('combat.hp'), value: `${currentHp}/${maxHp}`, sub: hp.temporary > 0 ? `+${hp.temporary} temp` : undefined, hero: true },
     { label: t('combat.ac'), value: ac.value ?? '—', sub: ac.shield_equipped ? t('combat.shieldBonus') : undefined },
-    { label: t('combat.initiative'), value: initiative._value !== null ? formatModifier(initiative._value) : '—' },
+    { label: t('combat.initiative'), value: initiative._value !== null ? formatModifier(initiative._value) : '—', roll: initiative._value },
     { label: t('combat.speed'), value: speed._total_meters !== null ? `${speed._total_meters}${t('sheet.mUnit')}` : '—' },
     { label: t('combat.prof'), value: _proficiency_bonus !== null ? `+${_proficiency_bonus}` : '—' },
     { label: t('combat.passivePerception'), value: passivePerception },
@@ -38,7 +39,7 @@ export function CombatPanel() {
     <div className="space-y-4">
       {/* Stat grid — PV hero (text-3xl), demais text-2xl */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {stats.map(({ label, value, sub, hero }) => (
+        {stats.map(({ label, value, sub, hero, roll }) => (
           <div
             key={label}
             className={`bg-[#2D2520] border rounded-lg p-3 flex flex-col items-center
@@ -49,9 +50,30 @@ export function CombatPanel() {
               {value}
             </span>
             {sub && <span className="text-xs text-[#B8860B] mt-0.5">{sub}</span>}
+            {roll !== undefined && <RollButton label={label} modifier={roll} className="mt-1.5" />}
           </div>
         ))}
       </div>
+
+      {/* Ataques: o que se rola na mesa (com a sala conectada, os dados rolam no log dela) */}
+      {sheet.combat.attacks.length > 0 && (
+        <section aria-label={t('edit.attacks')}>
+          <h3 className="font-cinzel font-semibold text-[#B8860B] mb-2">{t('edit.attacks')}</h3>
+          <ul className="space-y-1">
+            {sheet.combat.attacks.map((atk, idx) => (
+              <li key={`${atk.name}-${idx}`} className="flex items-center gap-2 bg-[#2D2520] border border-[#B8860B]/20 rounded px-2 py-1.5">
+                <span className="text-sm text-[#F5F0E8] font-medium flex-1 min-w-0 truncate">{atk.name || '—'}</span>
+                <span className="text-xs text-[#A8A09B]">{t('edit.attackBonus')}</span>
+                <span className="text-sm font-bold text-[#F5F0E8] tabular-nums">{atk._attack_bonus !== null ? formatModifier(atk._attack_bonus) : '—'}</span>
+                <RollButton label={t('sheet.rollAttack', { name: atk.name })} modifier={atk._attack_bonus} />
+                <span className="text-xs text-[#A8A09B] ml-1">{t('edit.attackDamage')}</span>
+                <span className="text-sm font-bold text-[#F5F0E8] tabular-nums">{atk._damage ?? '—'}</span>
+                <RollButton label={t('sheet.rollDamage', { name: atk.name })} expression={atk._damage} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* PV bar */}
       <div>

@@ -6,8 +6,11 @@ import { useRoomStore } from '../store/roomStore'
 import { useSheetStore } from '../store/sheetStore'
 import { useGmStore } from '../store/gmStore'
 import { loadSheet } from '../services/sheetStorage'
+import { setRoomRoller } from '../services/roomRoller'
+import { useRoomConnection } from './useRoomConnection'
 import type { RoomSheetEntry } from '../lib/gm/party'
 import { buildTableState } from '../lib/gm/tableView'
+import { tableVision } from '../lib/gm/vision'
 import { docKey } from '../lib/room/docs'
 import { findMentionTarget, mentionTargets, shareableNote } from '../lib/gm/notes'
 
@@ -69,7 +72,7 @@ export function useGmRoomParty() {
 
 /**
  * Mestre: transmite a mesa do encontro escolhido (`broadcast_encounter_id`) a
- * cada mudança, já filtrada. Encontro apagado ou transmissão desligada apagam a
+ * cada mudança, já filtrada pela visão do grupo, e grava no mapa o que ele explorou. Encontro apagado ou transmissão desligada apagam a
  * mesa dos players — só se havia uma, para não gastar versão à toa.
  */
 export function useGmTableBroadcast() {
@@ -78,6 +81,7 @@ export function useGmTableBroadcast() {
   const hasTable = useRoomStore(s => Boolean(s.docs[docKey({ kind: 'table', id: ROOM_TABLE_DOC_ID })]))
   const publishTable = useRoomStore(s => s.publishTable)
   const campaign = useGmStore(s => s.campaign)
+  const setMapExplored = useGmStore(s => s.setMapExplored)
   const linked = membership?.role === 'gm' && campaign != null && membership.campaign_id === campaign.id
   const encounterId = linked ? membership.broadcast_encounter_id : null
   const encounter = encounterId ? campaign?.encounters.find(e => e.id === encounterId) ?? null : null
@@ -86,9 +90,18 @@ export function useGmTableBroadcast() {
   useEffect(() => {
     if (!online || !linked) return
     if (!encounter && !hasTable) return
-    const timer = setTimeout(() => publishTable(encounter ? buildTableState(encounter, map) : null), ROOM_TABLE_PUSH_DEBOUNCE_MS)
+    const timer = setTimeout(() => {
+      if (!encounter) {
+        publishTable(null)
+        return
+      }
+      // A exploração fica no mapa: a próxima batalha nele começa com o que o grupo já viu.
+      const vision = map ? tableVision(encounter, map) : null
+      if (map && vision && vision.explored !== (map.explored ?? null)) setMapExplored(map.id, vision.explored)
+      publishTable(buildTableState(encounter, map, vision))
+    }, ROOM_TABLE_PUSH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [online, linked, encounter, map, hasTable, publishTable])
+  }, [online, linked, encounter, map, hasTable, publishTable, setMapExplored])
 }
 
 /**
@@ -120,4 +133,29 @@ export function useGmSharedNotes() {
     }, ROOM_NOTE_PUSH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
   }, [online, linked, campaign, bestiary, srd, docs, publishNote])
+}
+
+/** Player conectado: a ficha da sala ganha botões de rolar (ver `useSheetRoller`). */
+export function usePlayerRoller() {
+  const membership = useActiveMembership()
+  const online = useRoomStore(s => s.status === 'online')
+  const roll = useRoomStore(s => s.roll)
+  const sheetId = membership?.role === 'player' ? membership.sheet_id : null
+
+  useEffect(() => {
+    if (!online || !sheetId) return
+    setRoomRoller({ sheetId, roll: (expression, label) => roll(expression, label, false) })
+    return () => setRoomRoller(null)
+  }, [online, sheetId, roll])
+}
+
+/**
+ * Player que abre o app direto na ficha: se ela está numa sala deste aparelho,
+ * conecta — senão a ficha só sincronizaria (e só rolaria na sala) depois de
+ * passar pela página da sala.
+ */
+export function usePlayerAutoConnect() {
+  const sheetId = useSheetStore(s => s.sheetId)
+  const roomId = useRoomStore(s => s.memberships.find(m => m.role === 'player' && m.sheet_id === sheetId)?.room_id ?? null)
+  useRoomConnection(sheetId ? roomId : null)
 }

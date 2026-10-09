@@ -131,6 +131,8 @@ interface GmState {
   addMapLabel: (mapId: string, x: number, y: number, text: string) => void
   updateMapLabel: (mapId: string, labelId: string, text: string) => void
   removeMapLabel: (mapId: string, labelId: string) => void
+  /** Grava o que a mesa já viu do mapa (`tableVision`); `null` esquece tudo. */
+  setMapExplored: (mapId: string, explored: string | null) => void
 
   /** Troca o mapa do encontro: posições e névoa recomeçam. */
   setEncounterMap: (encounterId: string, mapId: string | null) => void
@@ -712,8 +714,12 @@ export const useGmStore = create<GmState>((set, get) => {
         return {
           ...m, width: w, height: h, cells: resizeCells(m, w, h),
           labels: m.labels.filter(l => l.x < w && l.y < h),
+          explored: null,
         }
       }),
+
+    setMapExplored: (mapId, explored) =>
+      updateMap(mapId, m => ((m.explored ?? null) === explored ? m : { ...m, explored })),
 
     addMapLabel: (mapId, x, y, text) =>
       updateMap(mapId, m => (text.trim() ? { ...m, labels: [...m.labels, { id: uuidv4(), x, y, text: text.trim() }] } : m)),

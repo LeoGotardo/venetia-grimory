@@ -162,7 +162,10 @@ export function normalizeMap(raw: unknown): GridMap {
         && l.x >= 0 && l.y >= 0 && l.x < width && l.y < height)
         .map(l => ({ id: l.id ?? uuidv4(), x: l.x, y: l.y, text: l.text }))
     : []
-  return { id: m.id ?? uuidv4(), name: m.name ?? '', width, height, cells, labels, created_at: m.created_at ?? at, updated_at: at }
+  const explored = typeof m.explored === 'string' && m.explored.length === width * height && /^[01]*$/.test(m.explored)
+    ? m.explored
+    : null
+  return { id: m.id ?? uuidv4(), name: m.name ?? '', width, height, cells, labels, explored, created_at: m.created_at ?? at, updated_at: at }
 }
 
 const isLayerId = (v: unknown): v is AreaLayerId => (AREA_LAYERS as readonly unknown[]).includes(v)

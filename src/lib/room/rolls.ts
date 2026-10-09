@@ -15,3 +15,9 @@ export function parseRoomRoll(text: string): DiceExpression | null {
   if (Math.abs(expression.bonus) > ROOM_ROLL_MAX_BONUS) return null
   return expression
 }
+
+/** Teste de d20 com modificador: `1d20+5`, `1d20-1`, `1d20`. */
+export function d20Roll(modifier: number): string {
+  if (modifier === 0) return '1d20'
+  return `1d20${modifier > 0 ? '+' : '-'}${Math.abs(modifier)}`
+}

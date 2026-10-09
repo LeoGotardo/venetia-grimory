@@ -120,6 +120,12 @@ export const tableStateSchema = z.object({
     cells: z.string().max(TABLE_MAP_MAX_SIDE * TABLE_MAP_MAX_SIDE),
     labels: z.array(z.object({ x: z.number().int(), y: z.number().int(), text: z.string().max(TABLE_LIMITS.label) })).max(TABLE_LIMITS.labels),
     fog: z.string().max(TABLE_MAP_MAX_SIDE * TABLE_MAP_MAX_SIDE).nullable(),
+    /**
+     * Visão da mesa, um caractere por casa: `2` em vista, `1` explorada (esmaecida, sem
+     * criaturas), `0` nunca vista (terreno apagado). Opcional: versões antigas do app
+     * mandam só `fog`, e as antigas ignoram este campo.
+     */
+    vis: z.string().max(TABLE_MAP_MAX_SIDE * TABLE_MAP_MAX_SIDE).regex(/^[012]*$/).nullable().optional(),
   }).nullable(),
 })
 export type TableState = z.infer<typeof tableStateSchema>

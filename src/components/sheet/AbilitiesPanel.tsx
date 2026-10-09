@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useSheetStore } from '../../store/sheetStore'
 import { formatModifier, ABILITIES, abilityName } from '../../lib/calculations'
+import { RollButton } from './RollButton'
 
 export function AbilitiesPanel() {
   const { sheet } = useSheetStore()
@@ -40,6 +41,7 @@ export function AbilitiesPanel() {
               <span className="text-[10px] text-[#A8A09B] mt-0.5 text-center leading-tight">
                 {abilityName(attr, t)}
               </span>
+              <RollButton label={t('sheet.rollCheck', { ability: abilityName(attr, t) })} modifier={_modifier} className="mt-1" />
             </div>
           )
         })}
@@ -66,6 +68,7 @@ export function AbilitiesPanel() {
                 >
                   {sv._value !== null ? formatModifier(sv._value) : '—'}
                 </span>
+                <RollButton label={t('sheet.rollSave', { ability: abilityName(attr, t) })} modifier={sv._value} />
               </div>
             )
           })}
