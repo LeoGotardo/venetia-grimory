@@ -39,16 +39,26 @@ e acompanhá-los durante a sessão. Um assistente de 13 passos monta o personage
 do Livro do Jogador; depois, a ficha de jogo controla vida, recursos de classe, espaços de magia,
 inventário e subida de nível. Exporta a ficha oficial em PDF.
 
-Não há backend nem conta: tudo fica no `localStorage` do navegador (ou do WebView, no app). Roda
-como site e como app Android empacotado com Capacitor.
+Para o mestre há uma **Área do Mestre** (campanhas, NPCs, bestiário do SRD, combate com mapa,
+mapas ilustrados e notas) e **salas online** para jogar com os players em outros aparelhos. Não há
+conta: fichas e campanhas ficam no aparelho (`localStorage`/IndexedDB); só as salas passam por um
+servidor. Roda como site e como app Android empacotado com Capacitor.
 
 | Início | Assistente | Celular |
 |:---:|:---:|:---:|
 | <img src="docs/images/home-pt.png" width="280" /> | <img src="docs/images/wizard-pt.png" width="280" /> | <img src="docs/images/mobile-pt.png" width="130" /> |
 
+| Combate com mapa | NPCs e gerador | Notas com citações |
+|:---:|:---:|:---:|
+| <img src="docs/images/gm-encounter-pt.png" width="280" /> | <img src="docs/images/gm-npcs-pt.png" width="280" /> | <img src="docs/images/gm-notes-pt.png" width="280" /> |
+| **Mapa de área** | **Sala online (player)** | **Rolagem pela ficha** |
+| <img src="docs/images/gm-area-map-pt.png" width="280" /> | <img src="docs/images/room-player-pt.png" width="280" /> | <img src="docs/images/room-sheet-roll-pt.png" width="130" /> |
+
+📖 **[Guia de funções](docs/GUIA.md)**: cada tela explicada, com exemplos.
+
 ### Sumário
 
-- [Visão geral](#visão-geral)
+- [Visão geral](#visão-geral) — e o **[Guia de funções](docs/GUIA.md)**, com telas e exemplos
 - [Ambiente](#ambiente) — [desenvolvimento](#setup-para-desenvolvimento) · [produção](#setup-para-produção) · [build do zero](#como-fazer-a-build-do-zero)
 - [Operação](#operação) — [boot](#workflow-de-boot) · [scripts](#scripts-disponíveis) · [update e rollback](#update-e-rollback) · [diagnóstico](#comandos-de-diagnóstico) · [paths](#paths-úteis-execução-e-build)
 - [Info](#info) — [paths](#paths-úteis-configuração-e-dados) · [acessos](#login-e-senhas)
@@ -71,9 +81,15 @@ como site e como app Android empacotado com Capacitor.
   para impressão (sem o que muda em jogo).
 - **Backup** de cada personagem como JSON, para exportar e importar.
 - **Interface e dados de jogo** em português e inglês.
+- **Área do Mestre:** campanhas com players (fichas do aparelho, JSON ou ao vivo), NPCs com
+  gerador, bestiário com os 330 monstros do SRD 5.2.1, rastreador de combate com mapa de grade
+  (iniciativa, PV, condições, concentração, deslocamento com terreno difícil, névoa e linha de
+  visão), mapas de área ilustrados e notas em markdown que citam players, NPCs e monstros.
 - **Salas online:** o mestre abre uma sala para a campanha e os players entram com um código de 6
-  letras. A ficha de cada player chega ao vivo ao mestre, o mestre transmite o encontro (só o que é
-  visível), há rolagens feitas no servidor, chat e notas compartilhadas.
+  letras. A ficha de cada player chega ao vivo ao mestre, o mestre transmite o encontro (só o que o
+  grupo vê), há rolagens feitas no servidor — também direto da ficha —, chat e notas compartilhadas.
+
+Exemplos e telas de cada função: **[Guia de funções](docs/GUIA.md)**.
 
 **Para quem:** jogadores e mestres de D&D 5.5 que querem montar um personagem sem errar regra e
 acompanhá-lo na mesa, no computador ou no celular, sem cadastro e sem internet depois de carregado (as salas online precisam de internet).

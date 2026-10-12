@@ -39,16 +39,26 @@ them at the table. A 13-step wizard assembles the character applying the Player'
 the play sheet then tracks hit points, class resources, spell slots, inventory and level-ups. It
 also exports the official character sheet as a PDF.
 
-There is no backend and no account: everything lives in the browser's `localStorage` (or the
-WebView's, inside the app). It runs as a website and as an Android app packaged with Capacitor.
+For the GM there is a **Game Master Area** (campaigns, NPCs, SRD bestiary, combat on a map,
+illustrated maps and notes) and **online rooms** to play with players on other devices. There is
+no account: sheets and campaigns stay on the device (`localStorage`/IndexedDB); only rooms go
+through a server. It runs as a website and as an Android app packaged with Capacitor.
 
 | Home | Wizard | Phone |
 |:---:|:---:|:---:|
 | <img src="docs/images/home-en.png" width="280" /> | <img src="docs/images/wizard-en.png" width="280" /> | <img src="docs/images/mobile-en.png" width="130" /> |
 
+| Combat with a map | NPCs and generator | Notes with mentions |
+|:---:|:---:|:---:|
+| <img src="docs/images/gm-encounter-en.png" width="280" /> | <img src="docs/images/gm-npcs-en.png" width="280" /> | <img src="docs/images/gm-notes-en.png" width="280" /> |
+| **Area map** | **Online room (player)** | **Roll from the sheet** |
+| <img src="docs/images/gm-area-map-en.png" width="280" /> | <img src="docs/images/room-player-en.png" width="280" /> | <img src="docs/images/room-sheet-roll-en.png" width="130" /> |
+
+📖 **[Feature guide](docs/GUIDE.md)**: every screen explained, with examples.
+
 ### Contents
 
-- [Overview](#overview)
+- [Overview](#overview) — and the **[Feature guide](docs/GUIDE.md)**, with screens and examples
 - [Environment](#environment) — [development](#development-setup) · [production](#production-setup) · [build from scratch](#building-from-scratch)
 - [Operations](#operations) — [boot](#boot-workflow) · [scripts](#available-scripts) · [update and rollback](#update-and-rollback) · [diagnostics](#diagnostic-commands) · [paths](#useful-paths-runtime-and-build)
 - [Info](#info) — [paths](#useful-paths-configuration-and-data) · [access](#logins-and-passwords)
@@ -70,9 +80,16 @@ WebView's, inside the app). It runs as a website and as an Android app packaged 
   printing (blank where values change during play).
 - **Backup** of each character as JSON, for export and import.
 - **Interface and game data** in Portuguese and English.
+- **Game Master Area:** campaigns with players (sheets from this device, JSON or live), NPCs with
+  a generator, a bestiary with the 330 SRD 5.2.1 monsters, a combat tracker on a grid map
+  (initiative, HP, conditions, concentration, movement with difficult terrain, fog and line of
+  sight), illustrated area maps and markdown notes that mention players, NPCs and monsters.
 - **Online rooms:** the GM opens a room for the campaign and players join with a 6-letter code.
-  Each player's sheet reaches the GM live, the GM broadcasts the encounter (only what is visible),
-  and there are server-side dice rolls, chat and shared notes.
+  Each player's sheet reaches the GM live, the GM broadcasts the encounter (only what the party
+  sees), and there are server-side dice rolls — also straight from the sheet —, chat and shared
+  notes.
+
+Examples and screens for every feature: **[Feature guide](docs/GUIDE.md)**.
 
 **Who it's for:** D&D 5.5 players and DMs who want to build a character without getting a rule
 wrong and track it at the table, on a computer or a phone, with no sign-up and no internet once

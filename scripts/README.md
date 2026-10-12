@@ -153,3 +153,30 @@ scripts/areamap/process-textures.sh   # requer ImageMagick 6/7 com WebP
 - **Material novo:** imagem em `assets/texture/`, entrada em `AREA_TEXTURES`, nome em
   `gm.areaMap.textures.*` nos dois catálogos, e rodar o script. `catalog.test.ts` confere que imagem,
   miniatura, cor e material batem.
+
+## Capturas da documentação
+
+As imagens de `docs/images/` (usadas no README e nos guias `docs/GUIA.md` / `docs/GUIDE.md`) saem
+do próprio app, com uma campanha de demonstração montada por `scripts/docs/demo-seed.ts`:
+personagens gerados pelas regras, NPCs do gerador, monstros do SRD, um encontro na Ponte Velha,
+um mapa de área e notas com citações. O seed usa um dado fixo, então o cenário é sempre o mesmo.
+
+1. `npm run dev` (com o `.env.local` das salas, para as telas de sala online).
+2. Num perfil limpo do navegador (janela anônima), em `1280×800`, abra `/mestre` e rode no console:
+   ```js
+   const seed = await import('/scripts/docs/demo-seed.ts')
+   await seed.seedGm('pt')   // ou 'en' — devolve os ids de campanha, encontro e mapas
+   ```
+3. Navegue pelas telas e capture: Área do Mestre, Players, NPCs, gerador, bestiário (SRD, com um
+   bloco aberto), encontro, visão da mesa, mapa de grade, mapa de área, notas (Ler e Escrever com
+   `@gob`).
+4. Para as salas: abra a sala na campanha; noutro perfil limpo, em `/`, rode
+   `await seed.seedPlayer('pt', 'CODIGO')`, vá a `/sala/CODIGO`, rode `seed.seedChat('pt')` e
+   capture. A ficha no celular é em `400×860`, rolando a iniciativa.
+5. Comprima sem pontilhado (o ruído aparece nos botões com gradiente):
+   ```bash
+   convert captura.png -strip -dither None -colors 220 -define png:compression-level=9 PNG8:docs/images/captura.png
+   ```
+
+Os nomes seguem `<tela>-<idioma>.png` (`gm-encounter-pt.png`, `room-player-en.png`…). Feche as salas
+de teste depois; as que ficarem abertas somem sozinhas em 30 dias.
