@@ -1,0 +1,66 @@
+# Varredura de dependências vulneráveis e de segredos commitados.
+#
+# O cron é a parte que importa: uma dependência não precisa mudar para ficar
+# vulnerável, então uma checagem que só roda no push fica muda justamente
+# quando a árvore para de mexer. A v3.1.0 saiu com o @capacitor/android 8.4.0,
+# afetado pela GHSA-rvm3 (crítica), e nada aqui avisou.
+
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Segundas, 05:00 UTC — o mesmo horário das varreduras do NoHarm.
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    name: audit npm dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` e não `npm install`: instala exatamente o que o lockfile fixa
+      # e falha se ele discordar do package.json.
+      - name: install
+        run: npm ci
+
+      # Duas passadas, porque respondem perguntas diferentes. O que chega ao
+      # bundle (web ou APK) reprova; um aviso só de dev é reportado sem
+      # reprovar — hoje sobram os do @capacitor/assets, sem correção upstream,
+      # que só roda à mão para gerar ícones.
+      - name: audit production dependencies
+        run: npm audit --omit=dev --audit-level=low
+
+      - name: audit dev dependencies
+        run: npm audit --audit-level=low
+        continue-on-error: true
+
+  secrets:
+    name: scan for committed secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # O histórico inteiro: um segredo apagado num commit posterior
+          # continua no repositório, e continua precisando ser trocado.
+          fetch-depth: 0
+
+      # O binário e não o gitleaks-action, que exige licença em repositórios
+      # de organização. Mesmo scanner do hook de pre-commit.
+      - name: gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.30.0/gitleaks_8.30.0_linux_x64.tar.gz \
+            | tar -xz gitleaks
+          ./gitleaks git . --redact --no-banner

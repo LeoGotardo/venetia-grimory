@@ -1,0 +1,27 @@
+# PRs semanais de atualização, junto com o npm audit de segunda no security.yml.
+# Ative "Dependabot security updates" nas configurações do repositório para que
+# um alerta novo abra PR na hora, em vez de esperar a segunda.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # A CLI e as plataformas andam juntas: um par desencontrado quebra o
+      # `cap sync`.
+      capacitor:
+        patterns: ["@capacitor/*"]
+      # O React 19 recusa react e react-dom em versões diferentes — o build
+      # passa e o app abre em branco. Um PR para os dois.
+      react:
+        patterns: ["react", "react-dom"]
+      dev-tooling:
+        dependency-type: development
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

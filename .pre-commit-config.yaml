@@ -1,0 +1,9 @@
+# Bloqueia um commit que contenha algo com cara de segredo.
+#   pipx install pre-commit && pre-commit install
+# O CI roda o mesmo scanner sobre o histórico inteiro (security.yml), então um
+# commit feito sem o hook ainda é pego — só que depois de publicado.
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
