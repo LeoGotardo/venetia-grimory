@@ -41,6 +41,17 @@ pushes an annotated `vX.Y.Z` tag; `.github/workflows/release.yml` then builds th
 secrets set once by `scripts/setup-release-secrets.sh`. `versionCode` is derived from the tag
 (`v1.2.3` → `10203`) and passed as `-PversionCode` — don't hardcode it back into `build.gradle`.
 
+Supply chain: `.github/workflows/ci.yml` runs lint, tests and build on every push and pull request —
+the same gate as `release.sh`, so a Dependabot PR is green only if the app still builds.
+`.github/workflows/security.yml` runs `npm audit` (production dependencies fail it; dev-only
+findings are reported, not failed — the ones left come from `@capacitor/assets`, with no upstream
+fix) and gitleaks over the whole history, on every push, pull request and Monday.
+`.github/dependabot.yml` opens weekly update PRs, grouping `@capacitor/*` and `react`/`react-dom`,
+which must move together. `pre-commit install` (`pipx install pre-commit` first) enables the same
+gitleaks check before each commit. `.gitleaksignore` holds the one known leak: `.env.local` was
+committed in `a4944ea` with the Neon password, since rotated — the history is public, so a secret
+that reaches a commit has to be rotated, not just deleted.
+
 The installed app updates itself from those releases: `UpdatePrompt` (mounted in `App.tsx`) calls
 `checkForUpdate` (`src/lib/appUpdate.ts`), which on Android release builds fetches
 `releases/latest` and compares `versionCodeFromTag(tag)` — the same formula as the build script, keep

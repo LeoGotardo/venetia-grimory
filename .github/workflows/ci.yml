@@ -1,0 +1,40 @@
+# O gate de correção — lint, testes e build — em todo PR, não só na release.
+#
+# Sem ele um PR do Dependabot fica verde só com o audit, e o audit não sabe se o
+# app ainda compila: o salto do vitest 3 para o 5 tirou os tipos do Node que o
+# keys.test.ts usava e quebrou o `tsc -b`, com todos os testes passando.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: lint, test and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: install
+        run: npm ci
+
+      - name: lint
+        run: npm run lint
+
+      - name: test
+        run: npm test
+
+      - name: build
+        run: npm run build

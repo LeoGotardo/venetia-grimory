@@ -1,0 +1,6 @@
+# .env.local entrou no commit a4944ea (2026-10-09) e saiu no seguinte (3e23ef2),
+# mas o histórico é público e guarda a senha do Neon. Ela foi trocada depois:
+# o .env.local atual aponta para o mesmo host, usuário e banco com outra senha.
+# Ignorar aqui só é seguro enquanto a senha antiga continuar revogada no Neon.
+a4944eaa294fb6fd890af15805eed6e322a42e94:.env.local:generic-api-key:12
+a4944eaa294fb6fd890af15805eed6e322a42e94:.env.local:generic-api-key:19
