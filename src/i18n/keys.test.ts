@@ -1,3 +1,7 @@
+// O tsconfig.app.json checa src/ sem os tipos do Node (o app roda no browser);
+// este é o único teste que lê o disco, então ele mesmo os pede. Até o vitest 3
+// eles chegavam de carona pelo import de 'vitest'.
+/// <reference types="node" />
 import { describe, it, expect } from 'vitest'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
