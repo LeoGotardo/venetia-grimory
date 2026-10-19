@@ -23,7 +23,7 @@
     "@capacitor/filesystem": "^8.1.4",
     "@capacitor/share": "^8.0.3",
     "@neondatabase/serverless": "^1.2.0",
-    "framer-motion": "^12.40.0",
+    "framer-motion": "^14.3.0",
     "i18next": "^26.4.3",
     "ioredis": "^5.11.1",
     "pdf-lib": "^1.17.1",
