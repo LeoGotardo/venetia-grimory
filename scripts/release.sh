@@ -8,8 +8,11 @@
 #   npm run release -- major        # v1.2.3 → v2.0.0
 #   npm run release -- v1.5.0       # versão explícita
 #
-# As notas da release são a mensagem da tag. Com NOTES="..." elas vão direto;
-# sem, o git abre o editor. A primeira versão, sem tag anterior, é v1.0.0.
+# As notas da versão moram em src/data/releaseNotes.json (o app mostra na
+# primeira abertura depois de atualizar): a primeira entrada tem de ser a versão
+# lançada, senão o script para. Elas viram a mensagem da tag — o git abre o
+# editor com elas para revisar; com NOTES="..." a mensagem vai direto. A
+# primeira versão, sem tag anterior, é v1.0.0.
 #
 # Antes da primeira vez: ./scripts/setup-release-secrets.sh
 set -euo pipefail
@@ -49,6 +52,12 @@ else
 fi
 
 git rev-parse -q --verify "refs/tags/$next" >/dev/null && fail "a tag $next já existe"
+
+# O bundle desta tag é o que o app instala: sem as notas dela, a tela de
+# novidades mostraria a versão anterior.
+notes_version="$(node -p 'require("./src/data/releaseNotes.json")[0]?.version ?? ""')"
+[[ "$notes_version" == "$next" ]] \
+    || fail "a primeira entrada de src/data/releaseNotes.json é '${notes_version:-(nenhuma)}', não $next — escreva as novidades de $next (pt e en) antes de lançar"
 if [[ -n "$last" ]] && [[ "$(printf '%s\n%s\n' "$last" "$next" | sort -V | tail -1)" != "$next" ]]; then
     fail "$next não é maior que $last — o Android recusaria a atualização"
 fi
@@ -62,13 +71,20 @@ npm run build
 if [[ -n "${NOTES:-}" ]]; then
     git tag -a "$next" -m "$NOTES"
 else
-    # Sugestão de notas: os commits desde a última tag.
+    # As novidades do app, e os commits desde a última tag como comentário de referência.
     template="$(mktemp)"
     trap 'rm -f "$template"' EXIT
     {
         echo "Grimório de Venetia $next"
         echo
-        git log --format='- %s' ${last:+"$last"..HEAD}
+        node -e '
+            const [note] = require("./src/data/releaseNotes.json")
+            console.log(note.pt.map(item => "- " + item).join("\n"))
+            console.log("\nEnglish:\n" + note.en.map(item => "- " + item).join("\n"))
+        '
+        echo
+        echo "# Commits desde ${last:-o início} (linhas com # não entram na tag):"
+        git log --format='# - %s' ${last:+"$last"..HEAD}
     } > "$template"
     git tag -a "$next" -e -F "$template"
 fi

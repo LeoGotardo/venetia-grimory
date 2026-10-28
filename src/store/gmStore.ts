@@ -163,7 +163,8 @@ const now = () => new Date().toISOString()
 /** Save com debounce pendente — apagar a campanha precisa cancelá-lo. */
 let pendingSave: { id: string; campaign: Campaign; timeout: ReturnType<typeof setTimeout> } | null = null
 
-function flushPendingSave() {
+/** Grava agora a campanha que esperava o debounce — o sync com a conta chama antes de comparar. */
+export function flushPendingCampaignSave() {
   if (!pendingSave) return
   clearTimeout(pendingSave.timeout)
   saveCampaign(pendingSave.campaign)
@@ -307,7 +308,7 @@ export const useGmStore = create<GmState>((set, get) => {
 
     openCampaign: id => {
       // Sem isso, reabrir antes do debounce leria o storage sem a última edição.
-      flushPendingSave()
+      flushPendingCampaignSave()
       const campaign = loadCampaign(id)
       if (!campaign) {
         set({ campaign: null, openedId: id })
@@ -764,7 +765,7 @@ useGmStore.subscribe((state, prev) => {
   const campaign = state.campaign
 
   // Trocou de campanha com edição da anterior pendente: grava a anterior já.
-  if (pendingSave && pendingSave.id !== campaign.id) flushPendingSave()
+  if (pendingSave && pendingSave.id !== campaign.id) flushPendingCampaignSave()
   if (pendingSave) clearTimeout(pendingSave.timeout)
   pendingSave = {
     id: campaign.id,
@@ -780,8 +781,8 @@ useGmStore.subscribe((state, prev) => {
 // Fechar a aba, recarregar ou mandar o app para segundo plano dentro do debounce
 // perderia a última edição: grava na hora quando a página some.
 if (typeof window !== 'undefined') {
-  window.addEventListener('pagehide', flushPendingSave)
+  window.addEventListener('pagehide', flushPendingCampaignSave)
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') flushPendingSave()
+    if (document.visibilityState === 'hidden') flushPendingCampaignSave()
   })
 }
