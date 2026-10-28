@@ -391,3 +391,9 @@ export const STORAGE_KEY_ROOMS = 'dnd_salas'
 export const ROOM_API_URL_APP = 'https://venetia.leogotardo.com.br'
 /** Espera de uma chamada HTTP da sala antes de desistir. */
 export const ROOM_HTTP_TIMEOUT_MS = 15_000
+
+
+// Conta (login Firebase, dados no Neon). As constantes moram em src/lib/cloud (as funções da Vercel também as leem).
+export * from '../lib/cloud/constants'
+/** Vínculo do aparelho com a conta e o estado de sync de cada registro — chave em português, como as outras. */
+export const STORAGE_KEY_CLOUD = 'dnd_nuvem'

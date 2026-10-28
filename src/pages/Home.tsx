@@ -6,6 +6,7 @@ import { useSheetExport } from '../hooks/useSheetExport'
 import type { SheetListItem } from '../store/sheetStore'
 
 import { SettingsButton } from '../components/ui/SettingsButton'
+import { AccountButton } from '../components/ui/AccountButton'
 import { AppFooter } from '../components/ui/AppFooter'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
 import { VenetiaLogo } from '../components/ui/VenetiaLogo'
@@ -73,6 +74,7 @@ export function Home() {
           {t('gm.area')}
         </button>
         <SettingsButton />
+        <AccountButton />
         </div>
       </header>
 

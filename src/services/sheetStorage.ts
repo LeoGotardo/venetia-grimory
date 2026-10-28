@@ -3,15 +3,16 @@ import type { SheetListItem } from '../store/sheetStore'
 import { migrateSheet } from '../lib/migrateSheet'
 import { translateLegacyPtListItem } from '../lib/migrateLegacyPt'
 import { STORAGE_KEY_SHEET_PREFIX, STORAGE_KEY_LIST } from '../constants'
+import { recordLocalDelete, recordLocalWrite } from './cloudState'
 
-function buildListItem(id: string, sheet: CharacterSheet, complete: boolean): SheetListItem {
+function buildListItem(id: string, sheet: CharacterSheet, complete: boolean, updatedAt: string): SheetListItem {
   return {
     id,
     name: sheet.identity.character_name ?? '',
     charClass: sheet.identity.class_id ?? '—',
     species: sheet.identity.species_id ?? '—',
     level: sheet.identity.level,
-    updatedAt: new Date().toISOString(),
+    updatedAt,
     complete,
   }
 }
@@ -32,22 +33,34 @@ function saveList(list: SheetListItem[]): void {
   localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(list))
 }
 
-export function saveSheet(id: string, sheet: CharacterSheet, complete = false): void {
-  localStorage.setItem(`${STORAGE_KEY_SHEET_PREFIX}${id}`, JSON.stringify(sheet))
+/** O que sobe para a nuvem: a ficha crua e o `complete`, que mora na lista e não na ficha. */
+function sheetCloudPayload(json: string, complete: boolean): string {
+  return `{"complete":${complete},"sheet":${json}}`
+}
+
+/** `updatedAt` só vem de fora quando a ficha desce da nuvem e mantém a data de lá. */
+export function saveSheet(id: string, sheet: CharacterSheet, complete = false, updatedAt = new Date().toISOString()): void {
+  const json = JSON.stringify(sheet)
+  localStorage.setItem(`${STORAGE_KEY_SHEET_PREFIX}${id}`, json)
 
   const list = readList()
   const idx = list.findIndex(item => item.id === id)
-  const novoItem = buildListItem(id, sheet, complete)
+  // Never downgrade from complete to incomplete
+  const finalComplete = (idx >= 0 && list[idx].complete === true) || complete
+  const novoItem = buildListItem(id, sheet, finalComplete, updatedAt)
 
-  if (idx >= 0) {
-    // Never downgrade from complete to incomplete
-    const alreadyComplete = list[idx].complete === true
-    list[idx] = { ...novoItem, complete: alreadyComplete || complete }
-  } else {
-    list.push(novoItem)
-  }
+  if (idx >= 0) list[idx] = novoItem
+  else list.push(novoItem)
 
   saveList(list)
+  recordLocalWrite('sheet', id, sheetCloudPayload(json, finalComplete))
+}
+
+/** Conteúdo da ficha como sobe para a nuvem; `null` se ela não existe aqui. */
+export function readSheetCloudPayload(id: string): string | null {
+  const json = localStorage.getItem(`${STORAGE_KEY_SHEET_PREFIX}${id}`)
+  if (json == null) return null
+  return sheetCloudPayload(json, readList().find(item => item.id === id)?.complete ?? true)
 }
 
 export function loadSheet(id: string): CharacterSheet | null {
@@ -66,6 +79,7 @@ export function deleteSheet(id: string): void {
   localStorage.removeItem(`${STORAGE_KEY_SHEET_PREFIX}${id}`)
   const list = readList().filter(item => item.id !== id)
   saveList(list)
+  recordLocalDelete('sheet', id)
 }
 
 export function listSheets(): SheetListItem[] {

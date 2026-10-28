@@ -5,8 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 **Grimório de Venetia** — a D&D 5.5 (2024 edition) character creator SPA. Sheets and campaigns
-persist locally (`localStorage`/IndexedDB); the only backend is the online rooms (`api/`, Vercel
-Functions + Neon Postgres + Upstash Redis — see "Online rooms" below). Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand +
+persist locally (`localStorage`/IndexedDB); the only backend is the online rooms and the optional
+account sync (`api/`, Vercel Functions + Neon Postgres + Upstash Redis — see "Online rooms" and
+"Account sync" below). Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand +
 React Router v7 + Framer Motion + uuid + i18next + pdf-lib. Also packaged as an Android app via
 Capacitor (`/android`).
 
@@ -40,6 +41,9 @@ pushes an annotated `vX.Y.Z` tag; `.github/workflows/release.yml` then builds th
 `scripts/build-android-release.sh` and publishes the GitHub Release. Signing comes from four repo
 secrets set once by `scripts/setup-release-secrets.sh`. `versionCode` is derived from the tag
 (`v1.2.3` → `10203`) and passed as `-PversionCode` — don't hardcode it back into `build.gradle`.
+The APK build also reads the `VITE_FIREBASE_*` / `VITE_GOOGLE_WEB_CLIENT_ID` repo secrets
+(`gh secret set -f .env`); without them the APK ships without the account button.
+
 
 Supply chain: `.github/workflows/ci.yml` runs lint, tests and build on every push and pull request —
 the same gate as `release.sh`, so a Dependabot PR is green only if the app still builds.
@@ -535,6 +539,79 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   not "idle". The integration's env vars are *Sensitive*: `vercel env pull` writes them empty, so
   `.env.local` must be filled from the Neon and Upstash dashboards. Never prefix a DB/Redis var
   with `VITE_` (it would ship in the bundle and the APK); `.env*` is gitignored and `.vercelignore`d.
+
+### Account sync (Google sign-in via Firebase, data in Neon)
+
+- Optional: signed-in users get sheets, campaigns, bestiary monsters and area maps copied to the
+  same Neon database as the rooms and merged across devices. Firebase is **only** the login; the
+  app stays local-first and Neon is a per-record mirror. `isCloudAvailable()`
+  (`src/lib/cloud/config.ts`) is false when the `VITE_FIREBASE_*` vars are missing (CI, tests,
+  forks) and, inside the APK, also without `VITE_GOOGLE_WEB_CLIENT_ID`; then `AccountButton`
+  renders nothing. The web config is public by design, but it stays in `.env` (and in the repo
+  secrets `release.yml` passes to the APK build), never in a source file: gitleaks flags the
+  `AIza…` key — which is also why there is no `google-services.json`.
+- Sign-in: the web uses `signInWithPopup`. The APK can't (Google blocks OAuth in a WebView): the
+  local plugin `android/.../GoogleSignInPlugin.java` (registered in `MainActivity`, JS side
+  `src/lib/googleSignIn.ts`) opens the Android Credential Manager account picker
+  (`GetSignInWithGoogleOption`, accepting both `TYPE_GOOGLE_ID_TOKEN_CREDENTIAL` and the `_SIWG_`
+  type) and returns the Google ID token for the **Web client ID**, which `firebaseAuth.ts` turns
+  into the Firebase session with `signInWithCredential` — no Firebase Android SDK. On native, auth
+  is `initializeAuth` with `indexedDBLocalPersistence` (no popup resolver iframe). Google checks
+  the APK's package + signing SHA-1 against an Android app registered in the Firebase project, so
+  the debug and release keystore SHA-1s must both be there, or sign-in fails with "Developer
+  console is not set up correctly". Sign-out also clears the native credential state.
+- Server: `api/sync/[action].ts` (`pull`, `push`). The uid always comes from the Firebase ID token
+  (`Authorization: Bearer`), verified in `api/_lib/firebaseAuth.ts` with `jose` against Google's
+  public keys (`aud` = project id, read from `FIREBASE_PROJECT_ID` or `VITE_FIREBASE_PROJECT_ID`) —
+  never from the body. Queries in `api/_lib/cloud.ts` take the SQL executor as a parameter.
+  Rate-limited per uid in Redis (fails open if Redis is down) and capped per account
+  (`CLOUD_USER_MAX_BYTES` / `CLOUD_USER_MAX_RECORDS`, `quota_exceeded`). Shared contract and
+  constants live in `src/lib/cloud/` (`protocol.ts`, `constants.ts`, `sync.ts`) with `.js` imports,
+  like `src/lib/room/`.
+- Tables (`db/migrations/003_cloud_records.sql`): `cloud_records (user_id, kind, id)` with `data`
+  as **text** (the exact JSON the app wrote, so content hashes match on both sides; `null` =
+  tombstone), `updated_at` and `seq`. `seq` comes from `cloud_users.version`: each push bumps it by
+  the batch size inside the same statement, which row-locks the user, so a user's `seq`s become
+  visible in commit order and `seq > cursor` never skips a late commit (a global sequence would).
+  The upsert only replaces when `cloud_records.updated_at <= excluded.updated_at`; losers come back
+  in `conflicts`. `pull` pages by raw bytes (`CLOUD_PULL_PAGE_BYTES`, the first row always comes)
+  because Vercel caps request and response bodies at 4.5 MB; the client joins the pages. A record
+  over `CLOUD_DOC_MAX_BYTES` on the wire (escaped JSON) stays device-only (`too_large`), and so does
+  one that fails `pushItemSchema` (`invalid` — e.g. a monster-pack id outside the API's id rule):
+  the engine validates each item before batching, because the server rejects a whole batch for one
+  bad item and the rest would never upload. Both show in `AccountModal` as local-only.
+- Client: `src/services/firebaseAuth.ts` is the only Firebase import (auth only), `cloudApi.ts` is
+  the HTTP `CloudRemote` (same base as the rooms, `roomApiBase()`); both are reachable only through
+  lazy chunks (`CloudSyncBridge`, mounted in `App` while linked, and `AccountModal`).
+- `src/services/cloudState.ts` (`dnd_nuvem`) holds the linked profile, one `CloudRecord` per
+  `kind:id` (`hash` of the local content, `synced` = hash the cloud has, `at` = when the content
+  changed here) and the single `seq` cursor. The storages call `recordLocalWrite` /
+  `recordLocalDelete` / `recordLocalCollection` (the bestiary is one array, so removals come from
+  the diff) on every write; they record nothing while unlinked. **Only a content-hash change bumps
+  `at`** — opening a sheet or a campaign re-saves it, and a timestamp bump there would let a stale
+  copy win. The payload hashed at save must equal what `CloudLocal.read` returns (sheet payload is
+  `{"complete":…,"sheet":…}`, since `complete` lives in the list).
+- `src/services/cloudEngine.ts` is the pure engine over injected `CloudRemote`/`CloudLocal`
+  (tested with fakes): pull from the cursor, `resolvePulled` (`src/lib/cloud/sync.ts`) decides
+  apply / keep-local / in-sync, last-write-wins on `updated_at`; push goes in batches
+  (`CLOUD_PUSH_BATCH_MAX`/`_BYTES`) and conflicts are handled like pulled records. Applies are
+  batched per kind (rewriting the bestiary once per monster was quadratic). Pending debounced saves
+  are flushed before comparing. An area map open in its editor is `isBusy` (its draft would
+  overwrite the remote version) — it is skipped and the cursor stays before it. An open
+  sheet/campaign is replaced in place (`useSheetStore.setState`, not `loadSheet`, which would reset
+  the wizard step).
+- `src/services/cloudSync.ts` orchestrates: one operation at a time (`exclusive`), pull+push on
+  sign-in, app start, `online` and return to the app (`CLOUD_PULL_MIN_INTERVAL_MS`), push
+  `CLOUD_PUSH_DELAY_MS` after the last local write. First sign-in links the profile and
+  `scanLocal`s everything already on the device into the account (unlinking again if the scan
+  fails). `onAuthStateChanged(null)` while linked is an expired session (data kept,
+  `sessionExpired`), never a sign-out; a different uid on a linked device wipes the previous
+  account's data first.
+- Sign-out removes the account's data from the device: `prepareSignOut` flushes, pushes and counts
+  what the cloud still lacks by scanning the device (`countUnsynced`, not just the records), the UI
+  warns, then `signOutAndWipe` calls `unlinkProfile` **before** `wipeLocalData` — wiping while
+  linked would turn into tombstones and empty the account (`cloudState.test.ts` covers it). Room
+  memberships (`dnd_salas`) are not touched by sign-out.
 
 ### localStorage key schema and legacy migration
 

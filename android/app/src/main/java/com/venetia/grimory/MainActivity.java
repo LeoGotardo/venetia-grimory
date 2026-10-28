@@ -9,6 +9,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // Plugins locais precisam ser registrados antes do super.onCreate.
         registerPlugin(AppUpdaterPlugin.class);
+        registerPlugin(GoogleSignInPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }

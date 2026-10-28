@@ -2,6 +2,7 @@ import type { AreaMap, AreaMapListItem } from '../types'
 import { AREA_DB_NAME, AREA_DB_STORE, AREA_DB_VERSION } from '../constants'
 import { normalizeAreaMap } from '../lib/gm/normalize'
 import { toAreaListItem } from '../lib/gm/areaMap/scene'
+import { isCloudLinked, recordLocalDelete, recordLocalWrite } from './cloudState'
 
 /**
  * Mapas de área no IndexedDB — um registro por mapa, com índice por campanha.
@@ -72,10 +73,16 @@ export async function loadAreaMap(id: string): Promise<AreaMap | null> {
   return raw ? normalizeAreaMap(raw) : null
 }
 
+/** Registra na nuvem depois que a transação fechou: o registro descreve o que está gravado. */
+function recordWrite(map: AreaMap): void {
+  if (isCloudLinked()) recordLocalWrite('area_map', map.id, JSON.stringify(map))
+}
+
 export async function saveAreaMap(map: AreaMap): Promise<void> {
   const { tx, store: s } = await store('readwrite')
   s.put(map)
   await finished(tx)
+  recordWrite(map)
 }
 
 export async function saveAreaMaps(maps: AreaMap[]): Promise<void> {
@@ -83,18 +90,41 @@ export async function saveAreaMaps(maps: AreaMap[]): Promise<void> {
   const { tx, store: s } = await store('readwrite')
   for (const map of maps) s.put(map)
   await finished(tx)
+  maps.forEach(recordWrite)
 }
 
 export async function deleteAreaMap(id: string): Promise<void> {
   const { tx, store: s } = await store('readwrite')
   s.delete(id)
   await finished(tx)
+  recordLocalDelete('area_map', id)
 }
 
 export async function deleteCampaignAreaMaps(campaignId: string): Promise<void> {
   const { tx, store: s } = await store('readwrite')
   const keys = await done(s.index(CAMPAIGN_INDEX).getAllKeys(campaignId))
   for (const key of keys) s.delete(key)
+  await finished(tx)
+  for (const key of keys) recordLocalDelete('area_map', String(key))
+}
+
+/** JSON do mapa como está gravado — é o que sobe para a nuvem. */
+export async function readAreaMapJson(id: string): Promise<string | null> {
+  const { store: s } = await store('readonly')
+  const raw = await done(s.get(id))
+  return raw ? JSON.stringify(raw) : null
+}
+
+/** Todos os mapas crus, de todas as campanhas — o primeiro vínculo com a conta sobe tudo. */
+export async function loadAllAreaMapsRaw(): Promise<AreaMap[]> {
+  const { store: s } = await store('readonly')
+  return done(s.getAll())
+}
+
+/** Esvazia o banco sem registrar nada — só o logout chama, já desvinculado. */
+export async function clearAreaMaps(): Promise<void> {
+  const { tx, store: s } = await store('readwrite')
+  s.clear()
   await finished(tx)
 }
 
