@@ -25,7 +25,7 @@
     "@neondatabase/serverless": "^1.2.0",
     "firebase": "^13.1.0",
     "framer-motion": "^14.3.0",
-    "i18next": "^26.4.3",
+    "i18next": "^26.5.10",
     "ioredis": "^5.11.1",
     "jose": "^6.2.13",
     "pdf-lib": "^1.17.1",
