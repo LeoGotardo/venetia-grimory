@@ -261,6 +261,11 @@ const pt = {
     labelProfBonus: 'Bônus Prof.:', labelHitDie: 'Dado de vida:',
     trainedSkills: 'Perícias Treinadas', languages: 'Idiomas', createChar: 'Criar Personagem',
   },
+  whatsNew: {
+    title: 'Novidades',
+    version: 'Versão {{version}}',
+    close: 'Entendi',
+  },
   update: {
     title: 'Nova versão disponível',
     available: 'A versão {{version}} do Grimório de Venetia está disponível. Suas fichas são mantidas na atualização.',

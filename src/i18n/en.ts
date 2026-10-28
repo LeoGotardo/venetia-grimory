@@ -261,6 +261,11 @@ const en = {
     labelProfBonus: 'Prof. Bonus:', labelHitDie: 'Hit die:',
     trainedSkills: 'Trained Skills', languages: 'Languages', createChar: 'Create Character',
   },
+  whatsNew: {
+    title: "What's new",
+    version: 'Version {{version}}',
+    close: 'Got it',
+  },
   update: {
     title: 'New version available',
     available: "Version {{version}} of Venetia's Grimoire is available. Your sheets are kept when you update.",

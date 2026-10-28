@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useCallback, useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ErrorBoundary } from './pages/ServerError'
 import { NotFound } from './pages/NotFound'
 import { UpdatePrompt } from './components/ui/UpdatePrompt'
+import { WhatsNewPrompt } from './components/ui/WhatsNewPrompt'
 import { BackButtonBridge } from './components/ui/BackButtonBridge'
 import { useRoomSyncEnabled } from './hooks/useRoomSyncEnabled'
 import { useCloudAccount } from './hooks/useCloudAccount'
@@ -38,6 +39,9 @@ function PageLoader() {
 function App() {
   const roomSync = useRoomSyncEnabled()
   const cloudLinked = useCloudAccount().profile !== null
+  // Um modal por vez: o aviso de atualização espera as novidades fecharem.
+  const [notesDone, setNotesDone] = useState(false)
+  const finishNotes = useCallback(() => setNotesDone(true), [])
   return (
     <ErrorBoundary>
       <BrowserRouter>
@@ -70,7 +74,8 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-        <UpdatePrompt />
+        <WhatsNewPrompt onDone={finishNotes} />
+        {notesDone && <UpdatePrompt />}
       </BrowserRouter>
     </ErrorBoundary>
   )

@@ -44,6 +44,14 @@ secrets set once by `scripts/setup-release-secrets.sh`. `versionCode` is derived
 The APK build also reads the `VITE_FIREBASE_*` / `VITE_GOOGLE_WEB_CLIENT_ID` repo secrets
 (`gh secret set -f .env`); without them the APK ships without the account button.
 
+What's new: `src/data/releaseNotes.json` holds each version's notes (`version` tag, `pt` and `en`
+item lists of the same length, newest first — `releaseNotes.test.ts` checks). The first entry *is*
+the bundle's version: `WhatsNewPrompt` (mounted in `App`, `src/lib/releaseNotes.ts`) shows the
+entries newer than `dnd_versao_vista` once, on web and in the app, and `UpdatePrompt` waits for it
+to close. A fresh install (nothing seen, nothing saved) just records the version. `release.sh`
+refuses a tag whose notes aren't the first entry and pre-fills the tag message (the GitHub Release
+body) with them — so write the notes before `npm run release`. The e2e `seedSheet` marks the
+version as seen, or the modal would cover the seeded sheet.
 
 Supply chain: `.github/workflows/ci.yml` runs lint, tests and build on every push and pull request —
 the same gate as `release.sh`, so a Dependabot PR is green only if the app still builds.

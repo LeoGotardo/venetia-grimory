@@ -1,10 +1,17 @@
 import type { Page } from '@playwright/test'
 import { createInitialSheet } from '../../src/lib/initialSheet'
 import type { CharacterSheet } from '../../src/types'
+import { readFileSync } from 'node:fs'
 
 export const STORAGE_KEY_LIST = 'dnd_fichas_lista'
 export const STORAGE_KEY_SHEET_PREFIX = 'dnd_ficha_'
 export const STORAGE_KEY_CONFIG = 'venetia-config'
+export const STORAGE_KEY_SEEN_VERSION = 'dnd_versao_vista'
+
+/** Versão das novidades mais novas (`src/data/releaseNotes.json`) — o JSON direto, sem o módulo que importa o Capacitor. */
+const CURRENT_VERSION: string | null =
+  (JSON.parse(readFileSync(new URL('../../src/data/releaseNotes.json', import.meta.url), 'utf-8')) as Array<{ version: string }>)[0]
+    ?.version ?? null
 
 export interface SheetListItem {
   id: string
@@ -248,11 +255,13 @@ export async function seedRaw(
   { id, sheetJson, itemJson }: { id: string; sheetJson: string; itemJson: string },
 ): Promise<void> {
   await page.addInitScript(
-    ({ sheetKey, listKey, sheetValue, itemValue }) => {
+    ({ sheetKey, listKey, sheetValue, itemValue, seenKey, seenValue }) => {
       // roda a cada navegação: só semeia na primeira vez, senão desfaz
       // as alterações que o próprio app salvou.
       if (window.localStorage.getItem(sheetKey)) return
       window.localStorage.setItem(sheetKey, sheetValue)
+      // Com ficha salva e nenhuma versão vista o app abriria as novidades por cima do teste.
+      if (seenValue) window.localStorage.setItem(seenKey, seenValue)
       const rawList = window.localStorage.getItem(listKey)
       const list = rawList ? JSON.parse(rawList) : []
       list.push(JSON.parse(itemValue))
@@ -263,6 +272,8 @@ export async function seedRaw(
       listKey: STORAGE_KEY_LIST,
       sheetValue: sheetJson,
       itemValue: itemJson,
+      seenKey: STORAGE_KEY_SEEN_VERSION,
+      seenValue: CURRENT_VERSION,
     },
   )
 }
