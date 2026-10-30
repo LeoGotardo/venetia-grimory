@@ -21,6 +21,8 @@ export const ROOM_TOKEN_MAX_LENGTH = 128
 export const ROOM_AUTH_TIMEOUT_MS = 10_000
 /** O cliente manda `ping` neste intervalo: mantém a conexão viva e renova a presença. */
 export const ROOM_HEARTBEAT_MS = 25_000
+/** O servidor renova a presença no máximo nesse intervalo; `ping` mais frequente recebe `pong` sem tocar no Redis. */
+export const ROOM_PING_MIN_INTERVAL_MS = 10_000
 /** Presença sem `ping` por mais que isto conta como offline (aparelho que caiu sem fechar). */
 export const ROOM_PRESENCE_TTL_MS = 60_000
 /** Espera entre tentativas de reconexão; a última se repete. */
@@ -58,6 +60,26 @@ export const ROOM_LOG_ON_READY = 100
 export const ROOM_EVENT_RATE_LIMIT = 20
 export const ROOM_EVENT_RATE_WINDOW_S = 10
 
+/**
+ * Escritas de documento (ficha, mesa, notas e as limpezas) por membro, por janela.
+ * O teto legítimo sai dos debounces: a mesa a cada 250 ms e uma nota a cada 600 ms
+ * dão ~340 por minuto no pior caso, mais a rajada de cada `ready`, que reenvia a
+ * mesa e todas as notas compartilhadas. Passar daqui fecha o socket com
+ * `ROOM_CLOSE_RETRY` em vez de descartar a escrita: o cliente já a marcou como
+ * enviada e só reenvia no próximo `ready`, então descartar deixaria a sala velha.
+ */
+export const ROOM_DOC_RATE_LIMIT = 600
+export const ROOM_DOC_RATE_WINDOW_S = 60
+
+/**
+ * Conexões WebSocket novas por IP, por janela. Generoso de propósito: uma mesa
+ * presencial divide o IP do Wi-Fi (até `ROOM_MAX_MEMBERS` aparelhos, mais as abas
+ * do mestre), e todos reconectam juntos depois de uma queda de rede ou do corte de
+ * 5 min do plano Hobby.
+ */
+export const ROOM_CONNECT_RATE_LIMIT = 60
+export const ROOM_CONNECT_RATE_WINDOW_S = 60
+
 /** Limpeza diária (cron): sala fechada some depois de alguns dias; sala sem uso, depois de um mês. */
 export const ROOM_CLOSED_RETENTION_DAYS = 7
 export const ROOM_IDLE_DAYS = 30
@@ -73,3 +95,6 @@ export const ROOM_CLOSE = {
   kicked: 4403,
   closed: 4404,
 } as const
+
+/** Fechamento por limite: o "try again later" padrão, fora de `ROOM_CLOSE`, então o cliente reconecta com espera. */
+export const ROOM_CLOSE_RETRY = 1013
