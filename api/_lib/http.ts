@@ -1,3 +1,4 @@
+import type { IncomingMessage } from 'node:http'
 import type { z } from 'zod'
 import type { RoomError } from '../../src/lib/room/protocol.js'
 
@@ -52,9 +53,25 @@ export function bearerToken(request: Request): string | null {
   return header.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() || null : null
 }
 
+/** O que `clientIp` devolve quando a requisição não traz o IP. */
+export const UNKNOWN_IP = 'unknown'
+
 /** IP de quem chamou, para o rate limit. Atrás da Vercel, o primeiro de `x-forwarded-for`. */
 export function clientIp(request: Request): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
+  return ipFrom(request.headers.get('x-forwarded-for'), request.headers.get('x-real-ip'))
+}
+
+/** O mesmo para o upgrade do WebSocket, que chega como `IncomingMessage` do Node. */
+export function socketClientIp(request: IncomingMessage): string {
+  const header = (name: string) => {
+    const value = request.headers[name]
+    return Array.isArray(value) ? value[0] : value
+  }
+  return ipFrom(header('x-forwarded-for'), header('x-real-ip'))
+}
+
+function ipFrom(forwarded: string | null | undefined, realIp: string | null | undefined): string {
+  return forwarded?.split(',')[0]?.trim() || realIp || UNKNOWN_IP
 }
 
 /** Corpo validado pelo schema; lança `invalid_request` se não for JSON ou não bater. */

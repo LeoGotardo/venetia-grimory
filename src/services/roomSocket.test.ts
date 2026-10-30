@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { RoomSocket, type SocketEnd, type SocketStatus } from './roomSocket'
-import { ROOM_CLOSE, ROOM_HEARTBEAT_MS, ROOM_RECONNECT_DELAYS_MS } from '../constants'
+import { ROOM_CLOSE, ROOM_CLOSE_RETRY, ROOM_HEARTBEAT_MS, ROOM_RECONNECT_DELAYS_MS } from '../constants'
 
 /** WebSocket de mentira: o teste decide quando abre, o que chega e como fecha. */
 class FakeSocket {
@@ -102,6 +102,17 @@ describe('RoomSocket', () => {
     vi.advanceTimersByTime(60_000)
     expect(ends).toEqual(['kicked'])
     expect(FakeSocket.instances).toHaveLength(1)
+  })
+
+  it('fechamento por limite reconecta: o ready seguinte reenvia o que o servidor recusou', () => {
+    const { last, ends, statuses } = setup()
+    last().open()
+    last().receive(READY)
+    last().drop(ROOM_CLOSE_RETRY)
+    expect(statuses.at(-1)).toBe('reconnecting')
+    vi.advanceTimersByTime(ROOM_RECONNECT_DELAYS_MS[0])
+    expect(ends).toEqual([])
+    expect(FakeSocket.instances).toHaveLength(2)
   })
 
   it('manda ping depois do ready e para ao ser parado', () => {

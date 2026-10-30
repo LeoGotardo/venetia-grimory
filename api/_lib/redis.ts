@@ -37,10 +37,20 @@ export async function publish(roomId: string, message: ServerMessage): Promise<v
   await redis().publish(roomChannel(roomId), JSON.stringify(message))
 }
 
+/**
+ * `INCR` e o prazo da chave num script só, que o Redis roda de forma atômica. Em
+ * dois comandos, uma falha entre eles deixava a chave sem prazo e quem caísse ali
+ * ficava bloqueado para sempre. `TTL < 0` (e não `hits == 1`) também conserta
+ * chaves que já ficaram presas assim.
+ */
+const RATE_LIMIT_SCRIPT = `
+local hits = redis.call('INCR', KEYS[1])
+if redis.call('TTL', KEYS[1]) < 0 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+return hits`
+
 /** Janela fixa: `true` se esta chamada passou do limite. */
 export async function overRateLimit(key: string, max: number, windowS: number): Promise<boolean> {
-  const hits = await redis().incr(key)
-  if (hits === 1) await redis().expire(key, windowS)
+  const hits = Number(await redis().eval(RATE_LIMIT_SCRIPT, 1, key, windowS))
   return hits > max
 }
 

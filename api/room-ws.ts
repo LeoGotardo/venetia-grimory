@@ -1,8 +1,10 @@
 import http from 'node:http'
-import { WebSocketServer, type RawData, type WebSocket } from 'ws'
+import { WebSocket, WebSocketServer, type RawData } from 'ws'
 import { clientMessageSchema, type RoomError, type ServerMessage } from '../src/lib/room/protocol.js'
 import {
-  ROOM_AUTH_TIMEOUT_MS, ROOM_CLOSE, ROOM_EVENT_RATE_LIMIT, ROOM_EVENT_RATE_WINDOW_S, ROOM_LOG_MAX, ROOM_LOG_ON_READY,
+  ROOM_AUTH_TIMEOUT_MS, ROOM_CLOSE, ROOM_CLOSE_RETRY, ROOM_CONNECT_RATE_LIMIT, ROOM_CONNECT_RATE_WINDOW_S,
+  ROOM_DOC_RATE_LIMIT, ROOM_DOC_RATE_WINDOW_S, ROOM_EVENT_RATE_LIMIT, ROOM_EVENT_RATE_WINDOW_S, ROOM_LOG_MAX,
+  ROOM_LOG_ON_READY, ROOM_PING_MIN_INTERVAL_MS,
 } from '../src/lib/room/constants.js'
 import { docVisibleTo, eventVisibleTo } from '../src/lib/room/docs.js'
 import {
@@ -12,7 +14,7 @@ import {
   addChat, addRoll, clearNote, clearTable, docsSince, eventsSince, listMembers, memberByToken, putNote, putSheet,
   putTable, touchMember, type AuthedMember,
 } from './_lib/rooms.js'
-import { RoomFailure } from './_lib/http.js'
+import { RoomFailure, UNKNOWN_IP, socketClientIp } from './_lib/http.js'
 
 /**
  * Socket da sala. O cliente conecta, manda `auth` com o token e recebe `ready`
@@ -30,6 +32,8 @@ const MAX_PAYLOAD_BYTES = 1024 * 1024
 interface Session {
   socket: WebSocket
   member: AuthedMember | null
+  /** Quando este socket renovou a presença no Redis pela última vez. */
+  presenceAt: number
 }
 
 const CLOSE_BY_ERROR: Partial<Record<RoomError, number>> = {
@@ -71,12 +75,32 @@ function send(socket: WebSocket, message: ServerMessage) {
   socket.send(JSON.stringify(message))
 }
 
+/** Limite que falha aberto: um soluço do Redis não pode derrubar a sessão nem recusar todo mundo. */
+async function limited(key: string, max: number, windowS: number): Promise<boolean> {
+  try {
+    return await overRateLimit(key, max, windowS)
+  } catch (err) {
+    console.error('[room-ws] Rate limit indisponível.', err)
+    return false
+  }
+}
+
+/** Conexões novas por IP. Sem IP não limita: um balde só para todos viraria um limite global. */
+async function admit(socket: WebSocket, ip: string) {
+  if (ip === UNKNOWN_IP) return
+  if (await limited(`ratelimit:ws:${ip}`, ROOM_CONNECT_RATE_LIMIT, ROOM_CONNECT_RATE_WINDOW_S)) {
+    console.warn(`[room-ws] Conexões acima do limite para ${ip}.`)
+    socket.close(ROOM_CLOSE_RETRY, 'rate limited')
+  }
+}
+
 async function attach(session: Session, member: AuthedMember) {
   const roomId = member.room.id
   const sessions = sessionsByRoom.get(roomId) ?? new Set()
   sessions.add(session)
   sessionsByRoom.set(roomId, sessions)
   if (sessions.size === 1) await subscriber.subscribe(roomChannel(roomId))
+  session.presenceAt = Date.now()
   if (await markOnline(roomId, member.id)) await publish(roomId, { t: 'presence', member_id: member.id, online: true })
 }
 
@@ -119,6 +143,8 @@ async function authenticate(session: Session, token: string, requestedSince: num
 }
 
 async function handle(session: Session, data: RawData) {
+  // Socket já fechado (limite, auth recusado…): o que ainda estava na fila não vale mais.
+  if (session.socket.readyState !== WebSocket.OPEN) return
   let payload: unknown
   try {
     payload = JSON.parse(String(data))
@@ -142,13 +168,17 @@ async function handle(session: Session, data: RawData) {
     return
   }
   if (message.t === 'ping') {
-    await markOnline(session.member.room.id, session.member.id)
+    const now = Date.now()
+    if (now - session.presenceAt >= ROOM_PING_MIN_INTERVAL_MS) {
+      session.presenceAt = now
+      await markOnline(session.member.room.id, session.member.id)
+    }
     send(session.socket, { t: 'pong' })
     return
   }
   const member = session.member
   if (message.t === 'roll' || message.t === 'chat') {
-    if (await overRateLimit(`ratelimit:events:${member.id}`, ROOM_EVENT_RATE_LIMIT, ROOM_EVENT_RATE_WINDOW_S)) {
+    if (await limited(`ratelimit:events:${member.id}`, ROOM_EVENT_RATE_LIMIT, ROOM_EVENT_RATE_WINDOW_S)) {
       console.warn(`[room-ws] ${message.t} acima do limite para ${member.id}.`)
       return
     }
@@ -159,6 +189,12 @@ async function handle(session: Session, data: RawData) {
       if (!(err instanceof RoomFailure)) throw err
       console.warn(`[room-ws] ${message.t} recusado (${err.code}) para ${member.id}.`)
     }
+    return
+  }
+  if (await limited(`ratelimit:docs:${member.id}`, ROOM_DOC_RATE_LIMIT, ROOM_DOC_RATE_WINDOW_S)) {
+    // Descartar deixaria a sala velha (o cliente já marcou como enviado); ao reconectar ele reenvia tudo.
+    console.warn(`[room-ws] ${message.t} acima do limite para ${member.id}; fechando para reenviar.`)
+    session.socket.close(ROOM_CLOSE_RETRY, 'rate limited')
     return
   }
   try {
@@ -180,14 +216,14 @@ const server = http.createServer((_req, res) => {
 })
 const wss = new WebSocketServer({ server, maxPayload: MAX_PAYLOAD_BYTES })
 
-wss.on('connection', socket => {
-  const session: Session = { socket, member: null }
+wss.on('connection', (socket, request) => {
+  const session: Session = { socket, member: null, presenceAt: 0 }
   const authTimer = setTimeout(() => {
     if (!session.member) socket.close(ROOM_CLOSE.unauthorized, 'auth timeout')
   }, ROOM_AUTH_TIMEOUT_MS)
 
-  // Em ordem: o `auth` termina antes do próximo frame ser tratado.
-  let queue = Promise.resolve()
+  // Em ordem: o limite de conexões e o `auth` terminam antes do próximo frame ser tratado.
+  let queue = admit(socket, socketClientIp(request))
   socket.on('message', data => {
     queue = queue.then(() => handle(session, data)).catch(err => {
       console.error('[room-ws] Falha ao tratar mensagem.', err)

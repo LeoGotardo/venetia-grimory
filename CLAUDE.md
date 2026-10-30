@@ -514,6 +514,16 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   `/r 1d20+5 Label` rolls, see `parseComposer`) appears inline on `RoomPage` (tabs Table | Rolls |
   Room, the table pinned left on desktop) and everywhere else in the floating `RoomDock` with an
   unread count.
+- WebSocket limits (`api/room-ws.ts`): document writes (sheet, table, notes and their clears) have
+  their own per-member bucket (`ROOM_DOC_RATE_LIMIT`, sized from the push debounces plus the
+  `ready` burst that resends the table and every shared note). Going over **closes** the socket
+  with `ROOM_CLOSE_RETRY` (1013, outside `ROOM_CLOSE`, so the client reconnects) instead of
+  dropping the write — the client already marked it as sent and only resends on the next `ready`.
+  New sockets are limited per IP (`ROOM_CONNECT_RATE_LIMIT`; skipped when the IP is unknown, or
+  one bucket would become a global limit), `ping` renews presence at most every
+  `ROOM_PING_MIN_INTERVAL_MS` (in memory, no Redis), and every WS limit fails open on a Redis
+  error. `overRateLimit` is one Lua script (`INCR`, then `EXPIRE` when `TTL < 0`): two separate
+  commands could leave a key with no TTL, blocking that IP or account for good.
 - Shared notes: `CampaignNote.shared` (normalized to `false`), toggled in `NoteEditor` only when
   the campaign has a room. `useGmSharedNotes` mirrors the shared set as docs `note:<noteId>`
   (`note_put`/`note_clear`, GM-only on the server): each goes through `shareableNote`
