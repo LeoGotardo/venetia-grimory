@@ -18,8 +18,17 @@ updates:
       # passa e o app abre em branco. Um PR para os dois.
       react:
         patterns: ["react", "react-dom"]
+      # Ferramentas de desenvolvimento, menos o Capacitor: a CLI tem de vir no
+      # mesmo PR que o core e as plataformas, no grupo acima.
       dev-tooling:
         dependency-type: development
+        exclude-patterns: ["@capacitor/*"]
+    ignore:
+      # O typescript-eslint ainda não aceita o TypeScript 7 (peer < 6.1.0): com
+      # ele o `npm ci` falha (ERESOLVE) e o CI não roda. O código compila no 7;
+      # tire esta regra quando o typescript-eslint aceitar.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"

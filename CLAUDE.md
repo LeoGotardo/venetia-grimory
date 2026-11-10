@@ -57,10 +57,14 @@ version as seen, or the modal would cover the seeded sheet.
 Supply chain: `.github/workflows/ci.yml` runs lint, tests and build on every push and pull request —
 the same gate as `release.sh`, so a Dependabot PR is green only if the app still builds.
 `.github/workflows/security.yml` runs `npm audit` (production dependencies fail it; dev-only
-findings are reported, not failed — the ones left come from `@capacitor/assets`, with no upstream
-fix) and gitleaks over the whole history, on every push, pull request and Monday.
-`.github/dependabot.yml` opens weekly update PRs, grouping `@capacitor/*` and `react`/`react-dom`,
-which must move together. `pre-commit install` (`pipx install pre-commit` first) enables the same
+findings are reported, not failed — the ones left are moderate: `minimatch` inside eslint /
+typescript-eslint, and `uuid` 7 under `@capacitor/assets` → `@trapezedev/project` → `xcode@3`, with no
+upstream fix; `xcode` only calls `uuid.v4()`, so that Dependabot alert is dismissed as code not used)
+and gitleaks over the whole history, on every push, pull request and Monday.
+`.github/dependabot.yml` opens weekly update PRs, grouping `@capacitor/*` (the CLI included — it is
+kept out of `dev-tooling`) and `react`/`react-dom`, which must move together. TypeScript majors are
+ignored while `typescript-eslint` does not accept them (its peer range stopped at `<6.1.0` when 7
+shipped, and the lockfile cannot install); drop the `ignore` once it does. `pre-commit install` (`pipx install pre-commit` first) enables the same
 gitleaks check before each commit. `.gitleaksignore` holds the one known leak: `.env.local` was
 committed in `a4944ea` with the Neon password, since rotated — the history is public, so a secret
 that reaches a commit has to be rotated, not just deleted.
