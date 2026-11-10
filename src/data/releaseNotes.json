@@ -1,5 +1,26 @@
 [
   {
+    "version": "v3.4.0",
+    "pt": [
+      "Novo: a ficha em PDF tem desenho próprio do Grimório, em A4, e ficou muito mais leve para baixar",
+      "Novo: a ficha em PDF mostra a Magia de Pacto e as magias sem espaço em linhas próprias, e marca as perícias com especialização",
+      "Novo: tela \"Sobre e licenças\" no rodapé, com os créditos do SRD 5.2.1, dos ícones, das fontes e das bibliotecas usadas",
+      "Novo: Termos de uso, no rodapé, no login com Google e nas salas online",
+      "Novo: quem pula versões vê as novidades de todas elas, da mais antiga para a mais nova",
+      "Ajuste: a perícia História voltou a sair preenchida no PDF",
+      "Ajuste: emoji e outros símbolos no nome ou nas notas não impedem mais a geração do PDF"
+    ],
+    "en": [
+      "New: the PDF sheet has the Grimoire's own design, in A4, and is much lighter to download",
+      "New: the PDF sheet shows Pact Magic and slot-free spells on their own rows, and marks skills with expertise",
+      "New: an \"About & licenses\" screen in the footer, with credits for the SRD 5.2.1, the icons, the fonts and the libraries used",
+      "New: Terms of use, in the footer, at Google sign-in and in online rooms",
+      "New: if you skip versions, What's new shows the notes of all of them, oldest first",
+      "Fix: the History skill is filled in on the PDF again",
+      "Fix: emoji and other symbols in names or notes no longer stop the PDF from being generated"
+    ]
+  },
+  {
     "version": "v3.3.2",
     "pt": [
       "Ajuste: Ajustado erro no login do google"
