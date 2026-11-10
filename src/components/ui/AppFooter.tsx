@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router-dom'
 import { AUTHOR_NAME, AUTHOR_URL, FEEDBACK_FORM_URL, GITHUB_RELEASES_URL, GITHUB_REPO_URL } from '../../constants'
 import { isApp } from '../../lib/platform'
 import { VenetiaLogo } from './VenetiaLogo'
@@ -10,7 +11,8 @@ interface AppFooterProps {
 }
 
 /**
- * Rodapé compartilhado pela Home e pela área do mestre: crédito, sugestões, GitHub e APK.
+ * Rodapé compartilhado pela Home e pela área do mestre: crédito, sugestões, GitHub, APK
+ * e os links para "Sobre e licenças" (atribuições que as licenças exigem dentro do app) e "Termos de uso".
  * No app Android o layout é sempre o de celular (mesmo em tablet) e o link do APK some —
  * quem está no app já o instalou, e as atualizações chegam pelo `UpdatePrompt`.
  */
@@ -72,10 +74,20 @@ export function AppFooter({ containerClassName = 'max-w-[920px] mx-auto px-4 sm:
             {AUTHOR_NAME}
           </a>
         </p>
+        <p className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px]">
+          <Link to="/sobre" data-testid="link-sobre" className={footerTextLink}>
+            {t('footer.about')}
+          </Link>
+          <Link to="/termos" data-testid="link-termos" className={footerTextLink}>
+            {t('terms.linkLabel')}
+          </Link>
+        </p>
       </div>
     </footer>
   )
 }
+
+const footerTextLink = 'font-semibold text-[#D4A017] hover:text-[#E8C25A] underline-offset-4 hover:underline transition-colors'
 
 /** Linha de toque cheia (44px) no celular; no desktop vira pílula (classes `sm:` no uso). */
 const footerLinkMobile =

@@ -383,6 +383,20 @@ export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases/latest`
 export const LATEST_RELEASE_API_URL = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`
 export const UPDATE_CHECK_TIMEOUT_MS = 8000
 
+// Tela "Sobre e licenças" (src/pages/About.tsx)
+export const SRD_URL = 'https://www.dndbeyond.com/srd'
+export const CC_BY_4_URL = 'https://creativecommons.org/licenses/by/4.0/legalcode'
+export const OFL_URL = 'https://openfontlicense.org'
+export const APACHE_2_URL = 'https://www.apache.org/licenses/LICENSE-2.0'
+// Termos de uso (src/pages/Terms.tsx). Mudou o texto de um jeito relevante: atualize a data.
+export const TERMS_EFFECTIVE_DATE = '2026-11-10'
+/** Idade mínima para entrar com conta Google e usar as salas online (o Google exige 13 no Brasil). */
+export const TERMS_MIN_AGE = 13
+/** Canal para dúvidas sobre os termos e pedidos de remoção de conteúdo. */
+export const LEGAL_CONTACT_URL = FEEDBACK_FORM_URL
+/** Texto de referência das licenças, para pacotes que não trazem o arquivo LICENSE (ex.: Firebase). */
+export const SPDX_LICENSES_URL = 'https://spdx.org/licenses'
+
 // Salas online. As constantes do protocolo moram em src/lib/room (as funções da Vercel também as leem).
 export * from '../lib/room/constants'
 /** Participações deste aparelho em salas (código, papel, token) — chave em português, como as outras. */

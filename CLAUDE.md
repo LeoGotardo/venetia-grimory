@@ -183,6 +183,22 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - `src/App.tsx`: three lazy-loaded routes — `/` (`Home`, the saved-character list), `/novo`
   (`Wizard`, character creation), `/ficha/:id` (`Sheet`, the play sheet). Wrapped in an
   `ErrorBoundary` (`src/pages/ServerError.tsx`) and a `Suspense` fallback.
+- `/sobre` (`About`, linked from `AppFooter`) carries the attributions the licenses require inside
+  the app — the README doesn't ship in the APK: SRD 5.2.1 (CC BY 4.0, with the "changes" note),
+  game-icons.net (CC BY 3.0; `ICONS_LICENSE` lives in `src/data/areaMap/iconsLicense.ts`, out of
+  `icons.generated.ts`, so the page doesn't download every icon path), fonts, and the bundle's
+  third-party licenses. That list is generated at build time by `scripts/vite/thirdPartyLicenses.ts`
+  (`third-party-licenses.json`, read from each chunk's modules, so only what actually ships) and
+  fetched on demand; it doesn't exist under `npm run dev`. The contract is `src/lib/thirdPartyLicenses.ts`.
+- `/termos` (`Terms`) is the terms of use, sharing the `LegalPage` layout with `/sobre`
+  (`src/components/ui/LegalPage.tsx`: header, back button + `useBackHandler`, sections). The room
+  retention periods come from the room constants and the date from `TERMS_EFFECTIVE_DATE` — bump it
+  when the text changes. `TermsNotice` ("by signing in, you agree to…") sits in `AccountModal`,
+  `JoinRoomModal` and `RoomPanel`. The terms only promise what exists: there is no account deletion
+  and no privacy policy yet, so neither is mentioned until they ship.
+- Trademark: user-facing text says "compatible with fifth edition" / "compatível com a 5ª edição"
+  (the only wording the SRD 5.2.1 allows), never "D&D" or book titles ("Player's Handbook" /
+  "Livro do Jogador"). The SRD attribution statement stays verbatim in English in both catalogs.
 - `src/pages/Wizard.tsx` drives 13 steps in sequence, tracked by `currentStep`/`setStep` in the
   store. Step filenames (`Step01Level` … `Step12Review`) do **not** match the step ids: the `STEPS`
   array runs Level, Class, Subclass, Species, Abilities (`Step06Abilities`, id 5), Background
@@ -214,21 +230,46 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - `src/hooks/useSheetExport.ts` (`useSheetExport`) wraps the store's `exportSheetJson`/
   `importSheetJson` with browser file download/upload mechanics. Use this hook from UI components
   instead of touching `localStorage` or blobs directly.
-- `src/hooks/useSheetPdf.ts` (`useSheetPdf`) generates the official sheet as a PDF —
-  `generatePdf(mode, action)` with `mode: 'export' | 'print'` and `action: 'download' | 'print'`. It picks the model by `i18n.language`, caches it per path, and lazily imports
-  `fillSheet` so pdf-lib stays out of the main chunk.
+- `src/hooks/useSheetPdf.ts` (`useSheetPdf`) generates the character sheet as a PDF —
+  `generatePdf(mode, action)` with `mode: 'export' | 'print'` and `action: 'download' | 'print'`. It
+  fetches the Cinzel title font once (`src/assets/fonts/Cinzel-Bold.ttf?url`, ~46 KB) and lazily
+  imports `drawSheet` so pdf-lib and fontkit stay out of the main chunk.
 
-### PDF export: two prefilled models and a generated field map
+### PDF export: the project's own sheet, drawn with pdf-lib
 
-- `public/sheet-template.pdf` (PT-BR) and `public/sheet-template-en.pdf` are the official D&D 5.5 sheets carrying **the same 411 AcroForm fields, with the same names, at the same coordinates** — PT and EN are the same InDesign template (603×774 pts). That is what lets `fillSheet.ts` fill either one without knowing the language.
-- `src/lib/pdf/sheetFields.ts` is **generated** — do not hand-edit. The PDF's own field names are machine-generated (`text_1aoob`, `checkbox_148cprb`); the generator identifies each field by page + position and fails if any field ends up without a semantic key. Regenerate with the pipeline in `scripts/README.md`.
-- `src/lib/pdf/fillSheet.ts` maps a `CharacterSheet` onto those keys. `export` fills everything and flattens; `print` leaves blank what changes during play (current/temp HP, spent Hit Dice, XP, spent spell slots, coins) and keeps the form editable. That split is documented in the file's header with its three sources (2024 rest rules, the sheet's own tracker boxes, the store's in-play actions) — keep it in sync if you add fields.
+- There is **no template file**: the official WotC sheets were removed (copyright and the D&D logo).
+  The sheet is the project's own design (approved as a Design artifact), two A4 pages drawn from
+  scratch. Don't bring back a layout copied from an official sheet.
+- `src/lib/pdf/sheetLayout.ts` is the layout, pure: a list of elements per page (boxes, rules, labels,
+  marks, value fields) in **design px** (794 × 1123, origin top-left, 40 px margin); `drawSheet.ts`
+  converts to points (`SCALE = 595.28 / 794`) and flips y. `sheetLayout.test.ts` checks that every
+  field is inside the margin and that no two fields overlap — run it after moving anything.
+- `src/lib/pdf/sheetKeys.ts` names every field (no dots: in `print` they become form field names, and
+  pdf-lib reads `a.b` as a hierarchy). `sheetValues.ts` (`buildSheetValues`) maps a `CharacterSheet`
+  onto those keys; `export` fills everything, `print` leaves blank what changes during play (current/temp
+  HP, spent Hit Dice, XP, spent slots of both pools, coins). That split is documented in the file's
+  header with its three sources (2024 rest rules, the sheet's own tracker boxes, the store's in-play
+  actions) — keep it in sync if you add fields.
+- `sheetLabels.ts` builds the labels with literal `t('sheetPdf.*')` calls (so `keys.test.ts` sees them);
+  ability names come from `attrs.*`, skills from `gameData` grouped by ability. Coin codes are localized
+  in the PDF (PT `PC PP PE PO PL`, EN `CP SP EP GP PP`).
+- `drawSheet.ts`: `export` draws every value on the page (no form); `print` turns every value field into a
+  borderless, transparent AcroForm text field — `addToPage` **must** get `backgroundColor`/`borderColor`
+  as explicit `undefined` and `borderWidth: 0`, or pdf-lib paints a white box over the drawing;
+  `setFontSize` only works after `addToPage` (it needs the `/DA`), and `updateAppearances(font)` keeps
+  `save()` from redrawing with Helvetica. Filled multiline text in `print` is drawn, not a field (pdf-lib
+  has no line height for multiline fields and the text would cross the ruled lines). The name appears
+  on both pages, so the page-2 field gets a `_p2` suffix.
+- Fonts: Helvetica / Helvetica-Bold (StandardFonts) for labels and values, Cinzel Bold (OFL, embedded
+  whole via `@pdf-lib/fontkit`, licence in `src/assets/fonts/Cinzel-OFL.txt`) for titles and the name.
+  Every string goes through `sanitizeForFont` (`textFit.ts`) first — the standard fonts only cover
+  WinAnsi and **throw** on emoji, CJK or `−`. `textFit.ts` also shrinks single lines (table cells stop at
+  `minSize` 7 and truncate with `…`) and wraps/shrinks multiline boxes, filling columns in order.
+- The three spell pools stay apart on the sheet too: slots per circle, a Pact Magic row and a "without a
+  slot" row for `free_casts`.
 - `src/lib/deliverFile.ts` decides how a finished file (the PDF, and the JSON export too) reaches the user, and `src/lib/platform.ts` holds the predicate both it and the UI read (`deliverViaShare`). Desktop keeps `<a download>` / hidden-iframe printing; touch browsers go through the Web Share API; inside the app the file is written to `Directory.Cache` with `@capacitor/filesystem` — in ~1 MB chunks (`writeFile` + `appendFile`), never one multi-MB base64 message over the bridge — and handed to `@capacitor/share`, because the WebView ignores `<a download>` and has no print dialog. Adding either plugin means running `npx cap sync` again.
-- Death saves, Heroic Inspiration and item attunement are never filled: `CharacterSheet` has no such fields.
+- Death saves, Heroic Inspiration and item attunement are never filled: `CharacterSheet` has no such fields (the sheet keeps pencil boxes for them).
 - Class resources print their **maximum** only (level-derived, permanent); the current value is restored by `longRest` and stays out.
-- Two PDF gotchas, both already worked around — don't "simplify" them away:
-  - The checkboxes' on-state appearance references a font the widget doesn't declare, so `check()` renders nothing and `flatten()` emits broken XObjects. Marks are drawn on the page as filled circles and the checkbox fields are removed before flattening.
-  - Each widget carries its own `/DA`, which **overrides** the field-level one — `setFontSize()` alone has no effect, so the widget `/DA` is deleted whenever the font is shrunk to fit.
 
 ### GM area (`/mestre`)
 
@@ -684,7 +725,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   `spellcasting.pact_slots` (Warlock Pact Magic — `CASTER_TYPE['bruxo'] === 'pacto'`, deliberately
   **excluded** from `calcMulticlassCasterLevel`, restored by `shortRest`), and
   `spellcasting.free_casts` (casts that spend no slot at all). Never fold one into another — the PDF
-  is the only place they get summed, because the official sheet has a single row per circle.
+  keeps them apart too.
 - Which table `spell_slots` comes from depends on the build: multiclass → `calcMulticlassSlots` on
   the summed caster level; a single class with a `THIRD_CASTER_SUBCLASSES` subclass →
   `calcThirdCasterSlots` (Eldritch Knight / Arcane Trickster have their **own** table, which is not

@@ -1,13 +1,8 @@
 import { useCallback, useState } from 'react'
 import i18n from '../i18n'
 import { useSheetStore } from '../store/sheetStore'
-import type { SheetPdfMode } from '../lib/pdf/fillSheet'
-
-/** Ficha oficial no idioma da interface — os dois modelos têm os mesmos campos. */
-function templatePath(): string {
-  const file = i18n.language === 'pt' ? 'sheet-template.pdf' : 'sheet-template-en.pdf'
-  return `${import.meta.env.BASE_URL}${file}`
-}
+import type { SheetPdfMode } from '../lib/pdf/sheetValues'
+import titleFontUrl from '../assets/fonts/Cinzel-Bold.ttf?url'
 
 /** `download` salva o arquivo; `print` abre o diálogo de impressão do navegador. */
 export type SheetPdfAction = 'download' | 'print'
@@ -17,26 +12,27 @@ export interface PdfTask {
   action: SheetPdfAction
 }
 
-const modeloCache = new Map<string, ArrayBuffer>()
+let titleFont: Promise<ArrayBuffer> | null = null
 
-async function carregarModelo(): Promise<ArrayBuffer> {
-  // Cada modelo tem ~4,5 MB: é buscado sob demanda e reaproveitado na sessão.
-  const caminho = templatePath()
-  const cached = modeloCache.get(caminho)
-  if (cached) return cached
-
-  const response = await fetch(caminho)
-  if (!response.ok) throw new Error(`Modelo não encontrado (${response.status})`)
-  const bytes = await response.arrayBuffer()
-  modeloCache.set(caminho, bytes)
-  return bytes
+/** A Cinzel dos títulos (~46 KB): buscada na primeira ficha e reaproveitada na sessão. */
+function loadTitleFont(): Promise<ArrayBuffer> {
+  titleFont ??= fetch(titleFontUrl).then(response => {
+    if (!response.ok) throw new Error(`Fonte da ficha não encontrada (${response.status})`)
+    return response.arrayBuffer()
+  })
+  // Uma falha (rede) não fica guardada: a próxima tentativa busca de novo.
+  titleFont.catch(() => {
+    titleFont = null
+  })
+  return titleFont
 }
 
 /**
- * Gera a ficha no modelo oficial (D&D 5.5). `export` sai preenchida e
- * achatada; `print` sai só com o que não muda em jogo e segue editável.
- * A entrega (download, folha de compartilhamento ou diálogo de impressão) fica
- * a cargo de `deliverFile`, que conhece as limitações de cada plataforma.
+ * Gera a ficha do Grimório de Venetia em PDF, no idioma da interface.
+ * `export` sai preenchida, sem formulário; `print` sai só com o que não muda
+ * em jogo e com formulário editável. A entrega (download, folha de
+ * compartilhamento ou diálogo de impressão) fica a cargo de `deliverFile`,
+ * que conhece as limitações de cada plataforma.
  */
 export function useSheetPdf() {
   const sheet = useSheetStore(s => s.sheet)
@@ -44,13 +40,13 @@ export function useSheetPdf() {
   const [error, setErro] = useState<string | null>(null)
 
   /**
-   * Adianta o download do modelo e do chunk do pdf-lib. No celular, a folha de
+   * Adianta o download da fonte e do chunk do pdf-lib. No celular, a folha de
    * compartilhamento precisa abrir logo após o toque; com isso já em cache, o
    * tempo entre o toque e a folha cai para a geração do PDF.
    */
   const preparePdf = useCallback(() => {
-    void import('../lib/pdf/fillSheet')
-    void carregarModelo().catch(() => {})
+    void import('../lib/pdf/drawSheet')
+    loadTitleFont().catch(err => console.warn('[useSheetPdf] pré-carga da fonte falhou; nova tentativa ao gerar.', err))
   }, [])
 
   const generatePdf = useCallback(
@@ -58,12 +54,12 @@ export function useSheetPdf() {
       setGenerating({ mode, action })
       setErro(null)
       try {
-        const [{ fillSheetPdf }, { deliverFile }, template] = await Promise.all([
-          import('../lib/pdf/fillSheet'),
+        const [{ drawSheetPdf }, { deliverFile }, font] = await Promise.all([
+          import('../lib/pdf/drawSheet'),
           import('../lib/deliverFile'),
-          carregarModelo(),
+          loadTitleFont(),
         ])
-        const bytes = await fillSheetPdf(sheet, mode, template)
+        const bytes = await drawSheetPdf(sheet, mode, font)
         await deliverFile(
           {
             bytes,

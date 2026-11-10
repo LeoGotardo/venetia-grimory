@@ -5,6 +5,7 @@ import { campaignRoom, useRoomStore } from '../../store/roomStore'
 import { useGmStore } from '../../store/gmStore'
 import type { RoomMembership } from '../../services/roomStorage'
 import { Modal } from '../ui/Modal'
+import { TermsNotice } from '../ui/TermsNotice'
 import { gmPrimaryButton, gmSecondaryButton } from '../gm/GmHeader'
 import { rowDangerButton } from '../gm/MonsterRow'
 import { RoomMemberList } from './RoomMemberList'
@@ -65,6 +66,7 @@ function CreateRoom({ campaign }: { campaign: Campaign }) {
         <input value={displayName} onChange={e => setDisplayName(e.target.value)} maxLength={60} required className={field} />
       </label>
       <p className="text-[13px] text-[#A8A09B]">{t('room.createHint')}</p>
+      <TermsNotice lead={t('terms.noticeRoomOpen')} />
       {error && <p role="alert" className="text-[13px] text-[#d4564a]">{error}</p>}
       <button type="submit" disabled={busy || !displayName.trim()} className={`${gmPrimaryButton} self-start`}>
         {t('room.openRoom')}

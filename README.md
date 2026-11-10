@@ -4,7 +4,7 @@
 
 # Grimório de Venetia
 
-**Criador de personagens e ficha de jogo para D&D 5.5 (2024)**
+**Criador de personagens e ficha de jogo compatível com a 5ª edição (2024)**
 
 [![Release](https://img.shields.io/github/v/release/LeoGotardo/venetia-grimory?label=APK&logo=android&color=D4A017)](https://github.com/LeoGotardo/venetia-grimory/releases/latest)
 [![Build do APK](https://img.shields.io/github/actions/workflow/status/LeoGotardo/venetia-grimory/release.yml?label=release&logo=githubactions&logoColor=white)](https://github.com/LeoGotardo/venetia-grimory/actions/workflows/release.yml)
@@ -34,10 +34,10 @@
 
 ### Descrição
 
-Aplicação de página única (SPA) para criar personagens de **Dungeons & Dragons 5.5 (edição 2024)**
+Aplicação de página única (SPA) para criar personagens **compatíveis com a 5ª edição (regras de 2024)**
 e acompanhá-los durante a sessão. Um assistente de 13 passos monta o personagem aplicando as regras
-do Livro do Jogador; depois, a ficha de jogo controla vida, recursos de classe, espaços de magia,
-inventário e subida de nível. Exporta a ficha oficial em PDF.
+de 2024; depois, a ficha de jogo controla vida, recursos de classe, espaços de magia,
+inventário e subida de nível. Exporta a ficha em PDF, num modelo próprio do projeto.
 
 Para o mestre há uma **Área do Mestre** (campanhas, NPCs, bestiário do SRD, combate com mapa,
 mapas ilustrados e notas) e **salas online** para jogar com os players em outros aparelhos. Não há
@@ -77,8 +77,8 @@ servidor. Roda como site e como app Android empacotado com Capacitor.
   gratuitas). Também cobre inventário com peso e moedas, cargas de itens mágicos, XP e subida de
   nível com escolha de ASI ou talento.
 - **Edição completa** depois do assistente, pela aba *Editar*.
-- **PDF da ficha oficial** em PT-BR ou EN, em dois modos: completo (achatado, para arquivar) ou
-  para impressão (sem o que muda em jogo).
+- **Ficha em PDF** (A4, desenho próprio) em PT-BR ou EN, em dois modos: completa (para arquivar)
+  ou para impressão (sem o que muda em jogo, com formulário editável).
 - **Backup** de cada personagem como JSON, para exportar e importar.
 - **Interface e dados de jogo** em português e inglês.
 - **Área do Mestre:** campanhas com players (fichas do aparelho, JSON ou ao vivo), NPCs com
@@ -91,7 +91,7 @@ servidor. Roda como site e como app Android empacotado com Capacitor.
 
 Exemplos e telas de cada função: **[Guia de funções](docs/GUIA.md)**.
 
-**Para quem:** jogadores e mestres de D&D 5.5 que querem montar um personagem sem errar regra e
+**Para quem:** jogadores e mestres da 5ª edição (2024) que querem montar um personagem sem errar regra e
 acompanhá-lo na mesa, no computador ou no celular, sem cadastro e sem internet depois de carregado (as salas online precisam de internet).
 
 ---
@@ -249,7 +249,7 @@ Se mudar o ícone ou o splash, regenere os recursos antes do passo 4 com
 7. **Pronto.** Cada alteração passa por uma ação do `useSheetStore`, e o store salva sozinho no
    `localStorage` 500 ms depois da última mudança (`DEBOUNCE_SAVE_MS`).
 
-Os modelos de PDF (~4,5 MB cada) e o `pdf-lib` só são baixados quando o usuário pede o PDF.
+O `pdf-lib` e a fonte dos títulos da ficha (~46 KB) só são baixados quando o usuário pede o PDF.
 
 ### Scripts disponíveis
 
@@ -276,12 +276,8 @@ Os modelos de PDF (~4,5 MB cada) e o `pdf-lib` só são baixados quando o usuár
 | `scripts/release.sh` | Confere a `main` (sem alterações, igual ao `origin`, secrets presentes). Roda lint, testes e build, calcula a próxima versão, abre o editor com os commits como rascunho das notas, cria a tag anotada e a envia depois de confirmar. Use `NOTES="..."` para pular o editor. |
 | `scripts/build-android-release.sh` | Gera o APK assinado de `VERSION=vX.Y.Z`: build web, `cap sync`, `assembleRelease` com `versionCode` derivado da versão, `zipalign`, `apksigner sign` e `verify`. Roda no CI e à mão. |
 | `scripts/setup-release-secrets.sh` | Uma vez só: cria ou valida a keystore e grava os 4 secrets do workflow pelo `gh`. |
-| `scripts/extract-fields.mjs` | Extrai a geometria dos campos AcroForm de um PDF. |
-| `scripts/generate-field-map.mjs` | Gera `src/lib/pdf/sheetFields.ts` a partir dessa geometria. |
-| `scripts/clean-template.mjs` | Limpa o personagem de exemplo do PDF oficial PT. |
-| `scripts/prepare-template.mjs` | Monta os modelos em branco que vão para `public/`. |
 
-Os quatro scripts de PDF são de uso pontual. O pipeline está em [`scripts/README.md`](scripts/README.md).
+Os scripts de dados (SRD, ícones e texturas do mapa) estão descritos em [`scripts/README.md`](scripts/README.md).
 
 ### Update e rollback
 
@@ -401,7 +397,7 @@ No Android, o `localStorage` do WebView fica em
 | `src/data/rules/` | classes, espécies, antecedentes, talentos, progressões, armaduras (PT canônico) |
 | `src/data/rules/translation.ts` | dicionário PT → EN dos dados de regra |
 | `src/data/{items,spells,backgrounds}/{pt,en}/` | catálogos localizados |
-| `public/sheet-template*.pdf` | modelos em branco da ficha oficial |
+| `src/lib/pdf/` | ficha em PDF: diagramação, valores e desenho com o `pdf-lib` |
 
 ### Login e senhas
 
@@ -441,7 +437,7 @@ Os acessos que existem são os de administração do projeto:
 - **Campos derivados.** Os campos com prefixo `_` são calculados por `recalculate` e nunca editados
   à mão.
 - **Três reservas de espaços de magia:** Conjuração, Magia de Pacto (bruxo, volta no descanso curto)
-  e conjurações gratuitas. Só o PDF as soma, porque a ficha oficial tem uma linha por círculo.
+  e conjurações gratuitas. A ficha em PDF também as mostra separadas, cada uma na sua linha.
 - **Passos do assistente.** Os nomes de arquivo (`Step01Level` … `Step12Review`) não batem com os
   ids. A ordem real está no array `STEPS` de `src/pages/Wizard.tsx`.
 
@@ -456,14 +452,12 @@ Os acessos que existem são os de administração do projeto:
 
 **PDF**
 
-Duas gambiarras conhecidas, documentadas em `src/lib/pdf/fillSheet.ts`. Não remova nenhuma delas:
-
-- **Caixas de marcar.** A aparência delas referencia uma fonte inexistente, então as marcas são
-  desenhadas como círculos na página.
-- **Tamanho da fonte.** Cada widget tem seu próprio `/DA`, que sobrepõe o do campo. Por isso o
-  `/DA` do widget é apagado ao reduzir a fonte.
-- **Campos não preenchidos.** Salvaguardas contra morte, Inspiração Heroica e sintonização não são
-  preenchidas, porque a ficha do app não tem esses campos.
+- **Desenho próprio.** A ficha é desenhada do zero em `src/lib/pdf/` (A4, sem modelo); não há
+  arquivo de modelo para editar. A diagramação está em `sheetLayout.ts`.
+- **Caracteres.** Rótulos e valores usam a Helvetica do PDF, que só tem a WinAnsi: emoji e outros
+  caracteres fora dela viram `?` em vez de quebrar a geração.
+- **Campos não preenchidos.** Testes contra a morte, Inspiração Heroica e sintonização ficam em
+  branco, porque a ficha do app não tem esses campos.
 
 **Android**
 
@@ -497,11 +491,19 @@ Este trabalho inclui material do System Reference Document 5.2.1 (“SRD 5.2.1�
 Coast LLC, disponível em https://www.dndbeyond.com/srd. O SRD 5.2.1 é licenciado sob a Creative
 Commons Attribution 4.0 International License, disponível em
 https://creativecommons.org/licenses/by/4.0/legalcode. Os monstros do catálogo da Área do Mestre
-(`src/data/monsters/`) vêm dele, gerados por `scripts/srd/generate-monsters.mjs`.
+(`src/data/monsters/`) vêm dele, gerados por `scripts/srd/generate-monsters.mjs`. Alterações: o
+material do SRD usado no app foi traduzido para o português, resumido e adaptado (distâncias em
+metros, formato das fichas e dos blocos de estatísticas).
 
 Os ícones do mapa de área (`src/data/areaMap/icons.generated.ts`) são do
 [game-icons.net](https://game-icons.net), criados por Lorc e Delapouite, sob a licença
 [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/). São gerados por
 `scripts/areamap/generate-icons.mjs` a partir da curadoria em `scripts/areamap/icons.json`, que
-registra o autor de cada ícone. Os objetos (stamps) e as texturas do mapa de área são desenhos
-próprios do projeto.
+registra o autor de cada ícone. No mapa, eles são recoloridos e desenhados com um contorno fino.
+
+Os objetos (stamps) do mapa de área são desenhos próprios do projeto. As texturas do mapa de área
+foram geradas com IA (Google Gemini), sem imagem de referência.
+
+Dentro do app, a tela **Sobre e licenças** (`/sobre`, link no rodapé) repete estas atribuições e
+lista as bibliotecas de código aberto do bundle com o texto da licença de cada uma — a lista é
+gerada no build por `scripts/vite/thirdPartyLicenses.ts` (`third-party-licenses.json`).

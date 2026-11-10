@@ -1,14 +1,7 @@
-import { ICONS, ICON_AUTHORS, type IconDef } from './icons.generated'
+import { ICONS, type IconDef } from './icons.generated'
 
 export { ICONS, ICON_CATEGORIES, ICON_AUTHORS, type IconDef, type IconCategory } from './icons.generated'
-
-/** Licença dos ícones — aparece no editor e nos READMEs (o CC BY exige o crédito). */
-export const ICONS_LICENSE = {
-  name: 'CC BY 3.0',
-  url: 'https://creativecommons.org/licenses/by/3.0/',
-  source: 'https://game-icons.net',
-  authors: Object.values(ICON_AUTHORS),
-}
+export { ICONS_LICENSE } from './iconsLicense'
 
 /** Lado do viewBox dos ícones do game-icons. */
 export const ICON_VIEWBOX = 512

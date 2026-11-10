@@ -153,7 +153,7 @@ export function MonsterBrowser({ actions, onPick, initialSource = 'custom', inpu
       )}
 
       {source === 'srd' && (
-        <p className="text-[10px] leading-snug text-[#A8A09B] mt-2">{t('gm.srdAttribution')}</p>
+        <p className="text-[10px] leading-snug text-[#A8A09B] mt-2">{t('about.srdAttribution')} {t('about.srdChanges')}</p>
       )}
     </div>
   )

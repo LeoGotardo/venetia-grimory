@@ -5,6 +5,7 @@ import path from 'path'
 import { Readable } from 'node:stream'
 import fs from 'node:fs'
 import type { IncomingMessage, Server } from 'node:http'
+import { thirdPartyLicenses } from './scripts/vite/thirdPartyLicenses.ts'
 
 /**
  * Só no `npm run dev`: serve as funções de `api/` dentro do Vite, como a Vercel
@@ -87,7 +88,13 @@ function toWebRequest(req: IncomingMessage & { originalUrl?: string }): Request 
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), apiDevServer()],
+  plugins: [react(), tailwindcss(), apiDevServer(), thirdPartyLicenses({
+      extraPackages: ['tailwindcss'],
+      // A fonte dos títulos da ficha em PDF vai no bundle e no APK: a OFL pede a licença junto.
+      extraAssets: [
+        { name: 'Cinzel (fonte)', version: '2.000', license: 'OFL-1.1', url: 'https://github.com/NDISCOVER/Cinzel', licenseFile: 'src/assets/fonts/Cinzel-OFL.txt' },
+      ],
+    })],
   server: { host: true },
   resolve: {
     alias: {

@@ -4,7 +4,7 @@
 
 # Venetia's Grimoire
 
-**Character creator and play sheet for D&D 5.5 (2024)**
+**Character creator and play sheet, compatible with fifth edition (2024)**
 
 [![Release](https://img.shields.io/github/v/release/LeoGotardo/venetia-grimory?label=APK&logo=android&color=D4A017)](https://github.com/LeoGotardo/venetia-grimory/releases/latest)
 [![APK build](https://img.shields.io/github/actions/workflow/status/LeoGotardo/venetia-grimory/release.yml?label=release&logo=githubactions&logoColor=white)](https://github.com/LeoGotardo/venetia-grimory/actions/workflows/release.yml)
@@ -34,10 +34,10 @@
 
 ### Description
 
-A single-page app (SPA) that builds **Dungeons & Dragons 5.5 (2024 edition)** characters and tracks
-them at the table. A 13-step wizard assembles the character applying the Player's Handbook rules;
+A single-page app (SPA) that builds characters **compatible with fifth edition (2024 rules)** and tracks
+them at the table. A 13-step wizard assembles the character applying the 2024 rules;
 the play sheet then tracks hit points, class resources, spell slots, inventory and level-ups. It
-also exports the official character sheet as a PDF.
+also exports the character sheet as a PDF, in the project's own layout.
 
 For the GM there is a **Game Master Area** (campaigns, NPCs, SRD bestiary, combat on a map,
 illustrated maps and notes) and **online rooms** to play with players on other devices. There is
@@ -76,8 +76,8 @@ through a server. It runs as a website and as an Android app packaged with Capac
   and spell slots in three separate pools (Spellcasting, Pact Magic and free casts). It also covers
   inventory with weight and coins, magic item charges, XP, and level-up with an ASI or feat choice.
 - **Full editing** after the wizard, through the *Edit* tab.
-- **Official sheet PDF** in PT-BR or EN, in two modes: complete (flattened, for archiving) or for
-  printing (blank where values change during play).
+- **Character sheet PDF** (A4, the project's own design) in PT-BR or EN, in two modes: complete
+  (for archiving) or for printing (blank where values change during play, with an editable form).
 - **Backup** of each character as JSON, for export and import.
 - **Interface and game data** in Portuguese and English.
 - **Game Master Area:** campaigns with players (sheets from this device, JSON or live), NPCs with
@@ -91,7 +91,7 @@ through a server. It runs as a website and as an Android app packaged with Capac
 
 Examples and screens for every feature: **[Feature guide](docs/GUIDE.md)**.
 
-**Who it's for:** D&D 5.5 players and DMs who want to build a character without getting a rule
+**Who it's for:** fifth edition (2024) players and DMs who want to build a character without getting a rule
 wrong and track it at the table, on a computer or a phone, with no sign-up and no internet once
 loaded (online rooms need internet).
 
@@ -250,7 +250,7 @@ If you change the icon or the splash, regenerate the resources before step 4 wit
 7. **Ready.** Every change goes through a `useSheetStore` action, and the store saves itself to
    `localStorage` 500 ms after the last change (`DEBOUNCE_SAVE_MS`).
 
-The PDF templates (~4.5 MB each) and `pdf-lib` are only downloaded when the user asks for the PDF.
+`pdf-lib` and the sheet's title font (~46 KB) are only downloaded when the user asks for the PDF.
 
 ### Available scripts
 
@@ -277,12 +277,8 @@ The PDF templates (~4.5 MB each) and `pdf-lib` are only downloaded when the user
 | `scripts/release.sh` | Checks `main` (clean, equal to `origin`, secrets present). Runs lint, tests and build, works out the next version, opens the editor with the commits as a notes draft, creates the annotated tag and pushes it after confirmation. Use `NOTES="..."` to skip the editor. |
 | `scripts/build-android-release.sh` | Builds the signed APK for `VERSION=vX.Y.Z`: web build, `cap sync`, `assembleRelease` with a `versionCode` derived from the version, `zipalign`, `apksigner sign` and `verify`. Runs in CI and by hand. |
 | `scripts/setup-release-secrets.sh` | Once: creates or validates the keystore and stores the workflow's 4 secrets via `gh`. |
-| `scripts/extract-fields.mjs` | Extracts the AcroForm field geometry from a PDF. |
-| `scripts/generate-field-map.mjs` | Generates `src/lib/pdf/sheetFields.ts` from that geometry. |
-| `scripts/clean-template.mjs` | Strips the sample character from the official PT PDF. |
-| `scripts/prepare-template.mjs` | Builds the blank templates that go into `public/`. |
 
-The four PDF scripts are one-off tools. The pipeline is in [`scripts/README.md`](scripts/README.md)
+The data scripts (SRD, area map icons and textures) are described in [`scripts/README.md`](scripts/README.md)
 (Portuguese).
 
 ### Update and rollback
@@ -405,7 +401,7 @@ On Android, the WebView's `localStorage` lives in
 | `src/data/rules/` | classes, species, backgrounds, feats, progressions, armor (canonical PT) |
 | `src/data/rules/translation.ts` | PT → EN dictionary for the rules data |
 | `src/data/{items,spells,backgrounds}/{pt,en}/` | localized catalogs |
-| `public/sheet-template*.pdf` | blank official sheet templates |
+| `src/lib/pdf/` | the sheet PDF: layout, values and drawing with `pdf-lib` |
 
 ### Logins and passwords
 
@@ -446,7 +442,7 @@ The access that does exist is for administering the project:
 - **Derived fields.** Fields prefixed with `_` are computed by `recalculate` and never edited by
   hand.
 - **Three spell slot pools:** Spellcasting, Pact Magic (warlock, refilled on a short rest) and free
-  casts. Only the PDF sums them, because the official sheet has a single row per circle.
+  casts. The sheet PDF keeps them apart too, each on its own row.
 - **Wizard steps.** The filenames (`Step01Level` … `Step12Review`) don't match the step ids. The
   real order is the `STEPS` array in `src/pages/Wizard.tsx`.
 
@@ -461,14 +457,12 @@ The access that does exist is for administering the project:
 
 **PDF**
 
-Two known workarounds, documented in `src/lib/pdf/fillSheet.ts`. Don't remove either of them:
-
-- **Checkboxes.** Their appearance references a missing font, so the marks are drawn as circles on
-  the page.
-- **Font size.** Each widget carries its own `/DA`, which overrides the field's, so the widget
-  `/DA` is deleted when the font is shrunk.
-- **Unfilled fields.** Death saves, Heroic Inspiration and attunement are never filled, because the
-  app's sheet has no such fields.
+- **Own design.** The sheet is drawn from scratch in `src/lib/pdf/` (A4, no template); there is no
+  template file to edit. The layout lives in `sheetLayout.ts`.
+- **Characters.** Labels and values use the PDF's Helvetica, which only covers WinAnsi: emoji and
+  other characters outside it become `?` instead of breaking the export.
+- **Unfilled fields.** Death saves, Heroic Inspiration and attunement stay blank, because the app's
+  sheet has no such fields.
 
 **Android**
 
@@ -502,11 +496,20 @@ This work includes material from the System Reference Document 5.2.1 (“SRD 5.2
 the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the
 Creative Commons Attribution 4.0 International License, available at
 https://creativecommons.org/licenses/by/4.0/legalcode. The GM area's monster catalog
-(`src/data/monsters/`) comes from it, generated by `scripts/srd/generate-monsters.mjs`.
+(`src/data/monsters/`) comes from it, generated by `scripts/srd/generate-monsters.mjs`. Changes: the
+SRD material used in the app was translated into Portuguese, summarized and adapted (distances in
+meters, layout of sheets and stat blocks).
 
 The area map icons (`src/data/areaMap/icons.generated.ts`) come from
 [game-icons.net](https://game-icons.net), made by Lorc and Delapouite, under the
 [Creative Commons Attribution 3.0](https://creativecommons.org/licenses/by/3.0/) license. They are
 generated by `scripts/areamap/generate-icons.mjs` from the curated list in
-`scripts/areamap/icons.json`, which records each icon's author. The area map objects (stamps) and
-textures are the project's own drawings.
+`scripts/areamap/icons.json`, which records each icon's author. On the map they are recolored and
+drawn with a thin outline.
+
+The area map objects (stamps) are the project's own drawings. The area map textures were generated
+with AI (Google Gemini), with no reference image.
+
+Inside the app, the **About & licenses** screen (`/sobre`, linked from the footer) repeats these
+attributions and lists the bundle's open-source libraries with each one's license text — the list
+is generated at build time by `scripts/vite/thirdPartyLicenses.ts` (`third-party-licenses.json`).

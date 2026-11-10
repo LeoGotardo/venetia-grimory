@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next'
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })))
 const Wizard = lazy(() => import('./pages/Wizard').then(m => ({ default: m.Wizard })))
 const CharacterSheet = lazy(() => import('./pages/Sheet').then(m => ({ default: m.CharacterSheet })))
+const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })))
+const Terms = lazy(() => import('./pages/Terms').then(m => ({ default: m.Terms })))
 const GmHome = lazy(() => import('./pages/gm/GmHome').then(m => ({ default: m.GmHome })))
 const BestiaryPage = lazy(() => import('./pages/gm/BestiaryPage').then(m => ({ default: m.BestiaryPage })))
 const MonsterEditPage = lazy(() => import('./pages/gm/MonsterEditPage').then(m => ({ default: m.MonsterEditPage })))
@@ -61,6 +63,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/novo" element={<Wizard />} />
             <Route path="/ficha/:id" element={<CharacterSheet />} />
+            <Route path="/sobre" element={<About />} />
+            <Route path="/termos" element={<Terms />} />
             <Route path="/sala/:code" element={<RoomPage />} />
             <Route path="/mestre" element={<GmHome />} />
             <Route path="/mestre/campanha/:id" element={<CampaignPage />} />

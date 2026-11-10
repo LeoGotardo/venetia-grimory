@@ -8,7 +8,7 @@ test.describe('Home', () => {
     await page.goto('/')
 
     await expect(page.getByRole('heading', { name: "Venetia's Grimoire" })).toBeVisible()
-    await expect(page.getByText('D&D 5.5 (2024) Character Creator')).toBeVisible()
+    await expect(page.getByText('Character Creator · compatible with fifth edition (2024)')).toBeVisible()
     await expect(page.getByText('No characters saved yet.')).toBeVisible()
     await expect(page.getByTestId('sheet-card')).toHaveCount(0)
   })
@@ -77,7 +77,7 @@ test.describe('Home', () => {
     await modal.getByRole('button', { name: 'PT' }).click()
 
     await expect(page.getByRole('heading', { name: 'Grimório de Venetia' })).toBeVisible()
-    await expect(page.getByText('Criador de Personagens D&D 5.5 (2024)')).toBeVisible()
+    await expect(page.getByText('Criador de Personagens · compatível com a 5ª edição (2024)')).toBeVisible()
   })
 
   test('idioma persiste entre recarregamentos', async ({ page }) => {
@@ -97,5 +97,26 @@ test.describe('Home', () => {
 
     await page.getByRole('button', { name: 'Go to Grimoire' }).click()
     await expect(page).toHaveURL(/\/$/)
+  })
+
+  test('rodapé leva à tela de licenças com a atribuição do SRD', async ({ page }) => {
+    await page.goto('/')
+    await page.getByTestId('link-sobre').click()
+
+    await expect(page).toHaveURL(/\/sobre$/)
+    await expect(page.getByRole('heading', { name: 'About & licenses' })).toBeVisible()
+    await expect(page.getByTestId('sobre-srd')).toContainText('System Reference Document 5.2.1')
+
+    await page.getByRole('button', { name: 'Back' }).click()
+    await expect(page).toHaveURL(/\/$/)
+  })
+
+  test('rodapé leva aos termos de uso, com os prazos das salas', async ({ page }) => {
+    await page.goto('/')
+    await page.getByTestId('link-termos').click()
+
+    await expect(page).toHaveURL(/\/termos$/)
+    await expect(page.getByRole('heading', { name: 'Terms of use', level: 1 })).toBeVisible()
+    await expect(page.getByText(/Closed rooms are deleted after 7 days/)).toBeVisible()
   })
 })

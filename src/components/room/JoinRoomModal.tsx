@@ -6,6 +6,7 @@ import { useRoomStore } from '../../store/roomStore'
 import { gameData } from '../../data/rules'
 import { isRoomCode, normalizeRoomCode } from '../../lib/room/code'
 import { Modal } from '../ui/Modal'
+import { TermsNotice } from '../ui/TermsNotice'
 import { gmPrimaryButton } from '../gm/GmHeader'
 import { roomErrorMessage } from './roomErrors'
 
@@ -115,6 +116,7 @@ export function JoinRoomModal({ open, onClose, initialCode = '' }: JoinRoomModal
           </label>
 
           {error && <p role="alert" className="text-[13px] text-[#d4564a]">{error}</p>}
+          <TermsNotice lead={t('terms.noticeRoomJoin')} />
           <button type="submit" disabled={busy || !isRoomCode(code)} className={`${gmPrimaryButton} self-start`}>
             {t('room.joinAction')}
           </button>

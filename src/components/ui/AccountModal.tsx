@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
+import { TermsNotice } from './TermsNotice'
 import Button from './Button'
 import { useCloudAccount } from '../../hooks/useCloudAccount'
 import { useCloudStore } from '../../store/cloudStore'
@@ -78,6 +79,7 @@ export function AccountModal({ open, onClose }: AccountModalProps) {
         <div className="space-y-4">
           <p className="text-sm text-[#E8DFD0] leading-relaxed">{t('account.intro')}</p>
           {signInButton}
+          <TermsNotice lead={t('terms.noticeSignIn')} />
           {signInError && <p role="alert" className="text-sm text-[#E8A0A0]">{signInError}</p>}
         </div>
       ) : signOut.kind === 'confirm' || signOut.kind === 'leaving' ? (
