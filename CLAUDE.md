@@ -46,9 +46,10 @@ The APK build also reads the `VITE_FIREBASE_*` / `VITE_GOOGLE_WEB_CLIENT_ID` rep
 
 What's new: `src/data/releaseNotes.json` holds each version's notes (`version` tag, `pt` and `en`
 item lists of the same length, newest first — `releaseNotes.test.ts` checks). The first entry *is*
-the bundle's version: `WhatsNewPrompt` (mounted in `App`, `src/lib/releaseNotes.ts`) shows the
-entries newer than `dnd_versao_vista` once, on web and in the app, and `UpdatePrompt` waits for it
-to close. A fresh install (nothing seen, nothing saved) just records the version. `release.sh`
+the bundle's version: `WhatsNewPrompt` (mounted in `App`, `src/lib/releaseNotes.ts`) shows **every**
+entry newer than `dnd_versao_vista` once, on web and in the app — one modal, oldest version first,
+no cap, so someone jumping 1.0.0 → 1.0.5 reads 1.0.1 … 1.0.5 in order — and `UpdatePrompt` waits for
+it to close. A fresh install (nothing seen, nothing saved) just records the version. `release.sh`
 refuses a tag whose notes aren't the first entry and pre-fills the tag message (the GitHub Release
 body) with them — so write the notes before `npm run release`. The e2e `seedSheet` marks the
 version as seen, or the modal would cover the seeded sheet.

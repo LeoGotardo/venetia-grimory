@@ -1,5 +1,4 @@
 import notes from '../data/releaseNotes.json'
-import { RELEASE_NOTES_MAX_SHOWN } from '../constants'
 import { versionCodeFromTag } from './appUpdate'
 
 /**
@@ -25,7 +24,9 @@ export const currentVersion = (): string | null => RELEASE_NOTES[0]?.version ?? 
 /**
  * O que mostrar ao abrir. `lastSeen` é a última versão cujas novidades a pessoa
  * já viu. Instalação nova (nada visto e nada salvo) não vê novidades — não há
- * "antes" para comparar. Quem pulou versões vê as que perdeu, até `RELEASE_NOTES_MAX_SHOWN`.
+ * "antes" para comparar. Quem pulou versões vê **todas** as que perdeu, num
+ * popup só e em ordem cronológica (da 1.0.0 para a 1.0.5: 1.0.1 no topo, 1.0.5
+ * por último), para ler na ordem em que as mudanças aconteceram.
  */
 export function notesToShow(lastSeen: string | null, hasSavedData: boolean, all: ReleaseNote[] = RELEASE_NOTES): ReleaseNote[] {
   const latest = all[0]
@@ -35,7 +36,7 @@ export function notesToShow(lastSeen: string | null, hasSavedData: boolean, all:
   if (seenCode === null) return [latest]
   return all
     .filter(note => (versionCodeFromTag(note.version) ?? 0) > seenCode)
-    .slice(0, RELEASE_NOTES_MAX_SHOWN)
+    .reverse()
 }
 
 /** Itens no idioma da interface; o que não for inglês cai no português. */

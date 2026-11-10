@@ -415,5 +415,3 @@ export const STORAGE_KEY_CLOUD = 'dnd_nuvem'
 // Novidades da versão (src/data/releaseNotes.json), mostradas uma vez por versão.
 /** Última versão cujas novidades a pessoa já viu (`vX.Y.Z`) — chave em português, como as outras. */
 export const STORAGE_KEY_SEEN_VERSION = 'dnd_versao_vista'
-/** Quem pulou várias versões vê no máximo as novidades destas últimas. */
-export const RELEASE_NOTES_MAX_SHOWN = 3

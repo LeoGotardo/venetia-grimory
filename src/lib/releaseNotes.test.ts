@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { RELEASE_NOTES, noteItems, notesToShow, type ReleaseNote } from './releaseNotes'
 import { versionCodeFromTag } from './appUpdate'
-import { RELEASE_NOTES_MAX_SHOWN } from '../constants'
 
 const note = (version: string): ReleaseNote => ({ version, pt: [`pt ${version}`], en: [`en ${version}`] })
 const notes = ['v3.4.0', 'v3.3.0', 'v3.2.0', 'v3.1.0', 'v3.0.0'].map(note)
@@ -19,9 +18,19 @@ describe('novidades da versão', () => {
     expect(notesToShow('v3.4.0', true, notes)).toEqual([])
   })
 
-  it('quem pulou versões vê as que perdeu, até o teto', () => {
-    expect(notesToShow('v3.2.0', true, notes).map(n => n.version)).toEqual(['v3.4.0', 'v3.3.0'])
-    expect(notesToShow('v2.0.0', true, notes)).toHaveLength(RELEASE_NOTES_MAX_SHOWN)
+  it('quem pulou versões vê todas as que perdeu, da mais antiga para a mais nova', () => {
+    expect(notesToShow('v3.2.0', true, notes).map(n => n.version)).toEqual(['v3.3.0', 'v3.4.0'])
+    expect(notesToShow('v3.0.0', true, notes).map(n => n.version)).toEqual(['v3.1.0', 'v3.2.0', 'v3.3.0', 'v3.4.0'])
+  })
+
+  it('sem teto: quem vem de muito antes vê todas as versões registradas', () => {
+    expect(notesToShow('v2.0.0', true, notes).map(n => n.version)).toEqual(['v3.0.0', 'v3.1.0', 'v3.2.0', 'v3.3.0', 'v3.4.0'])
+  })
+
+  it('não altera a lista de notas recebida', () => {
+    const before = notes.map(n => n.version)
+    notesToShow('v2.0.0', true, notes)
+    expect(notes.map(n => n.version)).toEqual(before)
   })
 
   it('idioma: inglês para en-*, português para o resto', () => {
