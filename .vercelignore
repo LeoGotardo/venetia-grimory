@@ -1,11 +1,14 @@
-# Nunca enviar segredos nem o que não entra no deploy
+# Nunca enviar segredos nem o que não entra no deploy.
+# Pastas com `/` na frente: só a da raiz. Sem a barra, `assets` também
+# excluía `src/assets/` — a fonte da ficha em PDF (o build falhava) e as
+# texturas pintadas do mapa de área (o import.meta.glob voltava vazio, sem erro).
 .env*
 !.env.example
-android
-assets
-docs
-dist
-e2e
-playwright-report
-test-results
+/android
+/assets
+/docs
+/dist
+/e2e
+/playwright-report
+/test-results
 *.apk
