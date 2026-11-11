@@ -1,6 +1,7 @@
 package com.venetia.grimory;
 
 import android.os.CancellationSignal;
+import android.util.Log;
 
 import androidx.core.content.ContextCompat;
 import androidx.credentials.ClearCredentialStateRequest;
@@ -36,6 +37,21 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
  */
 @CapacitorPlugin(name = "GoogleSignIn")
 public class GoogleSignInPlugin extends Plugin {
+
+    private static final String TAG = "GoogleSignIn";
+
+    /**
+     * O Credential Manager devolve `GetCredentialCancellationException` também quando o
+     * Google recusa o app depois da escolha da conta — o caso típico é o SHA-1 da
+     * assinatura deste APK não cadastrado no app Android do Firebase. A mensagem é
+     * "[16] Account reauth failed."; um cancelamento de verdade não traz o código 16.
+     */
+    private static boolean isConfigFailure(GetCredentialException e) {
+        String message = e.getMessage();
+        if (message == null) return false;
+        String lower = message.toLowerCase(java.util.Locale.ROOT);
+        return lower.contains("[16]") || lower.contains("reauth");
+    }
 
     @PluginMethod
     public void signIn(PluginCall call) {
@@ -77,7 +93,12 @@ public class GoogleSignInPlugin extends Plugin {
 
                 @Override
                 public void onError(GetCredentialException e) {
-                    if (e instanceof GetCredentialCancellationException) {
+                    Log.w(TAG, "Login com Google falhou: " + e.getType() + ": " + e.getMessage(), e);
+                    if (e instanceof GetCredentialCancellationException && isConfigFailure(e)) {
+                        // Chega como "cancelamento", mas a pessoa escolheu a conta: o Google
+                        // recusou o pacote/SHA-1 deste APK ("[16] Account reauth failed").
+                        call.reject(e.getMessage(), "config", e);
+                    } else if (e instanceof GetCredentialCancellationException) {
                         call.reject("cancelado", "cancelled");
                     } else if (e instanceof NoCredentialException) {
                         call.reject("nenhuma conta Google no aparelho", "no_credential");
