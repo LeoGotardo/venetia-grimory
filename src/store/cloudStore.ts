@@ -7,8 +7,11 @@ import { create } from 'zustand'
  */
 
 export type CloudPhase = 'idle' | 'syncing' | 'offline' | 'error'
-/** `permission`: a API recusou a sessão. `quota`: a conta encheu a cota de armazenamento. */
-export type CloudError = 'permission' | 'quota' | 'generic'
+/**
+ * `permission`: a API recusou a sessão. `quota`: a conta encheu a cota de armazenamento.
+ * `deleted`: a conta foi excluída em outro aparelho (este foi desvinculado, com os dados mantidos).
+ */
+export type CloudError = 'permission' | 'quota' | 'deleted' | 'generic'
 
 interface CloudStore {
   phase: CloudPhase

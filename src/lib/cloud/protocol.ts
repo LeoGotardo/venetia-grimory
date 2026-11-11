@@ -45,7 +45,13 @@ export const pushResponse = z.object({
 })
 export type PushResponse = z.infer<typeof pushResponse>
 
-/** Erros que a API devolve em `{ error }`. */
-export const CLOUD_ERRORS = ['invalid_request', 'unauthorized', 'rate_limited', 'quota_exceeded', 'server_error'] as const
+/** Resposta de `delete`: os dados da conta saíram do servidor (repetir é inofensivo). */
+export const deleteResponse = z.object({ deleted: z.literal(true) })
+
+/**
+ * Erros que a API devolve em `{ error }`. `account_deleted`: a conta foi
+ * excluída (em outro aparelho) — o cliente desvincula e sai, sem apagar nada local.
+ */
+export const CLOUD_ERRORS = ['invalid_request', 'unauthorized', 'rate_limited', 'quota_exceeded', 'account_deleted', 'server_error'] as const
 export type CloudErrorCode = typeof CLOUD_ERRORS[number]
 export const cloudErrorResponse = z.object({ error: z.enum(CLOUD_ERRORS) })

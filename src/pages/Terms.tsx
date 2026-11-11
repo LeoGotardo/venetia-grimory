@@ -9,23 +9,19 @@ import {
   TERMS_MIN_AGE,
 } from '../constants'
 import { LegalLinks, LegalPage, LegalParagraphs, LegalSection } from '../components/ui/LegalPage'
-
-/** Meio-dia UTC: a data não muda de dia em nenhum fuso ao formatar. */
-function formatEffectiveDate(language: string): string {
-  return new Intl.DateTimeFormat(language, { dateStyle: 'long', timeZone: 'UTC' }).format(new Date(`${TERMS_EFFECTIVE_DATE}T12:00:00Z`))
-}
+import { formatLegalDate } from '../lib/legalDate'
 
 /**
- * Termos de uso. Só prometem o que o app faz hoje: não há exclusão de conta
- * nem política de privacidade ainda, então nenhuma das duas é citada. Os prazos
- * das salas vêm das constantes que o cron e o servidor usam, para não divergirem.
+ * Termos de uso. Só prometem o que o app faz; o tratamento de dados está na
+ * política de privacidade (`/privacidade`). Os prazos das salas vêm das
+ * constantes que o cron e o servidor usam, para não divergirem.
  */
 export function Terms() {
   const { t, i18n } = useTranslation()
   const contact = [{ href: LEGAL_CONTACT_URL, label: t('terms.contactLink') }]
 
   return (
-    <LegalPage title={t('terms.title')} subtitle={t('terms.effective', { date: formatEffectiveDate(i18n.language) })}>
+    <LegalPage title={t('terms.title')} subtitle={t('terms.effective', { date: formatLegalDate(TERMS_EFFECTIVE_DATE, i18n.language) })}>
       <p className="mt-4 text-[15px] leading-relaxed text-[#E8DFD0]">{t('terms.intro')}</p>
 
       <LegalSection title={t('terms.serviceTitle')}>
@@ -38,6 +34,7 @@ export function Terms() {
 
       <LegalSection title={t('terms.contentTitle')}>
         <LegalParagraphs text={t('terms.contentBody')} />
+        <LegalLinks links={[{ to: '/privacidade', label: t('privacy.title') }]} />
       </LegalSection>
 
       <LegalSection title={t('terms.importTitle')}>

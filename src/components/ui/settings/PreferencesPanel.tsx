@@ -1,0 +1,104 @@
+import { useTranslation } from 'react-i18next'
+import { useConfigStore, type Config } from '../../../store/configStore'
+import i18n from '../../../i18n/index'
+
+interface SettingRowProps {
+  label: string
+  description: string
+  value: boolean | string
+  onChange: (v: boolean | string ) => void
+}
+
+function SettingRow({ label, description, value, onChange }: SettingRowProps) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-3 border-b border-[#B8860B]/10 last:border-0">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-[#F5F0E8]">{label}</p>
+        <p className="text-xs text-[#A8A09B] mt-0.5">{description}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={typeof value === 'boolean' ? value : undefined}
+        onClick={() => {if(typeof value === 'boolean'){onChange(!value)}else{if(value === 'pt'){onChange('en')}else{onChange('pt')}}}}
+        className={[
+          'relative shrink-0 w-10 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] cursor-pointer overflow-hidden',
+          value ? 'bg-[#B8860B]' : 'bg-[#2D2520] border border-[#A8A09B]/30',
+        ].join(' ')}
+      >
+        <span
+          className={[
+            'absolute top-1 w-4 h-4 rounded-full bg-[#F5F0E8] shadow transition-all duration-200',
+            value ? 'left-[22px]' : 'left-[2px]',
+          ].join(' ')}
+        />
+      </button>
+    </div>
+  )
+}
+
+/** Aba "Preferências" das configurações: idioma e as opções do inventário. */
+export function PreferencesPanel() {
+  const { config, setConfig } = useConfigStore()
+  const { t } = useTranslation()
+
+  const SETTINGS: Array<{
+    key: keyof Config
+    label: string
+    description: string
+  }> = [
+    {
+      key: 'track_weight',
+      label: t('config.weightTracking'),
+      description: t('config.weightTrackingDesc'),
+    },
+    {
+      key: 'manage_gold',
+      label: t('config.goldManagement'),
+      description: t('config.goldManagementDesc'),
+    },
+    {
+      key: 'sale_refund',
+      label: t('config.sellRefund'),
+      description: t('config.sellRefundDesc'),
+    },
+    {
+      key: 'simple_coins',
+      label: t('config.simpleCoins'),
+      description: t('config.simpleCoinsDesc'),
+    },
+  ]
+
+  return (
+      <div className="divide-y divide-[#B8860B]/10">
+        <div className="flex items-center justify-between gap-4 py-3 border-b border-[#B8860B]/10">
+          <p className="text-sm font-medium text-[#F5F0E8]">{t('config.language')}</p>
+          <div className="flex gap-2">
+            {(['pt', 'en'] as const).map(lang => (
+              <button
+                key={lang}
+                onClick={() => { setConfig({ language: lang }); i18n.changeLanguage(lang) }}
+                className={[
+                  'px-3 py-1 text-xs rounded font-medium transition-colors',
+                  i18n.language === lang
+                    ? 'bg-[#B8860B] text-[#1A1208]'
+                    : 'border border-[#B8860B]/40 text-[#A8A09B] hover:border-[#B8860B]',
+                ].join(' ')}
+              >
+                {lang.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+        {SETTINGS.map(s => (
+          <SettingRow
+            key={s.key}
+            label={s.label}
+            description={s.description}
+            value={config[s.key]}
+            onChange={v => setConfig({ [s.key]: v })}
+          />
+        ))}
+      </div>
+  )
+}

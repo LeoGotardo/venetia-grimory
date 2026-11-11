@@ -389,11 +389,15 @@ export const CC_BY_4_URL = 'https://creativecommons.org/licenses/by/4.0/legalcod
 export const OFL_URL = 'https://openfontlicense.org'
 export const APACHE_2_URL = 'https://www.apache.org/licenses/LICENSE-2.0'
 // Termos de uso (src/pages/Terms.tsx). Mudou o texto de um jeito relevante: atualize a data.
-export const TERMS_EFFECTIVE_DATE = '2026-11-10'
+export const TERMS_EFFECTIVE_DATE = '2026-11-11'
 /** Idade mínima para entrar com conta Google e usar as salas online (o Google exige 13 no Brasil). */
 export const TERMS_MIN_AGE = 13
-/** Canal para dúvidas sobre os termos e pedidos de remoção de conteúdo. */
+/** Canal para dúvidas sobre os termos, a privacidade e pedidos de remoção de conteúdo. */
 export const LEGAL_CONTACT_URL = FEEDBACK_FORM_URL
+// Política de privacidade (src/pages/Privacy.tsx). Mudou o texto de um jeito relevante: atualize a data.
+export const PRIVACY_EFFECTIVE_DATE = '2026-11-11'
+/** Autoridade Nacional de Proteção de Dados: onde reclamar pela LGPD. */
+export const ANPD_URL = 'https://www.gov.br/anpd'
 /** Texto de referência das licenças, para pacotes que não trazem o arquivo LICENSE (ex.: Firebase). */
 export const SPDX_LICENSES_URL = 'https://spdx.org/licenses'
 

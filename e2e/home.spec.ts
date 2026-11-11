@@ -80,6 +80,21 @@ test.describe('Home', () => {
     await expect(page.getByText('Criador de Personagens · compatível com a 5ª edição (2024)')).toBeVisible()
   })
 
+  test('configurações em abas: preferências e sobre, com os links legais', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Settings' }).click()
+
+    const modal = page.getByRole('dialog')
+    await expect(modal.getByRole('tab', { name: 'Preferences' })).toHaveAttribute('aria-selected', 'true')
+    // Sem Firebase configurado (CI, testes) não há aba de conta.
+    await expect(modal.getByRole('tab', { name: 'Account' })).toHaveCount(0)
+
+    await modal.getByRole('tab', { name: 'Preferences' }).press('ArrowRight')
+    await expect(modal.getByRole('tab', { name: 'About' })).toHaveAttribute('aria-selected', 'true')
+    await modal.getByRole('link', { name: 'Privacy policy' }).click()
+    await expect(page).toHaveURL(/\/privacidade$/)
+  })
+
   test('idioma persiste entre recarregamentos', async ({ page }) => {
     await setLanguage(page, 'pt')
     await page.goto('/')
@@ -118,5 +133,15 @@ test.describe('Home', () => {
     await expect(page).toHaveURL(/\/termos$/)
     await expect(page.getByRole('heading', { name: 'Terms of use', level: 1 })).toBeVisible()
     await expect(page.getByText(/Closed rooms are deleted after 7 days/)).toBeVisible()
+  })
+
+  test('rodapé leva à política de privacidade, com os prazos das salas', async ({ page }) => {
+    await page.goto('/')
+    await page.getByTestId('link-privacidade').click()
+
+    await expect(page).toHaveURL(/\/privacidade$/)
+    await expect(page.getByRole('heading', { name: 'Privacy policy', level: 1 })).toBeVisible()
+    await expect(page.getByText(/Closed rooms are deleted after 7 days/)).toBeVisible()
+    await expect(page.getByRole('link', { name: 'ANPD' })).toHaveAttribute('href', 'https://www.gov.br/anpd')
   })
 })

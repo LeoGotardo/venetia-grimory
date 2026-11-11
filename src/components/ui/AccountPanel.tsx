@@ -1,44 +1,44 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Modal } from './Modal'
 import { TermsNotice } from './TermsNotice'
 import Button from './Button'
 import { useCloudAccount } from '../../hooks/useCloudAccount'
 import { useCloudStore } from '../../store/cloudStore'
+import { DeleteAccountPanel } from './DeleteAccountPanel'
 import { prepareSignOut, signIn, signOutAndWipe, syncNow } from '../../services/cloudSync'
-import { firebaseErrorCode } from '../../services/firebaseAuth'
+import { firebaseErrorCode, isCancelledSignIn } from '../../services/firebaseAuth'
 
-interface AccountModalProps {
-  open: boolean
-  onClose: () => void
-}
-
-/** Fechou o popup, ou abriu outro por cima: não é erro para mostrar. */
-const CANCELLED = new Set(['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/user-cancelled', 'cancelled'])
 
 type SignOutStep = { kind: 'idle' } | { kind: 'preparing' } | { kind: 'confirm'; unsynced: number } | { kind: 'leaving' }
 
-/** Login com Google e o estado do sync das fichas e campanhas com a conta. */
-export function AccountModal({ open, onClose }: AccountModalProps) {
+/**
+ * Aba "Conta" das configurações: login com Google, estado do sync das fichas e
+ * campanhas, sair e excluir a conta. Carregada sob demanda — traz o Firebase.
+ */
+export function AccountPanel() {
   const { t } = useTranslation()
   const { profile, pending, localOnly } = useCloudAccount()
   const { phase, error, sessionExpired } = useCloudStore()
   const [signingIn, setSigningIn] = useState(false)
   const [signInError, setSignInError] = useState<string | null>(null)
   const [signOut, setSignOut] = useState<SignOutStep>({ kind: 'idle' })
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deletedNotice, setDeletedNotice] = useState(false)
 
   async function handleSignIn() {
     setSigningIn(true)
     setSignInError(null)
+    setDeletedNotice(false)
     try {
       await signIn()
     } catch (err) {
       const code = firebaseErrorCode(err)
-      if (!code || !CANCELLED.has(code)) {
+      if (!isCancelledSignIn(code)) {
         console.error('[conta] Falha no login.', err)
         setSignInError(
           code === 'auth/popup-blocked' ? t('account.errorPopupBlocked')
             : code === 'no_credential' ? t('account.errorNoAccount')
+            : code === 'config' ? t('account.errorAppSignature')
             : code === 'auth/unauthorized-domain' ? t('account.errorDomain')
               : code === 'auth/network-request-failed' ? t('account.errorNetwork')
                 : t('account.errorGeneric'),
@@ -59,7 +59,6 @@ export function AccountModal({ open, onClose }: AccountModalProps) {
     try {
       await signOutAndWipe()
       setSignOut({ kind: 'idle' })
-      onClose()
     } catch (err) {
       console.error('[conta] Falha ao sair.', err)
       setSignOut({ kind: 'idle' })
@@ -74,14 +73,27 @@ export function AccountModal({ open, onClose }: AccountModalProps) {
   )
 
   return (
-    <Modal open={open} onClose={onClose} title={t('account.title')}>
+    <>
       {!profile ? (
         <div className="space-y-4">
           <p className="text-sm text-[#E8DFD0] leading-relaxed">{t('account.intro')}</p>
           {signInButton}
           <TermsNotice lead={t('terms.noticeSignIn')} />
+          {deletedNotice && <p role="status" className="text-sm text-[#D4A017]">{t('account.deleted')}</p>}
           {signInError && <p role="alert" className="text-sm text-[#E8A0A0]">{signInError}</p>}
+          {/* A conta foi excluída em outro aparelho: este foi desvinculado, com os dados mantidos. */}
+          {!signInError && error === 'deleted' && <p role="status" className="text-sm text-[#D4A017]">{t('account.deletedElsewhere')}</p>}
+          {/* O login deu certo, mas vincular a conta falhou (handleAuth desfez o vínculo): sem isto, nada aparecia. */}
+          {!signInError && error && error !== 'deleted' && <p role="alert" className="text-sm text-[#E8A0A0]">{t('account.errorGeneric')}</p>}
         </div>
+      ) : confirmingDelete ? (
+        <DeleteAccountPanel
+          onCancel={() => setConfirmingDelete(false)}
+          onDeleted={() => {
+            setConfirmingDelete(false)
+            setDeletedNotice(true)
+          }}
+        />
       ) : signOut.kind === 'confirm' || signOut.kind === 'leaving' ? (
         <div className="space-y-4">
           <p className="text-sm text-[#E8DFD0] leading-relaxed">{t('account.signOutExplain')}</p>
@@ -152,10 +164,20 @@ export function AccountModal({ open, onClose }: AccountModalProps) {
             >
               {signOut.kind === 'preparing' ? t('account.preparingSignOut') : t('account.signOut')}
             </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setConfirmingDelete(true)}
+              disabled={sessionExpired || signOut.kind === 'preparing'}
+              className="w-full mt-1 text-[#A8A09B]"
+            >
+              {t('account.deleteAccount')}
+            </Button>
+            {sessionExpired && <p className="text-xs text-[#A8A09B] text-center">{t('account.deleteNeedsSession')}</p>}
           </div>
         </div>
       )}
-    </Modal>
+    </>
   )
 }
 

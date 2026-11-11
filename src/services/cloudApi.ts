@@ -2,6 +2,7 @@ import type { z } from 'zod'
 import { CLOUD_HTTP_TIMEOUT_MS } from '../constants'
 import {
   cloudErrorResponse,
+  deleteResponse,
   pullResponse,
   pushResponse,
   type CloudErrorCode,
@@ -20,7 +21,7 @@ export class CloudApiError extends Error {
   }
 }
 
-async function call<T>(action: 'pull' | 'push', body: unknown, schema: z.ZodType<T>, token: string): Promise<T> {
+async function call<T>(action: 'pull' | 'push' | 'delete', body: unknown, schema: z.ZodType<T>, token: string): Promise<T> {
   let response: Response
   try {
     // Mesma API das salas: mesma origem na web, domínio de produção no app.
@@ -74,4 +75,9 @@ export function cloudApiRemote(token: () => Promise<string | null>): CloudRemote
       return call('push', { items }, pushResponse, await requireToken())
     },
   }
+}
+
+/** Exclui do servidor os dados da conta do `token` (fichas, campanhas, monstros, mapas). */
+export async function deleteCloudAccount(token: string): Promise<void> {
+  await call('delete', {}, deleteResponse, token)
 }

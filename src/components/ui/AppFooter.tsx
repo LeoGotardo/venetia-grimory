@@ -12,7 +12,7 @@ interface AppFooterProps {
 
 /**
  * Rodapé compartilhado pela Home e pela área do mestre: crédito, sugestões, GitHub, APK
- * e os links para "Sobre e licenças" (atribuições que as licenças exigem dentro do app) e "Termos de uso".
+ * e os links para "Sobre e licenças" (atribuições que as licenças exigem dentro do app), "Termos de uso" e "Política de privacidade".
  * No app Android o layout é sempre o de celular (mesmo em tablet) e o link do APK some —
  * quem está no app já o instalou, e as atualizações chegam pelo `UpdatePrompt`.
  */
@@ -80,6 +80,9 @@ export function AppFooter({ containerClassName = 'max-w-[920px] mx-auto px-4 sm:
           </Link>
           <Link to="/termos" data-testid="link-termos" className={footerTextLink}>
             {t('terms.linkLabel')}
+          </Link>
+          <Link to="/privacidade" data-testid="link-privacidade" className={footerTextLink}>
+            {t('privacy.linkLabel')}
           </Link>
         </p>
       </div>

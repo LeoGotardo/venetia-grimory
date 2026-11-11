@@ -85,6 +85,8 @@ export async function pushRecords(sql: Sql, uid: string, items: PushItem[]): Pro
     with v as (
       insert into cloud_users (user_id, version) values (${uid}, ${n}::bigint)
       on conflict (user_id) do update set version = cloud_users.version + ${n}::bigint, updated_at = now()
+        -- Conta excluída: sem linha em v, nada abaixo grava (ver deleteAccountData).
+        where cloud_users.deleted_at is null
       returning version
     ), input as (
       select * from unnest(
@@ -113,4 +115,26 @@ export async function pushRecords(sql: Sql, uid: string, items: PushItem[]): Pro
     written: written.map(r => ({ kind: r.kind as CloudKind, id: String(r.id) })),
     conflicts: conflicts.map(toDoc),
   }
+}
+
+/** A conta foi excluída: `pull` e `push` recusam com `account_deleted`. */
+export async function isAccountDeleted(sql: Sql, uid: string): Promise<boolean> {
+  const rows = await sql`select 1 from cloud_users where user_id = ${uid} and deleted_at is not null`
+  return rows.length > 0
+}
+
+/**
+ * Exclui os dados da conta, em duas instruções e nesta ordem. Primeiro a marca
+ * (`deleted_at` na linha de cloud_users): a partir dela nenhum push grava, porque
+ * o `on conflict ... where deleted_at is null` de `pushRecords` deixa de devolver
+ * a versão. Um push que já estava no meio segura essa linha até confirmar — a marca
+ * espera por ele, e a remoção dos registros, que vem depois, já o enxerga.
+ * Idempotente: repetir mantém a data da primeira exclusão.
+ */
+export async function deleteAccountData(sql: Sql, uid: string): Promise<void> {
+  await sql`
+    insert into cloud_users (user_id, deleted_at) values (${uid}, now())
+    on conflict (user_id) do update
+      set deleted_at = coalesce(cloud_users.deleted_at, now()), updated_at = now()`
+  await sql`delete from cloud_records where user_id = ${uid}`
 }

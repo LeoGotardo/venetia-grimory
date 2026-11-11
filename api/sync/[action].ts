@@ -1,6 +1,6 @@
 import { CLOUD_SYNC_RATE_LIMIT, CLOUD_SYNC_RATE_WINDOW_S } from '../../src/lib/cloud/constants.js'
 import { pullRequest, pushRequest, type CloudErrorCode } from '../../src/lib/cloud/protocol.js'
-import { CloudFailure, pullRecords, pushRecords, type Sql } from '../_lib/cloud.js'
+import { CloudFailure, deleteAccountData, isAccountDeleted, pullRecords, pushRecords, type Sql } from '../_lib/cloud.js'
 import { db } from '../_lib/db.js'
 import { verifyFirebaseToken } from '../_lib/firebaseAuth.js'
 import { RoomFailure, bearerToken, json, preflight, readBody } from '../_lib/http.js'
@@ -8,8 +8,8 @@ import { overRateLimit } from '../_lib/redis.js'
 
 /**
  * Sync das fichas e campanhas com a conta (`/api/sync/<ação>`): `pull` traz o
- * que mudou depois de um cursor, `push` grava um lote. O uid vem sempre do ID
- * token do Firebase validado aqui — nunca do corpo.
+ * que mudou depois de um cursor, `push` grava um lote e `delete` exclui os dados
+ * da conta. O uid vem sempre do ID token do Firebase validado aqui — nunca do corpo.
  */
 
 const STATUS: Record<CloudErrorCode, number> = {
@@ -17,6 +17,7 @@ const STATUS: Record<CloudErrorCode, number> = {
   unauthorized: 401,
   quota_exceeded: 413,
   rate_limited: 429,
+  account_deleted: 410,
   server_error: 500,
 }
 
@@ -32,6 +33,10 @@ const ACTIONS: Record<string, Handler> = {
   push: async (uid, request) => {
     const { items } = await readBody(request, pushRequest)
     return json(await pushRecords(db() as Sql, uid, items))
+  },
+  delete: async uid => {
+    await deleteAccountData(db() as Sql, uid)
+    return json({ deleted: true })
   },
 }
 
@@ -57,6 +62,8 @@ export async function POST(request: Request): Promise<Response> {
     const uid = await verifyFirebaseToken(bearerToken(request))
     if (!uid) return fail('unauthorized')
     if (await limited(uid)) return fail('rate_limited')
+    // O ID token de outro aparelho segue válido por até ~1 h depois da exclusão.
+    if (action !== 'delete' && (await isAccountDeleted(db() as Sql, uid))) return fail('account_deleted')
     return await handler(uid, request)
   } catch (err) {
     if (err instanceof CloudFailure) return fail(err.code)

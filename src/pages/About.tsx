@@ -19,7 +19,7 @@ export function About() {
   return (
     <LegalPage title={t('about.title')} subtitle={subtitle}>
       <p className="mt-4 text-[15px] leading-relaxed text-[#E8DFD0]">{t('about.intro')}</p>
-      <LegalLinks links={[{ to: '/termos', label: t('terms.title') }]} />
+      <LegalLinks links={[{ to: '/termos', label: t('terms.title') }, { to: '/privacidade', label: t('privacy.title') }]} />
 
       <LegalSection title={t('about.rulesTitle')}>
         <p data-testid="sobre-srd">{t('about.srdAttribution')}</p>

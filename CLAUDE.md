@@ -198,9 +198,13 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - `/termos` (`Terms`) is the terms of use, sharing the `LegalPage` layout with `/sobre`
   (`src/components/ui/LegalPage.tsx`: header, back button + `useBackHandler`, sections). The room
   retention periods come from the room constants and the date from `TERMS_EFFECTIVE_DATE` — bump it
-  when the text changes. `TermsNotice` ("by signing in, you agree to…") sits in `AccountModal`,
-  `JoinRoomModal` and `RoomPanel`. The terms only promise what exists: there is no account deletion
-  and no privacy policy yet, so neither is mentioned until they ship.
+  when the text changes. `/privacidade` (`Privacy`) is the LGPD privacy policy, same layout, dated
+  by `PRIVACY_EFFECTIVE_DATE` (`formatLegalDate` in `src/lib/legalDate.ts` serves both). `TermsNotice`
+  ("by signing in, you agree to the Terms of use and the Privacy policy") sits in `AccountPanel`,
+  `JoinRoomModal` and `RoomPanel`. Both pages only state what the code does — the policy was checked
+  against `api/_lib/cloud.ts` (the server keeps the uid and synced content, never email or name),
+  `api/_lib/rooms.ts` and the rate limits; change the text (and the date) when the data handling
+  changes.
 - Trademark: user-facing text says "compatible with fifth edition" / "compatível com a 5ª edição"
   (the only wording the SRD 5.2.1 allows), never "D&D" or book titles ("Player's Handbook" /
   "Livro do Jogador"). The SRD attribution statement stays verbatim in English in both catalogs.
@@ -610,8 +614,11 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   same Neon database as the rooms and merged across devices. Firebase is **only** the login; the
   app stays local-first and Neon is a per-record mirror. `isCloudAvailable()`
   (`src/lib/cloud/config.ts`) is false when the `VITE_FIREBASE_*` vars are missing (CI, tests,
-  forks) and, inside the APK, also without `VITE_GOOGLE_WEB_CLIENT_ID`; then `AccountButton`
-  renders nothing. The web config is public by design, but it stays in `.env` (and in the repo
+  forks) and, inside the APK, also without `VITE_GOOGLE_WEB_CLIENT_ID`; then the settings modal
+  (`ConfigModal`) has no Account tab. Account UI lives in that tab (`AccountPanel`, lazy — it pulls
+  Firebase in); the gear (`SettingsButton`) shows a dot and opens on the Account tab when the
+  session expired or sync failed. Tabs: Preferences (`settings/PreferencesPanel`), Account, About
+  (`settings/AboutPanel`: version and the legal/GitHub/feedback links). The web config is public by design, but it stays in `.env` (and in the repo
   secrets `release.yml` passes to the APK build), never in a source file: gitleaks flags the
   `AIza…` key — which is also why there is no `google-services.json`.
 - Sign-in: the web uses `signInWithPopup`. The APK can't (Google blocks OAuth in a WebView): the
@@ -624,7 +631,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   the APK's package + signing SHA-1 against an Android app registered in the Firebase project, so
   the debug and release keystore SHA-1s must both be there, or sign-in fails with "Developer
   console is not set up correctly". Sign-out also clears the native credential state.
-- Server: `api/sync/[action].ts` (`pull`, `push`). The uid always comes from the Firebase ID token
+- Server: `api/sync/[action].ts` (`pull`, `push`, `delete`). The uid always comes from the Firebase ID token
   (`Authorization: Bearer`), verified in `api/_lib/firebaseAuth.ts` with `jose` against Google's
   public keys (`aud` = project id, read from `FIREBASE_PROJECT_ID` or `VITE_FIREBASE_PROJECT_ID`) —
   never from the body. Queries in `api/_lib/cloud.ts` take the SQL executor as a parameter.
@@ -643,10 +650,10 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   over `CLOUD_DOC_MAX_BYTES` on the wire (escaped JSON) stays device-only (`too_large`), and so does
   one that fails `pushItemSchema` (`invalid` — e.g. a monster-pack id outside the API's id rule):
   the engine validates each item before batching, because the server rejects a whole batch for one
-  bad item and the rest would never upload. Both show in `AccountModal` as local-only.
+  bad item and the rest would never upload. Both show in `AccountPanel` as local-only.
 - Client: `src/services/firebaseAuth.ts` is the only Firebase import (auth only), `cloudApi.ts` is
   the HTTP `CloudRemote` (same base as the rooms, `roomApiBase()`); both are reachable only through
-  lazy chunks (`CloudSyncBridge`, mounted in `App` while linked, and `AccountModal`).
+  lazy chunks (`CloudSyncBridge`, mounted in `App` while linked, and `AccountPanel`).
 - `src/services/cloudState.ts` (`dnd_nuvem`) holds the linked profile, one `CloudRecord` per
   `kind:id` (`hash` of the local content, `synced` = hash the cloud has, `at` = when the content
   changed here) and the single `seq` cursor. The storages call `recordLocalWrite` /
@@ -676,6 +683,22 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   warns, then `signOutAndWipe` calls `unlinkProfile` **before** `wipeLocalData` — wiping while
   linked would turn into tombstones and empty the account (`cloudState.test.ts` covers it). Room
   memberships (`dnd_salas`) are not touched by sign-out.
+- Account deletion (`DeleteAccountPanel` → `cloudSync.deleteAccount`): reauthenticate with Google first
+  (`reauthenticateWithGoogle` — popup on the web, native picker + `reauthenticateWithCredential` in the
+  app; Firebase only deletes after a recent login, and cancelling changes nothing), then inside
+  `exclusive`: `POST /api/sync/delete`, `unlinkProfile`, `deleteFirebaseUser` (if that last step fails,
+  sign out anyway). Local data **stays** on the device, unlinked; it never left the user's control.
+  Server side (`deleteAccountData`, migration `004_cloud_users_deleted.sql`): first mark
+  `cloud_users.deleted_at`, then delete `cloud_records` — two statements in that order, because the
+  push's `on conflict … where cloud_users.deleted_at is null` stops writing once the mark exists and a
+  push already in flight holds the row until it commits. `pull`/`push` for a marked uid answer
+  `account_deleted` (410): an ID token stays valid for up to ~1 h after `deleteUser`, and without the
+  mark another device could write data back. A device that gets `account_deleted` runs
+  `forgetDeletedAccount` (unlink, keep local data, sign out, show `deletedElsewhere`). In `handleAuth`, a
+  linked profile whose uid differs but whose **email matches** is the same Google account re-created
+  after a deletion: relink and scan, don't wipe. **Rollout: run `npm run db:migrate` before deploying
+  code that reads `deleted_at`**, or every pull/push fails. Deletion can't run in CI or tests
+  (`isCloudAvailable()` is false without the `VITE_FIREBASE_*` vars).
 
 ### localStorage key schema and legacy migration
 

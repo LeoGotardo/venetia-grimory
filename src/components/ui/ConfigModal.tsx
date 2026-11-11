@@ -1,110 +1,93 @@
+import { lazy, Suspense, useId, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
-import { useConfigStore, type Config } from '../../store/configStore'
-import i18n from '../../i18n/index'
+import { PreferencesPanel } from './settings/PreferencesPanel'
+import { AboutPanel } from './settings/AboutPanel'
+import { isCloudAvailable } from '../../lib/cloud/config'
+import { useCloudStore } from '../../store/cloudStore'
 
-interface SettingRowProps {
-  label: string
-  description: string
-  value: boolean | string
-  onChange: (v: boolean | string ) => void
-}
+// A conta traz o Firebase consigo: só carrega quando a aba abre.
+const AccountPanel = lazy(() => import('./AccountPanel').then(m => ({ default: m.AccountPanel })))
 
-function SettingRow({ label, description, value, onChange }: SettingRowProps) {
-  return (
-    <div className="flex items-start justify-between gap-4 py-3 border-b border-[#B8860B]/10 last:border-0">
-      <div className="min-w-0">
-        <p className="text-sm font-medium text-[#F5F0E8]">{label}</p>
-        <p className="text-xs text-[#A8A09B] mt-0.5">{description}</p>
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={typeof value === 'boolean' ? value : undefined}
-        onClick={() => {if(typeof value === 'boolean'){onChange(!value)}else{if(value === 'pt'){onChange('en')}else{onChange('pt')}}}}
-        className={[
-          'relative shrink-0 w-10 h-6 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] cursor-pointer overflow-hidden',
-          value ? 'bg-[#B8860B]' : 'bg-[#2D2520] border border-[#A8A09B]/30',
-        ].join(' ')}
-      >
-        <span
-          className={[
-            'absolute top-1 w-4 h-4 rounded-full bg-[#F5F0E8] shadow transition-all duration-200',
-            value ? 'left-[22px]' : 'left-[2px]',
-          ].join(' ')}
-        />
-      </button>
-    </div>
-  )
-}
+export type SettingsTab = 'preferences' | 'account' | 'about'
 
 interface ConfigModalProps {
   open: boolean
   onClose: () => void
+  /** Aba ao abrir; a engrenagem abre na conta quando ela pede atenção. */
+  initialTab?: SettingsTab
 }
 
-export function ConfigModal({ open, onClose }: ConfigModalProps) {
-  const { config, setConfig } = useConfigStore()
+/**
+ * Configurações em abas: preferências, conta (só com o Firebase configurado —
+ * some em forks, no CI e no APK sem o client ID) e sobre. Setas esquerda/direita
+ * trocam de aba, como pede o padrão de abas da WAI-ARIA.
+ */
+export function ConfigModal({ open, onClose, initialTab = 'preferences' }: ConfigModalProps) {
   const { t } = useTranslation()
+  const baseId = useId()
+  const tabRefs = useRef<Partial<Record<SettingsTab, HTMLButtonElement | null>>>({})
+  const accountAttention = useCloudStore(s => s.sessionExpired || s.phase === 'error')
+  const [tab, setTab] = useState<SettingsTab>(initialTab)
 
-  const SETTINGS: Array<{
-    key: keyof Config
-    label: string
-    description: string
-  }> = [
-    {
-      key: 'track_weight',
-      label: t('config.weightTracking'),
-      description: t('config.weightTrackingDesc'),
-    },
-    {
-      key: 'manage_gold',
-      label: t('config.goldManagement'),
-      description: t('config.goldManagementDesc'),
-    },
-    {
-      key: 'sale_refund',
-      label: t('config.sellRefund'),
-      description: t('config.sellRefundDesc'),
-    },
-    {
-      key: 'simple_coins',
-      label: t('config.simpleCoins'),
-      description: t('config.simpleCoinsDesc'),
-    },
+  const tabs: Array<{ id: SettingsTab; label: string }> = [
+    { id: 'preferences', label: t('config.tabPreferences') },
+    ...(isCloudAvailable() ? [{ id: 'account' as const, label: t('config.tabAccount') }] : []),
+    { id: 'about', label: t('config.tabAbout') },
   ]
+  const active = tabs.some(item => item.id === tab) ? tab : 'preferences'
+
+  function select(next: SettingsTab) {
+    setTab(next)
+    tabRefs.current[next]?.focus()
+  }
+
+  function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+    e.preventDefault()
+    const index = tabs.findIndex(item => item.id === active)
+    const step = e.key === 'ArrowRight' ? 1 : -1
+    select(tabs[(index + step + tabs.length) % tabs.length].id)
+  }
 
   return (
     <Modal open={open} onClose={onClose} title={t('config.title')}>
-      <div className="divide-y divide-[#B8860B]/10">
-        <div className="flex items-center justify-between gap-4 py-3 border-b border-[#B8860B]/10">
-          <p className="text-sm font-medium text-[#F5F0E8]">{t('config.language')}</p>
-          <div className="flex gap-2">
-            {(['pt', 'en'] as const).map(lang => (
-              <button
-                key={lang}
-                onClick={() => { setConfig({ language: lang }); i18n.changeLanguage(lang) }}
-                className={[
-                  'px-3 py-1 text-xs rounded font-medium transition-colors',
-                  i18n.language === lang
-                    ? 'bg-[#B8860B] text-[#1A1208]'
-                    : 'border border-[#B8860B]/40 text-[#A8A09B] hover:border-[#B8860B]',
-                ].join(' ')}
-              >
-                {lang.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-        {SETTINGS.map(s => (
-          <SettingRow
-            key={s.key}
-            label={s.label}
-            description={s.description}
-            value={config[s.key]}
-            onChange={v => setConfig({ [s.key]: v })}
-          />
-        ))}
+      <div role="tablist" aria-label={t('config.title')} onKeyDown={handleKeyDown} className="flex gap-1 mb-4 border-b border-white/[0.08]">
+        {tabs.map(item => {
+          const selected = item.id === active
+          return (
+            <button
+              key={item.id}
+              ref={el => { tabRefs.current[item.id] = el }}
+              id={`${baseId}-tab-${item.id}`}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              aria-controls={`${baseId}-panel`}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => setTab(item.id)}
+              className={`relative min-h-[44px] px-3 text-[13px] font-semibold border-b-2 -mb-px cursor-pointer transition-colors ${
+                selected ? 'border-[#D4A017] text-[#F5F0E8]' : 'border-transparent text-[#A8A09B] hover:text-[#E8DFD0]'
+              }`}
+            >
+              {item.label}
+              {item.id === 'account' && accountAttention && (
+                <span aria-hidden="true" className="absolute top-2 right-0.5 w-1.5 h-1.5 rounded-full bg-[#D4A017]" />
+              )}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Altura mínima ~ a da aba Preferências: o modal é centralizado e pularia a cada troca de aba. */}
+      <div role="tabpanel" id={`${baseId}-panel`} aria-labelledby={`${baseId}-tab-${active}`} className="min-h-[22rem]">
+        {active === 'preferences' && <PreferencesPanel />}
+        {active === 'account' && (
+          <Suspense fallback={<p className="py-6 text-center text-sm text-[#A8A09B]">{t('loading.loading')}</p>}>
+            <AccountPanel />
+          </Suspense>
+        )}
+        {active === 'about' && <AboutPanel />}
       </div>
     </Modal>
   )

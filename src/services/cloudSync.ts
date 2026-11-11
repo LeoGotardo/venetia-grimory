@@ -13,17 +13,19 @@ import {
 } from './cloudState'
 import {
   currentIdToken,
+  deleteFirebaseUser,
+  reauthenticateWithGoogle,
   signInWithGoogle as firebaseSignIn,
   signOutFirebase,
   toProfile,
   watchAuth,
 } from './firebaseAuth'
-import { CloudApiError, cloudApiRemote } from './cloudApi'
+import { CloudApiError, cloudApiRemote, deleteCloudAccount } from './cloudApi'
 
 /**
  * Orquestra o sync com a conta: login/logout, quando buscar e quando subir.
  * Login pelo Firebase, dados no Neon (`api/sync`). Carregado sob demanda
- * (`CloudSyncBridge`, `AccountModal`) — o Firebase fica fora do bundle de quem nunca entrou.
+ * (`CloudSyncBridge`, `AccountPanel`) — o Firebase fica fora do bundle de quem nunca entrou.
  *
  * Busca ao entrar, ao abrir o app, ao voltar para ele e quando a rede volta;
  * sobe `CLOUD_PUSH_DELAY_MS` depois da última gravação local. Uma operação por
@@ -44,6 +46,25 @@ function exclusive<T>(task: () => Promise<T>): Promise<T> {
   return next
 }
 
+function clearPushTimer() {
+  if (pushTimer) clearTimeout(pushTimer)
+  pushTimer = null
+}
+
+/**
+ * A conta foi excluída em outro aparelho (a API responde `account_deleted`):
+ * desvincula — os dados deste aparelho ficam, só deixam de sincronizar — e sai do
+ * Firebase, ou o próximo início religaria a conta e bateria na marca de novo.
+ */
+async function forgetDeletedAccount(): Promise<void> {
+  unlinkProfile()
+  user = null
+  engine = null
+  clearPushTimer()
+  await signOutFirebase().catch(err => console.error('[nuvem] Falha ao sair do Firebase.', err))
+  useCloudStore.setState({ phase: 'idle', error: 'deleted', sessionExpired: false, lastSyncAt: null })
+}
+
 async function guarded(task: () => Promise<unknown>): Promise<void> {
   useCloudStore.setState({ phase: 'syncing' })
   try {
@@ -51,6 +72,10 @@ async function guarded(task: () => Promise<unknown>): Promise<void> {
     useCloudStore.setState({ phase: 'idle', error: null, lastSyncAt: new Date().toISOString() })
   } catch (err) {
     const code = err instanceof CloudApiError ? err.code : null
+    if (code === 'account_deleted') {
+      await forgetDeletedAccount()
+      return
+    }
     const offline = code === 'network' || (typeof navigator !== 'undefined' && !navigator.onLine)
     console.error('[nuvem] Falha no sync.', err)
     useCloudStore.setState(
@@ -86,7 +111,7 @@ function pushNow(): Promise<void> {
 }
 
 function schedulePush() {
-  if (pushTimer) clearTimeout(pushTimer)
+  clearPushTimer()
   pushTimer = setTimeout(() => {
     pushTimer = null
     void pushNow()
@@ -105,10 +130,16 @@ async function handleAuth(next: User | null) {
 
   await exclusive(async () => {
     if (linked && linked.uid !== next.uid) {
-      // Outra conta neste aparelho: os dados da anterior nunca entram nela.
-      console.warn('[nuvem] Outra conta entrou; os dados da anterior saem do aparelho.')
-      unlinkProfile()
-      await wipeLocalData()
+      if (linked.email && linked.email === next.email) {
+        // A mesma conta Google com outro uid: ela foi excluída (em outro aparelho) e
+        // criada de novo. Os dados daqui são da mesma pessoa e entram na conta nova.
+        unlinkProfile()
+      } else {
+        // Outra conta neste aparelho: os dados da anterior nunca entram nela.
+        console.warn('[nuvem] Outra conta entrou; os dados da anterior saem do aparelho.')
+        unlinkProfile()
+        await wipeLocalData()
+      }
     }
     user = next
     engine = createCloudEngine(cloudApiRemote(currentIdToken), cloudLocal)
@@ -163,8 +194,7 @@ export async function signIn(): Promise<void> {
  */
 export async function prepareSignOut(): Promise<number> {
   await flushLocal()
-  if (pushTimer) clearTimeout(pushTimer)
-  pushTimer = null
+  clearPushTimer()
   await Promise.race([
     pushNow(),
     new Promise(resolve => setTimeout(resolve, CLOUD_SIGN_OUT_TIMEOUT_MS)),
@@ -180,6 +210,34 @@ export async function signOutAndWipe(): Promise<void> {
     user = null
     engine = null
     await signOutFirebase()
+  })
+  useCloudStore.setState({ phase: 'idle', error: null, sessionExpired: false, lastSyncAt: null })
+}
+
+/**
+ * Exclui a conta. Primeiro confirma a identidade no Google — o Firebase só apaga
+ * um usuário com login recente, e cancelar aqui não muda nada. Depois, numa
+ * operação só (nenhum sync no meio): apaga os dados no servidor, desvincula este
+ * aparelho — fichas e campanhas daqui ficam, só deixam de sincronizar — e apaga o
+ * usuário do Firebase. Se essa última etapa falhar, os dados já saíram e o servidor
+ * recusa novas gravações; a sessão é encerrada para o próximo início não religar a conta.
+ */
+export async function deleteAccount(): Promise<void> {
+  await reauthenticateWithGoogle()
+  await exclusive(async () => {
+    clearPushTimer()
+    const token = await currentIdToken()
+    if (!token) throw new CloudApiError('unauthorized')
+    await deleteCloudAccount(token)
+    unlinkProfile()
+    user = null
+    engine = null
+    try {
+      await deleteFirebaseUser()
+    } catch (err) {
+      console.error('[nuvem] Dados excluídos, mas o usuário do Firebase não; encerrando a sessão.', err)
+      await signOutFirebase().catch(signOutErr => console.error('[nuvem] Falha ao sair do Firebase.', signOutErr))
+    }
   })
   useCloudStore.setState({ phase: 'idle', error: null, sessionExpired: false, lastSyncAt: null })
 }
