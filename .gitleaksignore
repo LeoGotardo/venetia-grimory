@@ -4,3 +4,7 @@
 # Ignorar aqui só é seguro enquanto a senha antiga continuar revogada no Neon.
 a4944eaa294fb6fd890af15805eed6e322a42e94:.env.local:generic-api-key:12
 a4944eaa294fb6fd890af15805eed6e322a42e94:.env.local:generic-api-key:19
+
+# Falso positivo: um JWT inventado ({"alg":"RS256"} / {"sub":"1"}) no teste do
+# login do desktop, trocado no commit seguinte por 'header.payload.signature'.
+d0c576400f1905ac1145cbdf624f769bb059fec3:electron/browserSignIn.test.ts:generic-api-key:6

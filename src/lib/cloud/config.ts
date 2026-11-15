@@ -41,7 +41,10 @@ export function googleWebClientId(): string | null {
   return (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined) || null
 }
 
-/** No app, a conta também precisa do client ID do login nativo; sem ele o botão some. */
+/**
+ * No app, a conta também precisa do client ID do login nativo; sem ele o botão
+ * some. O desktop só precisa da config: o login é a página do site (`/entrar-desktop`).
+ */
 export function isCloudAvailable(): boolean {
   if (firebaseConfig() === null) return false
   return !isApp() || googleWebClientId() !== null

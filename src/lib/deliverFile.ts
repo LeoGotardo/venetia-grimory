@@ -1,4 +1,4 @@
-import { isApp, isTouchScreen } from './platform'
+import { desktopBridge, isApp, isTouchScreen } from './platform'
 
 const MS_UNTIL_PRINT_CLEANUP = 60_000
 /**
@@ -136,7 +136,16 @@ export async function deliverFile(
 ): Promise<FileDelivery> {
   if (isApp()) return shareInApp(file)
 
-  if (isTouchScreen() && (await shareOnWeb(file))) return 'compartilhado'
+  // No desktop, `<a download>` abre o "Salvar como" (electron/main.ts); imprimir
+  // por iframe depende de um leitor de PDF que o Electron não garante, então o
+  // PDF abre no leitor do sistema, que imprime.
+  const desktop = desktopBridge()
+  if (desktop && action === 'print') {
+    if (!(await desktop.openPdf({ bytes: file.bytes, fileName: file.fileName }))) throw new Error('o sistema não abriu o PDF')
+    return 'impresso'
+  }
+
+  if (!desktop && isTouchScreen() && (await shareOnWeb(file))) return 'compartilhado'
 
   return action === 'print' ? printInBrowser(file) : downloadFile(file)
 }

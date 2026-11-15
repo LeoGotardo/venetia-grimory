@@ -42,7 +42,8 @@ inventário e subida de nível. Exporta a ficha em PDF, num modelo próprio do p
 Para o mestre há uma **Área do Mestre** (campanhas, NPCs, bestiário do SRD, combate com mapa,
 mapas ilustrados e notas) e **salas online** para jogar com os players em outros aparelhos. Não há
 conta: fichas e campanhas ficam no aparelho (`localStorage`/IndexedDB); só as salas passam por um
-servidor. Roda como site e como app Android empacotado com Capacitor.
+servidor. Roda como site, como app Android empacotado com Capacitor e como app para Windows e
+Linux empacotado com Electron.
 
 | Início | Assistente | Celular |
 |:---:|:---:|:---:|
@@ -146,9 +147,24 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 O Android SDK é procurado em `ANDROID_HOME` ou em `~/Android/Sdk`. O caminho local fica em
 `android/local.properties`, que não é versionado.
 
+**Desktop (Windows e Linux) em desenvolvimento**
+
+```bash
+npm run desktop:dev              # Electron sobre o servidor do Vite, com a api/ local
+npm run desktop:dev -- --dist    # Electron sobre o dist/ já gerado, como no pacote
+npm run desktop:dist -- --dir    # pasta desempacotada em dist-desktop/linux-unpacked/
+npm run desktop:dist             # AppImage + .deb (no Windows: o instalador NSIS)
+```
+
+O login com Google no desktop usa só as `VITE_FIREBASE_*` do `.env`: o app abre a página
+`/entrar-desktop` do site no navegador, que faz o login e devolve a conta ao app. No `desktop:dev`
+essa página vem do servidor do Vite; no app empacotado (e no `desktop:dev -- --dist`), do site
+publicado — então ela precisa estar no ar na Vercel antes de o login funcionar nesses builds.
+
 ### Setup para produção
 
-O app tem dois alvos de produção, publicados de formas independentes.
+O app tem dois caminhos de publicação: a web na Vercel e os apps (Android, Windows e Linux) nas
+GitHub Releases.
 
 **Web: Vercel**
 
@@ -159,7 +175,7 @@ O app tem dois alvos de produção, publicados de formas independentes.
   `index.html` (o roteamento é do lado do cliente), fixa as funções de `api/` em `gru1`, ao lado do
   banco, e agenda o cron diário que apaga salas paradas (`CRON_SECRET` nas variáveis de produção).
 
-**Android: GitHub Releases**
+**Android e desktop: GitHub Releases**
 
 1. **Uma vez só**, crie a keystore e os secrets:
    ```bash
@@ -173,10 +189,13 @@ O app tem dois alvos de produção, publicados de formas independentes.
    npm run release -- minor        # ou major, ou v1.4.0
    ```
 3. O push da tag `vX.Y.Z` dispara `.github/workflows/release.yml`. O workflow roda lint e testes,
-   gera `grimorio-de-venetia-vX.Y.Z.apk` assinado e publica em
+   gera `grimorio-de-venetia-vX.Y.Z.apk` assinado, o instalador do Windows
+   (`Grimorio-de-Venetia-Setup-X.Y.Z.exe`), o `.AppImage` e o `.deb` do Linux, e publica tudo em
    [Releases](https://github.com/LeoGotardo/venetia-grimory/releases).
 
-O usuário instala baixando o APK pelo celular. A Play Store não é usada.
+O usuário instala baixando o APK pelo celular ou o instalador no computador. A Play Store não é
+usada, e os instaladores do desktop não são assinados (o Windows mostra o aviso do SmartScreen).
+Os apps instalados avisam quando sai uma versão nova.
 
 ### Como fazer a build do zero
 

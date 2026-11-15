@@ -9,7 +9,7 @@ persist locally (`localStorage`/IndexedDB); the only backend is the online rooms
 account sync (`api/`, Vercel Functions + Neon Postgres + Upstash Redis — see "Online rooms" and
 "Account sync" below). Stack: React 19 + TypeScript + Vite + Tailwind CSS v4 + Zustand +
 React Router v7 + Framer Motion + uuid + i18next + pdf-lib. Also packaged as an Android app via
-Capacitor (`/android`).
+Capacitor (`/android`) and as a Windows/Linux desktop app via Electron (`/electron`, see "Desktop app").
 
 ## Commands
 
@@ -21,6 +21,8 @@ npm test           # vitest run — unit tests for the rules layer, the store an
 npm run lint        # eslint .
 npm run test:e2e     # playwright (needs a dev server; the config starts one)
 npm run preview      # serve the production build locally
+npm run desktop:dev   # Electron over the Vite dev server (`-- --dist`: over the built dist/, via app://)
+npm run desktop:dist  # Electron installers in dist-desktop/ (`-- --dir` unpacked, `-- --win` Windows)
 ```
 
 **`npm run build` plus `npm test` is the correctness gate.** The build runs the full TypeScript
@@ -58,7 +60,7 @@ Supply chain: `.github/workflows/ci.yml` runs lint, tests and build on every pus
 the same gate as `release.sh`, so a Dependabot PR is green only if the app still builds.
 `.github/workflows/security.yml` runs `npm audit` (production dependencies fail it; dev-only
 findings are reported, not failed — the ones left are moderate: `minimatch` inside eslint /
-typescript-eslint, and `uuid` 7 under `@capacitor/assets` → `@trapezedev/project` → `xcode@3`, with no
+typescript-eslint / electron-builder, and `uuid` 7 under `@capacitor/assets` → `@trapezedev/project` → `xcode@3`, with no
 upstream fix; `xcode` only calls `uuid.v4()`, so that Dependabot alert is dismissed as code not used)
 and gitleaks over the whole history, on every push, pull request and Monday.
 `.github/dependabot.yml` opens weekly update PRs, grouping `@capacitor/*` (the CLI included — it is
@@ -699,6 +701,88 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   after a deletion: relink and scan, don't wipe. **Rollout: run `npm run db:migrate` before deploying
   code that reads `deleted_at`**, or every pull/push fails. Deletion can't run in CI or tests
   (`isCloudAvailable()` is false without the `VITE_FIREBASE_*` vars).
+
+### Desktop app (Electron, Windows + Linux)
+
+- Same bundle as the web (`dist/`), wrapped by `electron/` (main process + preload). The renderer
+  only sees `window.venetiaDesktop` (contract in `src/lib/desktopBridge.ts`, which imports nothing so
+  main and preload can use it too) through `desktopBridge()` / `isDesktop()` in `src/lib/platform.ts`.
+  `isApp()` stays **Capacitor-only** — making it true on desktop would send the back button, file
+  sharing and Google sign-in into Capacitor plugins that don't exist there.
+- The bundle is served by a privileged custom scheme, `app://venetia/` (`protocol.handle` +
+  `net.fetch` of the file; `resolveAppAsset` in `electron/appProtocol.ts` mirrors `vercel.json`:
+  extension-less paths → `index.html`, missing file with an extension → 404, nothing outside
+  `dist/`). Not `file://`: BrowserRouter routes, absolute `/assets/` paths and `fetch` of our own
+  files all break there. **Never change the scheme/host, nor the `userData` folder pinned in
+  `main.ts` (`venetia-grimory`)** — localStorage and IndexedDB live per origin inside it, and a change
+  opens the app with no sheets. Dev runs use `venetia-grimory-dev`.
+- Main and preload are bundled by `scripts/desktop/build-electron.mjs` (Vite SSR build, CommonJS,
+  `noExternal: true`, two separate builds because a sandboxed preload can't `require` a shared
+  chunk) into `dist-electron/`. Everything the main process uses is inlined, so
+  `electron-builder.yml` packs **no** `node_modules` into `app.asar` (otherwise every `dependencies`
+  entry — firebase, pixi, Capacitor, Neon, Redis — would ship twice). `electron`,
+  `electron-builder` and `electron-updater` are devDependencies; Electron downloads its binary lazily
+  on first run, so CI and Vercel installs don't pay for it. Typechecked by `tsconfig.electron.json`
+  (in the `tsc -b` references); `electron/**/*.test.ts` runs in vitest.
+- Security: `contextIsolation`, `sandbox`, no `nodeIntegration`; one instance only
+  (`requestSingleInstanceLock` — two windows on one localStorage race the debounced saves); links
+  that leave `app://` open in the system browser (`setWindowOpenHandler`, `will-navigate`); only the
+  clipboard-write and fullscreen permissions are granted; IPC handlers check the sender's URL. No
+  default menu: zoom, F11, reload and (dev only) DevTools are handled in `before-input-event`.
+- Rooms and sync: `roomApiBase()` uses `ROOM_API_URL_APP` when the page is on `app:`; under
+  `desktop:dev` (Vite origin) it stays same-origin and hits the local `api/`. CORS `*` already covers
+  the `app://venetia` origin.
+- Google sign-in works like Android: the app gets a Google **ID token for the Web client** and
+  `firebaseAuth.ts` does `signInWithCredential` (auth is `initializeAuth` with IndexedDB
+  persistence, no popup resolver). No desktop OAuth client exists — only the `VITE_FIREBASE_*`
+  config, so `isCloudAvailable()` on desktop is just "Firebase configured". Google refuses sign-in
+  inside Electron, so main (`electron/browserSignIn.ts`) opens an ephemeral `http://127.0.0.1:<port>`
+  server and sends the system browser to the site's **`/entrar-desktop`** page
+  (`DesktopSignIn`, lazy) with `?porta=&estado=` — the live site (`DESKTOP_SIGN_IN_ORIGIN`) when
+  packaged and under `desktop:dev -- --dist`, the Vite origin (`localhost`, authorized in Firebase by
+  default) under plain `desktop:dev`, which is the way to test sign-in end to end before deploying. That page runs the normal Google popup on a
+  **separate, in-memory Firebase instance** (`googleIdTokenForDesktop`: the account picked there may
+  not be the one this browser is linked to, and switching uids on the default instance would wipe
+  the linked account's data) and returns the token with a full-page form POST to
+  `desktopSignInReturnUrl(port)` — always `127.0.0.1`, never a URL from the query string
+  (`parseDesktopSignIn` only takes a numeric port), and a navigation rather than `fetch`, so the
+  token stays out of the URL/history and Chrome's local-network-access prompt doesn't apply. Main
+  checks the random `estado` (a wrong one is a 403 and doesn't end the attempt), answers with a
+  localized "go back to the app" page and closes the server. A second click while the browser is
+  open cancels the pending attempt (`AccountPanel` keeps the button enabled on desktop); 5 min
+  timeout. **The page must be deployed before packaged desktop sign-in works**, and renaming the
+  route or its fields breaks every installed desktop app — they're in the contract
+  (`src/lib/desktopBridge.ts`). The prompts (`WhatsNewPrompt`/`UpdatePrompt`) don't mount on it. If
+  the Firebase API key ever gets an HTTP-referrer restriction, requests from `app://venetia/` are
+  refused (403) until that origin is allowed. Spellcheck is off (on Linux and Windows it downloads
+  dictionaries from Google's CDN, which the privacy policy doesn't cover): the window's
+  `spellcheck: false` alone still downloads the language's `.bdic` — `lockDownContents` also calls
+  `setSpellCheckerEnabled(false)` and `setSpellCheckerLanguages([])`; check that `userData/Dictionaries`
+  stays empty.
+- Files: `<a download>` works (Electron's save dialog, defaulting to Downloads via `will-download`);
+  "print" goes through `openPdf` — main writes the PDF (checked for `%PDF-`) to a temp folder and
+  `shell.openPath`s it, since printing a PDF from an iframe isn't reliable in Electron. Desktop never
+  takes the Web Share path, even on touch screens.
+- PixiJS only knows hosts for `http(s)` URLs: a root-relative `/assets/x.webp` became
+  `app://assets/x.webp` and every painted material fell back to the procedural one.
+  `materials.ts` passes absolute URLs — do the same for any new `Assets.load`.
+- Updates: `electron/updater.ts` (electron-updater, GitHub provider, `autoDownload` off) behind
+  `DesktopUpdatePrompt` (`UpdatePrompt` picks it on desktop). It reads `latest.yml` (Windows) /
+  `latest-linux.yml` from the release; a downloaded update not installed goes in on quit. AppImage and
+  `.deb` update in place; only packaged builds check.
+- Packaging (`electron-builder.yml`): NSIS one-click per-user x64 (no admin, so the updater can
+  replace it; uninstall keeps `userData`), AppImage + `.deb`. Executable and artifact names are ASCII
+  (`venetia-grimory`, `Grimorio-de-Venetia-…`) because they become release URLs inside `latest.yml`;
+  the product name keeps "Grimório". `extraMetadata.desktopName` ties the window to the `.desktop`
+  on Wayland. Installers are **not signed** (SmartScreen warns). `scripts/desktop/package.mjs` takes
+  the version from `DESKTOP_VERSION` or the first `releaseNotes.json` entry — `package.json` stays
+  `0.0.0`, and without it `latest.yml` would say 0.0.0 and the updater would never fire.
+- Release: `release.yml` has `gate` → `android` + `desktop` (matrix `windows-latest` /
+  `ubuntu-latest`) → `publish`. Build jobs only upload artifacts; `publish` is the single job that
+  creates the release (two jobs creating it raced). Windows is only built and checked in CI.
+- Verify desktop changes on a packaged build (`npm run desktop:dist -- --dir`, then run
+  `dist-desktop/linux-unpacked/venetia-grimory`); Playwright's `_electron` can drive it — set
+  `XDG_CONFIG_HOME` to a scratch folder so the test doesn't write into the real `userData`.
 
 ### localStorage key schema and legacy migration
 

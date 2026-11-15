@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { AUTHOR_NAME, AUTHOR_URL, FEEDBACK_FORM_URL, GITHUB_RELEASES_URL, GITHUB_REPO_URL } from '../../constants'
-import { isApp } from '../../lib/platform'
+import { isApp, isDesktop } from '../../lib/platform'
 import { VenetiaLogo } from './VenetiaLogo'
 
 interface AppFooterProps {
@@ -13,17 +13,19 @@ interface AppFooterProps {
 /**
  * Rodapé compartilhado pela Home e pela área do mestre: crédito, sugestões, GitHub, APK
  * e os links para "Sobre e licenças" (atribuições que as licenças exigem dentro do app), "Termos de uso" e "Política de privacidade".
- * No app Android o layout é sempre o de celular (mesmo em tablet) e o link do APK some —
- * quem está no app já o instalou, e as atualizações chegam pelo `UpdatePrompt`.
+ * No app Android o layout é sempre o de celular (mesmo em tablet). No Android e no desktop
+ * o link de download some — quem está no app já o instalou, e as atualizações chegam pelo
+ * `UpdatePrompt`.
  */
 export function AppFooter({ containerClassName = 'max-w-[920px] mx-auto px-4 sm:px-8' }: AppFooterProps) {
   const { t } = useTranslation()
   const app = isApp()
+  const installed = app || isDesktop()
 
   const links: Array<{ href: string; label: string; icon: ReactNode }> = [
     { href: FEEDBACK_FORM_URL, label: t('footer.feedbackLink'), icon: <ChatIcon /> },
     { href: GITHUB_REPO_URL, label: t('footer.github'), icon: <GithubIcon /> },
-    ...(app ? [] : [{ href: GITHUB_RELEASES_URL, label: t('footer.downloadApk'), icon: <DownloadIcon /> }]),
+    ...(installed ? [] : [{ href: GITHUB_RELEASES_URL, label: t('footer.downloadApp'), icon: <DownloadIcon /> }]),
   ]
 
   return (
