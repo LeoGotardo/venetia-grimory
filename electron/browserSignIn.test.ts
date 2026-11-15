@@ -3,7 +3,8 @@ import { DESKTOP_SIGN_IN_PATH, parseDesktopSignIn, type DesktopSignInPages } fro
 import { signInInBrowser } from './browserSignIn'
 
 const pages: DesktopSignInPages = { lang: 'pt', title: 'Login <no> app', done: 'Pronto', failed: 'Falhou' }
-const TOKEN = 'eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJh'
+// Só precisa ter o formato de um JWT (três partes); um token "de verdade" aqui cai no gitleaks.
+const TOKEN = 'header.payload.signature'
 const SITE = 'https://venetia.example'
 
 /** O que a página do site faz: lê porta e estado da URL e devolve o formulário ao app. */
