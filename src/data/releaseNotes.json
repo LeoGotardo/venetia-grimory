@@ -1,5 +1,22 @@
 [
   {
+    "version": "v3.5.0",
+    "pt": [
+      "Novo: app para Windows e Linux, com login com Google, impressão pelo leitor de PDF do computador e atualização automática",
+      "Novo: excluir a conta, em Configurações → Conta. As fichas e campanhas deste aparelho continuam nele",
+      "Novo: Política de privacidade, no rodapé, nas configurações e no login com Google",
+      "Novo: as configurações ficam numa janela só, com as abas Preferências, Conta e Sobre",
+      "Ajuste: no app Android, quando o Google recusa o login, o app explica o motivo em vez de só cancelar"
+    ],
+    "en": [
+      "New: a Windows and Linux app, with Google sign-in, printing through the computer's PDF viewer and automatic updates",
+      "New: delete your account, in Settings → Account. The sheets and campaigns on this device stay on it",
+      "New: a Privacy policy, in the footer, in Settings and at Google sign-in",
+      "New: settings now live in a single window, with Preferences, Account and About tabs",
+      "Fix: in the Android app, when Google refuses the sign-in, the app explains why instead of just cancelling"
+    ]
+  },
+  {
     "version": "v3.4.0",
     "pt": [
       "Novo: a ficha em PDF tem desenho próprio do Grimório, em A4, e ficou muito mais leve para baixar",
