@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from './Modal'
 import Button from './Button'
 import { AppUpdater, checkForUpdate, type AvailableUpdate } from '../../lib/appUpdate'
+import { desktopBridge } from '../../lib/platform'
+import { DesktopUpdatePrompt } from './DesktopUpdatePrompt'
 
 type Stage =
   | { kind: 'offer' }
@@ -12,10 +14,16 @@ type Stage =
   | { kind: 'error' }
 
 /**
- * Oferece a versão nova do APK ao abrir o app. Só aparece no Android, com
- * internet e quando a última release do GitHub é mais nova que a instalada.
+ * Oferece a versão nova ao abrir o app: o APK no Android, o instalador no
+ * desktop (`DesktopUpdatePrompt`). Só aparece com internet e quando a última
+ * release do GitHub é mais nova que a instalada; na web, nunca.
  */
 export function UpdatePrompt() {
+  const desktop = desktopBridge()
+  return desktop ? <DesktopUpdatePrompt desktop={desktop} /> : <AndroidUpdatePrompt />
+}
+
+function AndroidUpdatePrompt() {
   const { t } = useTranslation()
   const [update, setUpdate] = useState<AvailableUpdate | null>(null)
   const [stage, setStage] = useState<Stage>({ kind: 'offer' })

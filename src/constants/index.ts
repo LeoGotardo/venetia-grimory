@@ -376,7 +376,7 @@ export const AUTHOR_URL = 'https://leogotardo.com.br/'
 // Formulário de bugs e sugestões, linkado no rodapé
 export const FEEDBACK_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSf3qvBBaJqDrYXhJqQxOm4mHK8uTZX_YpNpk_lgUYa2ptZpVQ/viewform'
 
-// Atualização do app Android pelo GitHub Releases (src/lib/appUpdate.ts)
+// Atualização do app Android (src/lib/appUpdate.ts) e do desktop (electron/updater.ts) pelo GitHub Releases
 export const GITHUB_REPO = 'LeoGotardo/venetia-grimory'
 export const GITHUB_REPO_URL = `https://github.com/${GITHUB_REPO}`
 export const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases/latest`
@@ -389,13 +389,13 @@ export const CC_BY_4_URL = 'https://creativecommons.org/licenses/by/4.0/legalcod
 export const OFL_URL = 'https://openfontlicense.org'
 export const APACHE_2_URL = 'https://www.apache.org/licenses/LICENSE-2.0'
 // Termos de uso (src/pages/Terms.tsx). Mudou o texto de um jeito relevante: atualize a data.
-export const TERMS_EFFECTIVE_DATE = '2026-11-11'
+export const TERMS_EFFECTIVE_DATE = '2026-11-15'
 /** Idade mínima para entrar com conta Google e usar as salas online (o Google exige 13 no Brasil). */
 export const TERMS_MIN_AGE = 13
 /** Canal para dúvidas sobre os termos, a privacidade e pedidos de remoção de conteúdo. */
 export const LEGAL_CONTACT_URL = FEEDBACK_FORM_URL
 // Política de privacidade (src/pages/Privacy.tsx). Mudou o texto de um jeito relevante: atualize a data.
-export const PRIVACY_EFFECTIVE_DATE = '2026-11-11'
+export const PRIVACY_EFFECTIVE_DATE = '2026-11-15'
 /** Autoridade Nacional de Proteção de Dados: onde reclamar pela LGPD. */
 export const ANPD_URL = 'https://www.gov.br/anpd'
 /** Texto de referência das licenças, para pacotes que não trazem o arquivo LICENSE (ex.: Firebase). */
@@ -405,7 +405,7 @@ export const SPDX_LICENSES_URL = 'https://spdx.org/licenses'
 export * from '../lib/room/constants'
 /** Participações deste aparelho em salas (código, papel, token) — chave em português, como as outras. */
 export const STORAGE_KEY_ROOMS = 'dnd_salas'
-/** Servidor das salas para o app Android, que roda em `https://localhost` e não tem a API na mesma origem. */
+/** Servidor das salas (e do sync) para o app Android (`https://localhost`) e o desktop (`app://venetia/`), que não têm a API na mesma origem. */
 export const ROOM_API_URL_APP = 'https://venetia.leogotardo.com.br'
 /** Espera de uma chamada HTTP da sala antes de desistir. */
 export const ROOM_HTTP_TIMEOUT_MS = 15_000

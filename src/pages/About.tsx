@@ -40,6 +40,7 @@ export function About() {
       <LegalSection title={t('about.libsTitle')}>
         <p>{t('about.libsIntro')}</p>
         <p className="mt-3">{t('about.libsNative')}</p>
+        <p className="mt-3">{t('about.libsDesktop')}</p>
         <LegalLinks links={[{ href: APACHE_2_URL, label: 'Apache 2.0' }]} />
         <ThirdPartyLicenses />
       </LegalSection>

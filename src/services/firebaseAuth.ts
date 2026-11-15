@@ -1,9 +1,11 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import {
   GoogleAuthProvider,
+  browserPopupRedirectResolver,
   deleteUser,
   getAuth,
   indexedDBLocalPersistence,
+  inMemoryPersistence,
   initializeAuth,
   onAuthStateChanged,
   reauthenticateWithCredential,
@@ -14,9 +16,10 @@ import {
   type Auth,
   type User,
 } from 'firebase/auth'
+import i18n from '../i18n'
 import { firebaseConfig, googleWebClientId } from '../lib/cloud/config'
 import { GoogleSignIn } from '../lib/googleSignIn'
-import { isApp } from '../lib/platform'
+import { desktopBridge, isApp } from '../lib/platform'
 import type { CloudProfile } from './cloudState'
 
 /**
@@ -25,7 +28,10 @@ import type { CloudProfile } from './cloudState'
  *
  * No navegador o login é o popup do Google. No app o popup não funciona (o
  * Google bloqueia OAuth em WebView): a conta é escolhida no seletor nativo
- * (`GoogleSignIn`) e o ID token do Google entra por `signInWithCredential`.
+ * (`GoogleSignIn`) e o ID token do Google entra por `signInWithCredential`. No
+ * app desktop é igual, mas o token vem do navegador do sistema: a página
+ * `/entrar-desktop` do site faz o popup (`googleIdTokenForDesktop`) e o devolve
+ * ao processo principal do Electron (`electron/browserSignIn.ts`).
  */
 
 let app: FirebaseApp | null = null
@@ -36,9 +42,9 @@ function firebaseAuth(): Auth {
     const config = firebaseConfig()
     if (!config) throw new Error('[conta] Firebase sem configuração (VITE_FIREBASE_*).')
     app = initializeApp(config)
-    // No app, sem o resolver de popup/redirect: ele carrega um iframe do authDomain
-    // que a WebView não precisa (e que pode travar a inicialização).
-    auth = isApp() ? initializeAuth(app, { persistence: indexedDBLocalPersistence }) : getAuth(app)
+    // No app e no desktop, sem o resolver de popup/redirect: ele carrega um iframe
+    // do authDomain que eles não usam (e que pode travar a inicialização).
+    auth = usesTokenSignIn() ? initializeAuth(app, { persistence: indexedDBLocalPersistence }) : getAuth(app)
   }
   return auth
 }
@@ -51,8 +57,38 @@ export function watchAuth(listener: (user: User | null) => void): () => void {
   return onAuthStateChanged(firebaseAuth(), listener)
 }
 
-/** No app: a conta escolhida no seletor nativo, como credencial do Firebase. */
+/** App ou desktop: o ID token do Google chega por fora do Firebase, sem popup. */
+function usesTokenSignIn(): boolean {
+  return isApp() || desktopBridge() !== null
+}
+
+/** Erro do login no desktop com o mesmo `code` que o plugin do Android devolve. */
+class DesktopSignInError extends Error {
+  readonly code: string
+
+  constructor(code: string) {
+    super(`[conta] Login no desktop: ${code}`)
+    this.code = code
+  }
+}
+
+/** No desktop: a página de login do site no navegador do sistema; o processo principal devolve o ID token. */
+async function desktopGoogleCredential() {
+  const desktop = desktopBridge()
+  if (!desktop) throw new DesktopSignInError('failed')
+  const result = await desktop.signInWithGoogle({
+    lang: i18n.language,
+    title: i18n.t('account.desktopBrowserTitle'),
+    done: i18n.t('account.desktopBrowserDone'),
+    failed: i18n.t('account.desktopBrowserFailed'),
+  })
+  if (!result.ok) throw new DesktopSignInError(result.code)
+  return GoogleAuthProvider.credential(result.idToken)
+}
+
+/** No app: a conta escolhida no seletor nativo, como credencial do Firebase. No desktop, a do navegador. */
 async function nativeGoogleCredential() {
+  if (desktopBridge()) return desktopGoogleCredential()
   const serverClientId = googleWebClientId()
   if (!serverClientId) throw new Error('[conta] VITE_GOOGLE_WEB_CLIENT_ID ausente no build do app.')
   const { idToken } = await GoogleSignIn.signIn({ serverClientId })
@@ -67,11 +103,53 @@ function googleProvider(): GoogleAuthProvider {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  if (isApp()) {
+  if (usesTokenSignIn()) {
     await signInWithCredential(firebaseAuth(), await nativeGoogleCredential())
     return
   }
   await signInWithPopup(firebaseAuth(), googleProvider())
+}
+
+let handoffAuth: Auth | null = null
+
+/**
+ * Instância à parte, só na memória, para a página `/entrar-desktop`. A conta
+ * escolhida ali pode não ser a que este navegador tem vinculada: entrar com ela
+ * na instância padrão trocaria a sessão do site, e uma conta diferente apaga os
+ * dados da anterior neste navegador (`handleAuth`).
+ */
+function desktopHandoffAuth(): Auth {
+  if (!handoffAuth) {
+    const config = firebaseConfig()
+    if (!config) throw new Error('[conta] Firebase sem configuração (VITE_FIREBASE_*).')
+    handoffAuth = initializeAuth(initializeApp(config, 'desktop-sign-in'), {
+      persistence: inMemoryPersistence,
+      popupRedirectResolver: browserPopupRedirectResolver,
+    })
+  }
+  return handoffAuth
+}
+
+/** Prepara a instância antes do clique, para o popup abrir sem demora (e sem ser bloqueado). */
+export function prepareDesktopHandoff(): void {
+  desktopHandoffAuth()
+}
+
+/**
+ * Página `/entrar-desktop`, no navegador: o popup do Google, como no site, e
+ * devolve o ID token do Google (o mesmo tipo que o seletor do Android dá) para
+ * o app desktop trocar pela sessão. A sessão desta instância acaba aqui.
+ */
+export async function googleIdTokenForDesktop(): Promise<string> {
+  const handoff = desktopHandoffAuth()
+  try {
+    const result = await signInWithPopup(handoff, googleProvider())
+    const idToken = GoogleAuthProvider.credentialFromResult(result)?.idToken
+    if (!idToken) throw new Error('[conta] O Google não devolveu o ID token.')
+    return idToken
+  } finally {
+    await signOut(handoff).catch(() => undefined)
+  }
 }
 
 /** Há sessão do Firebase agora (vinculado com a sessão expirada não conta). */
@@ -86,7 +164,7 @@ export function hasFirebaseSession(): boolean {
 export async function reauthenticateWithGoogle(): Promise<void> {
   const current = firebaseAuth().currentUser
   if (!current) throw new Error('[conta] Sem sessão para confirmar a identidade.')
-  if (isApp()) {
+  if (usesTokenSignIn()) {
     await reauthenticateWithCredential(current, await nativeGoogleCredential())
     return
   }

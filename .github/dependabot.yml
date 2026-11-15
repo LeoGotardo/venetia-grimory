@@ -18,11 +18,16 @@ updates:
       # passa e o app abre em branco. Um PR para os dois.
       react:
         patterns: ["react", "react-dom"]
-      # Ferramentas de desenvolvimento, menos o Capacitor: a CLI tem de vir no
-      # mesmo PR que o core e as plataformas, no grupo acima.
+      # O app desktop: o electron-builder e o electron-updater saem juntos do
+      # mesmo repositório, e um Electron novo pede testar o pacote à mão
+      # (npm run desktop:dist -- --dir) antes do merge.
+      electron:
+        patterns: ["electron", "electron-builder", "electron-updater"]
+      # Ferramentas de desenvolvimento, menos o Capacitor e o Electron: a CLI do
+      # Capacitor tem de vir no mesmo PR que o core e as plataformas, no grupo acima.
       dev-tooling:
         dependency-type: development
-        exclude-patterns: ["@capacitor/*"]
+        exclude-patterns: ["@capacitor/*", "electron", "electron-builder", "electron-updater"]
     ignore:
       # O typescript-eslint ainda não aceita o TypeScript 7 (peer < 6.1.0): com
       # ele o `npm ci` falha (ERESOLVE) e o CI não roda. O código compila no 7;

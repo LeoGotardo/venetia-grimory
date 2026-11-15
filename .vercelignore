@@ -8,6 +8,8 @@
 /assets
 /docs
 /dist
+/dist-electron
+/dist-desktop
 /e2e
 /playwright-report
 /test-results

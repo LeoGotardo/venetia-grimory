@@ -35,11 +35,20 @@ export function isMaterialReady(id: string): boolean {
   return ready.has(id) || !paintedTextureUrl(id)
 }
 
+/**
+ * URL absoluta da imagem. O Pixi só reconhece host em `http(s)`: no app desktop
+ * (`app://venetia/`) ele resolvia `/assets/x.webp` como `app://assets/x.webp`,
+ * sem o host, e toda textura pintada caía na procedural.
+ */
+function absoluteUrl(url: string): string {
+  return new URL(url, document.baseURI).href
+}
+
 export function loadMaterial(id: string): Promise<void> {
   if (isMaterialReady(id)) return Promise.resolve()
   let job = pending.get(id)
   if (!job) {
-    job = Assets.load<Texture>({ src: paintedTextureUrl(id)!, data: { autoGenerateMipmaps: true } })
+    job = Assets.load<Texture>({ src: absoluteUrl(paintedTextureUrl(id)!), data: { autoGenerateMipmaps: true } })
       // Mipmaps: afastado, a imagem de 1024 px encolhe muito e sem eles cintila.
       .then(tex => {
         ready.set(id, tex)

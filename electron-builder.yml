@@ -1,0 +1,71 @@
+# Empacotamento do app desktop (Windows e Linux). Rode pelo
+# scripts/desktop/package.mjs (npm run desktop:dist), que monta dist/ e
+# dist-electron/ antes e passa a versão.
+#
+# Os nomes com "ó" e espaço ficam só no que a pessoa vê (atalho, título,
+# desinstalador): executável e arquivos da release são ASCII, porque viram URL
+# e entram no latest.yml que o electron-updater lê.
+appId: com.venetia.grimory
+productName: Grimório de Venetia
+executableName: venetia-grimory
+copyright: Copyright © Leo Gotardo
+
+directories:
+  output: dist-desktop
+  buildResources: assets
+
+# O bundle da web e o processo principal já empacotados (com o electron-updater
+# dentro): nenhuma dependência do package.json entra no app.asar — firebase,
+# pixi, react etc. já estão no dist/, e o resto (Capacitor, Neon, Redis) é de
+# outras plataformas.
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - "!node_modules/**/*"
+  - "!**/*.map"
+
+# Traduções da interface nativa do Chromium (menus de contexto, diálogos):
+# só as línguas do app.
+electronLanguages: [en-US, pt-BR, pt-PT]
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: assets/icon-only.png
+
+# Instalação por usuário, sem pedir administrador: é o que deixa o
+# electron-updater atualizar sozinho. Desinstalar não apaga as fichas (userData).
+nsis:
+  oneClick: true
+  perMachine: false
+  deleteAppDataOnUninstall: false
+  shortcutName: Grimório de Venetia
+  uninstallDisplayName: Grimório de Venetia
+  artifactName: Grimorio-de-Venetia-Setup-${version}.${ext}
+
+# Sem o desktopName, o Wayland não liga a janela ao .desktop (ícone genérico na barra).
+extraMetadata:
+  desktopName: venetia-grimory.desktop
+
+linux:
+  target: [AppImage, deb]
+  icon: assets/icon-only.png
+  category: Game
+  syncDesktopName: true
+  synopsis: Criador de personagens e área do mestre, compatível com a 5ª edição
+  description: Criador de personagens, ficha de jogo e área do mestre compatível com a 5ª edição (2024).
+  maintainer: Leo Gotardo
+  artifactName: Grimorio-de-Venetia-${version}-${arch}.${ext}
+
+deb:
+  packageName: venetia-grimory
+  artifactName: venetia-grimory_${version}_${arch}.${ext}
+
+# Só gera o app-update.yml que o electron-updater lê; quem sobe os arquivos
+# para a release é o .github/workflows/release.yml (--publish never).
+publish:
+  provider: github
+  owner: LeoGotardo
+  repo: venetia-grimory
+  releaseType: release

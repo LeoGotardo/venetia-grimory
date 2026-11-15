@@ -13,7 +13,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'electron/**/*.test.ts'],
     setupFiles: ['./vitest.setup.ts'],
   },
 })

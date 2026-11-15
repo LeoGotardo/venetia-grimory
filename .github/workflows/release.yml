@@ -1,28 +1,35 @@
-# Release: um APK Android assinado por versão, publicado como GitHub Release.
+# Release: o APK Android assinado e os instaladores do app desktop (Windows e
+# Linux), publicados juntos como uma GitHub Release.
 #
 # Disparado pela tag anotada `vX.Y.Z` que scripts/release.sh envia — a
 # mensagem da tag são as notas da release. Para refazer o build de uma tag
 # existente (se falhou), rode pelo Actions (workflow_dispatch).
 #
-# O build em si é scripts/build-android-release.sh, o mesmo script que roda à
-# mão; este arquivo só fornece o que ele precisa a partir dos secrets
-# (criados por scripts/setup-release-secrets.sh):
+# Cada plataforma gera os arquivos num job e os guarda como artifact; só o job
+# `publish` cria a release, com tudo de uma vez — dois jobs criando a mesma
+# release disputariam o `gh release create`.
+#
+# O APK é scripts/build-android-release.sh, o mesmo script que roda à mão; os
+# secrets da assinatura vêm de scripts/setup-release-secrets.sh:
 #
 #   ANDROID_KEYSTORE_BASE64    base64 da keystore de release (.jks)
 #   ANDROID_KEYSTORE_PASSWORD
 #   ANDROID_KEY_ALIAS
 #   ANDROID_KEY_PASSWORD
 #
-# O login com Google do app sai do bundle web, então o build também lê a config
-# do Firebase dos secrets — sem eles o APK sai sem o botão da conta. Uma vez,
-# a partir do .env local: `gh secret set -f .env`.
+# O login com Google sai do bundle web, então os builds também leem a config do
+# Firebase dos secrets — sem eles o app sai sem o botão da conta. Uma vez, a
+# partir do .env local: `gh secret set -f .env`.
 #
 #   VITE_FIREBASE_API_KEY, VITE_FIREBASE_AUTH_DOMAIN, VITE_FIREBASE_PROJECT_ID,
 #   VITE_FIREBASE_APP_ID, VITE_FIREBASE_MESSAGING_SENDER_ID, VITE_FIREBASE_STORAGE_BUCKET,
-#   VITE_GOOGLE_WEB_CLIENT_ID
+#   VITE_GOOGLE_WEB_CLIENT_ID                                  (só o Android)
 #
 # A mesma keystore assina toda release: o Android recusa atualização assinada
-# por outra chave, então perdê-la obriga o usuário a desinstalar.
+# por outra chave, então perdê-la obriga o usuário a desinstalar. Os
+# instaladores do desktop não são assinados (o Windows mostra o aviso do
+# SmartScreen); o electron-updater atualiza assim mesmo, pelo latest.yml e
+# latest-linux.yml publicados junto.
 
 name: release
 
@@ -42,12 +49,37 @@ concurrency:
   group: release-${{ github.event.inputs.tag || github.ref_name }}
   cancel-in-progress: false
 
+env:
+  VERSION: ${{ github.event.inputs.tag || github.ref_name }}
+
 jobs:
-  android:
-    name: gera o APK e publica a release
+  # O mesmo gate de scripts/release.sh — cobre o re-run manual de uma tag. Uma
+  # vez só, não por plataforma.
+  gate:
+    name: lint e testes
     runs-on: ubuntu-latest
-    env:
-      VERSION: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.VERSION }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: install
+        run: npm ci
+
+      - name: lint e testes
+        run: |
+          npm run lint
+          npm test
+
+  android:
+    name: APK assinado
+    needs: gate
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
@@ -66,12 +98,6 @@ jobs:
 
       - name: install
         run: npm ci
-
-      # O mesmo gate de scripts/release.sh — cobre o re-run manual de uma tag.
-      - name: lint e testes
-        run: |
-          npm run lint
-          npm test
 
       - name: keystore
         env:
@@ -98,31 +124,129 @@ jobs:
           apk="$(./scripts/build-android-release.sh | tail -1)"
           echo "apk=$apk" >> "$GITHUB_OUTPUT"
 
+      - name: apagar a keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/release.jks"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-android
+          path: ${{ steps.build.outputs.apk }}
+          if-no-files-found: error
+          # Só até o job `publish` copiar para a release.
+          retention-days: 7
+
+  desktop:
+    name: app desktop (${{ matrix.target }})
+    needs: gate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: win
+          - os: ubuntu-latest
+            target: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.VERSION }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: install
+        run: npm ci
+
+      # scripts/desktop/package.mjs: build web, processo principal e
+      # electron-builder com a versão da tag (--publish never: quem publica é o
+      # job `publish`).
+      - name: instaladores
+        shell: bash
+        env:
+          DESKTOP_VERSION: ${{ env.VERSION }}
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+        run: npm run desktop:dist -- --${{ matrix.target }}
+
+      # Instaladores, os manifestos do electron-updater e o blockmap do download
+      # diferencial. A pasta *-unpacked e os arquivos de debug ficam de fora.
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-desktop-${{ matrix.target }}
+          path: |
+            dist-desktop/*.exe
+            dist-desktop/*.AppImage
+            dist-desktop/*.deb
+            dist-desktop/*.blockmap
+            dist-desktop/latest*.yml
+          if-no-files-found: error
+          # Só até o job `publish` copiar para a release.
+          retention-days: 7
+
+  # Publica assim que o APK existe: uma falha no build do desktop não segura a
+  # atualização do Android. Release sem os arquivos do desktop é segura — o
+  # electron-updater não acha o latest.yml e não oferece nada; refazer a tag
+  # pelo workflow_dispatch completa a release (--clobber).
+  publish:
+    name: publica a release
+    needs: [android, desktop]
+    if: ${{ !cancelled() && needs.android.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.VERSION }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          path: ${{ runner.temp }}/assets
+          merge-multiple: true
+
       # As notas são a mensagem da tag. O checkout traz o commit, não o objeto
       # da tag anotada, então ela é buscada à parte.
       - name: notas da release
         run: |
+          ls -la "$RUNNER_TEMP/assets"
           git fetch --force origin "refs/tags/$VERSION:refs/tags/$VERSION"
+          # Um build do desktop pode ter falhado: cada linha só sai se o arquivo existe.
+          shopt -s nullglob
+          cd "$RUNNER_TEMP/assets"
+          apk=(*.apk); exe=(*.exe); appimage=(*.AppImage); deb=(*.deb)
+          cd - >/dev/null
           {
             git tag -l --format='%(contents)' "$VERSION" | sed '/^-----BEGIN PGP SIGNATURE-----/,$d'
             echo
             echo "---"
-            echo "Android: baixe \`${{ steps.build.outputs.apk }}\` e abra no celular (permita instalar desta fonte uma vez)."
+            echo "- **Android:** baixe \`${apk[0]}\` e abra no celular (permita instalar desta fonte uma vez)."
+            if [ ${#exe[@]} -gt 0 ]; then
+              echo "- **Windows:** baixe \`${exe[0]}\` e abra. O instalador não é assinado: se o Windows avisar, clique em \"Mais informações\" → \"Executar assim mesmo\"."
+            fi
+            if [ ${#appimage[@]} -gt 0 ] && [ ${#deb[@]} -gt 0 ]; then
+              echo "- **Linux:** \`${appimage[0]}\` (dê permissão de execução e abra) ou \`${deb[0]}\` (Debian, Ubuntu e derivados)."
+            fi
+            echo
+            echo "Os apps instalados avisam sozinhos quando sai uma versão nova."
           } > "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md"
 
       - name: publicar
         env:
           GH_TOKEN: ${{ github.token }}
-          APK: ${{ steps.build.outputs.apk }}
         run: |
+          shopt -s nullglob
+          files=("$RUNNER_TEMP"/assets/*)
           if gh release view "$VERSION" >/dev/null 2>&1; then
-            gh release upload "$VERSION" "$APK" --clobber
+            gh release upload "$VERSION" "${files[@]}" --clobber
             gh release edit "$VERSION" --notes-file "$RUNNER_TEMP/notes.md"
           else
-            gh release create "$VERSION" "$APK" --title "Grimório de Venetia $VERSION" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag
+            gh release create "$VERSION" "${files[@]}" --title "Grimório de Venetia $VERSION" --notes-file "$RUNNER_TEMP/notes.md" --verify-tag
           fi
-
-      - name: apagar a keystore
-        if: always()
-        run: rm -f "$RUNNER_TEMP/release.jks"

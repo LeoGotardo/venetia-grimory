@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { ErrorBoundary } from './pages/ServerError'
 import { NotFound } from './pages/NotFound'
 import { UpdatePrompt } from './components/ui/UpdatePrompt'
@@ -8,6 +8,7 @@ import { BackButtonBridge } from './components/ui/BackButtonBridge'
 import { useRoomSyncEnabled } from './hooks/useRoomSyncEnabled'
 import { useCloudAccount } from './hooks/useCloudAccount'
 import { isCloudAvailable } from './lib/cloud/config'
+import { DESKTOP_SIGN_IN_PATH } from './lib/desktopBridge'
 import { useTranslation } from 'react-i18next'
 
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })))
@@ -29,6 +30,8 @@ const CloudSyncBridge = lazy(() => import('./components/ui/CloudSyncBridge').the
 const RoomSyncBridge = lazy(() => import('./components/room/RoomSyncBridge').then(m => ({ default: m.RoomSyncBridge })))
 const RoomPage = lazy(() => import('./pages/RoomPage').then(m => ({ default: m.RoomPage })))
 const CampaignPage = lazy(() => import('./pages/gm/CampaignPage').then(m => ({ default: m.CampaignPage })))
+// Aberta pelo app desktop no navegador do sistema; traz o Firebase, então só nela.
+const DesktopSignIn = lazy(() => import('./pages/DesktopSignIn').then(m => ({ default: m.DesktopSignIn })))
 
 function PageLoader() {
   const { t } = useTranslation()
@@ -39,12 +42,26 @@ function PageLoader() {
   )
 }
 
+/**
+ * Novidades e atualização, um modal por vez: o aviso de atualização espera as
+ * novidades fecharem. Fora da página de login do app desktop, que é só um passo
+ * no navegador — um modal ali cobriria o botão.
+ */
+function AppPrompts() {
+  const [notesDone, setNotesDone] = useState(false)
+  const finishNotes = useCallback(() => setNotesDone(true), [])
+  if (useLocation().pathname === DESKTOP_SIGN_IN_PATH) return null
+  return (
+    <>
+      <WhatsNewPrompt onDone={finishNotes} />
+      {notesDone && <UpdatePrompt />}
+    </>
+  )
+}
+
 function App() {
   const roomSync = useRoomSyncEnabled()
   const cloudLinked = useCloudAccount().profile !== null
-  // Um modal por vez: o aviso de atualização espera as novidades fecharem.
-  const [notesDone, setNotesDone] = useState(false)
-  const finishNotes = useCallback(() => setNotesDone(true), [])
   return (
     <ErrorBoundary>
       <BrowserRouter>
@@ -67,6 +84,7 @@ function App() {
             <Route path="/sobre" element={<About />} />
             <Route path="/termos" element={<Terms />} />
             <Route path="/privacidade" element={<Privacy />} />
+            <Route path={DESKTOP_SIGN_IN_PATH} element={<DesktopSignIn />} />
             <Route path="/sala/:code" element={<RoomPage />} />
             <Route path="/mestre" element={<GmHome />} />
             <Route path="/mestre/campanha/:id" element={<CampaignPage />} />
@@ -80,8 +98,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
-        <WhatsNewPrompt onDone={finishNotes} />
-        {notesDone && <UpdatePrompt />}
+        <AppPrompts />
       </BrowserRouter>
     </ErrorBoundary>
   )

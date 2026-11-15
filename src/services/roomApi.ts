@@ -1,6 +1,7 @@
 import type { z } from 'zod'
 import { ROOM_API_URL_APP, ROOM_HTTP_TIMEOUT_MS } from '../constants'
-import { isApp } from '../lib/platform'
+import { DESKTOP_SCHEME } from '../lib/desktopBridge'
+import { isApp, isDesktop } from '../lib/platform'
 import {
   roomErrorResponse, roomJoinedResponse, roomOkResponse, type RoomError, type RoomJoined,
 } from '../lib/room/protocol'
@@ -17,12 +18,15 @@ export class RoomApiError extends Error {
 
 /**
  * Onde a API está. Na web é a mesma origem; no app Android (servido em
- * `https://localhost`) é o domínio de produção, a não ser que o build diga outro.
+ * `https://localhost`) e no app desktop (servido em `app://venetia/`) é o
+ * domínio de produção, a não ser que o build diga outro. O desktop em
+ * `npm run desktop:dev` carrega o servidor do Vite e usa a api/ local.
  */
 export function roomApiBase(): string {
   const configured = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '')
   if (configured) return configured
-  return isApp() ? ROOM_API_URL_APP : ''
+  if (isApp()) return ROOM_API_URL_APP
+  return isDesktop() && window.location.protocol === `${DESKTOP_SCHEME}:` ? ROOM_API_URL_APP : ''
 }
 
 export function roomSocketUrl(): string {

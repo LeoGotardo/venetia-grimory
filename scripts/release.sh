@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Lança uma versão: confere o repositório, roda o gate, cria a tag anotada
 # vX.Y.Z e a envia. O push da tag dispara .github/workflows/release.yml, que
-# gera o APK assinado e publica a GitHub Release.
+# gera o APK assinado e os instaladores do desktop (Windows e Linux) e publica
+# a GitHub Release.
 #
 #   npm run release                 # patch: v1.2.3 → v1.2.4
 #   npm run release -- minor        # v1.2.3 → v1.3.0
@@ -89,7 +90,7 @@ else
     git tag -a "$next" -e -F "$template"
 fi
 
-read -rp "enviar $next para origin e disparar o build do APK? [s/N] " ok
+read -rp "enviar $next para origin e disparar o build do APK e do desktop? [s/N] " ok
 if [[ "$ok" != [sS] ]]; then
     git tag -d "$next" >/dev/null
     fail "cancelado — tag $next removida"
