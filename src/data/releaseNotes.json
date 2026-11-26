@@ -1,5 +1,28 @@
 [
   {
+    "version": "v3.6.0",
+    "pt": [
+      "Novo: página da sala para o mestre, com tudo da sessão num lugar só: rolagens e chat, pedidos de teste, o encontro na mesa, a agenda e quem está na sala",
+      "Novo: o mestre pede testes de atributo, salvaguarda, perícia ou iniciativa, até em segredo, e cada jogador rola com o modificador da própria ficha",
+      "Novo: no seu turno, a mesa mostra até onde você pode andar; escolha o quadrado ou ataque um alvo, e o mestre aplica o dano com um toque",
+      "Novo: link de convite da sala, que abre direto no app Android se ele estiver instalado, ou no site",
+      "Novo: agenda de sessões da sala, com lembrete no app Android antes de cada sessão (ligue em Configurações → Preferências)",
+      "Novo: a ficha abre dentro da sala, e quando o mestre começa um combate os jogadores vão direto para a mesa",
+      "Novo: com a conta, as salas em que você entrou aparecem em todos os seus aparelhos. A Política de privacidade foi atualizada para dizer isso",
+      "Ajuste: entrar de novo numa sala em que você já está não cria mais um jogador repetido"
+    ],
+    "en": [
+      "New: a room page for the GM, with the whole session in one place: rolls and chat, roll requests, the encounter on the table, the schedule and who is in the room",
+      "New: the GM asks for ability checks, saving throws, skill checks or initiative, even secretly, and each player rolls with their own sheet's modifier",
+      "New: on your turn, the table shows how far you can move; pick the square or attack a target, and the GM applies the damage with one tap",
+      "New: a room invite link, which opens straight in the Android app if it is installed, or on the website",
+      "New: a session schedule for each room, with a reminder in the Android app before each session (turn it on in Settings → Preferences)",
+      "New: your sheet opens inside the room, and when the GM starts a fight the players go straight to the table",
+      "New: with an account, the rooms you joined show up on all your devices. The Privacy policy was updated to say so",
+      "Fix: joining a room you are already in no longer creates a duplicate player"
+    ]
+  },
+  {
     "version": "v3.5.0",
     "pt": [
       "Novo: app para Windows e Linux, com login com Google, impressão pelo leitor de PDF do computador e atualização automática",
