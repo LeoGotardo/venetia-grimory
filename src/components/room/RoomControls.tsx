@@ -4,6 +4,8 @@ import type { Campaign } from '../../types'
 import { useRoomStore } from '../../store/roomStore'
 import { useGmStore } from '../../store/gmStore'
 import type { RoomMembership } from '../../services/roomStorage'
+import { isApp } from '../../lib/platform'
+import { roomInviteUrl } from '../../lib/roomLink'
 import { TermsNotice } from '../ui/TermsNotice'
 import { gmPrimaryButton, gmSecondaryButton } from '../gm/GmHeader'
 import { rowDangerButton } from '../gm/MonsterRow'
@@ -65,7 +67,9 @@ export function OpenRoom({ membership }: { membership: RoomMembership }) {
   const [error, setError] = useState<string | null>(null)
   const connected = activeRoomId === membership.room_id
   const ended = status === 'closed' || status === 'unauthorized' || status === 'kicked' || status === 'invalid'
-  const canShare = typeof navigator.share === 'function'
+  // O WebView do Android não tem `navigator.share`: no app vai pela folha nativa.
+  const canShare = isApp() || typeof navigator.share === 'function'
+  const inviteUrl = roomInviteUrl(membership.code)
 
   async function run(action: () => Promise<void>) {
     setError(null)
@@ -76,20 +80,24 @@ export function OpenRoom({ membership }: { membership: RoomMembership }) {
     }
   }
 
-  async function copyCode() {
+  async function copyLink() {
     try {
-      await navigator.clipboard.writeText(membership.code)
+      await navigator.clipboard.writeText(inviteUrl)
       setCopied(true)
     } catch (err) {
       console.error('[salas] Falha ao copiar o código.', err)
     }
   }
 
-  function shareCode() {
-    navigator.share({ title: membership.name || t('room.untitled'), text: t('room.shareText', { code: membership.code }) })
-      .catch(err => {
-        if ((err as DOMException).name !== 'AbortError') console.error('[salas] Falha ao compartilhar.', err)
-      })
+  function shareLink() {
+    const data = { title: membership.name || t('room.untitled'), text: t('room.shareText', { code: membership.code }), url: inviteUrl }
+    const shared = isApp() ? import('@capacitor/share').then(({ Share }) => Share.share(data)) : navigator.share(data)
+    shared.catch(err => {
+      // Fechar a folha sem escolher: `AbortError` na web, "Share canceled" no app.
+      if ((err as DOMException).name !== 'AbortError' && !/cancel/i.test((err as Error).message)) {
+        console.error('[salas] Falha ao compartilhar.', err)
+      }
+    })
   }
 
   return (
@@ -105,8 +113,8 @@ export function OpenRoom({ membership }: { membership: RoomMembership }) {
           {membership.code}
         </p>
         <div className="mt-3 flex flex-wrap justify-center gap-2">
-          <button onClick={() => void copyCode()} className={gmSecondaryButton}>{copied ? t('room.copied') : t('room.copy')}</button>
-          {canShare && <button onClick={shareCode} className={gmSecondaryButton}>{t('room.share')}</button>}
+          <button onClick={() => void copyLink()} className={gmSecondaryButton}>{copied ? t('room.copied') : t('room.copy')}</button>
+          {canShare && <button onClick={shareLink} className={gmSecondaryButton}>{t('room.share')}</button>}
         </div>
       </div>
 

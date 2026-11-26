@@ -5,6 +5,7 @@ import { NotFound } from './pages/NotFound'
 import { UpdatePrompt } from './components/ui/UpdatePrompt'
 import { WhatsNewPrompt } from './components/ui/WhatsNewPrompt'
 import { BackButtonBridge } from './components/ui/BackButtonBridge'
+import { AppLinkBridge } from './components/ui/AppLinkBridge'
 import { useRoomSyncEnabled } from './hooks/useRoomSyncEnabled'
 import { useCloudAccount } from './hooks/useCloudAccount'
 import { isCloudAvailable } from './lib/cloud/config'
@@ -67,6 +68,7 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <BackButtonBridge />
+        <AppLinkBridge />
         {cloudLinked && isCloudAvailable() && (
           <Suspense fallback={null}>
             <CloudSyncBridge />

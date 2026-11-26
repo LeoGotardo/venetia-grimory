@@ -524,6 +524,15 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   a random token, the DB stores only its sha256 (`room_members.token_hash`). The campaign stays
   local-first; the room only holds what is published. `GmRoomPage` is where a whole session runs:
   chat/log, `RollRequestForm`, which encounter is on the table, `RoomSessions` and the members.
+- Invite link: `roomInviteUrl` (`src/lib/roomLink.ts`) is always `ROOM_API_URL_APP/sala/<code>` (in
+  the APK and on desktop the origin is `https://localhost` / `app://venetia`, dead elsewhere); the GM
+  copies or shares it from `OpenRoom` (native share sheet in the app, the WebView has no
+  `navigator.share`). On Android it is an App Link: the `/sala/` intent-filter (`autoVerify`) in
+  `AndroidManifest.xml` plus `public/.well-known/assetlinks.json` with the release key's SHA-256 and
+  one machine's debug key (it differs per machine). Without the app, or on a PC, the site opens.
+  `AppLinkBridge` takes it to the route (`getLaunchUrl` on a cold start, `appUrlOpen` when already
+  open; `roomLinkPath` lets through only `/sala/<valid code>`), and `RoomPage` opens `JoinRoomModal`
+  with the code. Android verifies on install/update: **deploy `assetlinks.json` before tagging the APK**.
 - Joining twice is blocked on the client: `joinRoom` returns the existing membership for that code
   and `JoinRoomModal` offers "Open room" instead — the server can't tell a second join from a new
   player and would create a ghost member (counted in `ROOM_MAX_MEMBERS`, sheet shown twice).

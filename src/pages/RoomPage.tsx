@@ -17,6 +17,7 @@ import { RoomLog } from '../components/room/RoomLog'
 import { RollRequestPrompt } from '../components/room/RollRequestPrompt'
 import { RoomSessions } from '../components/room/RoomSessions'
 import { useMediaQuery } from '../hooks/useMediaQuery'
+import { isRoomCode, normalizeRoomCode } from '../lib/room/code'
 import { docKey } from '../lib/room/docs'
 import { tableStateSchema } from '../lib/room/protocol'
 import { ROOM_TABLE_DOC_ID } from '../constants'
@@ -39,12 +40,13 @@ const tabFromParam = (value: string | null): RoomTab =>
 export function RoomPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { code = '' } = useParams<{ code: string }>()
+  const code = normalizeRoomCode(useParams<{ code: string }>().code ?? '')
   const [params, setParams] = useSearchParams()
   const { memberships, status, members, online, room, activeRoomId, docs, leaveRoom, forgetRoom } = useRoomStore()
   const { savedSheets, loadSavedList } = useSheetStore()
   const membership = memberships.find(m => m.code === code && m.role === 'player') ?? null
-  const [joinOpen, setJoinOpen] = useState(false)
+  // Chegou pelo link de convite sem estar na sala: o formulário já abre com o código.
+  const [joinOpen, setJoinOpen] = useState(() => membership == null && isRoomCode(code))
   const [error, setError] = useState<string | null>(null)
   // Celular: uma aba por vez. Desktop: a mesa fica à esquerda e as abas trocam só o painel da direita.
   const isDesktop = useMediaQuery('(min-width: 1024px)')
