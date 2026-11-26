@@ -50,7 +50,11 @@ extraMetadata:
 
 linux:
   target: [AppImage, deb]
-  icon: assets/icon-only.png
+  # Pasta com um PNG por tamanho do tema hicolor (16…512). Com o icon-only.png
+  # (1024) sozinho, o .deb só instalava hicolor/1024x1024, que o index.theme não
+  # lista — o GNOME não achava o ícone e mostrava o genérico. Gerada a partir do
+  # icon-only.png (ver CLAUDE.md, "Desktop app").
+  icon: assets/linux-icons
   category: Game
   syncDesktopName: true
   synopsis: Criador de personagens e área do mestre, compatível com a 5ª edição
