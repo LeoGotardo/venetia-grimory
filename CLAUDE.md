@@ -548,15 +548,32 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   the open sheet's room, else `preferredRoom` (last connected, `dnd_sala_ativa`, else newest join).
   `RoomDock` shows a pill (room + status, tap → `roomPagePath`) on every screen but the room page;
   `RoomPage` says "you're in X as Y" and keeps its tab in `?aba=` (mesa/ficha/chat/notas/sala).
-- **Protocol version 2.** `auth` carries `protocol` (`ROOM_PROTOCOL_VERSION`); missing = 1, an APK
-  installed before it. The server never sends a v1 socket the new kinds (`docForProtocol` /
+  The member view is an app-style screen that **never scrolls the page** (`h-dvh`, floor
+  `min-h-[480px]`, no footer — the legal links live in Settings → About): header and tabs are fixed
+  and each tab fills the rest (`flex-1 min-h-0` all the way down; only genuinely long content scrolls
+  inside its own region). `TableView`: on desktop the map fills the height beside a 340 px column
+  (turn panel with the compact `DiceModeToggle`, last action, initiative order); on phones the map
+  keeps its aspect ratio (`aspect-[var(--map-ratio)]` on the cell, `TableMap` just fills it — a
+  `flex-1` map brings back empty bands) and the initiative order is a dropdown that opens over it.
+  `RoomSheetTab` splits the sheet into sub-tabs (Combat | Abilities | Skills | Spells | Items; a
+  row on phones, a column on desktop) around the **shared** sheet panels — don't restyle those for
+  the room, `/ficha` uses them. On a 1280×720 desktop Combat and Abilities fit with no inner scroll;
+  on phones the long sections (skills, abilities, inventory) still scroll inside the sub-tab.
+  `e2e/room-turn.spec.ts` checks both (page overflow ≤ 1 px everywhere, no inner overflow for those
+  two on desktop) against a mocked room (`e2e/helpers/room.ts`: `routeWebSocket` answers `auth`,
+  `/api` HTTP is refused — the dev server talks to the production database, so e2e must never
+  reach it).
+- **Protocol version 3** (2 added schedule/request/attack, 3 the `save` and `heal` events). `auth` carries
+  `protocol` (`ROOM_PROTOCOL_VERSION`); missing = 1, an APK installed before it. The server never
+  sends an older socket the kinds it doesn't know (`V1_*`/`V2_*` sets) (`docForProtocol` /
   `eventForProtocol` / `messageForProtocol` in `docs.ts`, applied in `ready` and `deliver`): a v1
   client's strict schema rejects the whole `ready` and stays "connecting". New clients parse
   `ready.docs`/`events` item by item (`keepValid`), dropping unknown kinds. Bump the version and
   extend the filter when adding a doc/event kind or a server message. **Rollout: `npm run
   db:migrate` (005 widens the `room_docs`, `room_events` and `cloud_records` kind checks) → deploy →
   only then tag the APK** — an old server closes unknown client messages with 4400, and an
-  unmigrated DB fails the inserts (and every cloud push that carries a `room` record).
+  unmigrated DB fails the inserts (and every cloud push that carries a `room` record). Protocol 3
+  needs `006_room_saves.sql` (adds `save` and `heal` to the `room_events` kind check) the same way.
 - Roll requests: the GM sends `request` (check `ability|save|skill|initiative` + id, `member_ids`
   or null = every player, `secret`) → event `request`. Players answer with a normal `roll` carrying
   `reply_to` (the request's version), private when secret; the modifier comes from their own sheet
@@ -575,6 +592,34 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   dice via `critExpression`) as event `attack`; the GM's `AttackCard` compares it with the target's
   AC (`attackHits`: nat 1 misses, nat 20 hits) and applies the damage with one tap
   (`appliedAttacks` guards a double apply). Intents share the event rate bucket.
+- What the player can do on their turn comes from their own sheet, pure in `src/lib/turnActions.ts`:
+  - `AttackModal` adds the 2024 **Unarmed Strike** to the sheet attacks (`unarmedStrike`: always
+    proficient, 1 + STR flat, Monk's Martial Arts die by monk level and DEX if higher, Tavern
+    Brawler 1d4). Flat damage needs `parseRoomDamage` (zero dice allowed, same caps) — `parseRoomRoll`
+    still demands a die, so `/r 5` and request replies keep failing. Grapple and Shove are `save`s:
+    DC 8 + mod + PB, the target picks STR or DES, `effect` `grappled`/`shoved`.
+  - `SpellModal` casts what `castableSpells` lists (cantrips and prepared spells per class with that
+    class's DC/attack, plus free casts), paid by `slotChoices` (its free cast, slots of its circle
+    and up, Pact Magic) — spent on the player's sheet only after the send succeeds. Mode and damage
+    are **suggestions** from the catalog (`suggestedMode` reads the PT `save` via `resolveSpellPt`;
+    `suggestedDamage` scales single-die cantrips at 5/11/17); the catalog has no attack flag or
+    upcast scaling, so the player can change both. The resolution UI is `CastForm` (shared with
+    scrolls): attack → `attack`; save → `save` (several targets, `half_on_success`); heal → `heal`
+    (one target, self first, `healTargets`); no roll → a `roll` if it has dice, else a chat line.
+  - `ItemModal` uses inventory consumables (`usableItems`, recognized by catalog id, so the same in
+    PT and EN; hand-typed items don't count): healing potions (`effect` "2d4 + 2 PV/HP" → `heal`,
+    drink or give), other potions and `scroll_*` items (a chat line — the GM applies the effect),
+    and Spell Scrolls (`pergaminho_*`: the spell is picked from the sheet's class lists, item note
+    first — `scrollSpells` — and cast through `CastForm` with the scroll's own DC/attack,
+    `SPELL_SCROLL_STATS`). The item is consumed (`consumeItem`, one off the stack) only after the
+    send succeeds; sheet edits from the room go through `withRoomSheet` (loads it first).
+  - Event `heal` (`addHeal`, flat allowed) → `HealCard`: one tap applies it with `healCombatant`.
+  - Event `save` (`addSave`: own combatant, targets on the stored table, damage rolled once) →
+    `SaveCard`: the GM sees each target's save bonus from its stat block and taps Failed (full
+    damage; `grappled` adds `Imobilizado`, `shoved` offers Prone) or Succeeded (half or nothing).
+  - Not modelled: action economy, range/reach (the GM judges, as with attacks), upcasting, rituals
+    without a slot, Wraps of Unarmed Power, wand/staff charges, thrown consumables (Alchemist's
+    Fire, Acid, Holy Water), the Thief's Use Magic Device on scrolls.
 - Starting a fight (`EncounterPage` Start) with a room open calls `setBroadcast`, and
   `usePlayerEncounterRedirect` takes each player to `/sala/:code?aba=mesa` once per active encounter.
 - `RoomSheetTab` (lazy) shows the real sheet panels inside the room. Encounter HP still never writes
@@ -636,12 +681,19 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 - Rolls and chat are **events** (`room_events`, `RoomEvent`; append-only, pruned to
   `ROOM_LOG_MAX`; `ready` sends the last `ROOM_LOG_ON_READY` on a full sync). Dice are rolled **on
   the server** with `crypto.randomInt` (`addRoll`), after `parseRoomRoll` caps the expression
-  (total dice, sides, bonus); the client never sends a result. `private` events reach only the GM
+  (total dice, sides, bonus). The one exception is **physical dice** (`config.physical_dice`,
+  toggled by `DiceModeToggle` in the turn panel, the log and Preferences): `roll`/`attack`/`save`/
+  `heal` in `roomStore` are async and first ask `useDiceEntryStore` (answered by
+  `PhysicalDiceModal`, mounted once in `RoomSyncBridge`, `Modal top`) for one subtotal per dice
+  term; the messages carry `manual`/`manual_attack`/`manual_damage`, the server checks each against
+  `[count, count×sides]` with `manualRoll` (crit doubling decided by the typed d20) and marks the
+  result `manual: true`, which the cards show as a "physical dice" badge. Cancel resolves `false`
+  and sends nothing — every caller **awaits** the sender before spending a slot or an item (a bare
+  promise is truthy). Old servers strip the fields and roll themselves. `private` events reach only the GM
   and the author (`eventVisibleTo`, applied by the server). Each member is rate-limited
   (`ROOM_EVENT_RATE_LIMIT` per `ROOM_EVENT_RATE_WINDOW_S`). `RoomLog` (log + quick dice + composer;
-  `/r 1d20+5 Label` rolls, see `parseComposer`) appears inline on `RoomPage` (tabs Table | Rolls |
-  Room, the table pinned left on desktop) and everywhere else in the floating `RoomDock` with an
-  unread count.
+  `/r 1d20+5 Label` rolls, see `parseComposer`) appears in the Chat tab of `RoomPage` and everywhere
+  else in the floating `RoomDock` with an unread count.
 - WebSocket limits (`api/room-ws.ts`): document writes (sheet, table, notes and their clears) have
   their own per-member bucket (`ROOM_DOC_RATE_LIMIT`, sized from the push debounces plus the
   `ready` burst that resends the table and every shared note). Going over **closes** the socket
@@ -850,7 +902,12 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   replace it; uninstall keeps `userData`), AppImage + `.deb`. Executable and artifact names are ASCII
   (`venetia-grimory`, `Grimorio-de-Venetia-…`) because they become release URLs inside `latest.yml`;
   the product name keeps "Grimório". `extraMetadata.desktopName` ties the window to the `.desktop`
-  on Wayland. Installers are **not signed** (SmartScreen warns). `scripts/desktop/package.mjs` takes
+  on Wayland. The Linux icon is the `assets/linux-icons/` set (`NxN.png`, 16…512): a lone 1024 PNG
+  landed in `hicolor/1024x1024`, which `index.theme` doesn't list, so GNOME showed a generic icon.
+  Regenerate it after changing `icon-only.png`: `for s in 16 32 48 64 128 256 512; do convert
+  assets/icon-only.png -strip -resize ${s}x${s} assets/linux-icons/${s}x${s}.png; done`. The `.deb`
+  adds a menu entry (`/usr/share/applications`), never a shortcut on the desktop; the AppImage adds
+  neither. Installers are **not signed** (SmartScreen warns). `scripts/desktop/package.mjs` takes
   the version from `DESKTOP_VERSION` or the first `releaseNotes.json` entry — `package.json` stays
   `0.0.0`, and without it `latest.yml` would say 0.0.0 and the updater would never fire.
 - Release: `release.yml` has `gate` → `android` + `desktop` (matrix `windows-latest` /

@@ -11,7 +11,7 @@ import {
   ROOM_CHANNEL_PREFIX, createSubscriber, markOffline, markOnline, onlineMembers, overRateLimit, publish, roomChannel,
 } from './_lib/redis.js'
 import {
-  addAttack, addChat, addRequest, addRoll, checkMoveIntent, clearNote, clearTable, docsSince, eventsSince, listMembers,
+  addAttack, addChat, addHeal, addRequest, addRoll, addSave, checkMoveIntent, clearNote, clearTable, docsSince, eventsSince, listMembers,
   memberByToken, putNote, putSchedule, putSheet, putTable, touchMember, type AuthedMember,
 } from './_lib/rooms.js'
 import { RoomFailure, UNKNOWN_IP, socketClientIp } from './_lib/http.js'
@@ -182,7 +182,7 @@ async function handle(session: Session, data: RawData) {
     return
   }
   const member = session.member
-  if (message.t === 'roll' || message.t === 'chat' || message.t === 'request' || message.t === 'attack' || message.t === 'move') {
+  if (message.t === 'roll' || message.t === 'chat' || message.t === 'request' || message.t === 'attack' || message.t === 'save' || message.t === 'heal' || message.t === 'move') {
     if (await limited(`ratelimit:events:${member.id}`, ROOM_EVENT_RATE_LIMIT, ROOM_EVENT_RATE_WINDOW_S)) {
       console.warn(`[room-ws] ${message.t} acima do limite para ${member.id}.`)
       return
@@ -197,6 +197,8 @@ async function handle(session: Session, data: RawData) {
       const event = message.t === 'roll' ? await addRoll(member, message)
         : message.t === 'chat' ? await addChat(member, message)
         : message.t === 'request' ? await addRequest(member, message)
+        : message.t === 'save' ? await addSave(member, message)
+        : message.t === 'heal' ? await addHeal(member, message)
         : await addAttack(member, message)
       await publish(member.room.id, { t: 'event', event })
     } catch (err) {

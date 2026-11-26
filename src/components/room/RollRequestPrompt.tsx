@@ -41,7 +41,7 @@ export function RollRequestPrompt({ inline = false }: { inline?: boolean }) {
         <span className="block text-[12px] text-[#A8A09B]">{t('room.request.fromGm', { name: request.actor_name })}</span>
         <span className="block text-[15px] font-bold text-[#F5F0E8] truncate">{labelOf(request)}</span>
       </span>
-      <button disabled={!online} onClick={() => answerer.answer(request)} className={gmPrimaryButton}>
+      <button disabled={!online} onClick={() => void answerer.answer(request)} className={gmPrimaryButton}>
         {t('room.request.roll', { mod: formatModifier(answerer.modifierOf(request)) })}
       </button>
       <button

@@ -58,6 +58,11 @@ export function PreferencesPanel() {
     description: string
   }> = [
     {
+      key: 'physical_dice',
+      label: t('config.physicalDice'),
+      description: t('config.physicalDiceDesc'),
+    },
+    {
       key: 'track_weight',
       label: t('config.weightTracking'),
       description: t('config.weightTrackingDesc'),

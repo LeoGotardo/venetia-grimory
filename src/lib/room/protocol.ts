@@ -2,7 +2,7 @@ import { z } from 'zod'
 import {
   ROOM_CHAT_MAX, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, ROOM_DISPLAY_NAME_MAX, ROOM_NAME_MAX,
   ROOM_NOTE_BODY_MAX, ROOM_NOTE_TITLE_MAX, ROOM_ROLL_EXPRESSION_MAX, ROOM_ROLL_LABEL_MAX, ROOM_SCHEDULE_MAX,
-  ROOM_SESSION_TITLE_MAX, ROOM_TOKEN_MAX_LENGTH,
+  ROOM_SAVE_DC_MAX, ROOM_SAVE_MAX_TARGETS, ROOM_SESSION_TITLE_MAX, ROOM_TOKEN_MAX_LENGTH,
 } from './constants.js'
 
 /** Lado do maior mapa de grade (`MAP_MAX_SIZE` do app) — repetido aqui porque o servidor não lê `src/constants`. */
@@ -165,11 +165,21 @@ export const rollCheckSchema = z.object({
 })
 export type RollCheck = z.infer<typeof rollCheckSchema>
 
+/** Atributo da salvaguarda, nas siglas da ficha (`AbilityId`, que o servidor não importa). */
+export const SAVE_ABILITIES = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'] as const
+const saveAbilitySchema = z.enum(SAVE_ABILITIES)
+export type SaveAbility = z.infer<typeof saveAbilitySchema>
+/** Condição que a falha impõe, para o mestre aplicar: Agarrado, ou Empurrado/Caído. */
+export const SAVE_EFFECTS = ['none', 'grappled', 'shoved'] as const
+export type SaveEffect = (typeof SAVE_EFFECTS)[number]
+
 const diceResultSchema = z.object({
   expression: z.string(),
   rolls: z.array(z.number().int()),
   bonus: z.number().int(),
   total: z.number().int(),
+  /** Dados físicos: o player digitou quanto saiu (`rolls` são os subtotais por termo). */
+  manual: z.boolean().optional(),
 })
 export type DiceResult = z.infer<typeof diceResultSchema>
 
@@ -222,6 +232,37 @@ export const roomEventSchema = z.discriminatedUnion('kind', [
       natural: z.number().int(),
     }),
   }),
+  /**
+   * Efeito com salvaguarda (magia de área, Agarrar, Empurrar): o servidor rola o
+   * dano uma vez; o mestre, que tem os blocos, resolve a salvaguarda de cada alvo.
+   */
+  z.object({
+    ...eventBase,
+    kind: z.literal('save'),
+    payload: z.object({
+      label: z.string(),
+      combatant_id: z.string(),
+      targets: z.array(z.object({ id: z.string(), name: z.string() })),
+      dc: z.number().int(),
+      abilities: z.array(saveAbilitySchema),
+      damage: diceResultSchema.nullable(),
+      damage_type: z.string(),
+      half_on_success: z.boolean(),
+      effect: z.enum(SAVE_EFFECTS),
+    }),
+  }),
+  /** Cura que o player rola (poção, magia) para si ou para outro; o mestre aplica no PV do combate. */
+  z.object({
+    ...eventBase,
+    kind: z.literal('heal'),
+    payload: z.object({
+      label: z.string(),
+      combatant_id: z.string(),
+      target_id: z.string(),
+      target_name: z.string(),
+      heal: diceResultSchema,
+    }),
+  }),
 ])
 export type RoomEvent = z.infer<typeof roomEventSchema>
 
@@ -246,6 +287,8 @@ function keepValid<T>(items: unknown[], schema: z.ZodType<T>): T[] {
 
 const labelSchema = z.string().trim().max(ROOM_ROLL_LABEL_MAX)
 const expressionSchema = z.string().trim().min(1).max(ROOM_ROLL_EXPRESSION_MAX)
+/** Dados físicos: um subtotal por termo de dado da expressão (o servidor confere a faixa). */
+const manualSchema = z.array(z.number().int()).max(ROOM_ROLL_EXPRESSION_MAX)
 
 export const clientMessageSchema = z.discriminatedUnion('t', [
   /**
@@ -266,6 +309,7 @@ export const clientMessageSchema = z.discriminatedUnion('t', [
     label: labelSchema,
     private: z.boolean(),
     reply_to: z.number().int().nonnegative().nullable().optional(),
+    manual: manualSchema.optional(),
   }),
   /** Mestre: pede um teste aos players. */
   z.object({
@@ -284,6 +328,31 @@ export const clientMessageSchema = z.discriminatedUnion('t', [
     attack: expressionSchema,
     damage: expressionSchema.nullable(),
     damage_type: z.string().trim().max(40),
+    /** Dados físicos: o d20 que saiu e os subtotais do dano (já dobrado, se o d20 foi 20). */
+    manual_attack: z.number().int().min(1).max(20).optional(),
+    manual_damage: manualSchema.optional(),
+  }),
+  /**
+   * Player: efeito com salvaguarda. `abilities` com dois = o alvo escolhe (FOR ou
+   * DES, no Agarrar e no Empurrar).
+   */
+  z.object({
+    t: z.literal('save'),
+    combatant_id: tableIdSchema,
+    target_ids: z.array(tableIdSchema).min(1).max(ROOM_SAVE_MAX_TARGETS),
+    label: labelSchema,
+    dc: z.number().int().min(1).max(ROOM_SAVE_DC_MAX),
+    abilities: z.array(saveAbilitySchema).min(1).max(2),
+    damage: expressionSchema.nullable(),
+    damage_type: z.string().trim().max(40),
+    half_on_success: z.boolean(),
+    effect: z.enum(SAVE_EFFECTS),
+    manual_damage: manualSchema.optional(),
+  }),
+  /** Player: cura (poção, magia) num combatente da mesa — pode ser o próprio. */
+  z.object({
+    t: z.literal('heal'), combatant_id: tableIdSchema, target_id: tableIdSchema, label: labelSchema, heal: expressionSchema,
+    manual: manualSchema.optional(),
   }),
   /** Player: quer mover o próprio combatente — vai só ao mestre, que decide. */
   z.object({ t: z.literal('move'), combatant_id: tableIdSchema, to: cellSchema }),

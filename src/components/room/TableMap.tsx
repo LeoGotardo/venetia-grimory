@@ -65,7 +65,8 @@ export function TableMap({ map, table, reachable, target, mineId, onCellTap }: T
   }
 
   return (
-    <div className="h-[62vh] min-h-[320px] lg:h-[calc(100dvh-260px)]">
+    // O tamanho vem de quem usa (`TableView`): o canvas preenche e encaixa o mapa.
+    <div className="h-full w-full">
       <MapCanvas
         width={map.width}
         height={map.height}

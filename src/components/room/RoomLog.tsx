@@ -6,7 +6,8 @@ import { parseRoomRoll } from '../../lib/room/rolls'
 import { ROOM_CHAT_MAX } from '../../constants'
 import { useRoomStore } from '../../store/roomStore'
 import { DiceIcon, LockIcon } from '../gm/ornaments'
-import { AttackCard, RequestCard } from './RoomEventCards'
+import { AttackCard, HealCard, ManualDiceMark, RequestCard, SaveCard } from './RoomEventCards'
+import { DiceModeToggle } from './DiceModeToggle'
 import { diceDetail } from '../../lib/room/requests'
 
 const QUICK_DICE = [20, 12, 10, 8, 6, 4, 100] as const
@@ -25,7 +26,7 @@ export function RoomLog() {
   const [error, setError] = useState<string | null>(null)
   const online = status === 'online'
 
-  function rollExpression(expression: string, label: string) {
+  async function rollExpression(expression: string, label: string): Promise<boolean> {
     if (!parseRoomRoll(expression)) {
       setError(t('room.log.invalidRoll'))
       return false
@@ -33,12 +34,12 @@ export function RoomLog() {
     return roll(expression, label, isPrivate)
   }
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError(null)
     const intent = parseComposer(text)
     if (!intent) return
-    const sent = intent.kind === 'roll' ? rollExpression(intent.expression, intent.label) : say(intent.text, isPrivate)
+    const sent = intent.kind === 'roll' ? await rollExpression(intent.expression, intent.label) : say(intent.text, isPrivate)
     if (sent) setText('')
   }
 
@@ -56,13 +57,14 @@ export function RoomLog() {
       </div>
 
       <div className="border-t border-white/[0.07] pt-2 flex flex-col gap-2">
+        <DiceModeToggle />
         <div className="flex flex-wrap gap-1" role="group" aria-label={t('room.log.quickDice')}>
           {QUICK_DICE.map(sides => (
             <button
               key={sides}
               type="button"
               disabled={!online}
-              onClick={() => rollExpression(`1d${sides}`, '')}
+              onClick={() => void rollExpression(`1d${sides}`, '')}
               aria-label={t('room.log.rollDie', { die: `d${sides}` })}
               className="min-h-[34px] min-w-[44px] rounded-[8px] border border-white/[0.1] bg-white/5 hover:bg-white/10 px-2 text-[13px] font-bold text-[#E8DFD0] tabular-nums cursor-pointer disabled:opacity-50 disabled:cursor-default"
             >
@@ -120,6 +122,8 @@ function EventLine({ event, mine }: { event: RoomEvent; mine: boolean }) {
 
   if (event.kind === 'request') return <RequestCard event={event} time={time} />
   if (event.kind === 'attack') return <AttackCard event={event} time={time} mine={mine} />
+  if (event.kind === 'save') return <SaveCard event={event} time={time} mine={mine} />
+  if (event.kind === 'heal') return <HealCard event={event} time={time} mine={mine} />
 
   if (event.kind === 'chat') {
     return (
@@ -139,7 +143,7 @@ function EventLine({ event, mine }: { event: RoomEvent; mine: boolean }) {
       <span className="text-[#D4A017]"><DiceIcon size={18} /></span>
       <span className="min-w-0 flex-1">
         <span className="block text-[12px] text-[#A8A09B]">
-          <b className="text-[#EAD9B0]">{event.actor_name}</b> · {time}{badge}
+          <b className="text-[#EAD9B0]">{event.actor_name}</b> · {time}{badge}{event.payload.manual && <ManualDiceMark />}
         </span>
         <span className="block text-[14px] text-[#F5F0E8] truncate">{label || expression}</span>
         <span className="block text-[12px] text-[#A8A09B] tabular-nums truncate">{label ? `${expression}: ` : ''}{detail}</span>

@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { generateRoomCode, isRoomCode, normalizeRoomCode } from './code'
 import { ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH } from './constants'
-import { clientMessageSchema, createRoomRequest, joinRoomRequest, serverMessageSchema, type RoomMember } from './protocol'
+import { clientMessageSchema, createRoomRequest, joinRoomRequest, roomEventSchema, serverMessageSchema, type RoomMember } from './protocol'
 import { EMPTY_ROOM_VIEW, applyServerMessage } from './session'
 import { docForProtocol, docVisibleTo, eventForProtocol, messageForProtocol } from './docs'
 import { attackHits, pendingRequests, repliesTo } from './requests'
 import type { RoomDoc, RoomEvent } from './protocol'
 import { eventVisibleTo } from './docs'
 import { parseComposer } from './composer'
-import { critExpression, parseRoomRoll } from './rolls'
+import { critExpression, manualRoll, parseRoomDamage, parseRoomRoll } from './rolls'
 import { planReminders, reminderId, upcomingSessions } from './reminders'
 
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
@@ -174,6 +174,27 @@ describe('rolagens e chat', () => {
     expect(parseRoomRoll('5')).toBeNull()
     expect(parseRoomRoll('ataque')).toBeNull()
   })
+
+  it('dados físicos: um subtotal por termo, dentro do possível', () => {
+    expect(manualRoll(parseRoomRoll('8d6+3')!, [27])).toEqual({ rolls: [27], bonus: 3, total: 30 })
+    expect(manualRoll(parseRoomRoll('1d8+2d6-1')!, [5, 9])).toEqual({ rolls: [5, 9], bonus: -1, total: 13 })
+    expect(manualRoll(parseRoomRoll('1d20-2d4')!, [15, 3])?.total).toBe(12)
+    expect(manualRoll(parseRoomRoll('8d6')!, [7])).toBeNull()
+    expect(manualRoll(parseRoomRoll('8d6')!, [49])).toBeNull()
+    expect(manualRoll(parseRoomRoll('1d20')!, [12.5])).toBeNull()
+    expect(manualRoll(parseRoomRoll('1d8+2d6')!, [5])).toBeNull()
+    expect(manualRoll(parseRoomDamage('1+3')!, [])).toEqual({ rolls: [], bonus: 4, total: 4 })
+    // Crítico: o dano físico vale para o dobro de dados.
+    expect(manualRoll(critExpression(parseRoomRoll('1d8+3')!), [14])?.total).toBe(17)
+  })
+
+  it('dano aceita valor fixo (Ataque Desarmado), com o mesmo teto', () => {
+    expect(parseRoomDamage('1+3')).toEqual({ terms: [], bonus: 4 })
+    expect(parseRoomDamage('1d6+2')).not.toBeNull()
+    expect(parseRoomDamage('99999')).toBeNull()
+    expect(parseRoomDamage('60d6+60d6')).toBeNull()
+    expect(parseRoomDamage('ataque')).toBeNull()
+  })
 })
 
 describe('pedidos de teste e ataques', () => {
@@ -215,6 +236,46 @@ describe('pedidos de teste e ataques', () => {
   })
 })
 
+describe('salvaguarda do player', () => {
+  const message = {
+    t: 'save', combatant_id: 'eu', target_ids: ['g1', 'g2'], label: 'Bola de Fogo (3º círculo)', dc: 15,
+    abilities: ['DES'], damage: '8d6', damage_type: 'Fogo', half_on_success: true, effect: 'none',
+  }
+
+  it('aceita o pedido e recusa o que passa dos limites', () => {
+    expect(clientMessageSchema.safeParse(message).success).toBe(true)
+    expect(clientMessageSchema.safeParse({ ...message, target_ids: [] }).success).toBe(false)
+    expect(clientMessageSchema.safeParse({ ...message, target_ids: Array.from({ length: 13 }, (_, i) => `g${i}`) }).success).toBe(false)
+    expect(clientMessageSchema.safeParse({ ...message, dc: 41 }).success).toBe(false)
+    expect(clientMessageSchema.safeParse({ ...message, abilities: ['SOR'] }).success).toBe(false)
+    expect(clientMessageSchema.safeParse({ ...message, abilities: ['FOR', 'DES', 'CON'] }).success).toBe(false)
+    expect(clientMessageSchema.safeParse({ ...message, effect: 'stunned' }).success).toBe(false)
+  })
+
+  it('cura: pedido e evento passam pelo schema', () => {
+    expect(clientMessageSchema.safeParse({ t: 'heal', combatant_id: 'eu', target_id: 'eu', label: 'Poção de Cura', heal: '2d4+2' }).success).toBe(true)
+    expect(clientMessageSchema.safeParse({ t: 'heal', combatant_id: 'eu', target_id: 'eu', label: 'x', heal: '' }).success).toBe(false)
+    const event = {
+      version: 8, actor_member_id: uuid(2), actor_name: 'Mira', private: false, created_at: '2026-11-26T15:00:00.000Z',
+      kind: 'heal',
+      payload: { label: 'Poção de Cura', combatant_id: 'eu', target_id: 'eu', target_name: 'Mira', heal: { expression: '2d4+2', rolls: [3, 1], bonus: 2, total: 6 } },
+    }
+    expect(roomEventSchema.parse(event)).toEqual(event)
+  })
+
+  it('o evento passa pelo schema do log', () => {
+    const event = {
+      version: 7, actor_member_id: uuid(2), actor_name: 'Mira', private: false, created_at: '2026-11-26T15:00:00.000Z',
+      kind: 'save',
+      payload: {
+        label: 'Agarrar', combatant_id: 'eu', targets: [{ id: 'g1', name: 'Goblin' }], dc: 13, abilities: ['FOR', 'DES'],
+        damage: null, damage_type: '', half_on_success: false, effect: 'grappled',
+      },
+    }
+    expect(roomEventSchema.parse(event)).toEqual(event)
+  })
+})
+
 describe('compatibilidade com o protocolo 1', () => {
   it('app antigo não recebe tipos novos; o novo recebe tudo', () => {
     expect(docForProtocol({ kind: 'schedule' }, 1)).toBe(false)
@@ -222,6 +283,9 @@ describe('compatibilidade com o protocolo 1', () => {
     expect(eventForProtocol({ kind: 'attack' }, 1)).toBe(false)
     expect(eventForProtocol({ kind: 'roll' }, 1)).toBe(true)
     expect(eventForProtocol({ kind: 'request' }, 2)).toBe(true)
+    expect(eventForProtocol({ kind: 'save' }, 2)).toBe(false)
+    expect(eventForProtocol({ kind: 'save' }, 3)).toBe(true)
+    expect(eventForProtocol({ kind: 'heal' }, 2)).toBe(false)
     expect(messageForProtocol({ t: 'intent', member_id: uuid(2), intent: { kind: 'move', combatant_id: 'a', to: { x: 1, y: 1 } } }, 1)).toBe(false)
     expect(messageForProtocol({ t: 'pong' }, 1)).toBe(true)
   })

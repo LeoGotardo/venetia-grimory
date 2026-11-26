@@ -3,6 +3,8 @@ import type { RoomEvent } from './protocol.js'
 export type RequestEvent = Extract<RoomEvent, { kind: 'request' }>
 export type RollEvent = Extract<RoomEvent, { kind: 'roll' }>
 export type AttackEvent = Extract<RoomEvent, { kind: 'attack' }>
+export type SaveEvent = Extract<RoomEvent, { kind: 'save' }>
+export type HealEvent = Extract<RoomEvent, { kind: 'heal' }>
 
 /** O pedido de teste é para este membro? `member_ids: null` = todos os players. */
 export const requestTargets = (request: RequestEvent, memberId: string) =>
@@ -29,5 +31,7 @@ export function attackHits(attack: AttackEvent, ac: number): boolean {
 
 /** "14 + 3" — os dados e o bônus de uma rolagem, para conferir o total. */
 export function diceDetail(result: { rolls: number[]; bonus: number }): string {
+  // Dano fixo (Ataque Desarmado): sem dado, só o número.
+  if (result.rolls.length === 0) return String(result.bonus)
   return `${result.rolls.join(' + ')}${result.bonus ? ` ${result.bonus > 0 ? '+' : '−'} ${Math.abs(result.bonus)}` : ''}`
 }
