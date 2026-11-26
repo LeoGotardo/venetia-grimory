@@ -2,9 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import {
   allRecords,
   getCloudSnapshot,
+  getCursor,
   getRecord,
   linkProfile,
   reloadCloudStateForTests,
+  setCursor,
   setRecord,
   subscribeLocalChanges,
   unlinkProfile,
@@ -13,6 +15,8 @@ import { deleteSheet, listSheets, saveSheet } from './sheetStorage'
 import { deleteCampaign, listCampaigns, loadBestiary, saveBestiary, saveCampaign } from './gmStorage'
 import { deleteCampaignAreaMaps, loadCampaignAreaMaps, saveAreaMap } from './areaMapStorage'
 import { wipeLocalData } from './cloudLocal'
+import { membershipJson, writeMemberships } from './roomStorage'
+import { contentHash } from '../lib/cloud/hash'
 import { createInitialSheet } from '../lib/initialSheet'
 import { createAreaMap } from '../lib/gm/areaMap/scene'
 import { STORAGE_KEY_CLOUD } from '../constants'
@@ -26,6 +30,7 @@ const monster = (id: string, name: string): Monster => ({
   id, source: 'custom', updated_at: '2026-01-01T00:00:00.000Z',
   statblock: { name } as Monster['statblock'],
 })
+const ROOM = '11111111-1111-4111-8111-111111111111'
 const link = () => linkProfile({ uid: 'u1', email: 'a@b.c', name: 'A', photo: null })
 
 /** Marca tudo como já na nuvem, como depois de um sync. */
@@ -105,5 +110,28 @@ describe('registro das gravações locais para a nuvem', () => {
     expect(listCampaigns()).toEqual([])
     expect(loadBestiary()).toEqual([])
     expect(await loadCampaignAreaMaps('c1')).toEqual([])
+  })
+})
+
+describe('tipos novos na conta (salas)', () => {
+  it('cursor gravado por uma versão sem `room` volta a 0, para buscar o que o servidor pulou', () => {
+    localStorage.setItem(STORAGE_KEY_CLOUD, JSON.stringify({ profile: null, records: {}, cursor: 42 }))
+    reloadCloudStateForTests()
+    expect(getCursor()).toBe(0)
+    setCursor(50)
+    reloadCloudStateForTests()
+    expect(getCursor()).toBe(50)
+  })
+
+  it('a sala sobe com o mesmo JSON que o sync lê de volta', () => {
+    link()
+    // Ordem de chaves diferente da do schema, como sai de `membershipFrom`.
+    writeMemberships([{
+      room_id: ROOM, code: 'ABC234', name: 'Mina', role: 'player', member_id: ROOM, display_name: 'Aria',
+      token: 't'.repeat(43), joined_at: '2026-01-01T00:00:00.000Z', broadcast_encounter_id: null, campaign_id: null, sheet_id: 's1',
+    }])
+    expect(getRecord(`room:${ROOM}`)?.hash).toBe(contentHash(membershipJson(ROOM)!))
+    writeMemberships([])
+    expect(getRecord(`room:${ROOM}`)).toBeUndefined()
   })
 })

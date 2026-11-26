@@ -20,6 +20,7 @@ import { Modal } from '../../components/ui/Modal'
 import { encounterBudget, encounterXp } from '../../lib/gm/difficulty'
 import { NotFound } from '../NotFound'
 import { BroadcastButton } from '../../components/room/BroadcastButton'
+import { campaignRoom, useRoomStore } from '../../store/roomStore'
 
 /** `/mestre/campanha/:id/encontro/:encounterId` — o rastreador de combate. */
 export function EncounterPage() {
@@ -45,6 +46,8 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
     renameEncounter, updateCombatant, rollInitiatives, startEncounter, nextTurn, previousTurn, endEncounter,
     setEncounterMap,
   } = useGmStore()
+  const room = useRoomStore(s => campaignRoom(s.memberships, campaign.id))
+  const setBroadcast = useRoomStore(s => s.setBroadcast)
   const isDesktop = useMediaQuery('(min-width: 1024px)')
   const [addSource, setAddSource] = useState<CombatantSource | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -188,6 +191,8 @@ function EncounterView({ campaign, encounter }: { campaign: Campaign; encounter:
                     onClick={() => {
                       rollInitiatives(encounter.id, 'missing')
                       startEncounter(encounter.id)
+                      // Com sala aberta, começar o combate já o põe na mesa: os players são levados até ela.
+                      if (room) setBroadcast(room.room_id, encounter.id)
                     }}
                     disabled={encounter.combatants.length === 0}
                     className={`${gmPrimaryButton} min-h-[48px] px-6 text-[16px]`}

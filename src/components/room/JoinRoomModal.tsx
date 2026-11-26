@@ -26,6 +26,7 @@ export function JoinRoomModal({ open, onClose, initialCode = '' }: JoinRoomModal
   const navigate = useNavigate()
   const { savedSheets, loadSavedList } = useSheetStore()
   const joinRoom = useRoomStore(s => s.joinRoom)
+  const memberships = useRoomStore(s => s.memberships)
   const [code, setCode] = useState(initialCode)
   const [sheetId, setSheetId] = useState<string | null>(null)
   const [displayName, setDisplayName] = useState('')
@@ -35,6 +36,9 @@ export function JoinRoomModal({ open, onClose, initialCode = '' }: JoinRoomModal
   useEffect(() => {
     if (open) loadSavedList()
   }, [open, loadSavedList])
+
+  // Já está nesta sala: entrar de novo criaria um segundo membro (o mestre veria a ficha duas vezes).
+  const already = isRoomCode(code) ? memberships.find(m => m.code === code && m.role === 'player') ?? null : null
 
   // Rascunhos ficam de fora: a ficha precisa dos números que o mestre consulta.
   const sheets = savedSheets.filter(s => s.complete !== false)
@@ -47,7 +51,7 @@ export function JoinRoomModal({ open, onClose, initialCode = '' }: JoinRoomModal
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!chosen) return
+    if (!chosen || already) return
     setBusy(true)
     setError(null)
     try {
@@ -116,10 +120,28 @@ export function JoinRoomModal({ open, onClose, initialCode = '' }: JoinRoomModal
           </label>
 
           {error && <p role="alert" className="text-[13px] text-[#d4564a]">{error}</p>}
-          <TermsNotice lead={t('terms.noticeRoomJoin')} />
-          <button type="submit" disabled={busy || !isRoomCode(code)} className={`${gmPrimaryButton} self-start`}>
-            {t('room.joinAction')}
-          </button>
+          {already ? (
+            <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-[10px] border border-[rgba(212,160,23,0.35)] bg-[rgba(212,160,23,0.08)] px-3 py-2.5">
+              <p className="text-[14px] text-[#E8DFD0]">{t('room.alreadyIn', { name: already.display_name })}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose()
+                  navigate(`/sala/${already.code}`)
+                }}
+                className={gmPrimaryButton}
+              >
+                {t('room.openRoomPage')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <TermsNotice lead={t('terms.noticeRoomJoin')} />
+              <button type="submit" disabled={busy || !isRoomCode(code)} className={`${gmPrimaryButton} self-start`}>
+                {t('room.joinAction')}
+              </button>
+            </>
+          )}
         </form>
       )}
     </Modal>

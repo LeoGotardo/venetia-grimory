@@ -3,7 +3,7 @@ import { ROOM_API_URL_APP, ROOM_HTTP_TIMEOUT_MS } from '../constants'
 import { DESKTOP_SCHEME } from '../lib/desktopBridge'
 import { isApp, isDesktop } from '../lib/platform'
 import {
-  roomErrorResponse, roomJoinedResponse, roomOkResponse, type RoomError, type RoomJoined,
+  roomErrorResponse, roomJoinedResponse, roomOkResponse, roomScheduleSchema, type RoomError, type RoomJoined,
 } from '../lib/room/protocol'
 
 /** Falha da API da sala: `code` vira a mensagem em `room.errors.<code>`; `network` = sem servidor. */
@@ -69,4 +69,5 @@ export const roomApi = {
   close: (token: string) => call('close', {}, roomOkResponse, token),
   kick: (token: string, memberId: string) => call('kick', { member_id: memberId }, roomOkResponse, token),
   leave: (token: string) => call('leave', {}, roomOkResponse, token),
+  schedule: (token: string) => call('schedule', {}, roomScheduleSchema, token),
 }

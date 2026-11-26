@@ -1,7 +1,8 @@
 import { z } from 'zod'
 import {
   ROOM_CHAT_MAX, ROOM_CODE_ALPHABET, ROOM_CODE_LENGTH, ROOM_DISPLAY_NAME_MAX, ROOM_NAME_MAX,
-  ROOM_NOTE_BODY_MAX, ROOM_NOTE_TITLE_MAX, ROOM_ROLL_EXPRESSION_MAX, ROOM_ROLL_LABEL_MAX, ROOM_TOKEN_MAX_LENGTH,
+  ROOM_NOTE_BODY_MAX, ROOM_NOTE_TITLE_MAX, ROOM_ROLL_EXPRESSION_MAX, ROOM_ROLL_LABEL_MAX, ROOM_SCHEDULE_MAX,
+  ROOM_SESSION_TITLE_MAX, ROOM_TOKEN_MAX_LENGTH,
 } from './constants.js'
 
 /** Lado do maior mapa de grade (`MAP_MAX_SIZE` do app) — repetido aqui porque o servidor não lê `src/constants`. */
@@ -69,7 +70,7 @@ export type RoomJoined = z.infer<typeof roomJoinedResponse>
  * Documento da sala: substituído inteiro a cada escrita. `version` é a versão
  * da sala em que mudou; `deleted` é a lápide (o player saiu ou foi removido).
  */
-export const ROOM_DOC_KINDS = ['sheet', 'table', 'note'] as const
+export const ROOM_DOC_KINDS = ['sheet', 'table', 'note', 'schedule'] as const
 export const roomDocSchema = z.object({
   kind: z.enum(ROOM_DOC_KINDS),
   id: z.string().min(1).max(100),
@@ -88,6 +89,7 @@ export const TABLE_HEALTH = ['unhurt', 'wounded', 'bloodied', 'down'] as const
 /** Limites da mesa — `buildTableState` corta o texto livre (nomes, rótulos) neles antes de mandar. */
 export const TABLE_LIMITS = { title: 120, name: 80, label: 80, condition: 40, conditions: 24, combatants: 200, labels: 500 } as const
 const tableIdSchema = z.string().min(1).max(64)
+const cellSchema = z.object({ x: z.number().int().nonnegative(), y: z.number().int().nonnegative() })
 const tableCombatantSchema = z.object({
   id: tableIdSchema,
   name: z.string().max(TABLE_LIMITS.name),
@@ -102,7 +104,11 @@ const tableCombatantSchema = z.object({
   conditions: z.array(z.string().max(TABLE_LIMITS.condition)).max(TABLE_LIMITS.conditions),
   size: z.string().max(16),
   /** Casa do canto superior esquerdo no mapa; `null` = fora do mapa. */
-  position: z.object({ x: z.number().int().nonnegative(), y: z.number().int().nonnegative() }).nullable(),
+  position: cellSchema.nullable(),
+  /** Membro da sala que joga com este combatente (protocolo 2); ausente = só o mestre o move. */
+  member_id: z.uuid().nullable().optional(),
+  /** Só de quem tem `member_id`: metros que restam no turno e o modo do movimento. */
+  move: z.object({ left_m: z.number().nonnegative(), mode: z.enum(['walk', 'fly', 'swim']) }).nullable().optional(),
 })
 export const tableStateSchema = z.object({
   encounter_id: tableIdSchema,
@@ -140,6 +146,33 @@ export const sharedNoteSchema = z.object({
 })
 export type SharedNote = z.infer<typeof sharedNoteSchema>
 
+/** Sessões marcadas pelo mestre (doc `schedule:main`); cada aparelho agenda o próprio lembrete. */
+export const roomSessionSchema = z.object({
+  id: z.uuid(),
+  starts_at: z.iso.datetime(),
+  title: z.string().max(ROOM_SESSION_TITLE_MAX),
+})
+export const roomScheduleSchema = z.object({ sessions: z.array(roomSessionSchema).max(ROOM_SCHEDULE_MAX) })
+export type RoomSession = z.infer<typeof roomSessionSchema>
+export type RoomSchedule = z.infer<typeof roomScheduleSchema>
+
+/** Teste que o mestre pede: o player rola com o modificador da própria ficha. */
+export const ROLL_CHECK_KINDS = ['ability', 'save', 'skill', 'initiative'] as const
+export const rollCheckSchema = z.object({
+  kind: z.enum(ROLL_CHECK_KINDS),
+  /** Atributo (`for`…) ou perícia (`atletismo`…); `null` na iniciativa. */
+  id: z.string().min(1).max(40).nullable(),
+})
+export type RollCheck = z.infer<typeof rollCheckSchema>
+
+const diceResultSchema = z.object({
+  expression: z.string(),
+  rolls: z.array(z.number().int()),
+  bonus: z.number().int(),
+  total: z.number().int(),
+})
+export type DiceResult = z.infer<typeof diceResultSchema>
+
 /**
  * Evento do log da sala (rolagem ou mensagem). `private` = só o mestre e o
  * autor recebem. A rolagem é feita no servidor: `rolls` e `total` não vêm do cliente.
@@ -155,15 +188,40 @@ export const roomEventSchema = z.discriminatedUnion('kind', [
   z.object({
     ...eventBase,
     kind: z.literal('roll'),
-    payload: z.object({
-      expression: z.string(),
+    payload: diceResultSchema.extend({
       label: z.string(),
-      rolls: z.array(z.number().int()),
-      bonus: z.number().int(),
-      total: z.number().int(),
+      /** Versão do pedido de teste que esta rolagem responde. */
+      reply_to: z.number().int().nonnegative().nullable().optional(),
     }),
   }),
   z.object({ ...eventBase, kind: z.literal('chat'), payload: z.object({ text: z.string() }) }),
+  /** Mestre pede um teste; `member_ids: null` = todos os players. `secret`: as respostas saem privadas. */
+  z.object({
+    ...eventBase,
+    kind: z.literal('request'),
+    payload: z.object({
+      check: rollCheckSchema,
+      label: z.string(),
+      member_ids: z.array(z.uuid()).nullable(),
+      secret: z.boolean(),
+    }),
+  }),
+  /** Ataque do player na mesa: o servidor rola acerto e dano; o mestre (que vê a CA) aplica. */
+  z.object({
+    ...eventBase,
+    kind: z.literal('attack'),
+    payload: z.object({
+      label: z.string(),
+      combatant_id: z.string(),
+      target_id: z.string(),
+      target_name: z.string(),
+      attack: diceResultSchema,
+      damage: diceResultSchema.nullable(),
+      damage_type: z.string(),
+      /** d20 natural: 20 é crítico (dano já com o dobro de dados), 1 erra sempre. */
+      natural: z.number().int(),
+    }),
+  }),
 ])
 export type RoomEvent = z.infer<typeof roomEventSchema>
 
@@ -174,9 +232,27 @@ export const roomOkResponse = z.object({ ok: z.literal(true) })
 
 // ── WebSocket ───────────────────────────────────────────────────────────
 
+/**
+ * Item de uma lista que não passa no schema (tipo novo de uma versão futura)
+ * sai da lista em vez de derrubar a mensagem inteira — um `ready` recusado
+ * deixava o app preso em "conectando".
+ */
+function keepValid<T>(items: unknown[], schema: z.ZodType<T>): T[] {
+  return items.flatMap(item => {
+    const parsed = schema.safeParse(item)
+    return parsed.success ? [parsed.data] : []
+  })
+}
+
+const labelSchema = z.string().trim().max(ROOM_ROLL_LABEL_MAX)
+const expressionSchema = z.string().trim().min(1).max(ROOM_ROLL_EXPRESSION_MAX)
+
 export const clientMessageSchema = z.discriminatedUnion('t', [
-  /** Primeiro frame: o token nunca vai na URL (URLs acabam em logs). */
-  z.object({ t: z.literal('auth'), token: tokenSchema, since: z.number().int().nonnegative() }),
+  /**
+   * Primeiro frame: o token nunca vai na URL (URLs acabam em logs). `protocol`
+   * ausente = app instalado antes da versão 2, que não entende os tipos novos.
+   */
+  z.object({ t: z.literal('auth'), token: tokenSchema, since: z.number().int().nonnegative(), protocol: z.number().int().positive().optional() }),
   z.object({ t: z.literal('ping') }),
   /** Player: a própria ficha inteira (o servidor confere o tamanho). */
   z.object({ t: z.literal('sheet_put'), sheet: z.record(z.string(), z.unknown()) }),
@@ -186,10 +262,33 @@ export const clientMessageSchema = z.discriminatedUnion('t', [
   z.object({ t: z.literal('table_clear') }),
   z.object({
     t: z.literal('roll'),
-    expression: z.string().trim().min(1).max(ROOM_ROLL_EXPRESSION_MAX),
-    label: z.string().trim().max(ROOM_ROLL_LABEL_MAX),
+    expression: expressionSchema,
+    label: labelSchema,
     private: z.boolean(),
+    reply_to: z.number().int().nonnegative().nullable().optional(),
   }),
+  /** Mestre: pede um teste aos players. */
+  z.object({
+    t: z.literal('request'),
+    check: rollCheckSchema,
+    label: labelSchema,
+    member_ids: z.array(z.uuid()).max(20).nullable(),
+    secret: z.boolean(),
+  }),
+  /** Player: ataca na mesa com o próprio combatente (o servidor confere na mesa gravada). */
+  z.object({
+    t: z.literal('attack'),
+    combatant_id: tableIdSchema,
+    target_id: tableIdSchema,
+    label: labelSchema,
+    attack: expressionSchema,
+    damage: expressionSchema.nullable(),
+    damage_type: z.string().trim().max(40),
+  }),
+  /** Player: quer mover o próprio combatente — vai só ao mestre, que decide. */
+  z.object({ t: z.literal('move'), combatant_id: tableIdSchema, to: cellSchema }),
+  /** Mestre: a agenda inteira de sessões. */
+  z.object({ t: z.literal('schedule_put'), schedule: roomScheduleSchema }),
   z.object({ t: z.literal('chat'), text: z.string().trim().min(1).max(ROOM_CHAT_MAX), private: z.boolean() }),
   /** Mestre: publica (ou atualiza) uma nota compartilhada; `id` é o da nota na campanha. */
   z.object({ t: z.literal('note_put'), id: z.string().min(1).max(100), note: sharedNoteSchema }),
@@ -205,12 +304,12 @@ export const serverMessageSchema = z.discriminatedUnion('t', [
     members: z.array(roomMemberSchema),
     online: z.array(z.uuid()),
     version: z.number().int().nonnegative(),
-    /** Documentos visíveis a este membro que mudaram depois de `since`. */
-    docs: z.array(roomDocSchema),
+    /** Documentos visíveis a este membro que mudaram depois de `since` (tipo desconhecido fica de fora). */
+    docs: z.array(z.unknown()).transform(items => keepValid(items, roomDocSchema)),
     /** `since` era 0: `docs` é a sala inteira e substitui o que o cliente tinha. */
     full: z.boolean(),
     /** Eventos visíveis depois de `since` (com `full`, só os últimos `ROOM_LOG_ON_READY`). */
-    events: z.array(roomEventSchema),
+    events: z.array(z.unknown()).transform(items => keepValid(items, roomEventSchema)),
   }),
   z.object({ t: z.literal('event'), event: roomEventSchema }),
   z.object({ t: z.literal('doc'), doc: roomDocSchema }),
@@ -219,5 +318,7 @@ export const serverMessageSchema = z.discriminatedUnion('t', [
   z.object({ t: z.literal('presence'), member_id: z.uuid(), online: z.boolean() }),
   z.object({ t: z.literal('closed') }),
   z.object({ t: z.literal('pong') }),
+  /** Só ao mestre: o player pediu para mover o combatente dele. */
+  z.object({ t: z.literal('intent'), member_id: z.uuid(), intent: z.object({ kind: z.literal('move'), combatant_id: tableIdSchema, to: cellSchema }) }),
 ])
 export type ServerMessage = z.infer<typeof serverMessageSchema>

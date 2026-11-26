@@ -21,3 +21,8 @@ export function d20Roll(modifier: number): string {
   if (modifier === 0) return '1d20'
   return `1d20${modifier > 0 ? '+' : '-'}${Math.abs(modifier)}`
 }
+
+/** Crítico: o dobro de dados de cada termo; o bônus fixo não dobra (2024). */
+export function critExpression(expression: DiceExpression): DiceExpression {
+  return { ...expression, terms: expression.terms.map(term => ({ ...term, count: term.count * 2 })) }
+}

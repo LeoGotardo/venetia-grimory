@@ -7,9 +7,16 @@
  * Sem imports: as funções da Vercel também leem este arquivo.
  */
 
-export const CLOUD_KINDS = ['sheet', 'campaign', 'monster', 'area_map'] as const
+/** `room`: a participação numa sala online (com o token) — celular e web entram como o mesmo membro. */
+export const CLOUD_KINDS = ['sheet', 'campaign', 'monster', 'area_map', 'room'] as const
 
 export type CloudKind = typeof CLOUD_KINDS[number]
+
+/**
+ * O que existia antes de `room`: é o que vai a quem pede o `pull` sem `kinds`
+ * (APK antigo, cujo schema recusaria a resposta inteira por um tipo novo).
+ */
+export const LEGACY_CLOUD_KINDS: readonly CloudKind[] = ['sheet', 'campaign', 'monster', 'area_map']
 
 /** Estado de sync de um registro local. */
 export interface CloudRecord {

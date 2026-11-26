@@ -29,6 +29,7 @@ const AreaMapEditorPage = lazy(() => import('./pages/gm/AreaMapEditorPage').then
 const CloudSyncBridge = lazy(() => import('./components/ui/CloudSyncBridge').then(m => ({ default: m.CloudSyncBridge })))
 const RoomSyncBridge = lazy(() => import('./components/room/RoomSyncBridge').then(m => ({ default: m.RoomSyncBridge })))
 const RoomPage = lazy(() => import('./pages/RoomPage').then(m => ({ default: m.RoomPage })))
+const GmRoomPage = lazy(() => import('./pages/gm/GmRoomPage').then(m => ({ default: m.GmRoomPage })))
 const CampaignPage = lazy(() => import('./pages/gm/CampaignPage').then(m => ({ default: m.CampaignPage })))
 // Aberta pelo app desktop no navegador do sistema; traz o Firebase, então só nela.
 const DesktopSignIn = lazy(() => import('./pages/DesktopSignIn').then(m => ({ default: m.DesktopSignIn })))
@@ -88,6 +89,7 @@ function App() {
             <Route path="/sala/:code" element={<RoomPage />} />
             <Route path="/mestre" element={<GmHome />} />
             <Route path="/mestre/campanha/:id" element={<CampaignPage />} />
+            <Route path="/mestre/campanha/:id/sala" element={<GmRoomPage />} />
             <Route path="/mestre/campanha/:id/npc/gerar" element={<NpcGeneratorPage />} />
             <Route path="/mestre/campanha/:id/npc/:npcId" element={<NpcEditPage />} />
             <Route path="/mestre/campanha/:id/encontro/:encounterId" element={<EncounterPage />} />

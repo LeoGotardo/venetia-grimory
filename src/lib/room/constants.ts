@@ -4,6 +4,13 @@
  * explícitos; `src/constants` reexporta tudo para o app.
  */
 
+/**
+ * Versão do protocolo que este app fala, mandada no `auth`. O servidor não
+ * manda os tipos de documento e evento novos a quem fala uma versão anterior
+ * (APK ainda não atualizado), que recusaria o `ready` inteiro.
+ */
+export const ROOM_PROTOCOL_VERSION = 2
+
 /** Alfabeto do código da sala: sem I, O, 0 e 1, que se confundem ao ditar. */
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 export const ROOM_CODE_LENGTH = 6
@@ -44,6 +51,11 @@ export const ROOM_TABLE_DOC_ID = 'main'
 export const ROOM_NOTE_TITLE_MAX = 200
 export const ROOM_NOTE_BODY_MAX = 100_000
 export const ROOM_NOTE_PUSH_DEBOUNCE_MS = 600
+
+/** Agenda de sessões (doc `schedule:main`): quantas cabem e o tamanho do título. */
+export const ROOM_SCHEDULE_DOC_ID = 'main'
+export const ROOM_SCHEDULE_MAX = 20
+export const ROOM_SESSION_TITLE_MAX = 120
 
 /** Rolagens e chat. */
 export const ROOM_CHAT_MAX = 500

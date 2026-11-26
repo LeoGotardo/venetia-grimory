@@ -1,10 +1,9 @@
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Campaign } from '../../types'
-import { campaignRoom, useRoomStore } from '../../store/roomStore'
+import { useRoomStore } from '../../store/roomStore'
 import { useGmStore } from '../../store/gmStore'
 import type { RoomMembership } from '../../services/roomStorage'
-import { Modal } from '../ui/Modal'
 import { TermsNotice } from '../ui/TermsNotice'
 import { gmPrimaryButton, gmSecondaryButton } from '../gm/GmHeader'
 import { rowDangerButton } from '../gm/MonsterRow'
@@ -12,29 +11,11 @@ import { RoomMemberList } from './RoomMemberList'
 import { RoomStatusBadge } from './RoomStatusBadge'
 import { roomErrorMessage } from './roomErrors'
 
-interface RoomPanelProps {
-  open: boolean
-  onClose: () => void
-  campaign: Campaign
-}
-
 const field =
   'w-full bg-[#2D2520] border border-[#B8860B]/30 rounded-[9px] px-3 py-2.5 text-[15px] text-[#F5F0E8] placeholder:text-[#A8A09B] focus:outline-none focus:border-[#D4A017]'
 
-/** Sala da campanha para o mestre: abrir, passar o código, ver quem entrou, remover e fechar. */
-export function RoomPanel({ open, onClose, campaign }: RoomPanelProps) {
-  const { t } = useTranslation()
-  const memberships = useRoomStore(s => s.memberships)
-  const membership = campaignRoom(memberships, campaign.id)
-
-  return (
-    <Modal open={open} onClose={onClose} title={t('room.title')}>
-      {membership ? <OpenRoom membership={membership} /> : <CreateRoom campaign={campaign} />}
-    </Modal>
-  )
-}
-
-function CreateRoom({ campaign }: { campaign: Campaign }) {
+/** Mestre sem sala nesta campanha: nome da sala e o nome dele na mesa. */
+export function CreateRoom({ campaign }: { campaign: Campaign }) {
   const { t } = useTranslation()
   const createRoom = useRoomStore(s => s.createRoom)
   const [name, setName] = useState(campaign.name)
@@ -75,7 +56,8 @@ function CreateRoom({ campaign }: { campaign: Campaign }) {
   )
 }
 
-function OpenRoom({ membership }: { membership: RoomMembership }) {
+/** Sala aberta: código para passar aos players, quem está nela (remover) e fechar. */
+export function OpenRoom({ membership }: { membership: RoomMembership }) {
   const { t } = useTranslation()
   const { status, members, online, activeRoomId, closeRoom, kick, forgetRoom } = useRoomStore()
   const detachRoomPlayers = useGmStore(s => s.detachRoomPlayers)

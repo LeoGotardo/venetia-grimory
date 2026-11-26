@@ -2,11 +2,11 @@ import { createRoomRequest, joinRoomRequest, kickRequest } from '../../src/lib/r
 import { ROOM_JOIN_RATE_LIMIT, ROOM_JOIN_RATE_WINDOW_S } from '../../src/lib/room/constants.js'
 import { RoomFailure, bearerToken, clientIp, fail, json, preflight, readBody } from '../_lib/http.js'
 import { overRateLimit } from '../_lib/redis.js'
-import { closeRoom, createRoom, joinRoom, kickMember, leaveRoom, requireMember } from '../_lib/rooms.js'
+import { closeRoom, createRoom, joinRoom, kickMember, leaveRoom, requireMember, scheduleOf } from '../_lib/rooms.js'
 
 /**
  * Ciclo de vida da sala, numa função só (`/api/rooms/<ação>`): criar, entrar,
- * fechar, remover player e sair. O que acontece durante a sessão vai pelo
+ * fechar, remover player, sair e ler a agenda de sessões (para os lembretes). O que acontece durante a sessão vai pelo
  * WebSocket (`/api/room-ws`).
  */
 
@@ -37,6 +37,7 @@ const ACTIONS: Record<string, Handler> = {
     await kickMember(gm, member_id)
     return json({ ok: true })
   },
+  schedule: async request => json(await scheduleOf(await requireMember(bearerToken(request)))),
   leave: async request => {
     await leaveRoom(await requireMember(bearerToken(request)))
     return json({ ok: true })

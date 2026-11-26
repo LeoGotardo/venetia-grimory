@@ -1,5 +1,6 @@
 import {
-  useGmRoomParty, useGmSharedNotes, useGmTableBroadcast, usePlayerAutoConnect, usePlayerRoller, usePlayerSheetPush,
+  useGmPlayerIntents, useGmRoomParty, useGmSharedNotes, useGmTableBroadcast, usePlayerAutoConnect, usePlayerEncounterRedirect,
+  usePlayerRoller, usePlayerSheetPush, useSessionSchedules,
 } from '../../hooks/useRoomSync'
 import { RoomDock } from './RoomDock'
 
@@ -11,5 +12,8 @@ export function RoomSyncBridge() {
   useGmRoomParty()
   useGmTableBroadcast()
   useGmSharedNotes()
+  useGmPlayerIntents()
+  usePlayerEncounterRedirect()
+  useSessionSchedules()
   return <RoomDock />
 }

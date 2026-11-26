@@ -1,4 +1,4 @@
-import { ROOM_CLOSE, ROOM_HEARTBEAT_MS, ROOM_RECONNECT_DELAYS_MS } from '../constants'
+import { ROOM_CLOSE, ROOM_HEARTBEAT_MS, ROOM_PROTOCOL_VERSION, ROOM_RECONNECT_DELAYS_MS } from '../constants'
 import { serverMessageSchema, type ClientMessage, type ServerMessage } from '../lib/room/protocol'
 
 export type SocketStatus = 'connecting' | 'online' | 'reconnecting'
@@ -70,7 +70,7 @@ export class RoomSocket {
     const socket = new WebSocket(this.options.url)
     this.socket = socket
 
-    socket.onopen = () => this.send({ t: 'auth', token: this.options.token, since: this.options.since() })
+    socket.onopen = () => this.send({ t: 'auth', token: this.options.token, since: this.options.since(), protocol: ROOM_PROTOCOL_VERSION })
 
     socket.onmessage = event => {
       const parsed = serverMessageSchema.safeParse(safeJson(event.data))

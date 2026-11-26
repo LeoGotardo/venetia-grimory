@@ -1,6 +1,6 @@
 import { STORAGE_KEY_CLOUD } from '../constants'
 import { contentHash } from '../lib/cloud/hash'
-import { cloudKey, isDirty, parseCloudKey, type CloudKind, type CloudRecord } from '../lib/cloud/sync'
+import { CLOUD_KINDS, LEGACY_CLOUD_KINDS, cloudKey, isDirty, parseCloudKey, type CloudKind, type CloudRecord } from '../lib/cloud/sync'
 
 /**
  * Vínculo deste aparelho com a conta e o estado de sync de cada registro, no
@@ -23,6 +23,8 @@ interface CloudState {
   records: Record<string, CloudRecord>
   /** Maior `seq` já lido da conta: a próxima busca só pede o que mudou depois. */
   cursor: number
+  /** Tipos que o cursor cobre. Um tipo novo (`room`) passou pelo cursor sem vir: aí ele volta a 0. */
+  cursor_kinds: string[]
 }
 
 export interface CloudSnapshot {
@@ -33,7 +35,7 @@ export interface CloudSnapshot {
   localOnly: number
 }
 
-const emptyState = (): CloudState => ({ profile: null, records: {}, cursor: 0 })
+const emptyState = (): CloudState => ({ profile: null, records: {}, cursor: 0, cursor_kinds: [...CLOUD_KINDS] })
 
 let state: CloudState = readState()
 let snapshot: CloudSnapshot = buildSnapshot()
@@ -45,10 +47,14 @@ function readState(): CloudState {
     const raw = localStorage.getItem(STORAGE_KEY_CLOUD)
     if (!raw) return emptyState()
     const parsed = JSON.parse(raw) as Partial<CloudState>
+    // Gravado por uma versão que não pedia todos os tipos: o servidor pulou os que ela não conhecia.
+    const covered = parsed.cursor_kinds ?? LEGACY_CLOUD_KINDS
+    const complete = CLOUD_KINDS.every(kind => covered.includes(kind))
     return {
       profile: parsed.profile ?? null,
       records: parsed.records ?? {},
-      cursor: typeof parsed.cursor === 'number' ? parsed.cursor : 0,
+      cursor: complete && typeof parsed.cursor === 'number' ? parsed.cursor : 0,
+      cursor_kinds: [...CLOUD_KINDS],
     }
   } catch (err) {
     console.error('[nuvem] Estado do sync corrompido, reiniciando.', err)
@@ -172,7 +178,7 @@ export function setCursor(value: number): void {
 
 /** Vincula a conta com registros e cursores zerados — o motor escaneia o aparelho em seguida. */
 export function linkProfile(profile: CloudProfile): void {
-  state = { profile, records: {}, cursor: 0 }
+  state = { profile, records: {}, cursor: 0, cursor_kinds: [...CLOUD_KINDS] }
   persist()
 }
 

@@ -1,22 +1,49 @@
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
-  ROOM_NOTE_PUSH_DEBOUNCE_MS, ROOM_SHEET_PUSH_DEBOUNCE_MS, ROOM_TABLE_DOC_ID, ROOM_TABLE_PUSH_DEBOUNCE_MS,
+  ROOM_NOTE_PUSH_DEBOUNCE_MS, ROOM_SCHEDULE_DOC_ID, ROOM_SHEET_PUSH_DEBOUNCE_MS, ROOM_TABLE_DOC_ID, ROOM_TABLE_PUSH_DEBOUNCE_MS,
+  SESSION_SCHEDULE_REFRESH_MS,
 } from '../constants'
-import { useRoomStore } from '../store/roomStore'
+import { subscribeIntents, useRoomStore } from '../store/roomStore'
 import { useSheetStore } from '../store/sheetStore'
 import { useGmStore } from '../store/gmStore'
 import { loadSheet } from '../services/sheetStorage'
+import { preferredRoom, roomPagePath } from '../services/roomStorage'
+import { roomApi } from '../services/roomApi'
+import { cancelRemindersExcept, onReminderTap, syncRoomReminders } from '../services/sessionReminders'
+import { useConfigStore } from '../store/configStore'
 import { setRoomRoller } from '../services/roomRoller'
 import { useRoomConnection } from './useRoomConnection'
 import type { RoomSheetEntry } from '../lib/gm/party'
 import { buildTableState } from '../lib/gm/tableView'
 import { tableVision } from '../lib/gm/vision'
 import { docKey } from '../lib/room/docs'
+import { roomScheduleSchema, tableStateSchema } from '../lib/room/protocol'
+import { resolvePlayerMove } from '../lib/gm/playerActions'
 import { findMentionTarget, mentionTargets, shareableNote } from '../lib/gm/notes'
 
 /** Participação da sala conectada (a do socket aberto), se houver. */
-function useActiveMembership() {
+export function useActiveMembership() {
   return useRoomStore(s => s.memberships.find(m => m.room_id === s.activeRoomId) ?? null)
+}
+
+/** A ficha com que o player entrou: a aberta no store (com a edição mais recente) ou a gravada. */
+export function readRoomSheet(sheetId: string | null) {
+  if (!sheetId) return null
+  const state = useSheetStore.getState()
+  return state.sheetId === sheetId ? state.sheet : loadSheet(sheetId)
+}
+
+/**
+ * Mestre: o encontro transmitido à mesa da sala conectada, com a campanha dele
+ * aberta — é onde caem os ataques e os movimentos que os players pedem.
+ */
+export function useBroadcastEncounter() {
+  const membership = useActiveMembership()
+  const campaign = useGmStore(s => s.campaign)
+  if (membership?.role !== 'gm' || !campaign || membership.campaign_id !== campaign.id || !membership.broadcast_encounter_id) return null
+  const encounter = campaign.encounters.find(e => e.id === membership.broadcast_encounter_id)
+  return encounter ? { campaign, encounter } : null
 }
 
 /**
@@ -98,10 +125,54 @@ export function useGmTableBroadcast() {
       // A exploração fica no mapa: a próxima batalha nele começa com o que o grupo já viu.
       const vision = map ? tableVision(encounter, map) : null
       if (map && vision && vision.explored !== (map.explored ?? null)) setMapExplored(map.id, vision.explored)
-      publishTable(buildTableState(encounter, map, vision))
+      publishTable(buildTableState(encounter, map, vision, campaign?.party))
     }, ROOM_TABLE_PUSH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [online, linked, encounter, map, hasTable, publishTable, setMapExplored])
+  }, [online, linked, encounter, map, hasTable, publishTable, setMapExplored, campaign?.party])
+}
+
+/**
+ * Mestre: aplica o movimento que um player pediu na mesa — se for o dele, na
+ * vez dele e dentro do alcance (`resolvePlayerMove`). Lê o estado na hora em
+ * que o pedido chega, não o da última renderização.
+ */
+export function useGmPlayerIntents() {
+  useEffect(() => subscribeIntents(({ member_id, intent }) => {
+    const room = useRoomStore.getState()
+    const membership = room.memberships.find(m => m.room_id === room.activeRoomId)
+    const { campaign, moveCombatant } = useGmStore.getState()
+    if (membership?.role !== 'gm' || !campaign || membership.campaign_id !== campaign.id) return
+    const encounter = campaign.encounters.find(e => e.id === membership.broadcast_encounter_id)
+    const map = encounter?.map_id ? campaign.maps.find(m => m.id === encounter.map_id) : null
+    if (!encounter || !map) return
+    const cost = resolvePlayerMove(encounter, map, campaign.party, member_id, intent.combatant_id, intent.to)
+    if (cost != null) moveCombatant(encounter.id, intent.combatant_id, intent.to, cost)
+  }), [])
+}
+
+/** Encontros para os quais este app já levou o player à mesa — uma vez por encontro, para não prendê-lo lá. */
+const redirectedEncounters = new Set<string>()
+
+/**
+ * Player: quando o mestre começa o combate transmitido, o app vai para a mesa
+ * da sala (de qualquer tela). Uma vez por encontro: voltar para a ficha não
+ * puxa a pessoa de novo.
+ */
+export function usePlayerEncounterRedirect() {
+  const membership = useActiveMembership()
+  const tableDoc = useRoomStore(s => s.docs[docKey({ kind: 'table', id: ROOM_TABLE_DOC_ID })])
+  const navigate = useNavigate()
+  const code = membership?.role === 'player' ? membership.code : null
+
+  useEffect(() => {
+    if (!code || !tableDoc) return
+    const table = tableStateSchema.safeParse(tableDoc.data)
+    if (!table.success || table.data.status !== 'active') return
+    const key = `${code}:${table.data.encounter_id}`
+    if (redirectedEncounters.has(key)) return
+    redirectedEncounters.add(key)
+    navigate(`/sala/${code}?aba=mesa`)
+  }, [code, tableDoc, navigate])
 }
 
 /**
@@ -150,12 +221,73 @@ export function usePlayerRoller() {
 }
 
 /**
- * Player que abre o app direto na ficha: se ela está numa sala deste aparelho,
- * conecta — senão a ficha só sincronizaria (e só rolaria na sala) depois de
- * passar pela página da sala.
+ * Quem está numa sala fica nela: ao abrir o app (em qualquer tela) o socket
+ * liga na última sala usada, e abrir a ficha de uma sala troca para ela. Antes
+ * a conexão só existia na página da sala ou na ficha, e a pessoa não sabia se
+ * estava "dentro" — nem recebia o início do combate ou os pedidos do mestre.
  */
 export function usePlayerAutoConnect() {
   const sheetId = useSheetStore(s => s.sheetId)
-  const roomId = useRoomStore(s => s.memberships.find(m => m.role === 'player' && m.sheet_id === sheetId)?.room_id ?? null)
-  useRoomConnection(sheetId ? roomId : null)
+  const sheetRoom = useRoomStore(s => s.memberships.find(m => m.role === 'player' && m.sheet_id === sheetId)?.room_id ?? null)
+  const idle = useRoomStore(s => s.activeRoomId == null)
+  const memberships = useRoomStore(s => s.memberships)
+  const connect = useRoomStore(s => s.connect)
+  useRoomConnection(sheetId ? sheetRoom : null)
+  useEffect(() => {
+    const fallback = idle ? preferredRoom(memberships) : null
+    if (fallback) connect(fallback)
+  }, [idle, memberships, connect])
+}
+
+/**
+ * Agenda de sessões de todas as salas deste aparelho: lida pela API ao abrir o
+ * app e ao voltar a ele (no máximo a cada `SESSION_SCHEDULE_REFRESH_MS`), e ao
+ * vivo pela sala conectada. Cada mudança reagenda os lembretes daquela sala.
+ */
+export function useSessionSchedules() {
+  const memberships = useRoomStore(s => s.memberships)
+  const activeRoomId = useRoomStore(s => s.activeRoomId)
+  const scheduleDoc = useRoomStore(s => s.docs[docKey({ kind: 'schedule', id: ROOM_SCHEDULE_DOC_ID })])
+  const schedules = useRoomStore(s => s.schedules)
+  const setSchedule = useRoomStore(s => s.setSchedule)
+  const remindersOn = useConfigStore(s => s.config.session_reminders)
+  const navigate = useNavigate()
+
+  useEffect(() => onReminderTap(path => navigate(path)), [navigate])
+
+  // Ao vivo: a sala conectada manda a agenda no `ready` e a cada mudança do mestre.
+  useEffect(() => {
+    if (!activeRoomId || !scheduleDoc) return
+    const parsed = roomScheduleSchema.safeParse(scheduleDoc.data)
+    if (parsed.success) setSchedule(activeRoomId, parsed.data.sessions)
+  }, [activeRoomId, scheduleDoc, setSchedule])
+
+  useEffect(() => {
+    let last = 0
+    async function refresh() {
+      if (document.visibilityState !== 'visible' || Date.now() - last < SESSION_SCHEDULE_REFRESH_MS) return
+      last = Date.now()
+      for (const m of useRoomStore.getState().memberships) {
+        try {
+          setSchedule(m.room_id, (await roomApi.schedule(m.token)).sessions)
+        } catch (err) {
+          // Sala fechada ou acesso perdido: a página da sala mostra isso ao conectar.
+          console.warn(`[sessões] Agenda da sala ${m.code} indisponível.`, err)
+        }
+      }
+    }
+    void refresh()
+    document.addEventListener('visibilitychange', refresh)
+    return () => document.removeEventListener('visibilitychange', refresh)
+  }, [memberships.length, setSchedule])
+
+  // Agenda nova (ou lembretes religados): troca os lembretes de cada sala.
+  useEffect(() => {
+    if (!remindersOn) return
+    void cancelRemindersExcept(memberships.map(m => m.room_id))
+    for (const m of memberships) {
+      const sessions = schedules[m.room_id]
+      if (sessions) void syncRoomReminders({ id: m.room_id, name: m.name, path: roomPagePath(m) }, sessions)
+    }
+  }, [schedules, memberships, remindersOn])
 }
