@@ -10,6 +10,8 @@ export interface Config {
   language: string
   /** Lembrete no celular antes das sessões marcadas nas salas (só no app; ligar pede a permissão). */
   session_reminders: boolean
+  /** Rolar os dados da sala na mesa de verdade e digitar quanto saiu (o servidor confere a faixa). */
+  physical_dice: boolean
 }
 
 interface ConfigStore {
@@ -24,6 +26,7 @@ const DEFAULT_CONFIG: Config = {
   simple_coins: false,
   language: 'en',
   session_reminders: false,
+  physical_dice: false,
 }
 
 export const useConfigStore = create<ConfigStore>()(

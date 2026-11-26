@@ -6,8 +6,8 @@
 export interface RoomRoller {
   /** Ficha local com que o player está na sala. */
   sheetId: string
-  /** Rola no servidor e manda ao log; devolve se mandou. */
-  roll: (expression: string, label: string) => boolean
+  /** Rola no servidor (ou pede os dados físicos) e manda ao log; resolve se mandou. */
+  roll: (expression: string, label: string) => Promise<boolean>
 }
 
 const listeners = new Set<() => void>()

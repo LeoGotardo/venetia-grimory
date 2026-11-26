@@ -1,5 +1,26 @@
 [
   {
+    "version": "v3.7.0",
+    "pt": [
+      "Novo: na sua vez, ataque desarmado direto da mesa da sala: soco, Agarrar e Empurrar",
+      "Novo: lance magias na sua vez, com ataque mágico, salvaguarda em um ou vários alvos ou cura, gastando o espaço da ficha",
+      "Novo: use poções e pergaminhos do inventário na sua vez; a cura da poção vai direto para o mestre aplicar",
+      "Novo: role os dados no app ou na mesa de verdade; com dados físicos você digita quanto saiu, e o mestre vê que foram dados físicos",
+      "Novo: a sala cabe inteira na tela, com abas para a mesa, a ficha (dividida em seções), o chat, as notas e a sala",
+      "Novo: para o mestre, salvaguardas e curas dos jogadores chegam no log e se aplicam com um toque",
+      "Ajuste: no Linux, o app instalado pelo .deb mostra o ícone no menu de aplicativos"
+    ],
+    "en": [
+      "New: on your turn, Unarmed Strike straight from the room table: punch, Grapple and Shove",
+      "New: cast spells on your turn, with a spell attack, a saving throw on one or several targets, or healing, spending the slot on your sheet",
+      "New: use potions and scrolls from your inventory on your turn; a potion's healing goes straight to the GM to apply",
+      "New: roll dice in the app or at the real table; with physical dice you type what you rolled, and the GM sees they were physical dice",
+      "New: the room fits on the screen, with tabs for the table, your sheet (split into sections), chat, notes and the room",
+      "New: for the GM, players' saving throws and healing arrive in the log and apply with one tap",
+      "Fix: on Linux, the app installed from the .deb shows its icon in the applications menu"
+    ]
+  },
+  {
     "version": "v3.6.0",
     "pt": [
       "Novo: página da sala para o mestre, com tudo da sessão num lugar só: rolagens e chat, pedidos de teste, o encontro na mesa, a agenda e quem está na sala",

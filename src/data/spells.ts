@@ -88,6 +88,12 @@ for (const list of [ALL_SPELLS_PT, ALL_SPELLS_EN]) {
   for (const m of list) INDEX_BY_NAME.set(m.name.toLowerCase(), m.id)
 }
 
+/** A mesma magia no catálogo PT, o canônico: as regras comparam `save` em português. */
+export function resolveSpellPt(nameOrId: string): Spell | null {
+  const id = INDEX_BY_NAME.get(nameOrId.toLowerCase()) ?? nameOrId
+  return ALL_SPELLS_PT.find(m => m.id === id) ?? null
+}
+
 /** Resolve uma magia salva (nome em qualquer idioma, ou id) para o idioma atual. */
 export function resolveSpell(nameOrId: string): Spell | null {
   const spells = getSpells()

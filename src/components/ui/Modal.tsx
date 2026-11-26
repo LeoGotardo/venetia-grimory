@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useBackHandler } from '../../hooks/useBackHandler'
@@ -9,22 +9,29 @@ interface ModalProps {
   title?: string
   children: ReactNode
   wide?: boolean
+  /** Por cima de outro modal aberto (o pedido de dados físicos sobre o de ataque). */
+  top?: boolean
 }
 
-export function Modal({ open, onClose, title, children, wide }: ModalProps) {
+export function Modal({ open, onClose, title, children, wide, top }: ModalProps) {
   const { t } = useTranslation()
   const panelRef = useRef<HTMLDivElement>(null)
-  const titleId = title ? 'modal-title' : undefined
+  // Id por instância: com dois modais abertos, um id fixo dava aos dois o mesmo nome acessível.
+  const generatedId = useId()
+  const titleId = title ? generatedId : undefined
 
   // Voltar do Android fecha o modal antes de sair da tela
   useBackHandler(open, onClose)
 
-  // Escape to close
+  // Escape fecha só o modal aberto que tem o foco — o de cima, quando há dois.
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    if (!open) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && panelRef.current?.contains(document.activeElement)) onClose()
+    }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
-  }, [onClose])
+  }, [open, onClose])
 
   // Focus trap + initial focus
   useEffect(() => {
@@ -63,7 +70,7 @@ export function Modal({ open, onClose, title, children, wide }: ModalProps) {
     <AnimatePresence>
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          className={`fixed inset-0 ${top ? 'z-[60]' : 'z-50'} flex items-center justify-center p-4`}
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}

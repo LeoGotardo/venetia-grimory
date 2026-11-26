@@ -4,12 +4,12 @@ import {
   ROOM_CLOSED_RETENTION_DAYS, ROOM_IDLE_DAYS, ROOM_LOG_MAX, ROOM_MAX_MEMBERS, ROOM_SCHEDULE_DOC_ID, ROOM_SHEET_MAX_BYTES,
   ROOM_TABLE_DOC_ID, ROOM_TABLE_MAX_BYTES, ROOM_TOKEN_BYTES,
 } from '../../src/lib/room/constants.js'
-import { critExpression, parseRoomRoll } from '../../src/lib/room/rolls.js'
+import { critExpression, manualRoll, parseRoomDamage, parseRoomRoll } from '../../src/lib/room/rolls.js'
 import { rollDice } from '../../src/lib/gm/dice.js'
 import {
   roomScheduleSchema, tableStateSchema,
   type DiceResult, type RollCheck, type RoomDoc, type RoomError, type RoomEvent, type RoomInfo, type RoomJoined, type RoomMember,
-  type RoomRole, type RoomSchedule, type SharedNote, type TableState,
+  type RoomRole, type RoomSchedule, type SaveAbility, type SaveEffect, type SharedNote, type TableState,
 } from '../../src/lib/room/protocol.js'
 import { db, isUniqueViolation, toIso } from './db.js'
 import { RoomFailure } from './http.js'
@@ -332,19 +332,31 @@ async function addEvent(member: AuthedMember, kind: RoomEvent['kind'], isPrivate
 /** Dado justo: `crypto.randomInt` no lugar de `Math.random`, e sempre no servidor. */
 const cryptoRandom = () => randomInt(0, 2 ** 32) / 2 ** 32
 
-/** Rola a expressão já aceita por `parseRoomRoll`; `crit` dobra os dados (o bônus fixo entra uma vez). */
-function rollExpression(text: string, crit = false): DiceResult {
-  const parsed = parseRoomRoll(text)
+/**
+ * Rola a expressão já aceita por `parse`; `crit` dobra os dados (o bônus fixo
+ * entra uma vez). Com `manual` (dados físicos), confere os subtotais que o player
+ * digitou em vez de rolar, e marca o resultado.
+ */
+function rollExpression(text: string, crit = false, parse = parseRoomRoll, manual?: number[]): DiceResult {
+  const parsed = parse(text)
   if (!parsed) throw new RoomFailure('invalid_request')
-  const { rolls, bonus, total } = rollDice(crit ? critExpression(parsed) : parsed, cryptoRandom)
-  return { expression: text.replace(/\s+/g, ''), rolls, bonus, total }
+  const expression = crit ? critExpression(parsed) : parsed
+  const clean = text.replace(/\s+/g, '')
+  if (manual) {
+    const result = manualRoll(expression, manual)
+    if (!result) throw new RoomFailure('invalid_request')
+    return { expression: clean, ...result, manual: true }
+  }
+  const { rolls, bonus, total } = rollDice(expression, cryptoRandom)
+  return { expression: clean, rolls, bonus, total }
 }
 
 export async function addRoll(
   member: AuthedMember,
-  input: { expression: string; label: string; private: boolean; reply_to?: number | null },
+  input: { expression: string; label: string; private: boolean; reply_to?: number | null; manual?: number[] },
 ): Promise<RoomEvent> {
-  return addEvent(member, 'roll', input.private, { ...rollExpression(input.expression), label: input.label, reply_to: input.reply_to ?? null })
+  const result = rollExpression(input.expression, false, parseRoomRoll, input.manual)
+  return addEvent(member, 'roll', input.private, { ...result, label: input.label, reply_to: input.reply_to ?? null })
 }
 
 /** Mestre: pede um teste. O próprio pedido é público; `secret` faz as respostas saírem privadas. */
@@ -362,18 +374,59 @@ export async function addRequest(
  */
 export async function addAttack(
   member: AuthedMember,
-  input: { combatant_id: string; target_id: string; label: string; attack: string; damage: string | null; damage_type: string },
+  input: {
+    combatant_id: string; target_id: string; label: string; attack: string; damage: string | null; damage_type: string
+    manual_attack?: number; manual_damage?: number[]
+  },
 ): Promise<RoomEvent> {
   const table = await requireOwnCombatant(member, input.combatant_id, false)
   const target = table.combatants.find(c => c.id === input.target_id)
   if (!target || target.id === input.combatant_id) throw new RoomFailure('invalid_request')
-  const attack = rollExpression(input.attack)
+  const attack = rollExpression(input.attack, false, parseRoomRoll, input.manual_attack != null ? [input.manual_attack] : undefined)
   if (!/^1d20(?:[+-]\d+)?$/.test(attack.expression)) throw new RoomFailure('invalid_request')
   const natural = attack.rolls[0]
-  const damage = input.damage ? rollExpression(input.damage, natural === 20) : null
+  const damage = input.damage ? rollExpression(input.damage, natural === 20, parseRoomDamage, input.manual_damage) : null
   return addEvent(member, 'attack', false, {
     label: input.label, combatant_id: input.combatant_id, target_id: target.id, target_name: target.name,
     attack, damage, damage_type: input.damage_type, natural,
+  })
+}
+
+/**
+ * Player: efeito com salvaguarda (magia de área, Agarrar, Empurrar). Os alvos têm
+ * de estar na mesa gravada; o dano sai uma vez só, igual para todos — o mestre
+ * decide quem passou e aplica inteiro, metade ou nada.
+ */
+export async function addSave(
+  member: AuthedMember,
+  input: {
+    combatant_id: string; target_ids: string[]; label: string; dc: number; abilities: SaveAbility[]
+    damage: string | null; damage_type: string; half_on_success: boolean; effect: SaveEffect; manual_damage?: number[]
+  },
+): Promise<RoomEvent> {
+  const table = await requireOwnCombatant(member, input.combatant_id, false)
+  const targets = [...new Set(input.target_ids)].map(id => table.combatants.find(c => c.id === id))
+  if (targets.some(t => !t)) throw new RoomFailure('invalid_request')
+  const damage = input.damage ? rollExpression(input.damage, false, parseRoomDamage, input.manual_damage) : null
+  return addEvent(member, 'save', false, {
+    label: input.label, combatant_id: input.combatant_id,
+    targets: targets.map(t => ({ id: t!.id, name: t!.name })),
+    dc: input.dc, abilities: [...new Set(input.abilities)], damage, damage_type: input.damage_type,
+    half_on_success: input.half_on_success, effect: input.effect,
+  })
+}
+
+/** Player: cura rolada no servidor; o alvo pode ser o próprio combatente (beber a poção). */
+export async function addHeal(
+  member: AuthedMember,
+  input: { combatant_id: string; target_id: string; label: string; heal: string; manual?: number[] },
+): Promise<RoomEvent> {
+  const table = await requireOwnCombatant(member, input.combatant_id, false)
+  const target = table.combatants.find(c => c.id === input.target_id)
+  if (!target) throw new RoomFailure('invalid_request')
+  return addEvent(member, 'heal', false, {
+    label: input.label, combatant_id: input.combatant_id, target_id: target.id, target_name: target.name,
+    heal: rollExpression(input.heal, false, parseRoomDamage, input.manual),
   })
 }
 

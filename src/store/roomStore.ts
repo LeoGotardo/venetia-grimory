@@ -1,9 +1,13 @@
 import { create } from 'zustand'
+import { useConfigStore } from './configStore'
+import { useDiceEntryStore, type DiceEntryAnswer, type DiceEntryGroup } from './diceEntryStore'
+import { parseRoomDamage } from '../lib/room/rolls'
 import type { CharacterSheet } from '../types'
 import { ROOM_SHEET_MAX_BYTES, ROOM_TABLE_MAX_BYTES } from '../constants'
 import {
   roomScheduleSchema, sharedNoteSchema, tableStateSchema,
-  type RollCheck, type RoomJoined, type RoomSchedule, type RoomSession, type ServerMessage, type SharedNote, type TableState,
+  type RollCheck, type RoomJoined, type RoomSchedule, type RoomSession, type SaveAbility, type SaveEffect, type ServerMessage,
+  type SharedNote, type TableState,
 } from '../lib/room/protocol'
 import { EMPTY_ROOM_VIEW, applyServerMessage, type RoomView } from '../lib/room/session'
 import { readMemberships, rememberActiveRoom, writeMemberships, type RoomMembership } from '../services/roomStorage'
@@ -13,6 +17,19 @@ import { enableRoomSync } from '../services/roomSyncGate'
 
 /** `idle` = sem sala conectada; os fins (`closed`, `kicked`…) ficam até a pessoa dispensar. */
 export type RoomConnectionStatus = 'idle' | SocketStatus | SocketEnd
+
+export interface SaveInput {
+  combatantId: string
+  targetIds: string[]
+  label: string
+  dc: number
+  /** Dois = o alvo escolhe (FOR ou DES no Agarrar e no Empurrar). */
+  abilities: SaveAbility[]
+  damage: string | null
+  damageType: string
+  halfOnSuccess: boolean
+  effect: SaveEffect
+}
 
 interface RoomState extends RoomView {
   /** Salas deste aparelho, persistidas em `dnd_salas`. */
@@ -51,11 +68,16 @@ interface RoomState extends RoomView {
   /** Mestre: manda a mesa filtrada (`null` apaga a mesa dos players). Igual à última, não manda. */
   publishTable: (table: TableState | null) => void
   /** Rola no servidor (a expressão já validada por `parseRoomRoll`). `replyTo`: o pedido de teste que responde. Devolve se mandou. */
-  roll: (expression: string, label: string, isPrivate: boolean, replyTo?: number) => boolean
+  /** Rolagens, ataques, salvaguardas e curas devolvem uma promessa: com dados físicos, esperam o player digitar. */
+  roll: (expression: string, label: string, isPrivate: boolean, replyTo?: number) => Promise<boolean>
   /** Mestre: pede um teste (`memberIds: null` = todos os players). */
   requestRoll: (check: RollCheck, label: string, memberIds: string[] | null, secret: boolean) => boolean
   /** Player: ataca na mesa com o próprio combatente (o servidor rola acerto e dano). */
-  attack: (input: { combatantId: string; targetId: string; label: string; attack: string; damage: string | null; damageType: string }) => boolean
+  attack: (input: { combatantId: string; targetId: string; label: string; attack: string; damage: string | null; damageType: string }) => Promise<boolean>
+  /** Player: efeito com salvaguarda (magia de área, Agarrar, Empurrar); o mestre resolve cada alvo. */
+  save: (input: SaveInput) => Promise<boolean>
+  /** Player: cura (poção, magia) num combatente da mesa; o mestre aplica. */
+  heal: (input: { combatantId: string; targetId: string; label: string; heal: string }) => Promise<boolean>
   /** Player: pede ao mestre para mover o próprio combatente. */
   requestMove: (combatantId: string, to: { x: number; y: number }) => boolean
   /** Mestre: grava a agenda de sessões inteira. */
@@ -67,6 +89,19 @@ interface RoomState extends RoomView {
 }
 
 let socket: RoomSocket | null = null
+
+/**
+ * Dados físicos ligados: pergunta quanto saiu antes de mandar. `undefined` = o
+ * servidor rola (modo app, só valor fixo, ou o player escolheu rolar no app);
+ * `null` = desistiu, nada vai.
+ */
+async function physicalDice(title: string, groups: DiceEntryGroup[]): Promise<Exclude<DiceEntryAnswer, 'app'> | undefined> {
+  if (!useConfigStore.getState().config.physical_dice) return undefined
+  const withDice = groups.filter(g => (parseRoomDamage(g.expression)?.terms.length ?? 0) > 0)
+  if (withDice.length === 0) return undefined
+  const answer = await useDiceEntryStore.getState().ask({ title, groups: withDice })
+  return answer === 'app' ? undefined : answer
+}
 
 type Intent = Extract<ServerMessage, { t: 'intent' }>
 const intentListeners = new Set<(intent: Intent) => void>()
@@ -244,17 +279,51 @@ export const useRoomStore = create<RoomState>((set, get) => {
       if (socket.send(table ? { t: 'table_put', table } : { t: 'table_clear' })) lastPushedTable = json
     },
 
-    roll: (expression, label, isPrivate, replyTo) =>
-      get().status === 'online' && socket != null && socket.send({ t: 'roll', expression, label, private: isPrivate, reply_to: replyTo ?? null }),
+    roll: async (expression, label, isPrivate, replyTo) => {
+      if (get().status !== 'online') return false
+      const manual = await physicalDice(label || expression, [{ key: 'roll', expression }])
+      if (manual === null) return false
+      return get().status === 'online' && socket != null
+        && socket.send({ t: 'roll', expression, label, private: isPrivate, reply_to: replyTo ?? null, manual: manual?.roll })
+    },
 
     requestRoll: (check, label, memberIds, secret) =>
       get().status === 'online' && socket != null && socket.send({ t: 'request', check, label, member_ids: memberIds, secret }),
 
-    attack: input =>
-      get().status === 'online' && socket != null && socket.send({
+    attack: async input => {
+      if (get().status !== 'online') return false
+      const manual = await physicalDice(input.label, [
+        { key: 'attack', expression: input.attack },
+        ...(input.damage ? [{ key: 'damage' as const, expression: input.damage, critFrom: 'attack' as const }] : []),
+      ])
+      if (manual === null) return false
+      return get().status === 'online' && socket != null && socket.send({
         t: 'attack', combatant_id: input.combatantId, target_id: input.targetId, label: input.label,
         attack: input.attack, damage: input.damage, damage_type: input.damageType,
-      }),
+        manual_attack: manual?.attack?.[0], manual_damage: manual?.damage,
+      })
+    },
+
+    save: async input => {
+      if (get().status !== 'online') return false
+      const manual = input.damage ? await physicalDice(input.label, [{ key: 'damage', expression: input.damage }]) : undefined
+      if (manual === null) return false
+      return get().status === 'online' && socket != null && socket.send({
+        t: 'save', combatant_id: input.combatantId, target_ids: input.targetIds, label: input.label, dc: input.dc,
+        abilities: input.abilities, damage: input.damage, damage_type: input.damageType,
+        half_on_success: input.halfOnSuccess, effect: input.effect, manual_damage: manual?.damage,
+      })
+    },
+
+    heal: async input => {
+      if (get().status !== 'online') return false
+      const manual = await physicalDice(input.label, [{ key: 'heal', expression: input.heal }])
+      if (manual === null) return false
+      return get().status === 'online' && socket != null && socket.send({
+        t: 'heal', combatant_id: input.combatantId, target_id: input.targetId, label: input.label, heal: input.heal,
+        manual: manual?.heal,
+      })
+    },
 
     requestMove: (combatantId, to) =>
       get().status === 'online' && socket != null && socket.send({ t: 'move', combatant_id: combatantId, to }),

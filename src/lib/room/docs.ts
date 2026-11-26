@@ -20,9 +20,12 @@ export function eventVisibleTo(event: Pick<RoomEvent, 'private' | 'actor_member_
 /** O que existia antes do protocolo 2: só isto vai para um app que não mandou `protocol` no `auth`. */
 const V1_DOC_KINDS: ReadonlySet<string> = new Set(['sheet', 'table', 'note'])
 const V1_EVENT_KINDS: ReadonlySet<string> = new Set(['roll', 'chat'])
+/** E antes do protocolo 3 (salvaguarda e cura dos players). */
+const V2_EVENT_KINDS: ReadonlySet<string> = new Set(['roll', 'chat', 'request', 'attack'])
 
 export const docForProtocol = (doc: Pick<RoomDoc, 'kind'>, protocol: number) => protocol >= 2 || V1_DOC_KINDS.has(doc.kind)
-export const eventForProtocol = (event: Pick<RoomEvent, 'kind'>, protocol: number) => protocol >= 2 || V1_EVENT_KINDS.has(event.kind)
+export const eventForProtocol = (event: Pick<RoomEvent, 'kind'>, protocol: number) =>
+  protocol >= 3 || (protocol === 2 ? V2_EVENT_KINDS : V1_EVENT_KINDS).has(event.kind)
 
 /** Mensagem avulsa do canal da sala: pode ir a um socket que fala `protocol`? */
 export function messageForProtocol(message: ServerMessage, protocol: number): boolean {

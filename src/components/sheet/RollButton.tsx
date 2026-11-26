@@ -27,8 +27,8 @@ export function RollButton({ label, modifier, expression, className = '' }: Roll
   const formula = expression ?? (modifier != null ? d20Roll(modifier) : null)
   if (!roll || !formula || !parseRoomRoll(formula)) return null
 
-  function handleClick() {
-    if (!roll || !formula || !roll(formula, label)) return
+  async function handleClick() {
+    if (!roll || !formula || !(await roll(formula, label))) return
     setSent(true)
     setTimeout(() => setSent(false), 900)
   }
@@ -36,7 +36,7 @@ export function RollButton({ label, modifier, expression, className = '' }: Roll
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={() => void handleClick()}
       aria-label={t('sheet.rollInRoom', { label })}
       title={t('sheet.rollInRoom', { label })}
       className={`inline-flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-[8px] border cursor-pointer transition-colors ${

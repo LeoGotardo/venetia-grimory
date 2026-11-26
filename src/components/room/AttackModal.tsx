@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { TableCombatant, TableState } from '../../lib/room/protocol'
-import { d20Roll, parseRoomRoll } from '../../lib/room/rolls'
+import type { SaveEffect, TableCombatant, TableState } from '../../lib/room/protocol'
+import { d20Roll, parseRoomDamage } from '../../lib/room/rolls'
 import { formatModifier } from '../../lib/calculations'
+import { tableTargets, unarmedStrike } from '../../lib/turnActions'
+import { choiceButton } from './turnStyles'
 import { translateTerm } from '../../data/rules/translation'
 import { useRoomStore } from '../../store/roomStore'
 import { readRoomSheet } from '../../hooks/useRoomSync'
@@ -17,37 +19,54 @@ interface AttackModalProps {
   sheetId: string | null
 }
 
-const choice = (selected: boolean) =>
-  `w-full text-left rounded-[9px] px-3 py-2.5 border cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-default ${
-    selected ? 'border-[#D4A017] bg-[rgba(212,160,23,0.12)]' : 'border-[#B8860B]/20 bg-[#2D2520] hover:bg-[#4D4037]'
-  }`
+/** Ataque com rolagem (arma da ficha ou soco) ou manobra com salvaguarda (Agarrar, Empurrar). */
+type AttackOption =
+  | { kind: 'attack'; key: string; name: string; bonus: number; damage: string | null; damageType: string }
+  | { kind: 'save'; key: string; name: string; dc: number; effect: SaveEffect }
 
 /**
- * Atacar na vez: um ataque da ficha e um alvo da mesa. O servidor rola acerto e
- * dano; o mestre, que sabe a CA, decide se acertou e aplica.
+ * Atacar na vez: um ataque da ficha, o Ataque Desarmado (que sempre existe) ou
+ * as manobras dele, e um alvo da mesa. O servidor rola acerto e dano; o mestre,
+ * que sabe a CA e as salvaguardas, decide e aplica.
  */
 export function AttackModal({ open, onClose, table, mine, sheetId }: AttackModalProps) {
   const { t, i18n } = useTranslation()
   const attack = useRoomStore(s => s.attack)
-  const [attackIdx, setAttackIdx] = useState<number | null>(null)
+  const save = useRoomStore(s => s.save)
+  const [optionKey, setOptionKey] = useState<string | null>(null)
   const [targetId, setTargetId] = useState<string | null>(null)
 
-  const attacks = (readRoomSheet(sheetId)?.combat.attacks ?? []).filter(a => a._attack_bonus != null)
-  // Inimigos primeiro; quem já caiu não é alvo.
-  const targets = table.combatants
-    .filter(c => c.id !== mine.id && !c.defeated)
-    .sort((a, b) => (a.side === b.side ? 0 : a.side === 'enemy' ? -1 : 1))
-  const chosen = attackIdx != null ? attacks[attackIdx] : null
+  const sheet = readRoomSheet(sheetId)
+  const options: AttackOption[] = (sheet?.combat.attacks ?? []).flatMap((a, i) =>
+    a._attack_bonus == null ? [] : [{
+      kind: 'attack' as const, key: `sheet-${i}`, name: a.name, bonus: a._attack_bonus, damage: a._damage ?? null, damageType: a.damage_type ?? '',
+    }])
+  if (sheet) {
+    const unarmed = unarmedStrike(sheet)
+    options.push(
+      { kind: 'attack', key: 'unarmed', name: t('room.unarmed.strike'), bonus: unarmed.attackBonus, damage: unarmed.damage, damageType: t('room.unarmed.damageType') },
+      { kind: 'save', key: 'grapple', name: t('room.unarmed.grapple'), dc: unarmed.dc, effect: 'grappled' },
+      { kind: 'save', key: 'shove', name: t('room.unarmed.shove'), dc: unarmed.dc, effect: 'shoved' },
+    )
+  }
+  const targets = tableTargets(table, mine)
+  const chosen = options.find(o => o.key === optionKey) ?? null
   const target = targets.find(c => c.id === targetId) ?? null
 
-  function submit() {
-    if (!chosen || !target || chosen._attack_bonus == null || !chosen._damage) return
-    const sent = attack({
-      combatantId: mine.id, targetId: target.id, label: chosen.name,
-      attack: d20Roll(chosen._attack_bonus), damage: chosen._damage, damageType: chosen.damage_type ?? '',
-    })
+  async function submit() {
+    if (!chosen || !target) return
+    const sent = chosen.kind === 'attack'
+      ? chosen.damage != null && await attack({
+        combatantId: mine.id, targetId: target.id, label: chosen.name,
+        attack: d20Roll(chosen.bonus), damage: chosen.damage, damageType: chosen.damageType,
+      })
+      // Agarrar e Empurrar: o alvo escolhe FOR ou DES (2024).
+      : await save({
+        combatantId: mine.id, targetIds: [target.id], label: chosen.name, dc: chosen.dc,
+        abilities: ['FOR', 'DES'], damage: null, damageType: '', halfOnSuccess: false, effect: chosen.effect,
+      })
     if (!sent) return
-    setAttackIdx(null)
+    setOptionKey(null)
     setTargetId(null)
     onClose()
   }
@@ -57,16 +76,19 @@ export function AttackModal({ open, onClose, table, mine, sheetId }: AttackModal
       <div className="flex flex-col gap-4">
         <fieldset className="flex flex-col gap-1.5">
           <legend className="text-[13px] font-semibold text-[#E8DFD0] mb-1">{t('room.attackModal.pickAttack')}</legend>
-          {attacks.length === 0 && <p className="text-[14px] text-[#A8A09B]">{t('room.attackModal.noAttacks')}</p>}
-          {attacks.map((a, i) => {
+          {options.map(o => {
             // Dano em texto livre ("veja a magia") não rola no servidor.
-            const rollable = a._damage != null && parseRoomRoll(a._damage) != null
+            const rollable = o.kind === 'save' || (o.damage != null && parseRoomDamage(o.damage) != null)
             return (
-              <button key={`${a.name}-${i}`} type="button" disabled={!rollable} aria-pressed={attackIdx === i} onClick={() => setAttackIdx(i)} className={choice(attackIdx === i)}>
-                <span className="block font-semibold text-[#F5F0E8]">{a.name}</span>
+              <button key={o.key} type="button" disabled={!rollable} aria-pressed={optionKey === o.key} onClick={() => setOptionKey(o.key)} className={choiceButton(optionKey === o.key)}>
+                <span className="block font-semibold text-[#F5F0E8]">{o.name}</span>
                 <span className="block text-[12px] text-[#A8A09B] tabular-nums">
-                  {formatModifier(a._attack_bonus)} · {a._damage ?? '—'} {a.damage_type ? translateTerm(a.damage_type, i18n.language) : ''}
-                  {!rollable && ` · ${t('room.attackModal.damageNotRollable')}`}
+                  {o.kind === 'save'
+                    ? t('room.unarmed.saveHint', { dc: o.dc, effect: t(`room.save.effect.${o.effect}`) })
+                    : <>
+                      {formatModifier(o.bonus)} · {o.damage ?? '—'} {o.damageType ? translateTerm(o.damageType, i18n.language) : ''}
+                      {!rollable && ` · ${t('room.attackModal.damageNotRollable')}`}
+                    </>}
                 </span>
               </button>
             )
@@ -76,14 +98,14 @@ export function AttackModal({ open, onClose, table, mine, sheetId }: AttackModal
         <fieldset className="flex flex-col gap-1.5">
           <legend className="text-[13px] font-semibold text-[#E8DFD0] mb-1">{t('room.attackModal.pickTarget')}</legend>
           {targets.map(c => (
-            <button key={c.id} type="button" aria-pressed={targetId === c.id} onClick={() => setTargetId(c.id)} className={choice(targetId === c.id)}>
+            <button key={c.id} type="button" aria-pressed={targetId === c.id} onClick={() => setTargetId(c.id)} className={choiceButton(targetId === c.id)}>
               <span className="block font-semibold text-[#F5F0E8]">{c.name}</span>
               <span className="block text-[12px] text-[#A8A09B]">{t(`room.health.${c.health}`)}</span>
             </button>
           ))}
         </fieldset>
 
-        <button disabled={!chosen || !target} onClick={submit} className={`${gmPrimaryButton} self-start`}>
+        <button disabled={!chosen || !target} onClick={() => void submit()} className={`${gmPrimaryButton} self-start`}>
           {chosen && target ? t('room.attackModal.confirm', { attack: chosen.name, target: target.name }) : t('room.turn.attack')}
         </button>
       </div>

@@ -9,7 +9,7 @@
  * manda os tipos de documento e evento novos a quem fala uma versão anterior
  * (APK ainda não atualizado), que recusaria o `ready` inteiro.
  */
-export const ROOM_PROTOCOL_VERSION = 2
+export const ROOM_PROTOCOL_VERSION = 3
 
 /** Alfabeto do código da sala: sem I, O, 0 e 1, que se confundem ao ditar. */
 export const ROOM_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -61,6 +61,10 @@ export const ROOM_SESSION_TITLE_MAX = 120
 export const ROOM_CHAT_MAX = 500
 export const ROOM_ROLL_EXPRESSION_MAX = 60
 export const ROOM_ROLL_LABEL_MAX = 80
+/** Alvos de uma salvaguarda (magia de área): o bastante para uma bola de fogo numa multidão. */
+export const ROOM_SAVE_MAX_TARGETS = 12
+/** CD aceita numa salvaguarda (8 + 5 + 6 + itens fica bem abaixo). */
+export const ROOM_SAVE_DC_MAX = 40
 /** Dados por rolagem (somando os termos), faces por dado e bônus fixo — barram rolagem absurda. */
 export const ROOM_ROLL_MAX_DICE = 100
 export const ROOM_ROLL_MAX_SIDES = 1000
