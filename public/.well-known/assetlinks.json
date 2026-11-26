@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.venetia.grimory",
+      "sha256_cert_fingerprints": [
+        "ED:5C:1D:DF:BF:48:2D:99:F7:D0:B6:0D:12:0B:C5:B0:94:D2:80:E4:52:6D:6F:E0:F5:C8:E1:04:36:EA:82:88",
+        "ED:B8:0E:8C:AA:C6:66:82:63:45:70:62:6B:1D:75:FF:31:64:A0:68:D6:55:38:79:BE:41:90:C7:35:0C:C0:68"
+      ]
+    }
+  }
+]

@@ -21,7 +21,8 @@ export const remoteDocSchema = z.object({
   seq: z.number().int().nonnegative(),
 })
 
-export const pullRequest = z.object({ since: z.number().int().nonnegative() })
+/** `kinds`: os tipos que o app entende. Sem ele, o servidor manda só `LEGACY_CLOUD_KINDS`. */
+export const pullRequest = z.object({ since: z.number().int().nonnegative(), kinds: z.array(kindSchema).min(1).optional() })
 export const pullResponse = z.object({ docs: z.array(remoteDocSchema), more: z.boolean() })
 
 export const pushItemSchema = z.object({

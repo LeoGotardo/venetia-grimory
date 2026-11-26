@@ -6,13 +6,13 @@ import {
   ROOM_DOC_RATE_LIMIT, ROOM_DOC_RATE_WINDOW_S, ROOM_EVENT_RATE_LIMIT, ROOM_EVENT_RATE_WINDOW_S, ROOM_LOG_MAX,
   ROOM_LOG_ON_READY, ROOM_PING_MIN_INTERVAL_MS,
 } from '../src/lib/room/constants.js'
-import { docVisibleTo, eventVisibleTo } from '../src/lib/room/docs.js'
+import { docForProtocol, docVisibleTo, eventForProtocol, eventVisibleTo, messageForProtocol } from '../src/lib/room/docs.js'
 import {
   ROOM_CHANNEL_PREFIX, createSubscriber, markOffline, markOnline, onlineMembers, overRateLimit, publish, roomChannel,
 } from './_lib/redis.js'
 import {
-  addChat, addRoll, clearNote, clearTable, docsSince, eventsSince, listMembers, memberByToken, putNote, putSheet,
-  putTable, touchMember, type AuthedMember,
+  addAttack, addChat, addRequest, addRoll, checkMoveIntent, clearNote, clearTable, docsSince, eventsSince, listMembers,
+  memberByToken, putNote, putSchedule, putSheet, putTable, touchMember, type AuthedMember,
 } from './_lib/rooms.js'
 import { RoomFailure, UNKNOWN_IP, socketClientIp } from './_lib/http.js'
 
@@ -34,6 +34,8 @@ interface Session {
   member: AuthedMember | null
   /** Quando este socket renovou a presença no Redis pela última vez. */
   presenceAt: number
+  /** Versão do protocolo do app (1 = sem `protocol` no `auth`, APK antigo). */
+  protocol: number
 }
 
 const CLOSE_BY_ERROR: Partial<Record<RoomError, number>> = {
@@ -63,6 +65,8 @@ function deliver(session: Session, message: ServerMessage, raw: string) {
   if (!member) return
   if (message.t === 'doc' && !docVisibleTo(message.doc, member)) return
   if (message.t === 'event' && !eventVisibleTo(message.event, member)) return
+  if (message.t === 'intent' && member.role !== 'gm') return
+  if (!messageForProtocol(message, session.protocol)) return
   if (message.t === 'member_left' && message.member_id === member.id) {
     socket.close(message.reason === 'kicked' ? ROOM_CLOSE.kicked : ROOM_CLOSE.unauthorized, message.reason)
     return
@@ -121,13 +125,14 @@ async function detach(session: Session) {
   await publish(roomId, { t: 'presence', member_id: member.id, online: false })
 }
 
-async function authenticate(session: Session, token: string, requestedSince: number) {
+async function authenticate(session: Session, token: string, requestedSince: number, protocol: number) {
   const result = await memberByToken(token)
   if (typeof result === 'string') {
     session.socket.close(CLOSE_BY_ERROR[result] ?? ROOM_CLOSE.unauthorized, result)
     return
   }
   session.member = result
+  session.protocol = protocol
   await attach(session, result)
   // `since` de outra sala ou de um banco recriado passaria da versão atual: recomeça do zero.
   const since = requestedSince <= result.version ? requestedSince : 0
@@ -136,8 +141,8 @@ async function authenticate(session: Session, token: string, requestedSince: num
     eventsSince(result.room.id, since, since === 0 ? ROOM_LOG_ON_READY : ROOM_LOG_MAX),
   ])
   const { room, version, ...member } = result
-  const docs = changed.filter(doc => docVisibleTo(doc, member) && (since > 0 || !doc.deleted))
-  const events = logged.filter(event => eventVisibleTo(event, member))
+  const docs = changed.filter(doc => docVisibleTo(doc, member) && docForProtocol(doc, protocol) && (since > 0 || !doc.deleted))
+  const events = logged.filter(event => eventVisibleTo(event, member) && eventForProtocol(event, protocol))
   send(session.socket, { t: 'ready', room, member, members, online, version, docs, full: since === 0, events })
   touchMember(result).catch(err => console.error('[room-ws] Falha ao gravar last_seen_at.', err))
 }
@@ -160,7 +165,7 @@ async function handle(session: Session, data: RawData) {
   const message = parsed.data
 
   if (message.t === 'auth') {
-    if (!session.member) await authenticate(session, message.token, message.since)
+    if (!session.member) await authenticate(session, message.token, message.since, message.protocol ?? 1)
     return
   }
   if (!session.member) {
@@ -177,13 +182,22 @@ async function handle(session: Session, data: RawData) {
     return
   }
   const member = session.member
-  if (message.t === 'roll' || message.t === 'chat') {
+  if (message.t === 'roll' || message.t === 'chat' || message.t === 'request' || message.t === 'attack' || message.t === 'move') {
     if (await limited(`ratelimit:events:${member.id}`, ROOM_EVENT_RATE_LIMIT, ROOM_EVENT_RATE_WINDOW_S)) {
       console.warn(`[room-ws] ${message.t} acima do limite para ${member.id}.`)
       return
     }
     try {
-      const event = message.t === 'roll' ? await addRoll(member, message) : await addChat(member, message)
+      if (message.t === 'move') {
+        // Pedido, não escrita: vai só ao mestre, que aplica (ou não) e retransmite a mesa.
+        await checkMoveIntent(member, message.combatant_id)
+        await publish(member.room.id, { t: 'intent', member_id: member.id, intent: { kind: 'move', combatant_id: message.combatant_id, to: message.to } })
+        return
+      }
+      const event = message.t === 'roll' ? await addRoll(member, message)
+        : message.t === 'chat' ? await addChat(member, message)
+        : message.t === 'request' ? await addRequest(member, message)
+        : await addAttack(member, message)
       await publish(member.room.id, { t: 'event', event })
     } catch (err) {
       if (!(err instanceof RoomFailure)) throw err
@@ -202,6 +216,7 @@ async function handle(session: Session, data: RawData) {
       : message.t === 'table_put' ? await putTable(member, message.table)
       : message.t === 'table_clear' ? await clearTable(member)
       : message.t === 'note_put' ? await putNote(member, message.id, message.note)
+      : message.t === 'schedule_put' ? await putSchedule(member, message.schedule)
       : await clearNote(member, message.id)
     if (doc) await publish(member.room.id, { t: 'doc', doc })
   } catch (err) {
@@ -217,7 +232,7 @@ const server = http.createServer((_req, res) => {
 const wss = new WebSocketServer({ server, maxPayload: MAX_PAYLOAD_BYTES })
 
 wss.on('connection', (socket, request) => {
-  const session: Session = { socket, member: null, presenceAt: 0 }
+  const session: Session = { socket, member: null, presenceAt: 0, protocol: 1 }
   const authTimer = setTimeout(() => {
     if (!session.member) socket.close(ROOM_CLOSE.unauthorized, 'auth timeout')
   }, ROOM_AUTH_TIMEOUT_MS)

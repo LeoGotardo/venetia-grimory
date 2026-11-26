@@ -25,6 +25,8 @@ import {
   readAreaMapJson,
   saveAreaMap,
 } from './areaMapStorage'
+import { applyRemoteMemberships, membershipJson, readMemberships } from './roomStorage'
+import { useRoomStore } from '../store/roomStore'
 import { flushPendingSheetSave, useSheetStore } from '../store/sheetStore'
 import { flushPendingCampaignSave, useGmStore } from '../store/gmStore'
 import { flushPendingAreaMapSave, useAreaMapStore } from '../store/areaMapStore'
@@ -115,6 +117,7 @@ export const cloudLocal: CloudLocal = {
         })
       }
       case 'area_map': return Promise.all(ids.map(readAreaMapJson))
+      case 'room': return ids.map(membershipJson)
     }
   },
 
@@ -131,6 +134,9 @@ export const cloudLocal: CloudLocal = {
       case 'area_map':
         for (const { id, data } of changes) await applyAreaMap(id, data)
         return
+      case 'room':
+        applyRemoteMemberships(changes)
+        return
     }
   },
 
@@ -140,6 +146,7 @@ export const cloudLocal: CloudLocal = {
     if (kinds.has('sheet')) useSheetStore.getState().loadSavedList()
     if (kinds.has('campaign')) useGmStore.getState().loadCampaignList()
     if (kinds.has('monster')) useGmStore.getState().loadBestiary()
+    if (kinds.has('room')) useRoomStore.getState().reloadMemberships()
     if (kinds.has('area_map')) {
       const { listCampaignId, loadList } = useAreaMapStore.getState()
       if (listCampaignId) void loadList(listCampaignId)
@@ -161,7 +168,10 @@ export const cloudLocal: CloudLocal = {
     const areaMaps = (await loadAllAreaMapsRaw()).map(m => ({
       kind: 'area_map' as const, id: m.id, data: JSON.stringify(m), updatedAt: m.updated_at,
     }))
-    return [...sheets, ...campaigns, ...monsters, ...areaMaps]
+    const rooms = readMemberships().map(m => ({
+      kind: 'room' as const, id: m.room_id, data: JSON.stringify(m), updatedAt: m.joined_at,
+    }))
+    return [...sheets, ...campaigns, ...monsters, ...areaMaps, ...rooms]
   },
 }
 

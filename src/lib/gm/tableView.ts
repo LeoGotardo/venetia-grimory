@@ -1,7 +1,8 @@
-import type { Combatant, Encounter, GridMap } from '../../types'
+import type { Combatant, CreatureSize, Encounter, GridMap, PartyMember } from '../../types'
 import { TABLE_LIMITS, type TableCombatant, type TableHealth, type TableState } from '../room/protocol'
-import { TERRAIN_VOID } from '../../constants'
+import { CREATURE_SIZES, TERRAIN_VOID } from '../../constants'
 import { VIS_SEEN, VIS_UNKNOWN, tableVision, type TableVision } from './vision'
+import { remainingMovement } from './movement'
 
 /**
  * Faixa de vida de 2024: "Sangrando" é estar com metade ou menos dos PV. O
@@ -22,12 +23,14 @@ const clip = (text: string, max: number) => text.slice(0, max)
  * e não foi escondido pelo mestre; casa nunca vista vai com o terreno apagado
  * e sem rótulos, para o JSON não entregar a sala secreta. Inimigos levam só a
  * faixa de vida; PV exato, só os players. `vision` evita recalcular quando
- * quem chama já calculou (para gravar a exploração).
+ * quem chama já calculou (para gravar a exploração). `party` diz qual
+ * combatente é de qual membro da sala — é o que deixa o player agir na vez dele.
  */
 export function buildTableState(
   encounter: Encounter,
   map: GridMap | null,
   vision: TableVision | null = map ? tableVision(encounter, map) : null,
+  party: PartyMember[] = [],
 ): TableState {
   const stateAt = (x: number, y: number) => (map && vision ? vision.vis[y * map.width + x] : VIS_SEEN)
   const visible = encounter.combatants.filter(c => !c.hidden && (!c.position || stateAt(c.position.x, c.position.y) === VIS_SEEN))
@@ -39,7 +42,7 @@ export function buildTableState(
     status: encounter.status,
     round: encounter.round,
     turn_id: turnVisible ? encounter.turn_id : null,
-    combatants: visible.slice(0, TABLE_LIMITS.combatants).map(c => toTableCombatant(c, Boolean(map))),
+    combatants: visible.slice(0, TABLE_LIMITS.combatants).map(c => toTableCombatant(c, Boolean(map), controllerOf(c, party))),
     map: map && {
       width: map.width,
       height: map.height,
@@ -54,7 +57,14 @@ export function buildTableState(
   }
 }
 
-function toTableCombatant(c: Combatant, onMap: boolean): TableCombatant {
+/** Membro da sala que joga com este combatente: só players vindos da sala (`PartyMember.source: 'room'`). */
+export function controllerOf(c: Pick<Combatant, 'kind' | 'ref_id'>, party: PartyMember[]): string | null {
+  if (c.kind !== 'player') return null
+  const member = party.find(p => p.id === c.ref_id)
+  return member?.source === 'room' ? member.room_member_id ?? null : null
+}
+
+function toTableCombatant(c: Combatant, onMap: boolean, memberId: string | null): TableCombatant {
   return {
     id: c.id,
     name: clip(c.name, TABLE_LIMITS.name),
@@ -67,5 +77,11 @@ function toTableCombatant(c: Combatant, onMap: boolean): TableCombatant {
     conditions: c.conditions.slice(0, TABLE_LIMITS.conditions).map(cond => clip(cond, TABLE_LIMITS.condition)),
     size: c.size,
     position: onMap && c.position ? { ...c.position } : null,
+    member_id: memberId,
+    move: memberId ? { left_m: remainingMovement(c), mode: c.move_mode } : null,
   }
 }
+
+/** Tamanho vindo da mesa (texto livre no protocolo) de volta ao tipo; desconhecido vira Médio. */
+export const asCreatureSize = (size: string): CreatureSize =>
+  (CREATURE_SIZES as readonly string[]).includes(size) ? (size as CreatureSize) : 'medium'

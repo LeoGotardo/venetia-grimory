@@ -79,6 +79,7 @@ export function applyServerMessage(view: RoomView, message: ServerMessage): Room
     case 'closed':
       return { ...view, closed: true, online: [] }
     case 'pong':
+    case 'intent':
       return view
   }
 }

@@ -8,6 +8,8 @@ export interface Config {
   sale_refund: boolean
   simple_coins: boolean
   language: string
+  /** Lembrete no celular antes das sessões marcadas nas salas (só no app; ligar pede a permissão). */
+  session_reminders: boolean
 }
 
 interface ConfigStore {
@@ -21,6 +23,7 @@ const DEFAULT_CONFIG: Config = {
   sale_refund: true,
   simple_coins: false,
   language: 'en',
+  session_reminders: false,
 }
 
 export const useConfigStore = create<ConfigStore>()(

@@ -38,7 +38,9 @@ function toDoc(row: Row): RemoteDoc {
  * Uma página do que mudou depois de `since`, em ordem de `seq`. O teto é de
  * bytes e de linhas; a primeira linha vem sempre, por maior que seja.
  */
-export async function pullRecords(sql: Sql, uid: string, since: number): Promise<{ docs: RemoteDoc[]; more: boolean }> {
+export async function pullRecords(
+  sql: Sql, uid: string, since: number, kinds: readonly CloudKind[],
+): Promise<{ docs: RemoteDoc[]; more: boolean }> {
   const rows = await sql`
     select kind, id, data, updated_at, seq, total from (
       select kind, id, data, updated_at, seq,
@@ -46,7 +48,7 @@ export async function pullRecords(sql: Sql, uid: string, since: number): Promise
              sum(coalesce(octet_length(data), 0)) over w as running,
              count(*) over () as total
       from cloud_records
-      where user_id = ${uid} and seq > ${since}::bigint
+      where user_id = ${uid} and seq > ${since}::bigint and kind = any(${[...kinds]}::text[])
       window w as (order by seq rows between unbounded preceding and current row)
     ) page
     where rn = 1 or (running <= ${CLOUD_PULL_PAGE_BYTES} and rn <= ${CLOUD_PULL_PAGE_MAX})

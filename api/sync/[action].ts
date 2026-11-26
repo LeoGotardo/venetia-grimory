@@ -1,5 +1,6 @@
 import { CLOUD_SYNC_RATE_LIMIT, CLOUD_SYNC_RATE_WINDOW_S } from '../../src/lib/cloud/constants.js'
 import { pullRequest, pushRequest, type CloudErrorCode } from '../../src/lib/cloud/protocol.js'
+import { LEGACY_CLOUD_KINDS } from '../../src/lib/cloud/sync.js'
 import { CloudFailure, deleteAccountData, isAccountDeleted, pullRecords, pushRecords, type Sql } from '../_lib/cloud.js'
 import { db } from '../_lib/db.js'
 import { verifyFirebaseToken } from '../_lib/firebaseAuth.js'
@@ -27,8 +28,8 @@ type Handler = (uid: string, request: Request) => Promise<Response>
 
 const ACTIONS: Record<string, Handler> = {
   pull: async (uid, request) => {
-    const { since } = await readBody(request, pullRequest)
-    return json(await pullRecords(db() as Sql, uid, since))
+    const { since, kinds } = await readBody(request, pullRequest)
+    return json(await pullRecords(db() as Sql, uid, since, kinds ?? LEGACY_CLOUD_KINDS))
   },
   push: async (uid, request) => {
     const { items } = await readBody(request, pushRequest)

@@ -7,7 +7,7 @@ import {
   pushResponse,
   type CloudErrorCode,
 } from '../lib/cloud/protocol'
-import type { RemoteDoc } from '../lib/cloud/sync'
+import { CLOUD_KINDS, type RemoteDoc } from '../lib/cloud/sync'
 import type { CloudRemote } from './cloudEngine'
 import { roomApiBase } from './roomApi'
 
@@ -64,7 +64,7 @@ export function cloudApiRemote(token: () => Promise<string | null>): CloudRemote
       const docs: RemoteDoc[] = []
       let cursor = since
       for (;;) {
-        const page = await call('pull', { since: cursor }, pullResponse, await requireToken())
+        const page = await call('pull', { since: cursor, kinds: [...CLOUD_KINDS] }, pullResponse, await requireToken())
         docs.push(...page.docs)
         if (!page.more || page.docs.length === 0) return docs
         cursor = page.docs[page.docs.length - 1].seq

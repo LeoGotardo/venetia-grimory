@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { useConfigStore, type Config } from '../../../store/configStore'
 import i18n from '../../../i18n/index'
+import { useState } from 'react'
+import { disableReminders, enableReminders, remindersSupported } from '../../../services/sessionReminders'
+import { SESSION_REMINDER_LEAD_MS } from '../../../constants'
 
 interface SettingRowProps {
   label: string
@@ -37,10 +40,17 @@ function SettingRow({ label, description, value, onChange }: SettingRowProps) {
   )
 }
 
-/** Aba "Preferências" das configurações: idioma e as opções do inventário. */
+/** Aba "Preferências" das configurações: idioma, as opções do inventário e (no app) os lembretes de sessão. */
 export function PreferencesPanel() {
   const { config, setConfig } = useConfigStore()
   const { t } = useTranslation()
+  const [reminderDenied, setReminderDenied] = useState(false)
+
+  async function toggleReminders(on: boolean) {
+    if (!on) return disableReminders()
+    // Ligar pede a permissão de notificação; recusada, a preferência fica desligada.
+    setReminderDenied(!(await enableReminders()))
+  }
 
   const SETTINGS: Array<{
     key: keyof Config
@@ -99,6 +109,16 @@ export function PreferencesPanel() {
             onChange={v => setConfig({ [s.key]: v })}
           />
         ))}
+        {remindersSupported() && (
+          <SettingRow
+            label={t('config.sessionReminders')}
+            description={reminderDenied
+              ? t('room.sessions.permissionDenied')
+              : t('config.sessionRemindersDesc', { minutes: Math.round(SESSION_REMINDER_LEAD_MS / 60_000) })}
+            value={config.session_reminders}
+            onChange={v => void toggleReminders(v === true)}
+          />
+        )}
       </div>
   )
 }

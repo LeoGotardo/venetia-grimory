@@ -6,6 +6,8 @@ import { parseRoomRoll } from '../../lib/room/rolls'
 import { ROOM_CHAT_MAX } from '../../constants'
 import { useRoomStore } from '../../store/roomStore'
 import { DiceIcon, LockIcon } from '../gm/ornaments'
+import { AttackCard, RequestCard } from './RoomEventCards'
+import { diceDetail } from '../../lib/room/requests'
 
 const QUICK_DICE = [20, 12, 10, 8, 6, 4, 100] as const
 
@@ -116,6 +118,9 @@ function EventLine({ event, mine }: { event: RoomEvent; mine: boolean }) {
     </span>
   )
 
+  if (event.kind === 'request') return <RequestCard event={event} time={time} />
+  if (event.kind === 'attack') return <AttackCard event={event} time={time} mine={mine} />
+
   if (event.kind === 'chat') {
     return (
       <li className={`rounded-[10px] px-3 py-1.5 ${mine ? 'bg-[rgba(212,160,23,0.08)]' : 'bg-[#131110]'}`}>
@@ -127,8 +132,8 @@ function EventLine({ event, mine }: { event: RoomEvent; mine: boolean }) {
     )
   }
 
-  const { expression, label, rolls, bonus, total } = event.payload
-  const detail = `${rolls.join(' + ')}${bonus ? ` ${bonus > 0 ? '+' : '−'} ${Math.abs(bonus)}` : ''}`
+  const { expression, label, total } = event.payload
+  const detail = diceDetail(event.payload)
   return (
     <li className={`flex items-center gap-3 rounded-[10px] border px-3 py-2 ${mine ? 'border-[rgba(212,160,23,0.35)]' : 'border-white/[0.07]'} bg-[#131110]`}>
       <span className="text-[#D4A017]"><DiceIcon size={18} /></span>

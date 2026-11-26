@@ -395,7 +395,7 @@ export const TERMS_MIN_AGE = 13
 /** Canal para dúvidas sobre os termos, a privacidade e pedidos de remoção de conteúdo. */
 export const LEGAL_CONTACT_URL = FEEDBACK_FORM_URL
 // Política de privacidade (src/pages/Privacy.tsx). Mudou o texto de um jeito relevante: atualize a data.
-export const PRIVACY_EFFECTIVE_DATE = '2026-11-15'
+export const PRIVACY_EFFECTIVE_DATE = '2026-11-24'
 /** Autoridade Nacional de Proteção de Dados: onde reclamar pela LGPD. */
 export const ANPD_URL = 'https://www.gov.br/anpd'
 /** Texto de referência das licenças, para pacotes que não trazem o arquivo LICENSE (ex.: Firebase). */
@@ -405,6 +405,16 @@ export const SPDX_LICENSES_URL = 'https://spdx.org/licenses'
 export * from '../lib/room/constants'
 /** Participações deste aparelho em salas (código, papel, token) — chave em português, como as outras. */
 export const STORAGE_KEY_ROOMS = 'dnd_salas'
+/** Antecedência do lembrete de sessão (notificação local no app). */
+export const SESSION_REMINDER_LEAD_MS = 30 * 60_000
+/** O app relê a agenda de cada sala ao abrir e ao voltar, no máximo neste intervalo. */
+export const SESSION_SCHEDULE_REFRESH_MS = 10 * 60_000
+/** Espera pelo mestre aceitar o movimento pedido na mesa antes de avisar que não foi aplicado. */
+export const ROOM_MOVE_WAIT_MS = 6000
+/** Pedido de teste do mestre flutua na tela por este tempo; depois fica só no log. */
+export const ROOM_REQUEST_PROMPT_MS = 10 * 60_000
+/** Última sala conectada neste aparelho (só dele, não vai para a conta). */
+export const STORAGE_KEY_ACTIVE_ROOM = 'dnd_sala_ativa'
 /** Servidor das salas (e do sync) para o app Android (`https://localhost`) e o desktop (`app://venetia/`), que não têm a API na mesma origem. */
 export const ROOM_API_URL_APP = 'https://venetia.leogotardo.com.br'
 /** Espera de uma chamada HTTP da sala antes de desistir. */

@@ -17,6 +17,9 @@ interface View {
   oy: number
 }
 
+/** Quanto o dedo pode andar e ainda contar como toque. */
+const TAP_SLOP_PX = 8
+
 interface MapCanvasProps {
   width: number
   height: number
@@ -30,6 +33,8 @@ interface MapCanvasProps {
   /** Um segundo dedo virou pinça: o traço em andamento deve ser descartado. */
   onCellCancel?: () => void
   onHover?: (cell: Cell | null) => void
+  /** Com `panMode`: toque sem arrastar numa casa (a mesa do player escolhe o destino assim). */
+  onCellTap?: (cell: Cell) => void
   /** Desenho extra por cima da grade (prévias, régua, tokens), em coordenadas de casa × `scale`. */
   drawOverlay?: (ctx: CanvasRenderingContext2D, scale: number) => void
   children?: ReactNode
@@ -40,7 +45,7 @@ interface MapCanvasProps {
  * de ferramentas: só converte ponteiro em casa e avisa quem usa.
  */
 export function MapCanvas({
-  width, height, cells, labels, panMode, onCellDown, onCellMove, onCellUp, onCellCancel, onHover, drawOverlay, children,
+  width, height, cells, labels, panMode, onCellDown, onCellMove, onCellUp, onCellCancel, onHover, onCellTap, drawOverlay, children,
 }: MapCanvasProps) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -50,10 +55,12 @@ export function MapCanvas({
   const frame = useRef<number | null>(null)
 
   // Props mais recentes para o desenho agendado e os handlers de ponteiro.
-  const latest = useRef({ width, height, cells, labels, drawOverlay, panMode, onCellDown, onCellMove, onCellUp, onCellCancel, onHover })
+  const latest = useRef({ width, height, cells, labels, drawOverlay, panMode, onCellDown, onCellMove, onCellUp, onCellCancel, onHover, onCellTap })
   useLayoutEffect(() => {
-    latest.current = { width, height, cells, labels, drawOverlay, panMode, onCellDown, onCellMove, onCellUp, onCellCancel, onHover }
+    latest.current = { width, height, cells, labels, drawOverlay, panMode, onCellDown, onCellMove, onCellUp, onCellCancel, onHover, onCellTap }
   })
+  /** Onde o arraste começou: soltar perto disso é um toque, não um arraste. */
+  const tapStart = useRef<{ x: number; y: number } | null>(null)
 
   const draw = useCallback(() => {
     frame.current = null
@@ -248,6 +255,7 @@ export function MapCanvas({
     }
 
     if (pointers.current.size === 2) {
+      tapStart.current = null
       if (gesture.current === 'draw') latest.current.onCellCancel?.()
       gesture.current = 'pinch'
       pinchStart.current = pinchInfo()
@@ -257,6 +265,7 @@ export function MapCanvas({
 
     if (latest.current.panMode || e.button === 1 || e.button === 2) {
       gesture.current = 'pan'
+      tapStart.current = e.button === 0 ? p : null
       return
     }
     const cell = toCell(p)
@@ -304,6 +313,13 @@ export function MapCanvas({
 
   function onPointerUp(e: React.PointerEvent) {
     pointers.current.delete(e.pointerId)
+    const start = tapStart.current
+    tapStart.current = null
+    if (gesture.current === 'pan' && start && pointers.current.size === 0 && e.type === 'pointerup') {
+      const p = local(e)
+      const cell = Math.hypot(p.x - start.x, p.y - start.y) < TAP_SLOP_PX ? toCell(p) : null
+      if (cell) latest.current.onCellTap?.(cell)
+    }
     if (gesture.current === 'draw' && lastCell.current) latest.current.onCellUp?.(lastCell.current)
     if (pointers.current.size === 0) {
       gesture.current = 'none'

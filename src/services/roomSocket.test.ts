@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { RoomSocket, type SocketEnd, type SocketStatus } from './roomSocket'
-import { ROOM_CLOSE, ROOM_CLOSE_RETRY, ROOM_HEARTBEAT_MS, ROOM_RECONNECT_DELAYS_MS } from '../constants'
+import { ROOM_CLOSE, ROOM_CLOSE_RETRY, ROOM_HEARTBEAT_MS, ROOM_PROTOCOL_VERSION, ROOM_RECONNECT_DELAYS_MS } from '../constants'
 
 /** WebSocket de mentira: o teste decide quando abre, o que chega e como fecha. */
 class FakeSocket {
@@ -68,7 +68,7 @@ describe('RoomSocket', () => {
   it('autentica no primeiro frame, com a versão já vista', () => {
     const { last, statuses } = setup()
     last().open()
-    expect(last().sent).toEqual([{ t: 'auth', token: 't'.repeat(43), since: 7 }])
+    expect(last().sent).toEqual([{ t: 'auth', token: 't'.repeat(43), since: 7, protocol: ROOM_PROTOCOL_VERSION }])
     last().receive(READY)
     expect(statuses).toEqual(['connecting', 'online'])
   })

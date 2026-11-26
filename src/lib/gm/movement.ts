@@ -140,6 +140,9 @@ export function combatantAt(combatants: Combatant[], cell: Cell): Combatant | nu
   return combatants.find(c => occupiedCells(c).some(o => o.x === cell.x && o.y === cell.y)) ?? null
 }
 
+/** O que a ocupação precisa saber de uma criatura — serve também à mesa do player, que não tem o `Combatant` inteiro. */
+export type Occupant = Pick<Combatant, 'id' | 'side' | 'defeated' | 'position' | 'size' | 'conditions'>
+
 function sizeIndex(c: Pick<Combatant, 'size'>): number {
   return CREATURE_SIZES.indexOf(c.size)
 }
@@ -151,7 +154,7 @@ function sizeIndex(c: Pick<Combatant, 'size'>): number {
  * não ocupam espaço. Parar no espaço de outra criatura continua proibido — isso
  * é com quem solta o token.
  */
-export function occupancyFor(mover: Combatant, combatants: Combatant[], mapWidth: number): Occupancy {
+export function occupancyFor(mover: Occupant, combatants: Occupant[], mapWidth: number): Occupancy {
   const occupancy: Occupancy = new Map()
   for (const other of combatants) {
     if (other.id === mover.id || other.defeated || !other.position) continue

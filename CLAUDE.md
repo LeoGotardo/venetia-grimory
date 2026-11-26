@@ -18,12 +18,19 @@ npm run dev       # Vite dev server — also serves api/ (HTTP + room WebSocket)
 npm run db:migrate # apply db/migrations/*.sql to the Neon database in .env.local
 npm run build      # tsc -b (typecheck, project references) && vite build
 npm test           # vitest run — unit tests for the rules layer, the store and the catalog
+npm run test:watch # vitest in watch mode
 npm run lint        # eslint .
 npm run test:e2e     # playwright (needs a dev server; the config starts one)
 npm run preview      # serve the production build locally
 npm run desktop:dev   # Electron over the Vite dev server (`-- --dist`: over the built dist/, via app://)
 npm run desktop:dist  # Electron installers in dist-desktop/ (`-- --dir` unpacked, `-- --win` Windows)
+
+npx vitest run src/lib/spellSlots.test.ts          # one unit test file
+npx vitest run -t "name of the test"               # tests whose name matches
+npx playwright test e2e/sheet.spec.ts --project=desktop   # one e2e spec; projects: desktop, mobile
 ```
+
+Node version is pinned in `.nvmrc` (22).
 
 **`npm run build` plus `npm test` is the correctness gate.** The build runs the full TypeScript
 project-reference pass before bundling; the unit suite (`vitest.config.ts`, `src/**/*.test.ts`)
@@ -187,9 +194,11 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 
 ### Routing & pages
 
-- `src/App.tsx`: three lazy-loaded routes — `/` (`Home`, the saved-character list), `/novo`
-  (`Wizard`, character creation), `/ficha/:id` (`Sheet`, the play sheet). Wrapped in an
-  `ErrorBoundary` (`src/pages/ServerError.tsx`) and a `Suspense` fallback.
+- `src/App.tsx` holds every route, each page lazy-loaded: the player side — `/` (`Home`, the
+  saved-character list), `/novo` (`Wizard`), `/ficha/:id` (`Sheet`), `/sala/:code` (`RoomPage`) —,
+  the legal pages (`/sobre`, `/termos`, `/privacidade`) and the GM area under `/mestre` (see "GM
+  area"). Wrapped in an `ErrorBoundary` (`src/pages/ServerError.tsx`) and a `Suspense` fallback;
+  `*` is `NotFound`.
 - `/sobre` (`About`, linked from `AppFooter`) carries the attributions the licenses require inside
   the app — the README doesn't ship in the APK: SRD 5.2.1 (CC BY 4.0, with the "changes" note),
   game-icons.net (CC BY 3.0; `ICONS_LICENSE` lives in `src/data/areaMap/iconsLicense.ts`, out of
@@ -203,7 +212,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   when the text changes. `/privacidade` (`Privacy`) is the LGPD privacy policy, same layout, dated
   by `PRIVACY_EFFECTIVE_DATE` (`formatLegalDate` in `src/lib/legalDate.ts` serves both). `TermsNotice`
   ("by signing in, you agree to the Terms of use and the Privacy policy") sits in `AccountPanel`,
-  `JoinRoomModal` and `RoomPanel`. Both pages only state what the code does — the policy was checked
+  `JoinRoomModal` and `CreateRoom` (`RoomControls`). Both pages only state what the code does — the policy was checked
   against `api/_lib/cloud.ts` (the server keeps the uid and synced content, never email or name),
   `api/_lib/rooms.ts` and the rate limits; change the text (and the date) when the data handling
   changes.
@@ -217,8 +226,9 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   Personality, Review (id 13). The array is the source of truth for order. Each step calls the corresponding store setter which internally triggers
   `recalculate`.
 - `src/pages/Sheet.tsx` is the in-play sheet: tabs render `src/components/sheet/XxxPanel.tsx`
-  panels (Combat, Abilities, Skills, Resources, Spells, Inventory, Notes, Edit). Edits in
-  any panel go through store actions, not local component state that bypasses the store.
+  panels — Overview (`sheet`: Combat, Resources, Abilities, Skills together), Magic (`spells`, only
+  when `spellcasting.spellcaster`), Inventory, Notes, Edit. Edits in any panel go through store
+  actions, not local component state that bypasses the store.
 - Every tab lays out in two columns from `lg:` up (`grid-cols-2`, or a `1fr` + fixed-width aside),
   with the wide sections — spells, personality, the bag — spanning the full row below. The page
   container is `max-w-[1180px]`; don't put a `max-w-2xl` back around a tab, that was what made
@@ -508,11 +518,77 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 
 ### Online rooms (`/sala/:code`, `api/`, phases in `~/.claude/plans/crispy-orbiting-micali.md`)
 
-- The GM opens a room per campaign (`RoomPanel`, "Room" button on `CampaignPage`); players join
-  from Home with a 6-char code (`ROOM_CODE_ALPHABET`, no I/O/0/1) and a local sheet, landing on
-  `RoomPage`. No accounts: each device gets a random token, the DB stores only its sha256
-  (`room_members.token_hash`). The campaign stays local-first; the room only holds what is
-  published.
+- The GM opens a room per campaign on `GmRoomPage` (`/mestre/campanha/:id/sala`, "Room" button on
+  `CampaignPage`; `CreateRoom`/`OpenRoom` in `RoomControls`); players join from Home with a 6-char
+  code (`ROOM_CODE_ALPHABET`, no I/O/0/1) and a local sheet, landing on `RoomPage`. Each device gets
+  a random token, the DB stores only its sha256 (`room_members.token_hash`). The campaign stays
+  local-first; the room only holds what is published. `GmRoomPage` is where a whole session runs:
+  chat/log, `RollRequestForm`, which encounter is on the table, `RoomSessions` and the members.
+- Invite link: `roomInviteUrl` (`src/lib/roomLink.ts`) is always `ROOM_API_URL_APP/sala/<code>` (in
+  the APK and on desktop the origin is `https://localhost` / `app://venetia`, dead elsewhere); the GM
+  copies or shares it from `OpenRoom` (native share sheet in the app, the WebView has no
+  `navigator.share`). On Android it is an App Link: the `/sala/` intent-filter (`autoVerify`) in
+  `AndroidManifest.xml` plus `public/.well-known/assetlinks.json` with the release key's SHA-256 and
+  one machine's debug key (it differs per machine). Without the app, or on a PC, the site opens.
+  `AppLinkBridge` takes it to the route (`getLaunchUrl` on a cold start, `appUrlOpen` when already
+  open; `roomLinkPath` lets through only `/sala/<valid code>`), and `RoomPage` opens `JoinRoomModal`
+  with the code. Android verifies on install/update: **deploy `assetlinks.json` before tagging the APK**.
+- Joining twice is blocked on the client: `joinRoom` returns the existing membership for that code
+  and `JoinRoomModal` offers "Open room" instead — the server can't tell a second join from a new
+  player and would create a ghost member (counted in `ROOM_MAX_MEMBERS`, sheet shown twice).
+- Memberships sync across devices through the account as cloud kind `room` (id = room id, payload =
+  the membership **with its token**, so phone and web are the same member; `writeMemberships`
+  parses through the schema first so the hashed JSON matches `membershipJson`). Without an account
+  they stay device-only. `reloadMemberships` applies what came down. Sign-out still doesn't touch
+  `dnd_salas`. The Privacy text says the token is stored with the account. A new cloud kind would
+  break installed APKs (their `pullResponse` enum rejects the whole page), so `pull` sends `kinds`
+  and the server returns only `LEGACY_CLOUD_KINDS` when it's missing; `cloudState.cursor_kinds`
+  resets the cursor to 0 once when the app learns a kind the server skipped for it.
+- "Being in the room" is a connection, not a page: `usePlayerAutoConnect` connects on app start to
+  the open sheet's room, else `preferredRoom` (last connected, `dnd_sala_ativa`, else newest join).
+  `RoomDock` shows a pill (room + status, tap → `roomPagePath`) on every screen but the room page;
+  `RoomPage` says "you're in X as Y" and keeps its tab in `?aba=` (mesa/ficha/chat/notas/sala).
+- **Protocol version 2.** `auth` carries `protocol` (`ROOM_PROTOCOL_VERSION`); missing = 1, an APK
+  installed before it. The server never sends a v1 socket the new kinds (`docForProtocol` /
+  `eventForProtocol` / `messageForProtocol` in `docs.ts`, applied in `ready` and `deliver`): a v1
+  client's strict schema rejects the whole `ready` and stays "connecting". New clients parse
+  `ready.docs`/`events` item by item (`keepValid`), dropping unknown kinds. Bump the version and
+  extend the filter when adding a doc/event kind or a server message. **Rollout: `npm run
+  db:migrate` (005 widens the `room_docs`, `room_events` and `cloud_records` kind checks) → deploy →
+  only then tag the APK** — an old server closes unknown client messages with 4400, and an
+  unmigrated DB fails the inserts (and every cloud push that carries a `room` record).
+- Roll requests: the GM sends `request` (check `ability|save|skill|initiative` + id, `member_ids`
+  or null = every player, `secret`) → event `request`. Players answer with a normal `roll` carrying
+  `reply_to` (the request's version), private when secret; the modifier comes from their own sheet
+  (`checkModifier` in `src/lib/rollChecks.ts`, read through `readRoomSheet`). `RollRequestPrompt`
+  floats the newest unanswered one (`pendingRequests`) on every screen; `RequestCard` in the log
+  shows the GM each target's result.
+- Player turn on the table: `buildTableState(…, party)` tags combatants with `member_id`
+  (`controllerOf`: room players only) and `move` (`left_m`, `mode`). On the player's turn
+  `TableView` highlights `reachableCells` (occupancy from the visible table through the `Occupant`
+  type; `MapCanvas.onCellTap` picks, a button confirms) and sends `move` — the server checks the
+  stored table (own combatant, its turn) and relays an `intent` to GM sockets only; the GM device
+  decides in `resolvePlayerMove` (`src/lib/gm/playerActions.ts`: active, turn owner, own combatant,
+  `checkMove` strict + turnOwner **whatever `strict_movement` says**) and calls `moveCombatant`.
+  Nothing moves optimistically on the player side. `attack` (a sheet attack whose `_damage` parses,
+  plus a table target) is rolled on the server (`addAttack`: d20 + damage, natural 20 doubles the
+  dice via `critExpression`) as event `attack`; the GM's `AttackCard` compares it with the target's
+  AC (`attackHits`: nat 1 misses, nat 20 hits) and applies the damage with one tap
+  (`appliedAttacks` guards a double apply). Intents share the event rate bucket.
+- Starting a fight (`EncounterPage` Start) with a room open calls `setBroadcast`, and
+  `usePlayerEncounterRedirect` takes each player to `/sala/:code?aba=mesa` once per active encounter.
+- `RoomSheetTab` (lazy) shows the real sheet panels inside the room. Encounter HP still never writes
+  back to the sheet — the tab shows the combat HP separately, labelled as the GM's.
+- Sessions: doc `schedule:main` (`roomScheduleSchema`, GM-only `schedule_put`, edited in
+  `RoomSessions`). `useSessionSchedules` fills `roomStore.schedules` from the live doc and from
+  `POST /api/rooms/schedule` for every membership on start/resume (`SESSION_SCHEDULE_REFRESH_MS`),
+  and reschedules the reminders. Reminders are **local** notifications
+  (`@capacitor/local-notifications`, app only, `services/sessionReminders.ts`): `planReminders` sets
+  one `SESSION_REMINDER_LEAD_MS` before each future session, ids from `reminderId` (stable 31-bit
+  hash), tagged `extra.room_id` so a room's set is replaced; a tap opens the room. Off by default
+  (`config.session_reminders`); turning it on (Preferences or the sessions list) requests the
+  permission, and nothing is scheduled without it — the plugin's `schedule` would prompt by itself.
+  No server push: a device that never opened the app after the session was set doesn't know of it.
 - Server: `api/rooms/[action].ts` (one function: create, join, close, kick, leave) and
   `api/room-ws.ts` (WebSocket: first frame `auth {token, since}` → `ready`; presence; fan-out).
   Writes publish on Redis channel `room:<id>`; every function instance with sockets in that room
@@ -612,7 +688,7 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
 
 ### Account sync (Google sign-in via Firebase, data in Neon)
 
-- Optional: signed-in users get sheets, campaigns, bestiary monsters and area maps copied to the
+- Optional: signed-in users get sheets, campaigns, bestiary monsters, area maps and room memberships copied to the
   same Neon database as the rooms and merged across devices. Firebase is **only** the login; the
   app stays local-first and Neon is a per-record mirror. `isCloudAvailable()`
   (`src/lib/cloud/config.ts`) is false when the `VITE_FIREBASE_*` vars are missing (CI, tests,

@@ -1,25 +1,29 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useRoomStore } from '../../store/roomStore'
 import { useBackHandler } from '../../hooks/useBackHandler'
 import { DiceIcon } from '../gm/ornaments'
 import type { RoomEvent } from '../../lib/room/protocol'
 import { RoomLog } from './RoomLog'
+import { RollRequestPrompt } from './RollRequestPrompt'
+import { roomPagePath } from '../../services/roomStorage'
 
 /** Quanto tempo o resultado da própria rolagem fica à vista, e o quanto ela pode ser antiga para aparecer. */
 const OWN_ROLL_TOAST_MS = 4000
 const OWN_ROLL_FRESH_MS = 15_000
 
 /**
- * Rolagens e chat da sala em qualquer tela (ficha, encontro, campanha): um
- * botão flutuante com o número de novidades e um painel lateral. Na página da
- * sala o log já está na tela, então o botão some.
+ * A sala em qualquer tela (ficha, encontro, campanha): à esquerda, em que sala
+ * a pessoa está e o estado da conexão (toque abre a página da sala); à direita,
+ * as rolagens e o chat, com o número de novidades. Na página da sala tudo isso
+ * já está na tela, então some.
  */
 export function RoomDock() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
-  const { activeRoomId, status, events, memberships } = useRoomStore()
+  const navigate = useNavigate()
+  const { activeRoomId, status, events, memberships, room } = useRoomStore()
   const me = memberships.find(m => m.room_id === activeRoomId) ?? null
   const [open, setOpen] = useState(false)
   const [seenVersion, setSeenVersion] = useState(0)
@@ -45,7 +49,8 @@ export function RoomDock() {
   const seen = open ? latest : seenVersion
   const unread = events.filter(e => e.version > seen && e.actor_member_id !== me?.member_id).length
   const connected = me != null && (status === 'online' || status === 'reconnecting' || status === 'connecting')
-  if (!connected || pathname.startsWith('/sala/')) return null
+  const roomPath = me ? roomPagePath(me) : null
+  if (!me || !roomPath || pathname === roomPath) return null
 
   function toggle(next: boolean) {
     setSeenVersion(latest)
@@ -54,7 +59,22 @@ export function RoomDock() {
 
   return (
     <>
-      {!open && toast?.kind === 'roll' && (
+      {!open && (
+        <button
+          data-testid="sala-indicador"
+          onClick={() => navigate(roomPath)}
+          aria-label={t('room.pill.open', { name: room?.name || me.name || t('room.untitled') })}
+          className="fixed z-40 left-4 bottom-4 max-w-[min(60vw,280px)] min-h-[44px] flex items-center gap-2 rounded-full border border-[rgba(212,160,23,0.4)] bg-[#1A1714]/95 shadow-xl pl-3 pr-4 py-2 cursor-pointer font-[Manrope,system-ui] hover:border-[#D4A017]"
+        >
+          <span aria-hidden="true" className={`w-2.5 h-2.5 flex-shrink-0 rounded-full ${status === 'online' ? 'bg-[#6FBF73]' : connected ? 'bg-[#E8C25A] animate-pulse' : 'bg-[#d4564a]'}`} />
+          <span className="min-w-0 text-left leading-tight">
+            <span className="block text-[11px] text-[#A8A09B]">{status === 'online' ? t('room.pill.inRoom') : t(`room.status.${status}`)}</span>
+            <span className="block text-[14px] font-bold text-[#F5F0E8] truncate">{room?.name || me.name || t('room.untitled')}</span>
+          </span>
+        </button>
+      )}
+      {!open && <RollRequestPrompt />}
+      {connected && !open && toast?.kind === 'roll' && (
         <div
           role="status"
           className="fixed z-40 right-4 bottom-[88px] max-w-[260px] rounded-[12px] border border-[rgba(212,160,23,0.4)] bg-[#1A1714] shadow-xl px-3.5 py-2.5 flex items-center gap-3 font-[Manrope,system-ui]"
@@ -66,7 +86,7 @@ export function RoomDock() {
           <span className="text-[26px] font-extrabold tabular-nums text-[#E8C25A]">{toast.payload.total}</span>
         </div>
       )}
-      {!open && (
+      {connected && !open && (
         <button
           data-testid="sala-dock"
           onClick={() => toggle(true)}
@@ -81,7 +101,7 @@ export function RoomDock() {
           )}
         </button>
       )}
-      {open && (
+      {connected && open && (
         <div
           role="dialog"
           aria-label={t('room.log.title')}

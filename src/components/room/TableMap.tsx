@@ -1,17 +1,31 @@
 import type { TableState } from '../../lib/room/protocol'
-import type { CreatureSize } from '../../types'
-import { CREATURE_SIZES, FOG_HIDDEN } from '../../constants'
+import type { Cell } from '../../lib/gm/terrain'
+import { FOG_HIDDEN } from '../../constants'
+import { asCreatureSize } from '../../lib/gm/tableView'
 import { VIS_REMEMBERED, VIS_UNKNOWN } from '../../lib/gm/vision'
 import { MapCanvas } from '../gm/MapCanvas'
 import { drawToken } from '../gm/drawToken'
 
 type TableMapData = NonNullable<TableState['map']>
 
-const asSize = (size: string): CreatureSize =>
-  (CREATURE_SIZES as readonly string[]).includes(size) ? (size as CreatureSize) : 'medium'
+interface TableMapProps {
+  map: TableMapData
+  table: TableState
+  /** Na vez do player: casas que ele alcança (índice → custo em casas), destacadas no mapa. */
+  reachable?: Map<number, number> | null
+  /** Destino escolhido, ainda não confirmado. */
+  target?: Cell | null
+  /** Token do player, com o contorno de "seu". */
+  mineId?: string | null
+  onCellTap?: (cell: Cell) => void
+}
 
-/** Mapa da mesa transmitida, só de leitura: arrastar move a vista; nunca visto é preto, explorado fica esmaecido. */
-export function TableMap({ map, table }: { map: TableMapData; table: TableState }) {
+/**
+ * Mapa da mesa transmitida: arrastar move a vista; nunca visto é preto, explorado
+ * fica esmaecido. Na vez do player, as casas alcançáveis ficam douradas e um
+ * toque escolhe o destino — quem move de fato é o mestre, ao aceitar.
+ */
+export function TableMap({ map, table, reachable, target, mineId, onCellTap }: TableMapProps) {
   const labels = map.labels.map((label, i) => ({ id: String(i), ...label }))
   const cellCount = map.width * map.height
   const vis = map.vis?.length === cellCount ? map.vis : null
@@ -33,17 +47,34 @@ export function TableMap({ map, table }: { map: TableMapData; table: TableState 
         shade(ctx, i, scale)
       }
     }
+    if (reachable) {
+      ctx.fillStyle = 'rgba(212,160,23,0.22)'
+      for (const i of reachable.keys()) shade(ctx, i, scale)
+    }
+    if (target) {
+      ctx.strokeStyle = '#E8C25A'
+      ctx.lineWidth = Math.max(2, scale * 0.1)
+      ctx.strokeRect(target.x * scale + 1, target.y * scale + 1, scale - 2, scale - 2)
+    }
     for (const c of table.combatants) {
       if (!c.position) continue
-      drawToken(ctx, { ...c, size: asSize(c.size) }, c.position, scale, {
-        active: c.id === table.turn_id, selected: false, ghost: false, showHp: false,
+      drawToken(ctx, { ...c, size: asCreatureSize(c.size) }, c.position, scale, {
+        active: c.id === table.turn_id, selected: c.id === mineId, ghost: false, showHp: false,
       })
     }
   }
 
   return (
     <div className="h-[62vh] min-h-[320px] lg:h-[calc(100dvh-260px)]">
-      <MapCanvas width={map.width} height={map.height} cells={map.cells} labels={labels} panMode drawOverlay={drawOverlay} />
+      <MapCanvas
+        width={map.width}
+        height={map.height}
+        cells={map.cells}
+        labels={labels}
+        panMode
+        onCellTap={onCellTap}
+        drawOverlay={drawOverlay}
+      />
     </div>
   )
 }
