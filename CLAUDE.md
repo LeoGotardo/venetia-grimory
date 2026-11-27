@@ -242,6 +242,46 @@ and localStorage keys (`dnd_ficha_*`, `dnd_fichas_lista`) plus the domain ids in
   `LevelUpModal` (in `src/components/sheet/`) handles ASI selection (+2 or +1+1) on level-up and
   supports choosing which class (primary or multiclass) gains the level.
 
+### Character portrait (`src/lib/portrait/`)
+
+- The face is drawn **on the device** — no image service (the old avatar fetched `api.dicebear.com`
+  with the character's name). The base is **Open Peeps** (Pablo Stanley, CC0) assembled by
+  `@dicebear/core` + `@dicebear/open-peeps` (MIT, v9 — the style's peer range stops at core 9):
+  3/4 view, ink outlines, `hair`/`face`/`beard` and the glasses/eyepatch are Open Peeps ids. Our own
+  layers sit on top in the same style (`render.ts`, 704×704 viewBox, coordinates measured on Open
+  Peeps — visible ear ~(232, 385), mouth ~(470, 455)): pointed/long ears covering its ear, horns,
+  tusks, markings, halo, circlet, earring, and a whole `draconic` head drawn over a bald, beardless
+  peep (`DRACONIC_HIDDEN`, `DRACONIC_ACCESSORIES`). Hats, sunglasses and masks are left out on
+  purpose. Credited on `/sobre`.
+- Hair and beard colours: in Open Peeps the hair and the head outline are **one black path**, so
+  `tintHairAndBeard` cuts the DiceBear output at its component groups (`PEEPS_MARKERS`), turns the
+  black of the head/beard segment into the colour and adds an ink stroke on top (12 / 8) — thin
+  outlines vanish under the stroke and stay black, hair masses keep the colour with an ink rim.
+  DiceBear has one contrast colour for both, so a sentinel goes in and each segment swaps its own.
+  Bald heads (`BALD_HAIR`) aren't tinted. If a DiceBear upgrade changes the markers the portrait
+  falls back to uncoloured and `portrait.test.ts` fails.
+- Accessories are a list (`accessories`), **one per slot** (`ACCESSORY_SLOT`: eyes, ears, brow,
+  above): `normalizeAccessories` keeps the first per slot, `withAccessory` replaces whatever was in
+  the slot — two glasses, or glasses with the eyepatch, can't stack. Only the eyes-slot item goes
+  into DiceBear (it draws one accessory).
+- `CharacterSheet.portrait` (optional: an old sheet keeps the same JSON, so the account doesn't see
+  an edit) stores only option and palette **ids** (`options.ts`), never SVG or a free colour — the
+  sheet reaches the GM through the room, the account and exported JSON. `normalizePortrait` (from
+  `migrateSheet`, and again in `CharacterAvatar`) keeps known ids field by field; `portraitSvg` only
+  interpolates constants picked by them; `CharacterAvatar` shows an `<img>` data URL.
+- `render.ts` is **lazy** (`usePortraitUrl` / `usePortraitRenderer` in `src/hooks/usePortraitUrl.ts`,
+  ~110 KB gzip): the avatar is a square of the background colour until it loads. Don't import it
+  statically from a page, or Home pays for Open Peeps.
+- No saved portrait = `defaultPortrait(speciesId, seed)`, seeded by the **sheet id** (renaming
+  doesn't change the face; `PlayerCard` uses the member's `sheet_id`). `SPECIES_POOLS` gives each
+  species its look. Option lists and pools only grow at the end: reordering or removing one
+  reshuffles every unsaved face.
+- `SheetListItem.portrait` is a copy written by `saveSheet`, so Home draws it without loading the
+  sheet. `PortraitEditor` (tabs, thumbnails of the face itself for hair/expression/beard, colour
+  swatches with `aria-label`s, "Randomize" with the species pools) opens from the sheet header avatar
+  and from `EditPanel`'s identity section and saves through `setPortrait`. `portrait.test.ts` checks
+  every option/colour has a label in both catalogs.
+
 ### Hooks
 
 - `src/hooks/useWizardAbilities.ts` (`useWizardAbilities`) encapsulates all ability-assignment

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import type { CharacterSheet, AbilityId, FreeCast, InventoryItem } from '../types'
+import type { Portrait } from '../lib/portrait/options'
 import { createInitialSheet } from '../lib/initialSheet'
 import { recalculate } from '../lib/recalculate'
 import { applyBackground, applyClass, applySpecies } from '../lib/characterBuild'
@@ -34,6 +35,8 @@ export interface SheetListItem {
   level: number
   updatedAt: string
   complete?: boolean
+  /** Cópia do retrato, para a lista desenhar sem abrir a ficha; ausente nas listas antigas. */
+  portrait?: Portrait | null
 }
 
 interface SheetStore {
@@ -95,6 +98,7 @@ interface SheetStore {
   toggleCondition: (condition: string) => void
   setExhaustion: (n: number) => void
   setNotes: (notes: string) => void
+  setPortrait: (portrait: Portrait | null) => void
   addAttack: (attack: CharacterSheet['combat']['attacks'][0]) => void
   removeAttack: (idx: number) => void
   addItem: (item: InventoryItem) => void
@@ -622,6 +626,9 @@ export const useSheetStore = create<SheetStore>((set, get) => ({
 
   setNotes: notes =>
     set(s => ({ sheet: { ...s.sheet, notes } })),
+
+  setPortrait: portrait =>
+    set(s => ({ sheet: { ...s.sheet, portrait } })),
 
   addAttack: attack =>
     set(s => ({

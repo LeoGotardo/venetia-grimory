@@ -172,7 +172,7 @@ function SheetCard({ sheet, onLoad, onExport, onDelete }: SheetCardProps) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-[14px]">
           <div className="w-12 h-12 rounded-[13px] flex-shrink-0 bg-[#221d18] border border-[rgba(212,160,23,0.3)] overflow-hidden">
-            <CharacterAvatar name={sheet.name || null} id={sheet.id} size={48} />
+            <CharacterAvatar name={sheet.name || null} portrait={sheet.portrait} speciesId={sheet.species} seed={sheet.id} size={48} />
           </div>
           <div>
             <div className="flex items-center gap-2">

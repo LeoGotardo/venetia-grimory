@@ -45,6 +45,9 @@ import type { ItemDetail } from '../ui/ItemCard'
 import { ClassCard } from '../ui/ClassCard'
 import { SpeciesCard } from '../ui/SpeciesCard'
 import { BackpackSearch } from '../ui/BackpackSearch'
+import { CharacterAvatar } from '../ui/CharacterAvatar'
+import { PortraitEditor } from '../ui/PortraitEditor'
+import { defaultPortrait } from '../../lib/portrait/generate'
 import { FreeCastPicker } from '../ui/FreeCastPicker'
 import { gameData, gameDataPt } from '../../data/rules'
 
@@ -95,13 +98,30 @@ export function EditPanel() {
 }
 
 function InfoSection() {
-  const { sheet, setIdentity } = useSheetStore()
+  const { sheet, sheetId, setIdentity, setPortrait } = useSheetStore()
   const { t } = useTranslation()
   const id = sheet.identity
+  const [editingPortrait, setEditingPortrait] = useState(false)
 
   return (
     <section aria-label={t('edit.basicInfo')} className={SECTION_CARD}>
       <h3 className={SECTION_TITLE}>{t('edit.basicInfo')}</h3>
+
+      <div className="mb-3 flex items-center gap-3">
+        <div className="h-14 w-14 flex-shrink-0 overflow-hidden rounded-2xl border border-[rgba(212,160,23,0.35)]">
+          <CharacterAvatar name={id.character_name} portrait={sheet.portrait} speciesId={id.species_id} seed={sheetId ?? ''} size={56} />
+        </div>
+        <Button variant="secondary" onClick={() => setEditingPortrait(true)}>{t('portrait.edit')}</Button>
+      </div>
+      {editingPortrait && (
+        <PortraitEditor
+          open
+          onClose={() => setEditingPortrait(false)}
+          initial={sheet.portrait ?? defaultPortrait(id.species_id, sheetId ?? '')}
+          speciesId={id.species_id}
+          onSave={setPortrait}
+        />
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Input

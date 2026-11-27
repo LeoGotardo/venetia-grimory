@@ -1,5 +1,18 @@
 [
   {
+    "version": "v3.8.0",
+    "pt": [
+      "Novo: retratos desenhados para cada personagem, com traços da espécie: orelhas de elfo, chifres de tiferino, presas de orc, auréola de aasimar e cabeça de dragão nos draconatos",
+      "Novo: editor de retrato — toque no rosto na ficha (ou em Editar) para escolher penteado, expressão, barba, cores do cabelo e da barba, chifres, marcas e vários acessórios",
+      "Ajuste: os rostos agora são desenhados no próprio aparelho, funcionam sem internet e o nome do personagem não vai mais para um serviço externo de avatares; por isso o rosto de cada personagem mudou"
+    ],
+    "en": [
+      "New: portraits drawn for each character, with species traits: elf ears, tiefling horns, orc tusks, aasimar halo and a dragon head for dragonborn",
+      "New: portrait editor — tap the face on your sheet (or in Edit) to pick hairstyle, expression, beard, hair and beard colors, horns, markings and several accessories",
+      "Fix: faces are now drawn on your device, work offline and the character name is no longer sent to an external avatar service; that is why every character's face changed"
+    ]
+  },
+  {
     "version": "v3.7.0",
     "pt": [
       "Novo: na sua vez, ataque desarmado direto da mesa da sala: soco, Agarrar e Empurrar",

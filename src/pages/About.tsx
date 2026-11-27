@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { APACHE_2_URL, CC_BY_4_URL, OFL_URL, SRD_URL } from '../constants'
+import { APACHE_2_URL, CC_BY_4_URL, OFL_URL, SRD_URL, CC0_URL, OPEN_PEEPS_URL } from '../constants'
 import { ICONS_LICENSE } from '../data/areaMap/iconsLicense'
 import { currentVersion } from '../lib/releaseNotes'
 import { ThirdPartyLicenses } from '../components/ui/ThirdPartyLicenses'
@@ -30,6 +30,11 @@ export function About() {
       <LegalSection title={t('about.iconsTitle')}>
         <p>{t('about.iconsCredit', { authors: ICONS_LICENSE.authors.join(', ') })}</p>
         <LegalLinks links={[{ href: ICONS_LICENSE.source, label: 'game-icons.net' }, { href: ICONS_LICENSE.url, label: ICONS_LICENSE.name }]} />
+      </LegalSection>
+
+      <LegalSection title={t('about.portraitsTitle')}>
+        <p>{t('about.portraitsCredit')}</p>
+        <LegalLinks links={[{ href: OPEN_PEEPS_URL, label: 'Open Peeps' }, { href: CC0_URL, label: 'CC0 1.0' }]} />
       </LegalSection>
 
       <LegalSection title={t('about.fontsTitle')}>

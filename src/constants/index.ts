@@ -387,6 +387,9 @@ export const UPDATE_CHECK_TIMEOUT_MS = 8000
 export const SRD_URL = 'https://www.dndbeyond.com/srd'
 export const CC_BY_4_URL = 'https://creativecommons.org/licenses/by/4.0/legalcode'
 export const OFL_URL = 'https://openfontlicense.org'
+/** Base dos retratos (`src/lib/portrait`): Open Peeps, de Pablo Stanley, em domínio público. */
+export const OPEN_PEEPS_URL = 'https://www.openpeeps.com/'
+export const CC0_URL = 'https://creativecommons.org/publicdomain/zero/1.0/'
 export const APACHE_2_URL = 'https://www.apache.org/licenses/LICENSE-2.0'
 // Termos de uso (src/pages/Terms.tsx). Mudou o texto de um jeito relevante: atualize a data.
 export const TERMS_EFFECTIVE_DATE = '2026-11-15'

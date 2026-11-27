@@ -21,6 +21,8 @@ import { LevelUpModal } from '../components/sheet/LevelUpModal'
 import { XP_PER_LEVEL, formatModifier } from '../lib/calculations'
 import { getBackgrounds } from '../data/backgrounds'
 import { CharacterAvatar } from '../components/ui/CharacterAvatar'
+import { PortraitEditor } from '../components/ui/PortraitEditor'
+import { defaultPortrait } from '../lib/portrait/generate'
 import { gameData } from '../data/rules'
 
 type Tab = 'sheet' | 'spells' | 'inventory' | 'notes' | 'edit'
@@ -38,7 +40,8 @@ export function CharacterSheet() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { sheet, sheetId, loadSheet, addXP, updateHp } = useSheetStore()
+  const { sheet, sheetId, loadSheet, addXP, updateHp, setPortrait } = useSheetStore()
+  const [editingPortrait, setEditingPortrait] = useState(false)
   const { exportar } = useSheetExport()
   const [tab, setTab] = useState<Tab>('sheet')
   const [configOpen, setConfigOpen] = useState(false)
@@ -200,9 +203,25 @@ export function CharacterSheet() {
         <div className="flex items-start justify-between gap-5 mb-7 flex-wrap">
           {/* Name + badges */}
           <div className="flex items-center gap-[14px]">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex-shrink-0 bg-[#221d18] border border-[rgba(212,160,23,0.35)] overflow-hidden">
-              <CharacterAvatar name={identity.character_name} id={sheetId ?? id} size={64} />
-            </div>
+            <button
+              type="button"
+              onClick={() => setEditingPortrait(true)}
+              aria-label={t('portrait.edit')}
+              title={t('portrait.edit')}
+              data-testid="ficha-retrato"
+              className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex-shrink-0 bg-[#221d18] border border-[rgba(212,160,23,0.35)] overflow-hidden cursor-pointer hover:border-[#D4A017] transition-colors"
+            >
+              <CharacterAvatar name={identity.character_name} portrait={sheet.portrait} speciesId={identity.species_id} seed={sheetId ?? id ?? ''} size={64} />
+            </button>
+            {editingPortrait && (
+              <PortraitEditor
+                open
+                onClose={() => setEditingPortrait(false)}
+                initial={sheet.portrait ?? defaultPortrait(identity.species_id, sheetId ?? id ?? '')}
+                speciesId={identity.species_id}
+                onSave={setPortrait}
+              />
+            )}
             <div className="min-w-0">
               <h2 className="font-extrabold text-[20px] sm:text-[26px] leading-tight tracking-tight text-[#F5F0E8] mb-2 truncate max-w-[200px] sm:max-w-none">
                 {identity.character_name || t('sheet.noName')}
