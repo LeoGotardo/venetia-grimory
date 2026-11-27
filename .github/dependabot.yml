@@ -34,6 +34,10 @@ updates:
       # tire esta regra quando o typescript-eslint aceitar.
       - dependency-name: typescript
         update-types: ["version-update:semver-major"]
+      # O @dicebear/open-peeps (base dos retratos) pede @dicebear/core ^9: o core 10+
+      # sozinho quebra o `npm ci` (ERESOLVE). Tire quando sair um open-peeps para o core novo.
+      - dependency-name: "@dicebear/core"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: "/"
