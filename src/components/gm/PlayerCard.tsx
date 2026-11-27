@@ -50,7 +50,8 @@ export function PlayerCard({ member, onReimport, onRemove, online }: PlayerCardP
     <div data-testid="player-card" className="vg-card p-6 flex flex-col gap-4 h-full">
       <div className="flex items-start gap-[14px]">
         <div className="w-14 h-14 rounded-[14px] flex-shrink-0 bg-[#221d18] border border-[rgba(212,160,23,0.3)] overflow-hidden">
-          <CharacterAvatar name={p.name} id={member.id} size={56} />
+          {/* Semente = id da ficha local: o mestre vê o mesmo rosto sorteado que o jogador. */}
+          <CharacterAvatar name={p.name} portrait={member.snapshot.portrait} speciesId={member.snapshot.identity.species_id} seed={member.sheet_id ?? member.id} size={56} />
         </div>
         <div className="min-w-0">
           <div className="font-cinzel font-semibold text-[20px] text-[#F5F0E8] truncate">{name}</div>

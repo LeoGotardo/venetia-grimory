@@ -1,6 +1,7 @@
 import type { CharacterSheet } from '../types'
 import { createInitialSheet } from './initialSheet'
 import { isLegacyPtSheet, translateLegacyPtSheet } from './migrateLegacyPt'
+import { normalizePortrait } from './portrait/generate'
 
 /**
  * Formato anterior à separação de magias por classe (multiclasse).
@@ -104,5 +105,8 @@ export function migrateSheet(saved: CharacterSheet): CharacterSheet {
     },
     feats: { ...base.feats, ...sheet.feats },
     personality: { ...base.personality, ...sheet.personality },
+    // Vem de fora (sala, conta, JSON): só ids conhecidos passam. Sem retrato, a chave nem aparece no JSON —
+    // gravar `null` mudaria o conteúdo de toda ficha antiga ao abrir, e a conta trataria como edição nova.
+    portrait: normalizePortrait(sheet.portrait) ?? undefined,
   }
 }

@@ -14,6 +14,7 @@ function buildListItem(id: string, sheet: CharacterSheet, complete: boolean, upd
     level: sheet.identity.level,
     updatedAt,
     complete,
+    portrait: sheet.portrait ?? null,
   }
 }
 

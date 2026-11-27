@@ -1,4 +1,5 @@
 import type { AbilityId } from './gameData'
+import type { Portrait } from '../lib/portrait/options'
 
 export interface SheetAbility {
   value: number | null
@@ -179,6 +180,11 @@ export interface CharacterSheet {
     symbol_or_treasure: string | null
   }
   active_conditions: string[]
+  /**
+   * Rosto desenhado no editor (só ids, ver `src/lib/portrait`); ausente = o sorteado pela espécie e pelo
+   * id da ficha. Opcional de propósito: ficha antiga continua com o mesmo JSON (e o mesmo hash na conta).
+   */
+  portrait?: Portrait | null
   exhaustion_levels: number
   notes: string | null
 }
